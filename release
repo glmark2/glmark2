@@ -1,0 +1,51 @@
+GLMark 0.5.2
+========================
+- current tests
+    no precompilation
+    build lists
+    vertex arrays
+    vertex buffer objects
+    nearest texture filtering
+    linear texture filtering
+    mipmapped texture filtering
+    smooth shader model
+    glsl per vertex lighting
+    glsl per pixel lighting
+    
+Updates 26-04-2008
+========================
+- Added GLSL shader tests
+- Fixed some memory leaks
+- Cleaned up the code a bit
+
+Updates 25-04-2008
+========================
+- Readded the texture filter test
+- Improved score system
+
+Updates 24-04-2008
+========================
+- Completly rewritten source
+- Now c++
+- 3dsloader
+- vertex buffer objects
+- havent done texture tests yet
+- select any resolution, fullscreen or windowed
+
+Updates 20-04-2008
+========================
+- Selected color depth used instead of desktop depth
+- Simple makefile included
+- Torus model, which actually tests the different methods of precompilation
+
+Updates 19-04-2008
+========================
+- Tests now run for 30 seconds
+- The score is calculated properly, thanks to Shuffle777.
+- It is now possible to select resolution, color depth and fullscreen/windowed.
+
+Updates
+========================
+- Tests now run for 60 seconds
+- A score is calculated at the end of the benchmark, based on my computer
+(I get exactly 5000) :).
