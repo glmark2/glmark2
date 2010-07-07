@@ -56,19 +56,6 @@ int Screen::init()
     
     SDL_WM_SetCaption("GLMark 08", NULL);
     
-    GLenum err = glewInit();
-    if(GLEW_OK != err)
-    {
-        fprintf(stderr, "[ Fail ] - Error: %s\n", glewGetErrorString(err));
-        return 0;
-    }
-
-    if(!GLEW_ARB_vertex_buffer_object)
-    {
-        fprintf(stderr, "[ Fail ] - VBO objects are not supported\n");
-        return 0;
-    }
-
     glShadeModel(GL_SMOOTH);
     glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
     glClearDepth(1.0f);
