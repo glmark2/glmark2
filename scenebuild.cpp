@@ -71,6 +71,7 @@ void SceneBuild::update()
         switch(mCurrentPart)
         {
         case 0:
+            printf("Precompilation\n");
             printf("    Vertex array                  FPS: %u\n", mAverageFPS[mCurrentPart]);
             break;
         case 1:
