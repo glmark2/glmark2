@@ -71,15 +71,11 @@ void SceneShading::start()
     {
     case 0:
         glDisable(GL_TEXTURE_2D);
-        glShadeModel(GL_SMOOTH);
+        mShader[0].use();
         break;
     case 1:
         glDisable(GL_TEXTURE_2D);
-       	mShader[0].use();
-        break;
-    case 2:
-        glDisable(GL_TEXTURE_2D);
-       	mShader[1].use();
+        mShader[1].use();
         break;
     };
     
@@ -105,12 +101,9 @@ void SceneShading::update()
         {
         case 0:
             printf("Shading\n");
-            printf("    Smooth shader model      FPS: %u\n", mAverageFPS[mCurrentPart]);
-            break;
-        case 1:
             printf("    GLSL per vertex lighting FPS: %u\n", mAverageFPS[mCurrentPart]);
             break;
-        case 2:
+        case 1:
             printf("    GLSL per pixel lighting  FPS: %u\n", mAverageFPS[mCurrentPart]);
             break;
         }
@@ -135,6 +128,3 @@ void SceneShading::draw()
 
     mMesh.render_vbo();
 }
-
-
-
