@@ -18,7 +18,7 @@ int SceneTexture::load()
     
     model.calculate_normals();
     model.convert_to_mesh(&mCubeMesh);
-    mCubeMesh.build_list();
+    mCubeMesh.build_vbo();
     
     mRotationSpeed = Vector3f(36.0f, 36.0f, 36.0f);
     
@@ -114,14 +114,14 @@ void SceneTexture::draw()
     {
     case 0:
         glBindTexture(GL_TEXTURE_2D, mTexture[0]);
-        glCallList(mCubeMesh.mBuildList);
+        mCubeMesh.render_vbo();
         break;
     case 1:
         glBindTexture(GL_TEXTURE_2D, mTexture[1]);
-        glCallList(mCubeMesh.mBuildList);
+        mCubeMesh.render_vbo();
     case 2:
         glBindTexture(GL_TEXTURE_2D, mTexture[2]);
-        glCallList(mCubeMesh.mBuildList);
+        mCubeMesh.render_vbo();
         break;
     }    
 }

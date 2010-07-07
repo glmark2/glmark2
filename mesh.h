@@ -34,20 +34,16 @@ public:
     GLenum mMode;           // Polygon mode, eg GL_QUADS, GL_TRIANGLES etc...
     Vertex *mVertex;        // Storage for the verticies
 
-    GLuint mBuildList;      // Build list name
-
-	GLuint mVBOVertices;    // Vertex VBO name
-	GLuint mVBONormals;     // Texture coordinate VBO name
-	GLuint mVBOTexCoords;   // Texture coordinate VBO name
+    GLuint mVBOVertices;    // Vertex VBO name
+    GLuint mVBONormals;     // Texture coordinate VBO name
+    GLuint mVBOTexCoords;   // Texture coordinate VBO name
     
     Mesh();                 // Default Constructor, should set pointers to null
     ~Mesh();
     
     void make_cube();
     void make_torus();
-    void render();
     void render_array();
-    void build_list();
     void build_vbo();
     void render_vbo();
 };

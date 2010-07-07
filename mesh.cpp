@@ -21,7 +21,6 @@ Mesh::Mesh()
 Mesh::~Mesh()
 {
     delete [] mVertex;
-    glDeleteLists(1, mBuildList);
     //deleteArray
 }
 
@@ -130,46 +129,20 @@ void Mesh::make_torus()
         }    
 }
 
-void Mesh::render()
-{
-    glBegin(mMode);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    for(unsigned i = 0; i < mVertexQty; i++)
-    {
-        glNormal3f(mVertex[i].n.x, mVertex[i].n.y, mVertex[i].n.z);
-        glTexCoord2f(mVertex[i].t.u, mVertex[i].t.v);
-        glVertex3f(mVertex[i].v.x, mVertex[i].v.y, mVertex[i].v.z);
-    }
-    glEnd();
-}
-
 void Mesh::render_array()
 {
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
     glVertexPointer(3, GL_FLOAT, sizeof(Vertex), &mVertex[0].v.x);
     glNormalPointer(GL_FLOAT, sizeof(Vertex), &mVertex[0].n.x);
+    glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), &mVertex[0].t.u);
     glDrawArrays(mMode, 0, mVertexQty);
 
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
-}
-
-void Mesh::build_list()
-{
-#ifdef _DEBUG
-    printf("Building list for mesh...        ");
-#endif
-
-    mBuildList = glGenLists(1);
-    glNewList(mBuildList, GL_COMPILE);
-    render();
-    glEndList();
-
-#ifdef _DEBUG
-    printf("[ Done ]\n");
-#endif
 }
 
 void Mesh::build_vbo()
@@ -225,16 +198,20 @@ void Mesh::render_vbo()
 {
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBONormals);
     glNormalPointer(GL_FLOAT, 0, 0);
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOVertices);
     glVertexPointer(3, GL_FLOAT, 0, 0);
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOTexCoords);
+    glTexCoordPointer(2, GL_FLOAT, 0, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, mVertexQty);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY); 
 }

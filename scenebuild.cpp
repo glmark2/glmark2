@@ -10,14 +10,13 @@ int SceneBuild::load()
     model.calculate_normals();
     model.convert_to_mesh(&mMesh);
     
-    mMesh.build_list();
     mMesh.build_vbo();
 
     mRotationSpeed = 36.0f;
     
     mRunning = false;
     
-    mPartsQty = 4;
+    mPartsQty = 2;
     mPartDuration = new double[mPartsQty];
     mAverageFPS = new unsigned[mPartsQty];
     mScoreScale = new float[mPartsQty];
@@ -72,16 +71,9 @@ void SceneBuild::update()
         switch(mCurrentPart)
         {
         case 0:
-            printf("Precompilation\n");
-            printf("    No Precompilation             FPS: %u\n", mAverageFPS[mCurrentPart]);
-            break;
-        case 1:
-            printf("    Build list                    FPS: %u\n", mAverageFPS[mCurrentPart]);
-            break;
-        case 2:
             printf("    Vertex array                  FPS: %u\n", mAverageFPS[mCurrentPart]);
             break;
-        case 3:
+        case 1:
             printf("    Vertex buffer object          FPS: %u\n", mAverageFPS[mCurrentPart]);
             break;
         }
@@ -106,14 +98,9 @@ void SceneBuild::draw()
     switch(mCurrentPart)
     {
     case 0:
-        mMesh.render();
-        break;
-    case 1:
-        glCallList(mMesh.mBuildList);
-    case 2:
         mMesh.render_array();
         break;
-    case 3:
+    case 1:
         mMesh.render_vbo();
         break;
     }    
