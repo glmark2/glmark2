@@ -18,16 +18,6 @@ int main(int argc, char *argv[])
     printf("    GLMark 08\n");
     printf("===================================================\n");
     
-    printf("Enter screen width:  ");
-    scanf("%d", &screen.mWidth);
-    printf("Enter screen height: ");
-    scanf("%d", &screen.mHeight);
-    printf("Enter screen bpp:    ");
-    scanf("%d", &screen.mBpp);
-    printf("Enter '1' for fullscreen '0' for windowed: ");
-    scanf("%d", &screen.mFullScreen);
-    
-
     printf("===================================================\n");
     if(!screen.init())
         return 0;
