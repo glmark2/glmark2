@@ -38,6 +38,8 @@ int SceneShading::load()
     
     mPartDuration[0] = 10.0;
     mPartDuration[1] = 10.0;
+
+    memset(mAverageFPS, 0, mPartsQty * sizeof(*mAverageFPS));
     
     mCurrentPart = 0;
     

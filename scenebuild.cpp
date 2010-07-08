@@ -13,6 +13,7 @@ int SceneBuild::load()
     mMesh.build_vbo();
 
     mRotationSpeed = 36.0f;
+    mRotation = 0.0;
     
     mRunning = false;
     
@@ -28,6 +29,8 @@ int SceneBuild::load()
     
     mPartDuration[0] = 10.0;
     mPartDuration[1] = 10.0;
+
+    memset(mAverageFPS, 0, mPartsQty * sizeof(*mAverageFPS));
     
     mCurrentPart = 0;
     

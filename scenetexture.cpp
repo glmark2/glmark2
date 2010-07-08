@@ -39,6 +39,8 @@ int SceneTexture::load()
     mPartDuration[1] = 10.0;
     mPartDuration[2] = 10.0;
     
+    memset(mAverageFPS, 0, mPartsQty * sizeof(*mAverageFPS));
+
     mCurrentPart = 0;
     
     return 1;
