@@ -21,6 +21,7 @@ public:
     Matrix4f &transpose();
     Matrix4f &perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar);
     Matrix4f &identity();
+    Matrix4f &invert();
 
     Matrix4f &operator*=(const Matrix4f &pM);
 

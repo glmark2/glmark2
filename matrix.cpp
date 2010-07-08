@@ -154,6 +154,41 @@ Matrix4f &Matrix4f::perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLf
     return *this;
 }
 
+/**
+ * Inverts this matrix.
+ *
+ * This method can currently handle only pure translation-rotation matrices.
+ *
+ * @return reference to the matrix
+ */
+Matrix4f &Matrix4f::invert()
+{
+   // If the bottom row is [0, 0, 0, 1] this is a pure translation-rotation
+   // transformation matrix and we can optimize the matrix inversion.
+   // Read http://www.gamedev.net/community/forums/topic.asp?topic_id=425118
+   // for an explanation.
+   if (m[3] == 0.0 &&  m[7] == 0.0 && m[11] == 0.0 && m[15] == 1.0) {
+      // Extract and invert the translation part 't'. The inverse of a
+      // translation matrix can be calculated by negating the translation
+      // coordinates.
+      Matrix4f t(1.0, 1.0, 1.0);
+      t.m[12] = -m[12]; t.m[13] = -m[13]; t.m[14] = -m[14];
+
+      // Invert the rotation part 'r'. The inverse of a rotation matrix is
+      // equal to its transpose.
+      m[12] = m[13] = m[14] = 0;
+      this->transpose();
+
+      // inv(m) = inv(r) * inv(t)
+      *this *= t;
+   }
+   else {
+      // Don't care about the general case for now
+   }
+
+   return *this;
+}
+
 /** 
  * Creates an empty matrix.
  *
@@ -166,6 +201,11 @@ Matrix4f::Matrix4f()
     m[15] = 1.0;
 }
 
+/** 
+ * Copy constructor.
+ * 
+ * @param mat the matrix to copy the contents of.
+ */
 Matrix4f::Matrix4f(Matrix4f &mat)
 {
    memcpy(m, mat.m, sizeof(m));
