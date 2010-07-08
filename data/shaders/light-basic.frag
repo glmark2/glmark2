@@ -18,7 +18,7 @@
 varying float Diffuse;
 
 void main(void)
-{	
-//Multiply the light Diffuse intensity by the color of the cube 
-	gl_FragColor = Diffuse * vec4(0,0,1,1);
+{
+    // Multiply the light Diffuse intensity by the color of the 
+    gl_FragColor = Diffuse * vec4(0.0, 0.0, 1.0, 1.0);
 }

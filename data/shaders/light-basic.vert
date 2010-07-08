@@ -58,15 +58,25 @@
 // lesson, but it even cleared up some stuff for me without even
 // thinking about it. GO MATHS :)
 
+attribute vec3 position;
+attribute vec3 normal;
+attribute vec2 texture;
+
+uniform mat4 ModelViewProjectionMatrix;
+uniform mat4 NormalMatrix;
+uniform vec4 LightSourcePosition;
+uniform vec3 LightSourceDiffuse;
+uniform vec3 MaterialDiffuse;
+
 varying float Diffuse;
 
 void main(void)
-{			
-	vec3 Normal = normalize(gl_NormalMatrix * gl_Normal);
+{
+    vec3 N = normalize(vec3(NormalMatrix * vec4(normal, 1.0)));
 
-	vec3 Light = normalize(gl_LightSource[0].position.xyz);
+    vec3 L = normalize(LightSourcePosition.xyz);
 
-	Diffuse = max(dot(Normal, Light),0.0);
+    Diffuse = max(dot(N, L), 0.0);
 
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+    gl_Position = ModelViewProjectionMatrix * vec4(position, 1.0);
 }

@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "matrix.h"
 
 SceneShading::~SceneShading()
 {
@@ -79,8 +80,18 @@ void SceneShading::start()
         glDisable(GL_TEXTURE_2D);
         mShader[1].use();
         break;
-    };
-    
+    }
+
+    if (mCurrentPart == 0) {
+        glUniform4fv(mShader[mCurrentPart].mLocations.LightSourcePosition, 1,
+                lightPosition);
+        glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceDiffuse, 1,
+                lightDiffuse);
+        glUniform3fv(mShader[mCurrentPart].mLocations.MaterialDiffuse, 1,
+                mat_diffuse);
+    }
+
+
     mCurrentFrame = 0;
     mRunning = true;
     mStartTime = SDL_GetTicks() / 1000.0;
@@ -128,5 +139,27 @@ void SceneShading::draw()
 
     glColor3f(0.0f, 1.0f, 1.0f);
 
-    mMesh.render_vbo();
+    if (mCurrentPart == 0) {
+        // Load the ModelViewProjectionMatrix uniform in the shader
+        Matrix4f model_view(1.0f, 1.0f, 1.0f);
+        Matrix4f model_view_proj(mScreen.mProjection);
+
+        model_view.translate(0.0f, 0.0f, -5.0f);
+        model_view.rotate(2 * M_PI * mRotation / 360.0, 0.0f, 1.0f, 0.0f);
+        model_view_proj *= model_view;
+
+        glUniformMatrix4fv(mShader[mCurrentPart].mLocations.ModelViewProjectionMatrix, 1,
+                GL_FALSE, model_view_proj.m);
+
+        // Load the NormalMatrix uniform in the shader
+        // The NormalMatrix is the inverse transpose of the model view matrix.
+        model_view.invert().transpose();
+        glUniformMatrix4fv(mShader[mCurrentPart].mLocations.NormalMatrix, 1,
+                GL_FALSE, model_view.m);
+
+        mMesh.render_vbo_attrib();
+    }
+    else {
+        mMesh.render_vbo();
+    }
 }
