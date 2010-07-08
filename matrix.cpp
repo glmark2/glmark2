@@ -1,0 +1,150 @@
+#include "matrix.h"
+
+/** 
+ * Multiply arrays representing 4x4 matrices in column-major order.
+ * 
+ * The result is stored in the first matrix.
+ *
+ * @param m the first matrix
+ * @param n the second matrix
+ */
+static void multiply(GLfloat *m, const GLfloat *n)
+{
+   GLfloat tmp[16];
+   const GLfloat *row, *column;
+   div_t d;
+   int i, j;
+
+   for (i = 0; i < 16; i++) {
+      tmp[i] = 0;
+      d = div(i, 4);
+      row = n + d.quot * 4;
+      column = m + d.rem;
+      for (j = 0; j < 4; j++)
+         tmp[i] += row[j] * column[j * 4];
+   }
+   memcpy(m, &tmp, sizeof tmp);
+}
+
+/** 
+ * Multiply this matrix with another.
+ *
+ * @param pM the matrix to multiply with.
+ * 
+ * @return reference to this matrix (multiplied)
+ */
+Matrix4f &Matrix4f::operator*=(const Matrix4f &pM)
+{
+    multiply(m, pM.m);
+
+    return *this;
+}
+
+/** 
+ * Rotates a matrix.
+ * 
+ * @param angle the angle to rotate
+ * @param x the x component of the rotation axis
+ * @param y the y component of the rotation axis
+ * @param z the z component of the rotation axis
+ * 
+ * @return reference to the matrix
+ */
+Matrix4f &Matrix4f::rotate(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
+{
+   double s, c;
+
+   sincos(angle, &s, &c);
+
+   GLfloat r[16] = {
+      x * x * (1 - c) + c,     y * x * (1 - c) + z * s, x * z * (1 - c) - y * s, 0,
+      x * y * (1 - c) - z * s, y * y * (1 - c) + c,     y * z * (1 - c) + x * s, 0, 
+      x * z * (1 - c) + y * s, y * z * (1 - c) - x * s, z * z * (1 - c) + c,     0,
+      0, 0, 0, 1
+   };
+
+   multiply(m, r);
+
+   return *this;
+}
+
+/** 
+ * Translates a matrix.
+ * 
+ * @param x the x component of the translation
+ * @param y the y component of the translation
+ * @param z the z component of the translation
+ * 
+ * @return reference to the matrix
+ */
+Matrix4f &Matrix4f::translate(GLfloat x, GLfloat y, GLfloat z)
+{
+   GLfloat t[16] = { 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, 1 };
+
+   multiply(m, t);
+
+   return *this;
+}
+
+/** 
+ * Transposes a matrix.
+ * 
+ * @return reference to the matrix
+ */
+Matrix4f &Matrix4f::transpose()
+{
+   GLfloat t[16] = {
+      m[0], m[4], m[8],  m[12], 
+      m[1], m[5], m[9],  m[13], 
+      m[2], m[6], m[10], m[14], 
+      m[3], m[7], m[11], m[15]};
+
+   memcpy(m, t, sizeof(m));
+
+   return *this;
+}
+
+/** 
+ * Creates an empty matrix.
+ *
+ * All matrix components are 0.0 expect the lower right
+ * which is 1.0.
+ */
+Matrix4f::Matrix4f()
+{
+    memset(m, 0, sizeof(m));
+    m[15] = 1.0;
+}
+
+/** 
+ * Creates a matrix with specified values in the diagonal.
+ * 
+ * The lower right value is initialized to 1.0.
+ *
+ * @param x the x component of the diagonal
+ * @param y the y component of the diagonal
+ * @param z the z component of the diagonal
+ */
+Matrix4f::Matrix4f(GLfloat x, GLfloat y, GLfloat z)
+{
+    memset(m, 0, sizeof(m));
+    m[0] = x;
+    m[5] = y;
+    m[10] = z;
+    m[15] = 1.0;
+}
+
+/** 
+ * Displays a matrix.
+ *
+ * @param str string to display before matrix
+ */
+void Matrix4f::display(const char *str)
+{
+   return;
+   int r;
+   if (str != NULL)
+      printf("%s\n", str);
+   for(r = 0; r < 4; r++)
+      printf("%f %f %f %f\n", m[r], m[r + 4], m[r + 8], m[r + 12]);
+}
