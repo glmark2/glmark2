@@ -4,7 +4,7 @@ int SceneBuild::load()
 {
     Model model;
     
-    if(!model.load_3ds("data/models/horse.3ds"))
+    if(!model.load_3ds(GLMARK_DATA_PATH"data/models/horse.3ds"))
         return 0;
         
     model.calculate_normals();

@@ -8,7 +8,7 @@ int SceneShading::load()
 {
     Model model;
     
-    if(!model.load_3ds("data/models/cat.3ds"))
+    if(!model.load_3ds(GLMARK_DATA_PATH"data/models/cat.3ds"))
         return 0;
         
     model.calculate_normals();
@@ -16,8 +16,10 @@ int SceneShading::load()
     
     mMesh.build_vbo();
     
-    mShader[0].load("data/shaders/light-basic.vert", "data/shaders/light-basic.frag");
-    mShader[1].load("data/shaders/light-advanced.vert", "data/shaders/light-advanced.frag");
+    mShader[0].load(GLMARK_DATA_PATH"data/shaders/light-basic.vert",
+                    GLMARK_DATA_PATH"data/shaders/light-basic.frag");
+    mShader[1].load(GLMARK_DATA_PATH"data/shaders/light-advanced.vert",
+                    GLMARK_DATA_PATH"data/shaders/light-advanced.frag");
 
     mRotationSpeed = 36.0f;
     mRotation = 0.0f;

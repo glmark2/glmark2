@@ -10,10 +10,10 @@ int SceneTexture::load()
 {
     Model model;
     
-    if(!model.load_3ds("data/models/cube.3ds"))
+    if(!model.load_3ds(GLMARK_DATA_PATH"data/models/cube.3ds"))
         return 0;
     
-    if(!load_texture("data/textures/crate-base.bmp", mTexture))
+    if(!load_texture(GLMARK_DATA_PATH"data/textures/crate-base.bmp", mTexture))
         return 0;
     
     model.calculate_normals();
