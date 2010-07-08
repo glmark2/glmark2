@@ -10,19 +10,17 @@ int main(int argc, char *argv[])
     unsigned current_scene = 0;
     Screen screen;
    
-    SceneBuild scenebuild;
-    SceneTexture scenetexture;
-    SceneShading sceneshading;
- 
     printf("===================================================\n");
     printf("    GLMark 08\n");
-    printf("===================================================\n");
-    
     printf("===================================================\n");
     if(!screen.init())
         return 0;
     printf("===================================================\n");
 
+    SceneBuild scenebuild(screen);
+    SceneTexture scenetexture(screen);
+    SceneShading sceneshading(screen);
+    
     if(!scenebuild.load() || !scenetexture.load() || !sceneshading.load())
         return 0;
 
@@ -49,7 +47,6 @@ int main(int argc, char *argv[])
         case 0:
             current_scene++;
             scenebuild.start();
-//            scenebuild.mRunning = false;
             break;
         case 1:
             scenebuild.update();
@@ -58,7 +55,6 @@ int main(int argc, char *argv[])
             {
                 current_scene++;
                 scenetexture.start();
-//                scenetexture.mRunning = false;
             }
             break;
         case 2:
@@ -68,7 +64,6 @@ int main(int argc, char *argv[])
             {
                 current_scene++;
                 sceneshading.start();
-//                sceneshading.mRunning = false;
             }
             break;
         case 3:

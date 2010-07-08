@@ -13,7 +13,7 @@
 class Scene
 {
 public:
-    Scene();
+    Scene(Screen &pScreen);
     ~Scene();
     
     unsigned mPartsQty;         // How many parts for the scene
@@ -33,11 +33,14 @@ public:
 protected:
     double mStartTime;
     double mElapsedTime;
+
+    Screen &mScreen;
 };
 
 class SceneBuild : public Scene
 {
 public:
+    SceneBuild(Screen &pScreen) : Scene(pScreen) {}
     int load();
     void start();
     void update();
@@ -51,6 +54,7 @@ public:
 class SceneTexture : public Scene
 {
 public:
+    SceneTexture(Screen &pScreen) : Scene(pScreen) {}
     int load();
     void start();
     void update();
@@ -67,6 +71,7 @@ public:
 class SceneShading : public Scene
 {
 public:
+    SceneShading(Screen &pScreen) : Scene(pScreen) {}
     int load();
     void start();
     void update();

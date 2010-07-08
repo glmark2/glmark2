@@ -1,6 +1,7 @@
 #include "scene.h"
 
-Scene::Scene()
+Scene::Scene(Screen &pScreen) :
+    mScreen(pScreen)
 {
 }
 
