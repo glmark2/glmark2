@@ -54,6 +54,7 @@ void SceneTexture::start()
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
     glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHTING);
     
     glEnable(GL_TEXTURE_2D);
     

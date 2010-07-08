@@ -54,18 +54,18 @@ void SceneShading::start()
     float mat_diffuse[] = {0.1f, 0.5f, 0.8f, 1.0f};
     float mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
     float high_shininess = 100.0f;
-    
+
     glMaterialfv(GL_FRONT, GL_AMBIENT, no_mat);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialf(GL_FRONT, GL_SHININESS, high_shininess);
     glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
-        
-        
+
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
     glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHTING);
 
     switch(mCurrentPart)
     {
