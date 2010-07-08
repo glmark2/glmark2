@@ -62,9 +62,9 @@ varying float Diffuse;
 
 void main(void)
 {			
-	Normal = normalize(gl_NormalMatrix * gl_Normal);
+	vec3 Normal = normalize(gl_NormalMatrix * gl_Normal);
 
-	Light = normalize(gl_LightSource[0].position.xyz);
+	vec3 Light = normalize(gl_LightSource[0].position.xyz);
 
 	Diffuse = max(dot(Normal, Light),0.0);
 

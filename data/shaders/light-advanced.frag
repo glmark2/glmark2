@@ -81,14 +81,14 @@ varying vec3 HalfVector;
 
 void main(void)
 {	
-	Normal = normalize(Normal);
+	vec3 N = normalize(Normal);
 
-	float Diffuse = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse * max(dot(Normal, Light),0.0);
+	vec4 Diffuse = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse * max(dot(N, Light),0.0);
 
-	float Ambient = gl_FrontMaterial.ambient * gl_LightSource[0].ambient;
+	vec4 Ambient = gl_FrontMaterial.ambient * gl_LightSource[0].ambient;
 	Ambient += gl_LightModel.ambient * gl_FrontMaterial.ambient;
 
-	float Specular = gl_FrontMaterial.specular * gl_LightSource[0].specular * pow(max(dot(Normal,HalfVector),0.0), gl_FrontMaterial.shininess);
+	vec4 Specular = gl_FrontMaterial.specular * gl_LightSource[0].specular * pow(max(dot(Normal,HalfVector),0.0), gl_FrontMaterial.shininess);
 
-	gl_FragColor = Ambient + (Diffuse * vec4(1,0,0,1)) + Specular;
+	gl_FragColor = Ambient + (Diffuse * vec4(0,0,1,1)) + Specular;
 }
