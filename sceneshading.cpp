@@ -24,20 +24,18 @@ int SceneShading::load()
     
     mRunning = false;
     
-    mPartsQty = 3;
+    mPartsQty = 2;
     mPartDuration = new double[mPartsQty];
     mAverageFPS = new unsigned[mPartsQty];
     mScoreScale = new float[mPartsQty];
 
     mScoreScale[0] = 0.534f;
     mScoreScale[1] = 0.532f;
-    mScoreScale[2] = 0.556f;
     
     mScore = 0;
     
     mPartDuration[0] = 10.0;
     mPartDuration[1] = 10.0;
-    mPartDuration[2] = 10.0;
     
     mCurrentPart = 0;
     
