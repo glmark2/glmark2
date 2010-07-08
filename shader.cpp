@@ -64,9 +64,9 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
     mShaderProgram = glCreateProgramObjectARB();
     glAttachObjectARB(mShaderProgram, mFragmentShader);
     glAttachObjectARB(mShaderProgram, mVertexShader);
-    glBindAttribLocation(mShaderProgram, 0, "position");
-    glBindAttribLocation(mShaderProgram, 1, "normal");
-    glBindAttribLocation(mShaderProgram, 2, "texture");
+    glBindAttribLocation(mShaderProgram, VertexAttribLocation, "position");
+    glBindAttribLocation(mShaderProgram, NormalAttribLocation, "normal");
+    glBindAttribLocation(mShaderProgram, TexCoordAttribLocation, "texture");
 
     glLinkProgram(mShaderProgram);
     glGetShaderInfoLog(mShaderProgram, sizeof msg, NULL, msg);

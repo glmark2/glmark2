@@ -24,6 +24,12 @@ public:
         GLint LightSourceDiffuse;
         GLint MaterialDiffuse;
     } mLocations;
+
+    enum {
+        VertexAttribLocation = 0,
+        NormalAttribLocation = 1,
+        TexCoordAttribLocation = 2
+    };
 };
 
 #endif
