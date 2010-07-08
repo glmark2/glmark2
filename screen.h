@@ -2,6 +2,7 @@
 #define _SCREEN_H
 
 #include "oglsdl.h"
+#include "matrix.h"
 
 #include <stdio.h>
 
@@ -15,7 +16,7 @@ public:
     int mBpp;
     int mFlags;
     int mFullScreen;
-//    SDL_Surface *mScreen;
+    Matrix4f mProjection;
 
     Screen();
     ~Screen();

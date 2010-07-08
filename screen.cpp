@@ -74,7 +74,11 @@ int Screen::init()
     
     clear();
 
+    mProjection.perspective(60.0, mWidth / (float)mHeight, 1.0, 1024.0);
+
 #ifdef _DEBUG
+    mProjection.display("Projection");
+
     printf("[ Success ]\n");
 #endif
     print_info();
