@@ -23,15 +23,11 @@ int SceneBuild::load()
 
     mScoreScale[0] = 1.898f;
     mScoreScale[1] = 0.540f;
-    mScoreScale[2] = 0.488f;
-    mScoreScale[3] = 0.420f;
 
     mScore = 0;
     
     mPartDuration[0] = 10.0;
     mPartDuration[1] = 10.0;
-    mPartDuration[2] = 10.0;
-    mPartDuration[3] = 10.0;
     
     mCurrentPart = 0;
     
