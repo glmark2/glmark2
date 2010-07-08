@@ -13,11 +13,14 @@ public:
     GLfloat m[16];
 
     Matrix4f();
+    Matrix4f(Matrix4f &mat);
     Matrix4f(GLfloat x, GLfloat y, GLfloat z);
 
     Matrix4f &translate(GLfloat x, GLfloat y, GLfloat z);
     Matrix4f &rotate(GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
     Matrix4f &transpose();
+    Matrix4f &perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar);
+    Matrix4f &identity();
 
     Matrix4f &operator*=(const Matrix4f &pM);
 

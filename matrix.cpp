@@ -94,14 +94,64 @@ Matrix4f &Matrix4f::translate(GLfloat x, GLfloat y, GLfloat z)
 Matrix4f &Matrix4f::transpose()
 {
    GLfloat t[16] = {
-      m[0], m[4], m[8],  m[12], 
-      m[1], m[5], m[9],  m[13], 
-      m[2], m[6], m[10], m[14], 
+      m[0], m[4], m[8],  m[12],
+      m[1], m[5], m[9],  m[13],
+      m[2], m[6], m[10], m[14],
       m[3], m[7], m[11], m[15]};
 
    memcpy(m, t, sizeof(m));
 
    return *this;
+}
+
+/**
+ * Makes this matrix an identity matrix.
+ *
+ * @return reference to the matrix
+ */
+Matrix4f &Matrix4f::identity()
+{
+   m[0] = 1.0; m[4] = 0.0; m[8] = 0.0;  m[12] = 0.0;
+   m[1] = 0.0; m[5] = 1.0; m[9] = 0.0;  m[13] = 0.0;
+   m[2] = 0.0; m[6] = 0.0; m[10] = 1.0; m[14] = 0.0;
+   m[3] = 0.0; m[7] = 0.0; m[11] = 0.0; m[15] = 1.0;
+
+   return *this;
+}
+
+/**
+ * Makes this matrix a perspective projection matrix.
+ *
+ * @param fovy field of view angle in degrees in the y direction
+ * @param aspect aspect ratio of view
+ * @param zNear the distance from the viewer to the near clipping plane
+ * @param zFar the distance from the viewer to the far clipping plane
+ *
+ * @return reference to the matrix
+ */
+Matrix4f &Matrix4f::perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
+{
+    GLfloat sine, cotangent, deltaZ;
+    GLfloat radians = fovy / 2 * M_PI / 180;
+
+    deltaZ = zFar - zNear;
+    sine = sin(radians);
+
+    if ((deltaZ == 0) || (sine == 0) || (aspect == 0)) {
+       return *this;
+    }
+
+    cotangent = cos(radians) / sine;
+
+    identity();
+    m[0] = cotangent / aspect;
+    m[5] = cotangent;
+    m[10] = -(zFar + zNear) / deltaZ;
+    m[11] = -1;
+    m[14] = -2 * zNear * zFar / deltaZ;
+    m[15] = 0;
+
+    return *this;
 }
 
 /** 
@@ -114,6 +164,11 @@ Matrix4f::Matrix4f()
 {
     memset(m, 0, sizeof(m));
     m[15] = 1.0;
+}
+
+Matrix4f::Matrix4f(Matrix4f &mat)
+{
+   memcpy(m, mat.m, sizeof(m));
 }
 
 /** 
@@ -141,7 +196,6 @@ Matrix4f::Matrix4f(GLfloat x, GLfloat y, GLfloat z)
  */
 void Matrix4f::display(const char *str)
 {
-   return;
    int r;
    if (str != NULL)
       printf("%s\n", str);
