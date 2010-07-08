@@ -46,6 +46,7 @@ public:
     void render_array();
     void build_vbo();
     void render_vbo();
+    void render_vbo_attrib();
 };
 
 #endif

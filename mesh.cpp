@@ -1,4 +1,5 @@
 #include "mesh.h"
+#include "shader.h"
 
 Texel::Texel()
 {
@@ -154,11 +155,11 @@ void Mesh::build_vbo()
     Vector3f *vertex;
     Texel *texel;
     Vector3f *normal;
-    
+
     vertex = new Vector3f[mVertexQty];
     texel = new Texel[mVertexQty];
     normal = new Vector3f[mVertexQty];
-    
+
     for(unsigned i = 0; i < mVertexQty; i++)
     {
         vertex[i] = mVertex[i].v;
@@ -166,26 +167,26 @@ void Mesh::build_vbo()
         normal[i] = mVertex[i].n;
     }
 
-	// Generate And Bind The Vertex Buffer
-	glGenBuffersARB(1, &mVBOVertices);                          // Get A Valid Name
-	glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOVertices);         // Bind The Buffer
-	// Load The Data
-	glBufferDataARB(GL_ARRAY_BUFFER_ARB, mVertexQty * sizeof(Vector3f), vertex, GL_STATIC_DRAW_ARB);
+    // Generate And Bind The Vertex Buffer
+    glGenBuffersARB(1, &mVBOVertices);                          // Get A Valid Name
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOVertices);         // Bind The Buffer
+    // Load The Data
+    glBufferDataARB(GL_ARRAY_BUFFER_ARB, mVertexQty * sizeof(Vector3f), vertex, GL_STATIC_DRAW_ARB);
 
-	// Generate And Bind The normal Buffer
-	glGenBuffersARB(1, &mVBONormals);                          // Get A Valid Name
-	glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBONormals);         // Bind The Buffer
-	// Load The Data
-	glBufferDataARB(GL_ARRAY_BUFFER_ARB, mVertexQty * sizeof(Vector3f), normal, GL_STATIC_DRAW_ARB);
+    // Generate And Bind The normal Buffer
+    glGenBuffersARB(1, &mVBONormals);                          // Get A Valid Name
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBONormals);         // Bind The Buffer
+    // Load The Data
+    glBufferDataARB(GL_ARRAY_BUFFER_ARB, mVertexQty * sizeof(Vector3f), normal, GL_STATIC_DRAW_ARB);
 
-	// Generate And Bind The Texture Coordinate Buffer
-	glGenBuffersARB(1, &mVBOTexCoords);                       // Get A Valid Name
-	glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOTexCoords);      // Bind The Buffer
-	// Load The Data
-	glBufferDataARB(GL_ARRAY_BUFFER_ARB, mVertexQty * sizeof(Texel), texel, GL_STATIC_DRAW_ARB);
+    // Generate And Bind The Texture Coordinate Buffer
+    glGenBuffersARB(1, &mVBOTexCoords);                       // Get A Valid Name
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOTexCoords);      // Bind The Buffer
+    // Load The Data
+    glBufferDataARB(GL_ARRAY_BUFFER_ARB, mVertexQty * sizeof(Texel), texel, GL_STATIC_DRAW_ARB);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    
+
     delete [] vertex;
     delete [] texel;
     delete [] normal;
@@ -200,10 +201,10 @@ void Mesh::render_vbo()
     glEnableClientState(GL_NORMAL_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBONormals);
-    glNormalPointer(GL_FLOAT, 0, 0);
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOVertices);
     glVertexPointer(3, GL_FLOAT, 0, 0);
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBONormals);
+    glNormalPointer(GL_FLOAT, 0, 0);
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOTexCoords);
     glTexCoordPointer(2, GL_FLOAT, 0, 0);
 
@@ -213,5 +214,27 @@ void Mesh::render_vbo()
 
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY); 
+    glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+void Mesh::render_vbo_attrib()
+{
+    // Enable the attributes
+    glEnableVertexAttribArray(Shader::VertexAttribLocation);
+    glEnableVertexAttribArray(Shader::NormalAttribLocation);
+    glEnableVertexAttribArray(Shader::TexCoordAttribLocation);
+
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOVertices);
+    glVertexAttribPointer(Shader::VertexAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBONormals);
+    glVertexAttribPointer(Shader::NormalAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOTexCoords);
+    glVertexAttribPointer(Shader::TexCoordAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glDrawArrays(GL_TRIANGLES, 0, mVertexQty);
+
+    // Disable the attributes
+    glDisableVertexAttribArray(Shader::TexCoordAttribLocation);
+    glDisableVertexAttribArray(Shader::NormalAttribLocation);
+    glDisableVertexAttribArray(Shader::VertexAttribLocation);
 }
