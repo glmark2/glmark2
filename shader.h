@@ -17,6 +17,13 @@ public:
     GLuint mVertexShader;
     GLuint mFragmentShader;
     int mShaderProgram;
+    struct {
+        GLint ModelViewProjectionMatrix;
+        GLint NormalMatrix;
+        GLint LightSourcePosition;
+        GLint LightSourceDiffuse;
+        GLint MaterialDiffuse;
+    } mLocations;
 };
 
 #endif
