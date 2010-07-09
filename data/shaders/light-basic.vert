@@ -1,6 +1,6 @@
 attribute vec3 position;
 attribute vec3 normal;
-attribute vec2 texture;
+attribute vec2 texcoord;
 
 uniform mat4 ModelViewProjectionMatrix;
 uniform mat4 NormalMatrix;
@@ -8,6 +8,7 @@ uniform vec4 LightSourcePosition;
 uniform vec3 MaterialColor;
 
 varying vec4 Color;
+varying vec2 TextureCoord;
 
 void main(void)
 {
@@ -21,6 +22,9 @@ void main(void)
     // to get the actual color that we will use to draw this vertex with
     float diffuse = max(dot(N, L), 0.0);
     Color = diffuse * vec4(MaterialColor, 1.0);
+
+    // Set the texture coordinates as a varying
+    TextureCoord = texcoord;
 
     // Transform the position to clip coordinates
     gl_Position = ModelViewProjectionMatrix * vec4(position, 1.0);

@@ -1,6 +1,5 @@
 attribute vec3 position;
 attribute vec3 normal;
-attribute vec2 texture;
 
 uniform mat4 ModelViewProjectionMatrix;
 uniform mat4 NormalMatrix;

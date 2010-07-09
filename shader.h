@@ -31,6 +31,7 @@ public:
         GLint MaterialDiffuse;
         GLint MaterialSpecular;
         GLint MaterialColor;
+        GLint MaterialTexture0;
     } mLocations;
 
     enum {

@@ -66,7 +66,7 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
     glAttachObjectARB(mShaderProgram, mVertexShader);
     glBindAttribLocation(mShaderProgram, VertexAttribLocation, "position");
     glBindAttribLocation(mShaderProgram, NormalAttribLocation, "normal");
-    glBindAttribLocation(mShaderProgram, TexCoordAttribLocation, "texture");
+    glBindAttribLocation(mShaderProgram, TexCoordAttribLocation, "texcoord");
 
     glLinkProgram(mShaderProgram);
     glGetShaderInfoLog(mShaderProgram, sizeof msg, NULL, msg);
@@ -97,9 +97,12 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
             "MaterialSpecular");
     mLocations.MaterialColor = glGetUniformLocation(mShaderProgram,
             "MaterialColor");
+    mLocations.MaterialTexture0 = glGetUniformLocation(mShaderProgram,
+            "MaterialTexture0");
+    glUniform1i(mLocations.MaterialTexture0, 0);
 
 #ifdef _DEBUG
-    printf("Uniform Locations: %d %d %d %d %d %d %d %d %d %d %d\n",
+    printf("Uniform Locations: %d %d %d %d %d %d %d %d %d %d %d %d\n",
             mLocations.ModelViewProjectionMatrix,
             mLocations.NormalMatrix,
             mLocations.LightSourcePosition,
@@ -110,7 +113,8 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
             mLocations.MaterialAmbient,
             mLocations.MaterialDiffuse,
             mLocations.MaterialSpecular,
-            mLocations.MaterialColor);
+            mLocations.MaterialColor,
+            mLocations.MaterialTexture);
 #endif
 
 }
