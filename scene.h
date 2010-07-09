@@ -21,10 +21,10 @@ public:
     virtual void start();
     virtual void update();
     virtual void draw();
-    
+
     unsigned calculate_score();
     bool is_running();
-    
+
 protected:
     unsigned mPartsQty;         // How many parts for the scene
     unsigned mCurrentPart;      // The current part being rendered
@@ -33,7 +33,7 @@ protected:
     double mLastTime, mCurrentTime, mDt;
     unsigned mCurrentFrame;
     bool mRunning;
-    
+
     unsigned *mAverageFPS;      // Average FPS per part
     float *mScoreScale;
 
@@ -52,7 +52,7 @@ public:
     void start();
     void update();
     void draw();
-    
+
     ~SceneBuild();
 
 protected:
@@ -72,9 +72,9 @@ public:
     void start();
     void update();
     void draw();
-    
+
     ~SceneTexture();
-    
+
 protected:
     Shader mShader;
 
@@ -93,9 +93,9 @@ public:
     void start();
     void update();
     void draw();
-    
+
     ~SceneShading();
-    
+
 protected:
     Shader mShader[2];
 

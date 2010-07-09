@@ -10,41 +10,41 @@ SceneTexture::~SceneTexture()
 int SceneTexture::load()
 {
     Model model;
-    
+
     if(!model.load_3ds(GLMARK_DATA_PATH"data/models/cube.3ds"))
         return 0;
-    
+
     if(!load_texture(GLMARK_DATA_PATH"data/textures/crate-base.bmp", mTexture))
         return 0;
-    
+
     model.calculate_normals();
     model.convert_to_mesh(&mCubeMesh);
     mCubeMesh.build_vbo();
 
     mShader.load(GLMARK_DATA_PATH"data/shaders/light-basic.vert",
                  GLMARK_DATA_PATH"data/shaders/light-basic-tex.frag");
-    
+
     mRotationSpeed = Vector3f(36.0f, 36.0f, 36.0f);
-    
+
     mRunning = false;
-    
+
     mPartsQty = 3;
     mPartDuration = new double[mPartsQty];
     mAverageFPS = new unsigned[mPartsQty];
     mScoreScale = new float[mPartsQty];
-    
+
     mScoreScale[0] = 0.471f;
     mScoreScale[1] = 0.533f;
     mScoreScale[2] = 0.405f;
-    
+
     mPartDuration[0] = 10.0;
     mPartDuration[1] = 10.0;
     mPartDuration[2] = 10.0;
-    
+
     memset(mAverageFPS, 0, mPartsQty * sizeof(*mAverageFPS));
 
     mCurrentPart = 0;
-    
+
     return 1;
 }
 
@@ -60,7 +60,7 @@ void SceneTexture::start()
     GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
     GLfloat lightPosition[] = {20.0f, 20.0f, 10.0f, 1.0f};
     GLfloat materialColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    
+
     mShader.use();
 
     // Load lighting and material uniforms
@@ -82,25 +82,24 @@ void SceneTexture::update()
     mCurrentTime = SDL_GetTicks() / 1000.0;
     mDt = mCurrentTime - mLastTime;
     mLastTime = mCurrentTime;
-    
+
     mElapsedTime = mCurrentTime - mStartTime;
-    
+
     if(mElapsedTime >= mPartDuration[mCurrentPart])
     {
         mAverageFPS[mCurrentPart] = mCurrentFrame / mElapsedTime;
-        
-        switch(mCurrentPart)
-        {
-        case 0:
-            printf("Texture filtering\n");
-            printf("    Nearest                       FPS: %u\n",  mAverageFPS[mCurrentPart]);
-            break;
-        case 1:
-            printf("    Linear                        FPS: %u\n",  mAverageFPS[mCurrentPart]);
-            break;
-        case 2:
-            printf("    Mipmapped                     FPS: %u\n",  mAverageFPS[mCurrentPart]);
-            break;
+
+        switch(mCurrentPart) {
+            case 0:
+                printf("Texture filtering\n");
+                printf("    Nearest                       FPS: %u\n",  mAverageFPS[mCurrentPart]);
+                break;
+            case 1:
+                printf("    Linear                        FPS: %u\n",  mAverageFPS[mCurrentPart]);
+                break;
+            case 2:
+                printf("    Mipmapped                     FPS: %u\n",  mAverageFPS[mCurrentPart]);
+                break;
         }
         mCurrentPart++;
         if(mCurrentPart >= mPartsQty)
@@ -108,9 +107,9 @@ void SceneTexture::update()
         else
             start();
     }
-    
+
     mRotation += mRotationSpeed * mDt;
-    
+
     mCurrentFrame++;
 }
 

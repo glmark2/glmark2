@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     int running = 1;
     unsigned current_scene = 0;
     Screen screen;
-   
+
     printf("===================================================\n");
     printf("    GLMark 08\n");
     printf("===================================================\n");
@@ -71,14 +71,14 @@ int main(int argc, char *argv[])
                 running = false;
         }
 
-        
+
         screen.update();
     }
-    
+
     unsigned score = 0;
     for (unsigned i = 0; i < num_scenes; i++)
         score += scene[i]->calculate_score();
-    
+
     printf("===================================================\n");
     printf("Your GLMark08 Score is %u  ^_^\n", score);
     printf("===================================================\n");

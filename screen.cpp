@@ -38,7 +38,7 @@ int Screen::init()
     }
 
     if(mFullScreen)
-    mFlags = SDL_OPENGL | SDL_FULLSCREEN;
+        mFlags = SDL_OPENGL | SDL_FULLSCREEN;
 
     mInfo = SDL_GetVideoInfo();
 
