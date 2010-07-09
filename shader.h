@@ -21,8 +21,13 @@ public:
         GLint ModelViewProjectionMatrix;
         GLint NormalMatrix;
         GLint LightSourcePosition;
+        GLint LightSourceHalfVector;
+        GLint LightSourceAmbient;
         GLint LightSourceDiffuse;
+        GLint LightSourceSpecular;
+        GLint MaterialAmbient;
         GLint MaterialDiffuse;
+        GLint MaterialSpecular;
     } mLocations;
 
     enum {

@@ -79,17 +79,35 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
             "NormalMatrix");
     mLocations.LightSourcePosition = glGetUniformLocation(mShaderProgram,
             "LightSourcePosition");
+    mLocations.LightSourceHalfVector = glGetUniformLocation(mShaderProgram,
+            "LightSourceHalfVector");
+
+    mLocations.LightSourceAmbient = glGetUniformLocation(mShaderProgram,
+            "LightSourceAmbient");
     mLocations.LightSourceDiffuse = glGetUniformLocation(mShaderProgram,
             "LightSourceDiffuse");
+    mLocations.LightSourceSpecular = glGetUniformLocation(mShaderProgram,
+            "LightSourceSpecular");
+
+    mLocations.MaterialAmbient = glGetUniformLocation(mShaderProgram,
+            "MaterialAmbient");
     mLocations.MaterialDiffuse = glGetUniformLocation(mShaderProgram,
             "MaterialDiffuse");
+    mLocations.MaterialSpecular = glGetUniformLocation(mShaderProgram,
+            "MaterialSpecular");
+
 #ifdef _DEBUG
-    printf("Uniform Locations: %d %d %d %d %d\n",
+    printf("Uniform Locations: %d %d %d %d %d %d %d %d\n",
             mLocations.ModelViewProjectionMatrix,
             mLocations.NormalMatrix,
             mLocations.LightSourcePosition,
+            mLocations.LightSourceHalfVector,
+            mLocations.LightSourceAmbient,
             mLocations.LightSourceDiffuse,
-            mLocations.MaterialDiffuse);
+            mLocations.LightSourceSpecular,
+            mLocations.MaterialAmbient,
+            mLocations.MaterialDiffuse,
+            mLocations.MaterialSpecular);
 #endif
 
 }
