@@ -48,13 +48,13 @@ int load_texture(const char pFilename[], GLuint *pTexture)
         glTexImage2D(GL_TEXTURE_2D, 0, nOfColors, surface->w, surface->h, 0,
                      texture_format, GL_UNSIGNED_BYTE, surface->pixels);
 
-        // Create MipMapped Texture
+        // Create trilinear filtered mipmapped texture
         glBindTexture(GL_TEXTURE_2D, pTexture[2]);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
-
-        gluBuild2DMipmaps(GL_TEXTURE_2D, 3, surface->w, surface->h,
-                          texture_format, GL_UNSIGNED_BYTE, surface->pixels);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+        glTexImage2D(GL_TEXTURE_2D, 0, nOfColors, surface->w, surface->h, 0,
+                     texture_format, GL_UNSIGNED_BYTE, surface->pixels);
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
     else {
         fprintf(stderr, "SDL could not load image.bmp: %s\n", SDL_GetError());
