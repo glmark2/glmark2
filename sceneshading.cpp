@@ -49,26 +49,14 @@ int SceneShading::load()
 
 void SceneShading::start()
 {
-    GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    GLfloat lightAmbient[] = {0.1f, 0.1f, 0.1f, 1.0f};
     GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
+    GLfloat lightSpecular[] = {0.8f, 0.8f, 0.8f, 1.0f};
     GLfloat lightPosition[] = {20.0f, 20.0f, 10.0f, 1.0f};
 
-    float no_mat[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    float mat_diffuse[] = {0.1f, 0.5f, 0.8f, 1.0f};
+    float mat_ambient[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float mat_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
     float mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    float high_shininess = 100.0f;
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT, no_mat);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialf(GL_FRONT, GL_SHININESS, high_shininess);
-    glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
-
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHTING);
 
     switch(mCurrentPart)
     {
@@ -82,15 +70,24 @@ void SceneShading::start()
         break;
     }
 
-    if (mCurrentPart == 0) {
-        glUniform4fv(mShader[mCurrentPart].mLocations.LightSourcePosition, 1,
-                lightPosition);
-        glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceDiffuse, 1,
-                lightDiffuse);
-        glUniform3fv(mShader[mCurrentPart].mLocations.MaterialDiffuse, 1,
-                mat_diffuse);
-    }
+    // Load lighting and material uniforms
+    glUniform4fv(mShader[mCurrentPart].mLocations.LightSourcePosition, 1, lightPosition);
 
+    glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceAmbient, 1, lightAmbient);
+    glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceDiffuse, 1, lightDiffuse);
+    glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceSpecular, 1, lightSpecular);
+
+    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialAmbient, 1, mat_ambient);
+    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialDiffuse, 1, mat_diffuse);
+    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialSpecular, 1, mat_specular);
+
+    // Calculate and load the half vector
+    Vector3f halfVector = Vector3f(lightPosition[0], lightPosition[1], lightPosition[2]);
+    halfVector.normalize();
+    halfVector += Vector3f(0.0, 0.0, 1.0);
+    halfVector.normalize();
+    glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceHalfVector, 1,
+                 (GLfloat *)&halfVector);
 
     mCurrentFrame = 0;
     mRunning = true;
@@ -134,32 +131,22 @@ void SceneShading::update()
 
 void SceneShading::draw()
 {
-    glTranslatef(0.0f, 0.0f,-5.0f);
-    glRotated(mRotation, 0.0f, 1.0, 0.0f);
+    // Load the ModelViewProjectionMatrix uniform in the shader
+    Matrix4f model_view(1.0f, 1.0f, 1.0f);
+    Matrix4f model_view_proj(mScreen.mProjection);
 
-    glColor3f(0.0f, 1.0f, 1.0f);
+    model_view.translate(0.0f, 0.0f, -5.0f);
+    model_view.rotate(2 * M_PI * mRotation / 360.0, 0.0f, 1.0f, 0.0f);
+    model_view_proj *= model_view;
 
-    if (mCurrentPart == 0) {
-        // Load the ModelViewProjectionMatrix uniform in the shader
-        Matrix4f model_view(1.0f, 1.0f, 1.0f);
-        Matrix4f model_view_proj(mScreen.mProjection);
+    glUniformMatrix4fv(mShader[mCurrentPart].mLocations.ModelViewProjectionMatrix, 1,
+                       GL_FALSE, model_view_proj.m);
 
-        model_view.translate(0.0f, 0.0f, -5.0f);
-        model_view.rotate(2 * M_PI * mRotation / 360.0, 0.0f, 1.0f, 0.0f);
-        model_view_proj *= model_view;
+    // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
+    // inverse transpose of the model view matrix.
+    model_view.invert().transpose();
+    glUniformMatrix4fv(mShader[mCurrentPart].mLocations.NormalMatrix, 1,
+                       GL_FALSE, model_view.m);
 
-        glUniformMatrix4fv(mShader[mCurrentPart].mLocations.ModelViewProjectionMatrix, 1,
-                GL_FALSE, model_view_proj.m);
-
-        // Load the NormalMatrix uniform in the shader
-        // The NormalMatrix is the inverse transpose of the model view matrix.
-        model_view.invert().transpose();
-        glUniformMatrix4fv(mShader[mCurrentPart].mLocations.NormalMatrix, 1,
-                GL_FALSE, model_view.m);
-
-        mMesh.render_vbo_attrib();
-    }
-    else {
-        mMesh.render_vbo();
-    }
+    mMesh.render_vbo_attrib();
 }
