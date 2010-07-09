@@ -32,8 +32,6 @@ int SceneBuild::load()
     mScoreScale[0] = 1.898f;
     mScoreScale[1] = 0.540f;
 
-    mScore = 0;
-    
     mPartDuration[0] = 10.0;
     mPartDuration[1] = 10.0;
 
@@ -42,6 +40,12 @@ int SceneBuild::load()
     mCurrentPart = 0;
     
     return 1;
+}
+
+void SceneBuild::unload()
+{
+    mShader.remove();
+    mShader.unload();
 }
 
 void SceneBuild::start()
@@ -89,7 +93,6 @@ void SceneBuild::update()
             printf("    Vertex buffer object          FPS: %u\n", mAverageFPS[mCurrentPart]);
             break;
         }
-        mScore += mAverageFPS[mCurrentPart];
         mCurrentPart++;
         start();
         if(mCurrentPart >= mPartsQty)

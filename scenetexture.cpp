@@ -33,8 +33,6 @@ int SceneTexture::load()
     mScoreScale[1] = 0.533f;
     mScoreScale[2] = 0.405f;
     
-    mScore = 0;
-    
     mPartDuration[0] = 10.0;
     mPartDuration[1] = 10.0;
     mPartDuration[2] = 10.0;
@@ -44,6 +42,10 @@ int SceneTexture::load()
     mCurrentPart = 0;
     
     return 1;
+}
+
+void SceneTexture::unload()
+{
 }
 
 void SceneTexture::start()
@@ -91,7 +93,6 @@ void SceneTexture::update()
             printf("    Mipmapped                     FPS: %u\n",  mAverageFPS[mCurrentPart]);
             break;
         }
-        mScore += mAverageFPS[mCurrentPart];
         mCurrentPart++;
         start();
         if(mCurrentPart >= mPartsQty)

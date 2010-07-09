@@ -17,12 +17,19 @@ int main(int argc, char *argv[])
         return 0;
     printf("===================================================\n");
 
-    SceneBuild scenebuild(screen);
-    SceneTexture scenetexture(screen);
-    SceneShading sceneshading(screen);
-    
-    if(!scenebuild.load() || !scenetexture.load() || !sceneshading.load())
-        return 0;
+    // Create the scenes.
+    Scene *scene[] = {
+        new SceneBuild(screen),
+        new SceneTexture(screen),
+        new SceneShading(screen),
+    };
+
+    unsigned num_scenes = sizeof(scene) / sizeof(*scene);
+
+    // Load the first scene
+    if (!scene[current_scene]->load())
+        return 1;
+    scene[current_scene]->start();
 
     while(running)
     {
@@ -42,47 +49,36 @@ int main(int argc, char *argv[])
 
         screen.clear();
 
-        switch(current_scene)
-        {
-        case 0:
+        // Draw the next state of the current scene
+        scene[current_scene]->update();
+        scene[current_scene]->draw();
+
+        // If the scene has finished, move to the next one
+        if (!scene[current_scene]->is_running()) {
+            // Unload this scene
+            scene[current_scene]->unload();
+
             current_scene++;
-            scenebuild.start();
-            break;
-        case 1:
-            scenebuild.update();
-            scenebuild.draw();
-            if(!scenebuild.mRunning)
-            {
-                current_scene++;
-                scenetexture.start();
+
+            // Do we have another scene?
+            if (current_scene < num_scenes) {
+                // Load and start next scene
+                if (!scene[current_scene]->load())
+                    return 1;
+                scene[current_scene]->start();
             }
-            break;
-        case 2:
-            scenetexture.update();
-            scenetexture.draw();
-            if(!scenetexture.mRunning)
-            {
-                current_scene++;
-                sceneshading.start();
-            }
-            break;
-        case 3:
-            sceneshading.update();
-            sceneshading.draw();
-            if(!sceneshading.mRunning)
+            else
                 running = false;
-            break;
         }
+
         
         screen.update();
     }
     
-    scenebuild.calculate_score();
-    scenetexture.calculate_score();
-    sceneshading.calculate_score();
+    unsigned score = 0;
+    for (unsigned i = 0; i < num_scenes; i++)
+        score += scene[i]->calculate_score();
     
-    unsigned score = scenebuild.mScore + scenetexture.mScore + sceneshading.mScore;
-
     printf("===================================================\n");
     printf("Your GLMark08 Score is %u  ^_^\n", score);
     printf("===================================================\n");

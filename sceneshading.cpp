@@ -35,8 +35,6 @@ int SceneShading::load()
     mScoreScale[0] = 0.534f;
     mScoreScale[1] = 0.532f;
     
-    mScore = 0;
-    
     mPartDuration[0] = 10.0;
     mPartDuration[1] = 10.0;
 
@@ -45,6 +43,14 @@ int SceneShading::load()
     mCurrentPart = 0;
     
     return 1;
+}
+
+void SceneShading::unload()
+{
+    for(unsigned i = 0; i < mPartsQty; i++) {
+        mShader[i].remove();
+        mShader[i].unload();
+    }
 }
 
 void SceneShading::start()
@@ -119,7 +125,6 @@ void SceneShading::update()
             printf("    GLSL per pixel lighting  FPS: %u\n", mAverageFPS[mCurrentPart]);
             break;
         }
-        mScore += mAverageFPS[mCurrentPart];
         mCurrentPart++;
         start();
         if(mCurrentPart >= mPartsQty)

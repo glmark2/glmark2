@@ -15,7 +15,17 @@ class Scene
 public:
     Scene(Screen &pScreen);
     ~Scene();
+
+    virtual int load();
+    virtual void unload();
+    virtual void start();
+    virtual void update();
+    virtual void draw();
     
+    unsigned calculate_score();
+    bool is_running();
+    
+protected:
     unsigned mPartsQty;         // How many parts for the scene
     unsigned mCurrentPart;      // The current part being rendered
     double *mPartDuration;      // Duration per part in seconds
@@ -26,11 +36,7 @@ public:
     
     unsigned *mAverageFPS;      // Average FPS per part
     float *mScoreScale;
-    unsigned mScore;            // Score
-    
-    void calculate_score();
-    
-protected:
+
     double mStartTime;
     double mElapsedTime;
 
@@ -42,12 +48,14 @@ class SceneBuild : public Scene
 public:
     SceneBuild(Screen &pScreen) : Scene(pScreen) {}
     int load();
+    void unload();
     void start();
     void update();
     void draw();
     
     ~SceneBuild();
 
+protected:
     Shader mShader;
 
     Mesh mMesh;
@@ -60,12 +68,14 @@ class SceneTexture : public Scene
 public:
     SceneTexture(Screen &pScreen) : Scene(pScreen) {}
     int load();
+    void unload();
     void start();
     void update();
     void draw();
     
     ~SceneTexture();
     
+protected:
     Mesh mCubeMesh;
     GLuint mTexture[3];
     Vector3f mRotation;
@@ -77,12 +87,14 @@ class SceneShading : public Scene
 public:
     SceneShading(Screen &pScreen) : Scene(pScreen) {}
     int load();
+    void unload();
     void start();
     void update();
     void draw();
     
     ~SceneShading();
     
+protected:
     Shader mShader[2];
 
     Mesh mMesh;
