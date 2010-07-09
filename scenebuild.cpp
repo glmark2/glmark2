@@ -94,9 +94,10 @@ void SceneBuild::update()
             break;
         }
         mCurrentPart++;
-        start();
         if(mCurrentPart >= mPartsQty)
             mRunning = false;
+        else
+            start();
     }
     
     mRotation += mRotationSpeed * mDt;
