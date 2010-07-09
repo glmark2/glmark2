@@ -27,7 +27,7 @@ char *readShaderFile(const char *FileName)
 
 Shader::~Shader()
 {
-    remove();
+    unload();
 }
 
 void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShaderFileName)
@@ -122,8 +122,19 @@ void Shader::use()
 
 void Shader::remove()
 {
+    glUseProgramObjectARB(0);
+}
+
+void Shader::unload()
+{
     glDetachObjectARB(mShaderProgram, mVertexShader);
     glDetachObjectARB(mShaderProgram, mFragmentShader);
-
+    
+    glDeleteObjectARB(mVertexShader);
+    glDeleteObjectARB(mFragmentShader);
     glDeleteObjectARB(mShaderProgram);
+
+    mVertexShader = 0;
+    mFragmentShader = 0;
+    mShaderProgram = 0;
 }

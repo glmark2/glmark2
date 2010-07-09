@@ -11,8 +11,10 @@ class Shader
 public:
     ~Shader();
     void load(const char *pVertexShaderFileName, const char *pFragmentShaderFileName);
-    void remove();
+    void unload();
+
     void use();
+    void remove();
     
     GLuint mVertexShader;
     GLuint mFragmentShader;
