@@ -1,5 +1,9 @@
 #include "scene.h"
 
+SceneBuild::~SceneBuild()
+{
+}
+
 int SceneBuild::load()
 {
     Model model;
@@ -11,6 +15,9 @@ int SceneBuild::load()
     model.convert_to_mesh(&mMesh);
     
     mMesh.build_vbo();
+    
+    mShader.load(GLMARK_DATA_PATH"data/shaders/light-basic.vert",
+                 GLMARK_DATA_PATH"data/shaders/light-basic.frag");
 
     mRotationSpeed = 36.0f;
     mRotation = 0.0;
@@ -43,11 +50,13 @@ void SceneBuild::start()
     GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
     GLfloat lightPosition[] = {20.0f, 20.0f, 10.0f, 1.0f};
 
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHTING);
+    mShader.use();
+
+    // Load lighting and material uniforms
+    glUniform4fv(mShader.mLocations.LightSourcePosition, 1, lightPosition);
+
+    glUniform3fv(mShader.mLocations.LightSourceAmbient, 1, lightAmbient);
+    glUniform3fv(mShader.mLocations.LightSourceDiffuse, 1, lightDiffuse);
 
     mCurrentFrame = 0;
     mRunning = true;
@@ -91,17 +100,30 @@ void SceneBuild::update()
 
 void SceneBuild::draw()
 {
-    glTranslatef(0.0f, 0.0f,-2.5f);
-    glRotated(mRotation, 0.0f, 1.0, 0.0f);
+    // Load the ModelViewProjectionMatrix uniform in the shader
+    Matrix4f model_view(1.0f, 1.0f, 1.0f);
+    Matrix4f model_view_proj(mScreen.mProjection);
 
-    glColor3f(0.0f, 1.0f, 1.0f);
+    model_view.translate(0.0f, 0.0f, -2.5f);
+    model_view.rotate(2 * M_PI * mRotation / 360.0, 0.0f, 1.0f, 0.0f);
+    model_view_proj *= model_view;
+
+    glUniformMatrix4fv(mShader.mLocations.ModelViewProjectionMatrix, 1,
+                       GL_FALSE, model_view_proj.m);
+
+    // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
+    // inverse transpose of the model view matrix.
+    model_view.invert().transpose();
+    glUniformMatrix4fv(mShader.mLocations.NormalMatrix, 1,
+                       GL_FALSE, model_view.m);
+
     switch(mCurrentPart)
     {
     case 0:
-        mMesh.render_array();
+        mMesh.render_array_attrib();
         break;
     case 1:
-        mMesh.render_vbo();
+        mMesh.render_vbo_attrib();
         break;
     }    
 }

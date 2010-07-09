@@ -46,6 +46,10 @@ public:
     void update();
     void draw();
     
+    ~SceneBuild();
+
+    Shader mShader;
+
     Mesh mMesh;
     float mRotation;
     float mRotationSpeed;
