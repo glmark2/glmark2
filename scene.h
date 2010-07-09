@@ -76,6 +76,8 @@ public:
     ~SceneTexture();
     
 protected:
+    Shader mShader;
+
     Mesh mCubeMesh;
     GLuint mTexture[3];
     Vector3f mRotation;

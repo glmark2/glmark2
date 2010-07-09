@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "matrix.h"
 
 SceneTexture::~SceneTexture()
 {
@@ -19,6 +20,9 @@ int SceneTexture::load()
     model.calculate_normals();
     model.convert_to_mesh(&mCubeMesh);
     mCubeMesh.build_vbo();
+
+    mShader.load(GLMARK_DATA_PATH"data/shaders/light-basic.vert",
+                 GLMARK_DATA_PATH"data/shaders/light-basic-tex.frag");
     
     mRotationSpeed = Vector3f(36.0f, 36.0f, 36.0f);
     
@@ -46,6 +50,8 @@ int SceneTexture::load()
 
 void SceneTexture::unload()
 {
+    mShader.remove();
+    mShader.unload();
 }
 
 void SceneTexture::start()
@@ -53,15 +59,18 @@ void SceneTexture::start()
     GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
     GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
     GLfloat lightPosition[] = {20.0f, 20.0f, 10.0f, 1.0f};
+    GLfloat materialColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
     
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHTING);
-    
-    glEnable(GL_TEXTURE_2D);
-    
+    mShader.use();
+
+    // Load lighting and material uniforms
+    glUniform4fv(mShader.mLocations.LightSourcePosition, 1, lightPosition);
+
+    glUniform3fv(mShader.mLocations.LightSourceAmbient, 1, lightAmbient);
+    glUniform3fv(mShader.mLocations.LightSourceDiffuse, 1, lightDiffuse);
+
+    glUniform3fv(mShader.mLocations.MaterialColor, 1, materialColor);
+
     mCurrentFrame = 0;
     mRunning = true;
     mStartTime = SDL_GetTicks() / 1000.0;
@@ -107,26 +116,27 @@ void SceneTexture::update()
 
 void SceneTexture::draw()
 {
-    glLoadIdentity();
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glTranslatef(0.0f, 0.0f, -4.0f);
-    
-    glRotatef(mRotation.x, 1.0f, 0.0f, 0.0f);
-    glRotatef(mRotation.y, 0.0f, 1.0f, 0.0f);
-    glRotatef(mRotation.z, 0.0f, 0.0f, 1.0f);
-    
-    switch(mCurrentPart)
-    {
-    case 0:
-        glBindTexture(GL_TEXTURE_2D, mTexture[0]);
-        mCubeMesh.render_vbo();
-        break;
-    case 1:
-        glBindTexture(GL_TEXTURE_2D, mTexture[1]);
-        mCubeMesh.render_vbo();
-    case 2:
-        glBindTexture(GL_TEXTURE_2D, mTexture[2]);
-        mCubeMesh.render_vbo();
-        break;
-    }    
+    // Load the ModelViewProjectionMatrix uniform in the shader
+    Matrix4f model_view(1.0f, 1.0f, 1.0f);
+    Matrix4f model_view_proj(mScreen.mProjection);
+
+    model_view.translate(0.0f, 0.0f, -5.0f);
+    model_view.rotate(2 * M_PI * mRotation.x / 360.0, 1.0f, 0.0f, 0.0f);
+    model_view.rotate(2 * M_PI * mRotation.y / 360.0, 0.0f, 1.0f, 0.0f);
+    model_view.rotate(2 * M_PI * mRotation.z / 360.0, 0.0f, 0.0f, 1.0f);
+    model_view_proj *= model_view;
+
+    glUniformMatrix4fv(mShader.mLocations.ModelViewProjectionMatrix, 1,
+                       GL_FALSE, model_view_proj.m);
+
+    // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
+    // inverse transpose of the model view matrix.
+    model_view.invert().transpose();
+    glUniformMatrix4fv(mShader.mLocations.NormalMatrix, 1,
+                       GL_FALSE, model_view.m);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, mTexture[mCurrentPart]);
+
+    mCubeMesh.render_vbo_attrib();
 }
