@@ -39,7 +39,7 @@ int Screen::init()
 
     if(mFullScreen)
     mFlags = SDL_OPENGL | SDL_FULLSCREEN;
-    
+
     mInfo = SDL_GetVideoInfo();
 
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
@@ -53,10 +53,9 @@ int Screen::init()
         fprintf(stderr, "[ Fail ] - Video mode set failed: %s\n", SDL_GetError());
         return 0;
     }
-    
+
     SDL_WM_SetCaption("GLMark 08", NULL);
-    
-    glShadeModel(GL_SMOOTH);
+
     glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -64,14 +63,8 @@ int Screen::init()
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glViewport(0, 0, mWidth, mHeight);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(60.0, mWidth / (float)mHeight, 1.0, 1024.0);
-    glMatrixMode(GL_MODELVIEW);
-    
     clear();
 
     mProjection.perspective(60.0, mWidth / (float)mHeight, 1.0, 1024.0);
@@ -88,7 +81,6 @@ int Screen::init()
 void Screen::clear()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
 }
 
 void Screen::update()
@@ -102,6 +94,5 @@ void Screen::print_info()
     printf("    GL_VENDOR:     %s\n", glGetString(GL_VENDOR));
     printf("    GL_RENDERER:   %s\n", glGetString(GL_RENDERER));
     printf("    GL_VERSION:    %s\n", glGetString(GL_VERSION));
-//    printf("GL_EXTENSIONS:	%s\n", glGetString(GL_EXTENSIONS));
 }
 
