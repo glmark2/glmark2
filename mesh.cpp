@@ -146,6 +146,29 @@ void Mesh::render_array()
     glDisableClientState(GL_NORMAL_ARRAY);
 }
 
+void Mesh::render_array_attrib()
+{
+    // Enable the attributes
+    glEnableVertexAttribArray(Shader::VertexAttribLocation);
+    glEnableVertexAttribArray(Shader::NormalAttribLocation);
+    glEnableVertexAttribArray(Shader::TexCoordAttribLocation);
+
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+    glVertexAttribPointer(Shader::VertexAttribLocation, 3, GL_FLOAT,
+                          GL_FALSE, sizeof(Vertex), &mVertex[0].v.x);
+    glVertexAttribPointer(Shader::NormalAttribLocation, 3, GL_FLOAT,
+                          GL_FALSE, sizeof(Vertex), &mVertex[0].n.x);
+    glVertexAttribPointer(Shader::TexCoordAttribLocation, 2, GL_FLOAT,
+                          GL_FALSE, sizeof(Vertex), &mVertex[0].t.u);
+
+    glDrawArrays(GL_TRIANGLES, 0, mVertexQty);
+
+    // Disable the attributes
+    glDisableVertexAttribArray(Shader::TexCoordAttribLocation);
+    glDisableVertexAttribArray(Shader::NormalAttribLocation);
+    glDisableVertexAttribArray(Shader::VertexAttribLocation);
+}
+
 void Mesh::build_vbo()
 {
 #ifdef _DEBUG

@@ -44,6 +44,7 @@ public:
     void make_cube();
     void make_torus();
     void render_array();
+    void render_array_attrib();
     void build_vbo();
     void render_vbo();
     void render_vbo_attrib();
