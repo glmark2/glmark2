@@ -54,9 +54,10 @@ void SceneShading::start()
     GLfloat lightSpecular[] = {0.8f, 0.8f, 0.8f, 1.0f};
     GLfloat lightPosition[] = {20.0f, 20.0f, 10.0f, 1.0f};
 
-    float mat_ambient[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    float mat_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    float mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float materialAmbient[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float materialDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float materialSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float materialColor[] = {0.0f, 0.0f, 1.0f, 1.0f};
 
     switch(mCurrentPart)
     {
@@ -77,9 +78,10 @@ void SceneShading::start()
     glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceDiffuse, 1, lightDiffuse);
     glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceSpecular, 1, lightSpecular);
 
-    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialAmbient, 1, mat_ambient);
-    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialDiffuse, 1, mat_diffuse);
-    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialSpecular, 1, mat_specular);
+    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialAmbient, 1, materialAmbient);
+    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialDiffuse, 1, materialDiffuse);
+    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialSpecular, 1, materialSpecular);
+    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialColor, 1, materialColor);
 
     // Calculate and load the half vector
     Vector3f halfVector = Vector3f(lightPosition[0], lightPosition[1], lightPosition[2]);

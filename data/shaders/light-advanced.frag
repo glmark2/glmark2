@@ -4,6 +4,7 @@ uniform vec3 LightSourceSpecular;
 uniform vec3 MaterialAmbient;
 uniform vec3 MaterialDiffuse;
 uniform vec3 MaterialSpecular;
+uniform vec3 MaterialColor;
 
 varying vec3 Normal;
 varying vec3 Light;
@@ -27,5 +28,5 @@ void main(void)
 
     // Calculate the final color
     gl_FragColor = vec4(ambient, 1.0) + vec4(specular, 1.0) +
-                   vec4(diffuse, 1.0) * vec4(0.0, 0.0, 1.0, 1.0);
+                   vec4(diffuse, 1.0) * vec4(MaterialColor, 1.0);
 }

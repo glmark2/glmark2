@@ -95,9 +95,11 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
             "MaterialDiffuse");
     mLocations.MaterialSpecular = glGetUniformLocation(mShaderProgram,
             "MaterialSpecular");
+    mLocations.MaterialColor = glGetUniformLocation(mShaderProgram,
+            "MaterialColor");
 
 #ifdef _DEBUG
-    printf("Uniform Locations: %d %d %d %d %d %d %d %d\n",
+    printf("Uniform Locations: %d %d %d %d %d %d %d %d %d %d %d\n",
             mLocations.ModelViewProjectionMatrix,
             mLocations.NormalMatrix,
             mLocations.LightSourcePosition,
@@ -107,7 +109,8 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
             mLocations.LightSourceSpecular,
             mLocations.MaterialAmbient,
             mLocations.MaterialDiffuse,
-            mLocations.MaterialSpecular);
+            mLocations.MaterialSpecular,
+            mLocations.MaterialColor);
 #endif
 
 }

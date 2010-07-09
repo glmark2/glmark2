@@ -49,6 +49,7 @@ void SceneBuild::start()
     GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
     GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
     GLfloat lightPosition[] = {20.0f, 20.0f, 10.0f, 1.0f};
+    GLfloat materialColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
     mShader.use();
 
@@ -57,6 +58,8 @@ void SceneBuild::start()
 
     glUniform3fv(mShader.mLocations.LightSourceAmbient, 1, lightAmbient);
     glUniform3fv(mShader.mLocations.LightSourceDiffuse, 1, lightDiffuse);
+
+    glUniform3fv(mShader.mLocations.MaterialColor, 1, materialColor);
 
     mCurrentFrame = 0;
     mRunning = true;
