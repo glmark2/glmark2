@@ -108,7 +108,7 @@ void Mesh::render_array_attrib()
     glEnableVertexAttribArray(Shader::NormalAttribLocation);
     glEnableVertexAttribArray(Shader::TexCoordAttribLocation);
 
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glVertexAttribPointer(Shader::VertexAttribLocation, 3, GL_FLOAT,
                           GL_FALSE, sizeof(Vertex), &mVertex[0].v.x);
     glVertexAttribPointer(Shader::NormalAttribLocation, 3, GL_FLOAT,
@@ -146,22 +146,22 @@ void Mesh::build_vbo()
     }
 
     // Generate And Bind The Vertex Buffer
-    glGenBuffersARB(1, &mVBOVertices);                          // Get A Valid Name
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOVertices);         // Bind The Buffer
+    glGenBuffers(1, &mVBOVertices);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBOVertices);
     // Load The Data
-    glBufferDataARB(GL_ARRAY_BUFFER_ARB, mVertexQty * sizeof(Vector3f), vertex, GL_STATIC_DRAW_ARB);
+    glBufferData(GL_ARRAY_BUFFER, mVertexQty * sizeof(Vector3f), vertex, GL_STATIC_DRAW);
 
     // Generate And Bind The normal Buffer
-    glGenBuffersARB(1, &mVBONormals);                          // Get A Valid Name
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBONormals);         // Bind The Buffer
+    glGenBuffers(1, &mVBONormals);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBONormals);
     // Load The Data
-    glBufferDataARB(GL_ARRAY_BUFFER_ARB, mVertexQty * sizeof(Vector3f), normal, GL_STATIC_DRAW_ARB);
+    glBufferData(GL_ARRAY_BUFFER, mVertexQty * sizeof(Vector3f), normal, GL_STATIC_DRAW);
 
     // Generate And Bind The Texture Coordinate Buffer
-    glGenBuffersARB(1, &mVBOTexCoords);                       // Get A Valid Name
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOTexCoords);      // Bind The Buffer
+    glGenBuffers(1, &mVBOTexCoords);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBOTexCoords);
     // Load The Data
-    glBufferDataARB(GL_ARRAY_BUFFER_ARB, mVertexQty * sizeof(Texel), texel, GL_STATIC_DRAW_ARB);
+    glBufferData(GL_ARRAY_BUFFER, mVertexQty * sizeof(Texel), texel, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -179,11 +179,11 @@ void Mesh::render_vbo()
     glEnableClientState(GL_NORMAL_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOVertices);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBOVertices);
     glVertexPointer(3, GL_FLOAT, 0, 0);
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBONormals);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBONormals);
     glNormalPointer(GL_FLOAT, 0, 0);
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOTexCoords);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBOTexCoords);
     glTexCoordPointer(2, GL_FLOAT, 0, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, mVertexQty);
@@ -202,11 +202,11 @@ void Mesh::render_vbo_attrib()
     glEnableVertexAttribArray(Shader::NormalAttribLocation);
     glEnableVertexAttribArray(Shader::TexCoordAttribLocation);
 
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOVertices);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBOVertices);
     glVertexAttribPointer(Shader::VertexAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBONormals);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBONormals);
     glVertexAttribPointer(Shader::NormalAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, mVBOTexCoords);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBOTexCoords);
     glVertexAttribPointer(Shader::TexCoordAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, mVertexQty);

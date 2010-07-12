@@ -35,8 +35,8 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
     char *vertex_shader_source, *fragment_shader_source;
     char msg[512];
 
-    mVertexShader = glCreateShaderObjectARB(GL_VERTEX_SHADER);
-    mFragmentShader = glCreateShaderObjectARB(GL_FRAGMENT_SHADER);
+    mVertexShader = glCreateShader(GL_VERTEX_SHADER);
+    mFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
     vertex_shader_source = readShaderFile(pVertexShaderFileName);
 
@@ -45,25 +45,25 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
     const char *vs = vertex_shader_source;
     const char *fs = fragment_shader_source;
 
-    glShaderSourceARB(mVertexShader, 1, &vs, NULL);
-    glShaderSourceARB(mFragmentShader, 1, &fs, NULL);
+    glShaderSource(mVertexShader, 1, &vs, NULL);
+    glShaderSource(mFragmentShader, 1, &fs, NULL);
 
     free(vertex_shader_source);
     free(fragment_shader_source);
 
-    glCompileShaderARB(mVertexShader);
+    glCompileShader(mVertexShader);
     glGetShaderInfoLog(mVertexShader, sizeof msg, NULL, msg);
     if (strlen(msg) > 0)
         printf("%s: %s", pVertexShaderFileName, msg);
 
-    glCompileShaderARB(mFragmentShader);
+    glCompileShader(mFragmentShader);
     glGetShaderInfoLog(mFragmentShader, sizeof msg, NULL, msg);
     if (strlen(msg) > 0)
         printf("%s: %s\n", pFragmentShaderFileName, msg);
 
-    mShaderProgram = glCreateProgramObjectARB();
-    glAttachObjectARB(mShaderProgram, mFragmentShader);
-    glAttachObjectARB(mShaderProgram, mVertexShader);
+    mShaderProgram = glCreateProgram();
+    glAttachShader(mShaderProgram, mFragmentShader);
+    glAttachShader(mShaderProgram, mVertexShader);
     glBindAttribLocation(mShaderProgram, VertexAttribLocation, "position");
     glBindAttribLocation(mShaderProgram, NormalAttribLocation, "normal");
     glBindAttribLocation(mShaderProgram, TexCoordAttribLocation, "texcoord");
@@ -121,22 +121,22 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
 
 void Shader::use()
 {
-    glUseProgramObjectARB(mShaderProgram);
+    glUseProgram(mShaderProgram);
 }
 
 void Shader::remove()
 {
-    glUseProgramObjectARB(0);
+    glUseProgram(0);
 }
 
 void Shader::unload()
 {
-    glDetachObjectARB(mShaderProgram, mVertexShader);
-    glDetachObjectARB(mShaderProgram, mFragmentShader);
+    glDetachShader(mShaderProgram, mVertexShader);
+    glDetachShader(mShaderProgram, mFragmentShader);
     
-    glDeleteObjectARB(mVertexShader);
-    glDeleteObjectARB(mFragmentShader);
-    glDeleteObjectARB(mShaderProgram);
+    glDeleteShader(mVertexShader);
+    glDeleteShader(mFragmentShader);
+    glDeleteShader(mShaderProgram);
 
     mVertexShader = 0;
     mFragmentShader = 0;
