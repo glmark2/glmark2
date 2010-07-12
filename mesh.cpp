@@ -15,7 +15,7 @@ Mesh::Mesh()
 {
     mPolygonQty = 0;
     mVertexQty = 0;
-    mMode = GL_QUADS;
+    mMode = GL_TRIANGLES;
     mVertex = 0;
 }
 
@@ -27,52 +27,7 @@ Mesh::~Mesh()
 
 void Mesh::make_cube()
 {
-    mPolygonQty = 6;
-    mVertexQty = 4 * mPolygonQty;
-    mMode = GL_QUADS;
-    mVertex = new Vertex[mVertexQty];
-    
-    mVertex[0].v = Vector3f( 1.0f, 1.0f,-1.0f);
-    mVertex[1].v = Vector3f(-1.0f, 1.0f,-1.0f);
-    mVertex[2].v = Vector3f(-1.0f, 1.0f, 1.0f);
-    mVertex[3].v = Vector3f( 1.0f, 1.0f, 1.0f);
-
-    mVertex[4].v = Vector3f( 1.0f,-1.0f, 1.0f);
-    mVertex[5].v = Vector3f(-1.0f,-1.0f, 1.0f);
-    mVertex[6].v = Vector3f(-1.0f,-1.0f,-1.0f);
-    mVertex[7].v = Vector3f( 1.0f,-1.0f,-1.0f);
-    
-    mVertex[8].v =  Vector3f( 1.0f, 1.0f, 1.0f);
-    mVertex[9].v =  Vector3f(-1.0f, 1.0f, 1.0f);
-    mVertex[10].v = Vector3f(-1.0f,-1.0f, 1.0f);
-    mVertex[11].v = Vector3f( 1.0f,-1.0f, 1.0f);
-
-    mVertex[12].v = Vector3f( 1.0f,-1.0f,-1.0f);
-    mVertex[13].v = Vector3f(-1.0f,-1.0f,-1.0f);
-    mVertex[14].v = Vector3f(-1.0f, 1.0f,-1.0f);
-    mVertex[15].v = Vector3f( 1.0f, 1.0f,-1.0f);
-
-    mVertex[16].v = Vector3f(-1.0f, 1.0f, 1.0f);
-    mVertex[17].v = Vector3f(-1.0f, 1.0f,-1.0f);
-    mVertex[18].v = Vector3f(-1.0f,-1.0f,-1.0f);
-    mVertex[19].v = Vector3f(-1.0f,-1.0f, 1.0f);
-
-    mVertex[20].v = Vector3f(-1.0f, 1.0f, 1.0f);
-    mVertex[21].v = Vector3f(-1.0f, 1.0f,-1.0f);
-    mVertex[22].v = Vector3f(-1.0f,-1.0f,-1.0f);
-    mVertex[23].v = Vector3f(-1.0f,-1.0f, 1.0f);
-
-    for(unsigned i = 0; i < mVertexQty / 4; i += 4)
-    {
-        Vector3f n;
-        n = normal(mVertex[i].v, mVertex[i + 1].v, mVertex[i + 2].v);
-        for(unsigned j = 0; j < 4; j++)
-            mVertex[i + j].n = n;
-        mVertex[i + 0].t = Texel(0.0f, 0.0f);
-        mVertex[i + 1].t = Texel(1.0f, 0.0f);
-        mVertex[i + 2].t = Texel(1.0f, 1.0f);
-        mVertex[i + 3].t = Texel(0.0f, 1.0f);
-    }
+    fprintf(stderr, "Warning: %s: Not implemented\n", __FUNCTION__);
 }
 
 void Mesh::make_torus()
