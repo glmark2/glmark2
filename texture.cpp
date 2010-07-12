@@ -17,15 +17,19 @@ int load_texture(const char pFilename[], GLuint *pTexture)
         if (nOfColors == 4) {
             if (surface->format->Rmask == 0x000000ff)
                 texture_format = GL_RGBA;
-            else
-                texture_format = GL_BGRA;
+            else {
+                fprintf(stderr, "Error: %s: Unsupported pixel format BGRA\n", pFilename);
+                return 1;
+            }
         }
         else {
             if (nOfColors == 3) {
                 if (surface->format->Rmask == 0x000000ff)
                     texture_format = GL_RGB;
-                else
-                    texture_format = GL_BGR;
+                else {
+                    fprintf(stderr, "Error: %s: Unsupported pixel format BGR\n", pFilename);
+                    return 1;
+                }
             }
             else {
                 printf("warning: the image is not truecolor..  this will probably break\n");
