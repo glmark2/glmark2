@@ -37,4 +37,3 @@ void ScreenSDLGL::print_info()
     printf("    GL_RENDERER:   %s\n", glGetString(GL_RENDERER));
     printf("    GL_VERSION:    %s\n", glGetString(GL_VERSION));
 }
-

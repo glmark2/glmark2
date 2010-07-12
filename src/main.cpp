@@ -1,7 +1,11 @@
 #include "oglsdl.h"
-
-#include "screen-sdl-gl.h"
 #include "scene.h"
+
+#if USE_GL
+#include "screen-sdl-gl.h"
+#elif USE_GLESv2
+#include "screen-sdl-glesv2.h"
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -10,7 +14,11 @@ int main(int argc, char *argv[])
     unsigned current_scene = 0;
 
     // Create the screen
+#if USE_GL
     ScreenSDLGL screen(800, 600, 24, 0);
+#elif USE_GLESv2
+    ScreenSDLGLESv2 screen(800, 600, 24, 0);
+#endif
 
     if (!screen.mInitSuccess) {
         printf("Error: %s: Could not initialize screen\n", __FUNCTION__);
