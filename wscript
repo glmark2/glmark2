@@ -62,7 +62,7 @@ def configure(conf):
 		conf.check_cfg(package = pkg, uselib_store = uselib, args = '--cflags --libs',
 				mandatory = mandatory)
 
-	conf.env.append_unique('CXXFLAGS', '-Wall -Wextra -pedantic'.split(' '))
+	conf.env.append_unique('CXXFLAGS', '-Wall -Wextra -fms-extensions'.split(' '))
 
 	# Prepend -O# and -g flags so that they can be overriden by the CFLAGS environment variable
 	if Options.options.opt:

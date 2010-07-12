@@ -7,8 +7,13 @@
 #include "screen-sdl-glesv2.h"
 #endif
 
+#define UNUSED_PARAM(x) (void)(x)
+
 int main(int argc, char *argv[])
 {
+    UNUSED_PARAM(argc);
+    UNUSED_PARAM(argv);
+
     SDL_Event event;
     int running = 1;
     unsigned current_scene = 0;
