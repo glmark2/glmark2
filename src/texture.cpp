@@ -15,25 +15,45 @@ int load_texture(const char pFilename[], GLuint *pTexture)
 
         nOfColors = surface->format->BytesPerPixel;
         if (nOfColors == 4) {
-            if (surface->format->Rmask == 0x000000ff)
-                texture_format = GL_RGBA;
-            else {
-                fprintf(stderr, "Error: %s: Unsupported pixel format BGRA\n", pFilename);
-                return 1;
+            texture_format = GL_RGBA;
+            // If the picture is not RGBA convert it
+            if (surface->format->Rmask != 0x000000ff) {
+                SDL_PixelFormat format = {
+                    surface->format->palette,
+                    surface->format->BitsPerPixel,
+                    surface->format->BytesPerPixel,
+                    surface->format->Rloss, surface->format->Gloss,
+                    surface->format->Bloss, surface->format->Aloss,
+                    0,  8, 16, 24,
+                    0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000,
+                    surface->format->colorkey, surface->format->alpha
+                };
+                SDL_Surface *tmp = SDL_ConvertSurface(surface, &format, 0);
+                SDL_FreeSurface(surface);
+                surface = tmp;
+            }
+        }
+        else if (nOfColors == 3) {
+            texture_format = GL_RGB;
+            // If the picture is not RGB convert it
+            if (surface->format->Rmask != 0x000000ff) {
+                SDL_PixelFormat format = {
+                    surface->format->palette,
+                    surface->format->BitsPerPixel,
+                    surface->format->BytesPerPixel,
+                    surface->format->Rloss, surface->format->Gloss,
+                    surface->format->Bloss, surface->format->Aloss,
+                    0,  8, 16, 24,
+                    0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000,
+                    surface->format->colorkey, surface->format->alpha
+                };
+                SDL_Surface *tmp = SDL_ConvertSurface(surface, &format, 0);
+                SDL_FreeSurface(surface);
+                surface = tmp;
             }
         }
         else {
-            if (nOfColors == 3) {
-                if (surface->format->Rmask == 0x000000ff)
-                    texture_format = GL_RGB;
-                else {
-                    fprintf(stderr, "Error: %s: Unsupported pixel format BGR\n", pFilename);
-                    return 1;
-                }
-            }
-            else {
-                printf("warning: the image is not truecolor..  this will probably break\n");
-            }
+            printf("warning: the image is not truecolor..  this will probably break\n");
         }
 
         glGenTextures(3, pTexture);
