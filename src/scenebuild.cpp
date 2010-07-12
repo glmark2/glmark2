@@ -8,7 +8,7 @@ int SceneBuild::load()
 {
     Model model;
     
-    if(!model.load_3ds(GLMARK_DATA_PATH"data/models/horse.3ds"))
+    if(!model.load_3ds(GLMARK_DATA_PATH"/models/horse.3ds"))
         return 0;
         
     model.calculate_normals();
@@ -16,8 +16,8 @@ int SceneBuild::load()
     
     mMesh.build_vbo();
     
-    mShader.load(GLMARK_DATA_PATH"data/shaders/light-basic.vert",
-                 GLMARK_DATA_PATH"data/shaders/light-basic.frag");
+    mShader.load(GLMARK_DATA_PATH"/shaders/light-basic.vert",
+                 GLMARK_DATA_PATH"/shaders/light-basic.frag");
 
     mRotationSpeed = 36.0f;
     mRotation = 0.0;

@@ -11,18 +11,18 @@ int SceneTexture::load()
 {
     Model model;
 
-    if(!model.load_3ds(GLMARK_DATA_PATH"data/models/cube.3ds"))
+    if(!model.load_3ds(GLMARK_DATA_PATH"/models/cube.3ds"))
         return 0;
 
-    if(!load_texture(GLMARK_DATA_PATH"data/textures/crate-base.bmp", mTexture))
+    if(!load_texture(GLMARK_DATA_PATH"/textures/crate-base.bmp", mTexture))
         return 0;
 
     model.calculate_normals();
     model.convert_to_mesh(&mCubeMesh);
     mCubeMesh.build_vbo();
 
-    mShader.load(GLMARK_DATA_PATH"data/shaders/light-basic.vert",
-                 GLMARK_DATA_PATH"data/shaders/light-basic-tex.frag");
+    mShader.load(GLMARK_DATA_PATH"/shaders/light-basic.vert",
+                 GLMARK_DATA_PATH"/shaders/light-basic-tex.frag");
 
     mRotationSpeed = Vector3f(36.0f, 36.0f, 36.0f);
 

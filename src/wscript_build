@@ -1,0 +1,7 @@
+lib = bld(
+		features     = ['cxx', 'cprogram'],
+		source       = bld.path.ant_glob('*.cpp'),
+		target       = 'glmark2',
+		uselib       = ['sdl', 'gl'],
+		lib          = ['m'],
+		)
