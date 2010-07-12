@@ -65,17 +65,7 @@ void SceneShading::start()
     float materialSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
     float materialColor[] = {0.0f, 0.0f, 1.0f, 1.0f};
 
-    switch(mCurrentPart)
-    {
-    case 0:
-        glDisable(GL_TEXTURE_2D);
-        mShader[0].use();
-        break;
-    case 1:
-        glDisable(GL_TEXTURE_2D);
-        mShader[1].use();
-        break;
-    }
+    mShader[mCurrentPart].use();
 
     // Load lighting and material uniforms
     glUniform4fv(mShader[mCurrentPart].mLocations.LightSourcePosition, 1, lightPosition);
