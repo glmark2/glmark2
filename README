@@ -1,0 +1,16 @@
+glmark2 is a port of the glmark OpenGL benchmark to OpenGL 2.0 and ES 2.0.
+
+To build glmark2 you need:
+
+ * libSDL 1.2
+
+and for OpenGL 2.0:
+
+ * libGL
+
+or for OpenGL ES 2.0:
+
+ * libEGL
+ * libGLESv2
+
+Read the INSTALL files for installation instructions,
