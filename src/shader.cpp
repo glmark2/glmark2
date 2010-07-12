@@ -99,7 +99,9 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
             "MaterialColor");
     mLocations.MaterialTexture0 = glGetUniformLocation(mShaderProgram,
             "MaterialTexture0");
+    glUseProgram(mShaderProgram);
     glUniform1i(mLocations.MaterialTexture0, 0);
+    glUseProgram(0);
 
 #ifdef _DEBUG
     printf("Uniform Locations: %d %d %d %d %d %d %d %d %d %d %d %d\n",
