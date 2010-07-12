@@ -156,5 +156,5 @@ void SceneShading::draw()
     glUniformMatrix4fv(mShader[mCurrentPart].mLocations.NormalMatrix, 1,
                        GL_FALSE, model_view.m);
 
-    mMesh.render_vbo_attrib();
+    mMesh.render_vbo();
 }

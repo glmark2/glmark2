@@ -137,5 +137,5 @@ void SceneTexture::draw()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mTexture[mCurrentPart]);
 
-    mCubeMesh.render_vbo_attrib();
+    mCubeMesh.render_vbo();
 }

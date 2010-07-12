@@ -127,10 +127,10 @@ void SceneBuild::draw()
     switch(mCurrentPart)
     {
     case 0:
-        mMesh.render_array_attrib();
+        mMesh.render_array();
         break;
     case 1:
-        mMesh.render_vbo_attrib();
+        mMesh.render_vbo();
         break;
     }    
 }

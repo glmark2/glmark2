@@ -87,22 +87,6 @@ void Mesh::make_torus()
 
 void Mesh::render_array()
 {
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-    glVertexPointer(3, GL_FLOAT, sizeof(Vertex), &mVertex[0].v.x);
-    glNormalPointer(GL_FLOAT, sizeof(Vertex), &mVertex[0].n.x);
-    glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), &mVertex[0].t.u);
-    glDrawArrays(mMode, 0, mVertexQty);
-
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_NORMAL_ARRAY);
-}
-
-void Mesh::render_array_attrib()
-{
     // Enable the attributes
     glEnableVertexAttribArray(Shader::VertexAttribLocation);
     glEnableVertexAttribArray(Shader::NormalAttribLocation);
@@ -174,28 +158,6 @@ void Mesh::build_vbo()
 }
 
 void Mesh::render_vbo()
-{
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-    glBindBuffer(GL_ARRAY_BUFFER, mVBOVertices);
-    glVertexPointer(3, GL_FLOAT, 0, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, mVBONormals);
-    glNormalPointer(GL_FLOAT, 0, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, mVBOTexCoords);
-    glTexCoordPointer(2, GL_FLOAT, 0, 0);
-
-    glDrawArrays(GL_TRIANGLES, 0, mVertexQty);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisableClientState(GL_NORMAL_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
-}
-
-void Mesh::render_vbo_attrib()
 {
     // Enable the attributes
     glEnableVertexAttribArray(Shader::VertexAttribLocation);
