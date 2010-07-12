@@ -1,6 +1,6 @@
 #include "oglsdl.h"
 
-#include "screen.h"
+#include "screen-sdl-gl.h"
 #include "scene.h"
 
 int main(int argc, char *argv[])
@@ -8,13 +8,19 @@ int main(int argc, char *argv[])
     SDL_Event event;
     int running = 1;
     unsigned current_scene = 0;
-    Screen screen;
+
+    // Create the screen
+    ScreenSDLGL screen(800, 600, 24, 0);
+
+    if (!screen.mInitSuccess) {
+        printf("Error: %s: Could not initialize screen\n", __FUNCTION__);
+        return 1;
+    }
 
     printf("===================================================\n");
     printf("    GLMark 08\n");
     printf("===================================================\n");
-    if(!screen.init())
-        return 0;
+    screen.print_info();
     printf("===================================================\n");
 
     // Create the scenes.

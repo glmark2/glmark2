@@ -9,22 +9,16 @@
 class Screen
 {
 public:
-    const SDL_VideoInfo *mInfo;
-    
     int mWidth;
     int mHeight;
     int mBpp;
-    int mFlags;
     int mFullScreen;
     Matrix4f mProjection;
+    int mInitSuccess;
 
-    Screen();
-    ~Screen();
-    Screen(int pWidth, int pHeight, int pBpp, int pFlags);
-    int init();
-    void clear();
-    void update();
-    void print_info();
+    virtual void clear() = 0;
+    virtual void update() = 0;
+    virtual void print_info() = 0;
 };
 
 #endif
