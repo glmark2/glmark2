@@ -1,4 +1,9 @@
-glmark2 is a port of the glmark OpenGL benchmark to OpenGL 2.0 and ES 2.0.
+glmark2 is an OpenGL 2.0 and ES 2.0 benchmark.
+
+glmark2 was developed by Alexandros Frantzis based on the original glmark
+benchmark by Ben Smith.
+
+It is licensed under the GPLv3 (see COPYING).
 
 To build glmark2 you need:
 
@@ -13,4 +18,4 @@ or for OpenGL ES 2.0:
  * libEGL
  * libGLESv2
 
-Read the INSTALL files for installation instructions,
+Read the INSTALL file for building/installation instructions,
