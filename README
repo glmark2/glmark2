@@ -3,10 +3,13 @@ glmark2 is an OpenGL 2.0 and ES 2.0 benchmark.
 glmark2 was developed by Alexandros Frantzis based on the original glmark
 benchmark by Ben Smith.
 
+For the ES 2.0 variant it uses the SDL_gles addon written by Javier S. Pedro. 
+
 It is licensed under the GPLv3 (see COPYING).
 
 To build glmark2 you need:
 
+ * python 2.x (>= 2.4) for the build system (waf)
  * libSDL 1.2
 
 and for OpenGL 2.0:
