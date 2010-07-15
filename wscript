@@ -88,3 +88,4 @@ def configure(conf):
 def build(bld):
 	bld.recurse('src')
 	bld.recurse('data')
+	bld.recurse('doc')
