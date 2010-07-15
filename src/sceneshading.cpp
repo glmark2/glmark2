@@ -127,15 +127,16 @@ void SceneShading::update()
     {
         mAverageFPS[mCurrentPart] = mCurrentFrame / mElapsedTime;
         
-        switch(mCurrentPart)
-        {
-        case 0:
-            printf("Shading\n");
-            printf("    GLSL per vertex lighting FPS: %u\n", mAverageFPS[mCurrentPart]);
-            break;
-        case 1:
-            printf("    GLSL per pixel lighting  FPS: %u\n", mAverageFPS[mCurrentPart]);
-            break;
+        switch(mCurrentPart) {
+            case 0:
+                printf("Shading\n");
+                printf("    GLSL per vertex lighting      FPS: %u\n",
+                       mAverageFPS[mCurrentPart]);
+                break;
+            case 1:
+                printf("    GLSL per pixel lighting       FPS: %u\n",
+                       mAverageFPS[mCurrentPart]);
+                break;
         }
         mCurrentPart++;
         if(mCurrentPart >= mPartsQty)
