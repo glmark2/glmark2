@@ -51,8 +51,8 @@ int SceneBuild::load()
     mAverageFPS = new unsigned[mPartsQty];
     mScoreScale = new float[mPartsQty];
 
-    mScoreScale[0] = 1.898f;
-    mScoreScale[1] = 0.540f;
+    mScoreScale[0] = 1.0f / mPartsQty;
+    mScoreScale[1] = 1.0f / mPartsQty;
 
     mPartDuration[0] = 10.0;
     mPartDuration[1] = 10.0;

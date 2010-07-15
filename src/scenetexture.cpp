@@ -55,9 +55,9 @@ int SceneTexture::load()
     mAverageFPS = new unsigned[mPartsQty];
     mScoreScale = new float[mPartsQty];
 
-    mScoreScale[0] = 0.471f;
-    mScoreScale[1] = 0.533f;
-    mScoreScale[2] = 0.405f;
+    mScoreScale[0] = 1.0f / mPartsQty;
+    mScoreScale[1] = 1.0f / mPartsQty;
+    mScoreScale[2] = 1.0f / mPartsQty;
 
     mPartDuration[0] = 10.0;
     mPartDuration[1] = 10.0;
