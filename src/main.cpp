@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     }
 
     printf("===================================================\n");
-    printf("    GLMark 08\n");
+    printf("    glmark2 %s\n", GLMARK_VERSION);
     printf("===================================================\n");
     screen.print_info();
     printf("===================================================\n");
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         score += scene[i]->calculate_score();
 
     printf("===================================================\n");
-    printf("Your GLMark08 Score is %u  ^_^\n", score);
+    printf("Your glmark2 Score is %u  ^_^\n", score);
     printf("===================================================\n");
 
     return 0;

@@ -55,7 +55,7 @@ ScreenSDL::ScreenSDL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFl
         return;
     }
 
-    SDL_WM_SetCaption("GLMark 08", NULL);
+    SDL_WM_SetCaption("glmark2 " GLMARK_VERSION, NULL);
 
     mProjection.perspective(60.0, mWidth / (float)mHeight, 1.0, 1024.0);
 

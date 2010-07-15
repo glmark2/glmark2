@@ -7,7 +7,7 @@ import Scripting
 blddir = 'build'
 
 top = '.'
-VERSION = '0.1.0'
+VERSION = '10.07'
 APPNAME = 'glmark2'
 
 # Produce '.tar.gz' with ./waf dist
@@ -75,6 +75,7 @@ def configure(conf):
 
 	conf.env.append_unique('GLMARK_DATA_PATH', Options.options.data_path)
 	conf.env.append_unique('CXXDEFINES', 'GLMARK_DATA_PATH="%s"' % Options.options.data_path)
+	conf.env.append_unique('CXXDEFINES', 'GLMARK_VERSION="%s"' % VERSION)
 
 	conf.env.USE_GL = Options.options.gl
 	conf.env.USE_GLESv2 = Options.options.glesv2
