@@ -7,7 +7,7 @@ import Scripting
 blddir = 'build'
 
 top = '.'
-VERSION = '10.07'
+VERSION = '10.07.1'
 APPNAME = 'glmark2'
 
 # Produce '.tar.gz' with ./waf dist
