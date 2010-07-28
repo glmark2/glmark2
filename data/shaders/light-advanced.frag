@@ -1,3 +1,7 @@
+#ifdef GL_ES
+precision mediump float;
+#endif
+
 uniform vec3 LightSourceAmbient;
 uniform vec3 LightSourceDiffuse;
 uniform vec3 LightSourceSpecular;
