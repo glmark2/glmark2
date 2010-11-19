@@ -91,7 +91,7 @@ void SceneTexture::start()
     glUniform3fv(mShader.mLocations.LightSourceAmbient, 1, lightAmbient);
     glUniform3fv(mShader.mLocations.LightSourceDiffuse, 1, lightDiffuse);
 
-    glUniform3fv(mShader.mLocations.MaterialColor, 1, materialColor);
+    glUniform4fv(mShader.mLocations.MaterialColor, 1, materialColor);
 
     mCurrentFrame = 0;
     mRunning = true;

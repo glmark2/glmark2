@@ -99,7 +99,7 @@ void SceneShading::start()
     glUniform3fv(mShader[mCurrentPart].mLocations.MaterialAmbient, 1, materialAmbient);
     glUniform3fv(mShader[mCurrentPart].mLocations.MaterialDiffuse, 1, materialDiffuse);
     glUniform3fv(mShader[mCurrentPart].mLocations.MaterialSpecular, 1, materialSpecular);
-    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialColor, 1, materialColor);
+    glUniform4fv(mShader[mCurrentPart].mLocations.MaterialColor, 1, materialColor);
 
     // Calculate and load the half vector
     Vector3f halfVector = Vector3f(lightPosition[0], lightPosition[1], lightPosition[2]);
