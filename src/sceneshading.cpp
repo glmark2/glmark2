@@ -30,15 +30,15 @@ SceneShading::~SceneShading()
 int SceneShading::load()
 {
     Model model;
-    
+
     if(!model.load_3ds(GLMARK_DATA_PATH"/models/cat.3ds"))
         return 0;
-        
+
     model.calculate_normals();
     model.convert_to_mesh(&mMesh);
-    
+
     mMesh.build_vbo();
-    
+
     mShader[0].load(GLMARK_DATA_PATH"/shaders/light-basic.vert",
                     GLMARK_DATA_PATH"/shaders/light-basic.frag");
     mShader[1].load(GLMARK_DATA_PATH"/shaders/light-advanced.vert",
@@ -46,9 +46,9 @@ int SceneShading::load()
 
     mRotationSpeed = 36.0f;
     mRotation = 0.0f;
-    
+
     mRunning = false;
-    
+
     mPartsQty = 2;
     mPartDuration = new double[mPartsQty];
     mAverageFPS = new unsigned[mPartsQty];
@@ -56,14 +56,14 @@ int SceneShading::load()
 
     mScoreScale[0] = 1.0f / mPartsQty;
     mScoreScale[1] = 1.0f / mPartsQty;
-    
+
     mPartDuration[0] = 10.0;
     mPartDuration[1] = 10.0;
 
     memset(mAverageFPS, 0, mPartsQty * sizeof(*mAverageFPS));
-    
+
     mCurrentPart = 0;
-    
+
     return 1;
 }
 
@@ -120,13 +120,13 @@ void SceneShading::update()
     mCurrentTime = SDL_GetTicks() / 1000.0;
     mDt = mCurrentTime - mLastTime;
     mLastTime = mCurrentTime;
-    
+
     mElapsedTime = mCurrentTime - mStartTime;
-    
+
     if(mElapsedTime >= mPartDuration[mCurrentPart])
     {
         mAverageFPS[mCurrentPart] = mCurrentFrame / mElapsedTime;
-        
+
         switch(mCurrentPart) {
             case 0:
                 printf("Shading\n");
@@ -144,9 +144,9 @@ void SceneShading::update()
         else
             start();
     }
-    
+
     mRotation += mRotationSpeed * mDt;
-    
+
     mCurrentFrame++;
 }
 

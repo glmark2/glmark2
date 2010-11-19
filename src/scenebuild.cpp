@@ -29,23 +29,23 @@ SceneBuild::~SceneBuild()
 int SceneBuild::load()
 {
     Model model;
-    
+
     if(!model.load_3ds(GLMARK_DATA_PATH"/models/horse.3ds"))
         return 0;
-        
+
     model.calculate_normals();
     model.convert_to_mesh(&mMesh);
-    
+
     mMesh.build_vbo();
-    
+
     mShader.load(GLMARK_DATA_PATH"/shaders/light-basic.vert",
                  GLMARK_DATA_PATH"/shaders/light-basic.frag");
 
     mRotationSpeed = 36.0f;
     mRotation = 0.0;
-    
+
     mRunning = false;
-    
+
     mPartsQty = 2;
     mPartDuration = new double[mPartsQty];
     mAverageFPS = new unsigned[mPartsQty];
@@ -58,9 +58,9 @@ int SceneBuild::load()
     mPartDuration[1] = 10.0;
 
     memset(mAverageFPS, 0, mPartsQty * sizeof(*mAverageFPS));
-    
+
     mCurrentPart = 0;
-    
+
     return 1;
 }
 
@@ -98,13 +98,13 @@ void SceneBuild::update()
     mCurrentTime = SDL_GetTicks() / 1000.0;
     mDt = mCurrentTime - mLastTime;
     mLastTime = mCurrentTime;
-    
+
     mElapsedTime = mCurrentTime - mStartTime;
-    
+
     if(mElapsedTime >= mPartDuration[mCurrentPart])
     {
         mAverageFPS[mCurrentPart] = mCurrentFrame / mElapsedTime;
-        
+
         switch(mCurrentPart)
         {
         case 0:
@@ -121,9 +121,9 @@ void SceneBuild::update()
         else
             start();
     }
-    
+
     mRotation += mRotationSpeed * mDt;
-    
+
     mCurrentFrame++;
 }
 
@@ -154,5 +154,5 @@ void SceneBuild::draw()
     case 1:
         mMesh.render_vbo();
         break;
-    }    
+    }
 }

@@ -166,7 +166,7 @@ int Model::load_3ds(const char *pFileName)
                 break;
 
             //----------------- EDIT3DS -----------------
-            // Description: 3D Editor chunk, objects layout info 
+            // Description: 3D Editor chunk, objects layout info
             // Chunk ID: 3d3d (hex)
             // Chunk Lenght: 0 + sub chunks
             //-------------------------------------------
@@ -235,7 +235,7 @@ int Model::load_3ds(const char *pFileName)
             //------------- TRI_MAPPINGCOORS ------------
             // Description: Vertices list
             // Chunk ID: 4140 (hex)
-            // Chunk Lenght: 1 x unsigned short (number of mapping points) 
+            // Chunk Lenght: 1 x unsigned short (number of mapping points)
             //             + 2 x float (mapping coordinates) x (number of mapping points)
             //             + sub chunks
             //-------------------------------------------

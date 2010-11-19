@@ -29,19 +29,19 @@ ScreenSDLGLESv2::ScreenSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullScr
     mInitSuccess = 0;
 
     if (SDL_GLES_Init(SDL_GLES_VERSION_2_0) < 0) {
-	fprintf(stderr, "[ Fail ] - GLES initialization failed: %s\n", SDL_GetError());
+        fprintf(stderr, "[ Fail ] - GLES initialization failed: %s\n", SDL_GetError());
     }
 
     SDL_GLES_Context *context;
     context = SDL_GLES_CreateContext();
     if (context == NULL) {
-	fprintf(stderr, "[ Fail ] - GLES create context: %s\n", SDL_GetError());
-	return;
+        fprintf(stderr, "[ Fail ] - GLES create context: %s\n", SDL_GetError());
+        return;
     }
 
     if (SDL_GLES_MakeCurrent(context) != 0) {
-	fprintf(stderr, "[ Fail ] - GLES make context current: %s\n", SDL_GetError());
-	return;
+        fprintf(stderr, "[ Fail ] - GLES make context current: %s\n", SDL_GetError());
+        return;
     }
 
 #ifdef _DEBUG
@@ -89,7 +89,7 @@ void ScreenSDLGLESv2::clear()
 
 void ScreenSDLGLESv2::update()
 {
-	SDL_GLES_SwapBuffers();
+    SDL_GLES_SwapBuffers();
 }
 
 void ScreenSDLGLESv2::print_info()

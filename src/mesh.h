@@ -33,7 +33,7 @@ class Texel
 {
 public:
     GLfloat u, v;
-    
+
     Texel();
     Texel(GLfloat pU, GLfloat pV);
 };
@@ -59,10 +59,10 @@ public:
     GLuint mVBOVertices;    // Vertex VBO name
     GLuint mVBONormals;     // Texture coordinate VBO name
     GLuint mVBOTexCoords;   // Texture coordinate VBO name
-    
+
     Mesh();                 // Default Constructor, should set pointers to null
     ~Mesh();
-    
+
     void make_cube();
     void make_torus();
     void render_array();

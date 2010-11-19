@@ -32,7 +32,7 @@ Texel::Texel(GLfloat pU, GLfloat pV)
 {
     u = pU; v = pV;
 }
-    
+
 Mesh::Mesh()
 {
     mPolygonQty = 0;
@@ -60,13 +60,13 @@ void Mesh::make_torus()
     float minor_radius = 0.4;
     unsigned i, j;
     unsigned k = 0;
-    
+
     Vector3f a, b, c, d, n;
 
     mMode = GL_TRIANGLES;
     mVertexQty = wraps_qty * per_wrap_qty * 6;
     mVertex = new Vertex[mVertexQty];
-    
+
     for(i = 0; i < wraps_qty; i++)
         for(j = 0; j < per_wrap_qty; j++)
         {
@@ -77,7 +77,7 @@ void Mesh::make_torus()
             a.x = (float)sin(theta) * r;
             a.y = minor_radius * (float)sin(phi);
             a.z = (float)cos(theta) * r;
-            
+
             theta = 2 * M_PI * (i + wrap_frac + 1) / (float)wraps_qty;
             b.x = (float)sin(theta) * r;
             b.y = minor_radius * (float)sin(phi);
@@ -103,8 +103,8 @@ void Mesh::make_torus()
             n = normal(a, b, c);
             mVertex[k].n = n;   mVertex[k].v = b;   k++;
             mVertex[k].n = n;   mVertex[k].v = c;   k++;
-            mVertex[k].n = n;   mVertex[k].v = d;   k++;            
-        }    
+            mVertex[k].n = n;   mVertex[k].v = d;   k++;
+        }
 }
 
 void Mesh::render_array()

@@ -34,7 +34,7 @@ Scene::Scene(Screen &pScreen) :
     mDt = 0;
     mCurrentFrame = 0;
     mRunning = false;
-    
+
     mAverageFPS = 0;
     mScoreScale = 0;
 

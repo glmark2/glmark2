@@ -20,9 +20,9 @@
  */
 #include "matrix.h"
 
-/** 
+/**
  * Multiply arrays representing 4x4 matrices in column-major order.
- * 
+ *
  * The result is stored in the first matrix.
  *
  * @param m the first matrix
@@ -46,11 +46,11 @@ static void multiply(GLfloat *m, const GLfloat *n)
    memcpy(m, &tmp, sizeof tmp);
 }
 
-/** 
+/**
  * Multiply this matrix with another.
  *
  * @param pM the matrix to multiply with.
- * 
+ *
  * @return reference to this matrix (multiplied)
  */
 Matrix4f &Matrix4f::operator*=(const Matrix4f &pM)
@@ -60,14 +60,14 @@ Matrix4f &Matrix4f::operator*=(const Matrix4f &pM)
     return *this;
 }
 
-/** 
+/**
  * Rotates a matrix.
- * 
+ *
  * @param angle the angle to rotate
  * @param x the x component of the rotation axis
  * @param y the y component of the rotation axis
  * @param z the z component of the rotation axis
- * 
+ *
  * @return reference to the matrix
  */
 Matrix4f &Matrix4f::rotate(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
@@ -78,7 +78,7 @@ Matrix4f &Matrix4f::rotate(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 
    GLfloat r[16] = {
       x * x * (1 - c) + c,     y * x * (1 - c) + z * s, x * z * (1 - c) - y * s, 0,
-      x * y * (1 - c) - z * s, y * y * (1 - c) + c,     y * z * (1 - c) + x * s, 0, 
+      x * y * (1 - c) - z * s, y * y * (1 - c) + c,     y * z * (1 - c) + x * s, 0,
       x * z * (1 - c) + y * s, y * z * (1 - c) - x * s, z * z * (1 - c) + c,     0,
       0, 0, 0, 1
    };
@@ -88,13 +88,13 @@ Matrix4f &Matrix4f::rotate(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
    return *this;
 }
 
-/** 
+/**
  * Translates a matrix.
- * 
+ *
  * @param x the x component of the translation
  * @param y the y component of the translation
  * @param z the z component of the translation
- * 
+ *
  * @return reference to the matrix
  */
 Matrix4f &Matrix4f::translate(GLfloat x, GLfloat y, GLfloat z)
@@ -106,9 +106,9 @@ Matrix4f &Matrix4f::translate(GLfloat x, GLfloat y, GLfloat z)
    return *this;
 }
 
-/** 
+/**
  * Transposes a matrix.
- * 
+ *
  * @return reference to the matrix
  */
 Matrix4f &Matrix4f::transpose()
@@ -209,7 +209,7 @@ Matrix4f &Matrix4f::invert()
    return *this;
 }
 
-/** 
+/**
  * Creates an empty matrix.
  *
  * All matrix components are 0.0 expect the lower right
@@ -221,9 +221,9 @@ Matrix4f::Matrix4f()
     m[15] = 1.0;
 }
 
-/** 
+/**
  * Copy constructor.
- * 
+ *
  * @param mat the matrix to copy the contents of.
  */
 Matrix4f::Matrix4f(Matrix4f &mat)
@@ -231,9 +231,9 @@ Matrix4f::Matrix4f(Matrix4f &mat)
    memcpy(m, mat.m, sizeof(m));
 }
 
-/** 
+/**
  * Creates a matrix with specified values in the diagonal.
- * 
+ *
  * The lower right value is initialized to 1.0.
  *
  * @param x the x component of the diagonal
@@ -249,7 +249,7 @@ Matrix4f::Matrix4f(GLfloat x, GLfloat y, GLfloat z)
     m[15] = 1.0;
 }
 
-/** 
+/**
  * Displays a matrix.
  *
  * @param str string to display before matrix
