@@ -1,8 +1,8 @@
 /* List of EGL attributes we care about */
 A(0,	EGL_BUFFER_SIZE,			1)
-A(1,	EGL_RED_SIZE,				1)
-A(2,	EGL_GREEN_SIZE,				1)
-A(3,	EGL_BLUE_SIZE,				1)
+A(1,	EGL_RED_SIZE,				0)
+A(2,	EGL_GREEN_SIZE,				0)
+A(3,	EGL_BLUE_SIZE,				0)
 A(4,	EGL_LUMINANCE_SIZE,			0)
 A(5,	EGL_ALPHA_SIZE,				0)
 A(6,	EGL_CONFIG_CAVEAT,			EGL_DONT_CARE)

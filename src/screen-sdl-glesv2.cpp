@@ -65,6 +65,7 @@ ScreenSDLGLESv2::ScreenSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullScr
 #endif
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+    glClearDepthf(1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_CULL_FACE);
