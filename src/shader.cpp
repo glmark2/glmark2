@@ -160,7 +160,7 @@ void Shader::unload()
     
     glDeleteShader(mVertexShader);
     glDeleteShader(mFragmentShader);
-    glDeleteShader(mShaderProgram);
+    glDeleteProgram(mShaderProgram);
 
     mVertexShader = 0;
     mFragmentShader = 0;
