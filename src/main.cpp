@@ -90,13 +90,16 @@ int main(int argc, char *argv[])
 
         screen.clear();
 
-        // Draw the next state of the current scene
+        // Update the state of the current scene
         scene[current_scene]->update();
-        scene[current_scene]->draw();
 
-        // If the scene has finished, move to the next one
-        if (!scene[current_scene]->is_running()) {
-            // Unload this scene
+        // If the current scene is still running then draw it,
+        // otherwise move to the next scene
+        if (scene[current_scene]->is_running()) {
+            scene[current_scene]->draw();
+        }
+        else {
+            // Unload the current scene
             scene[current_scene]->unload();
 
             current_scene++;
