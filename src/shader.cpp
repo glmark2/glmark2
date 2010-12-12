@@ -138,7 +138,7 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
             mLocations.MaterialDiffuse,
             mLocations.MaterialSpecular,
             mLocations.MaterialColor,
-            mLocations.MaterialTexture);
+            mLocations.MaterialTexture0);
 #endif
 
 }
