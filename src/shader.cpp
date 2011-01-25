@@ -56,6 +56,7 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
 {
     char *vertex_shader_source, *fragment_shader_source;
     char msg[512];
+    GLint status;
 
     mVertexShader = glCreateShader(GL_VERTEX_SHADER);
     mFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -74,14 +75,20 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
     free(fragment_shader_source);
 
     glCompileShader(mVertexShader);
-    glGetShaderInfoLog(mVertexShader, sizeof msg, NULL, msg);
-    if (strlen(msg) > 0)
-        printf("%s: %s", pVertexShaderFileName, msg);
+    glGetShaderiv(mVertexShader, GL_COMPILE_STATUS, &status);
+    if (status == GL_FALSE) {
+        glGetShaderInfoLog(mVertexShader, sizeof msg, NULL, msg);
+        fprintf(stderr, "Error compiling %s: %s", pVertexShaderFileName,
+                strlen(msg) > 0 ? msg : "[No info]");
+    }
 
     glCompileShader(mFragmentShader);
-    glGetShaderInfoLog(mFragmentShader, sizeof msg, NULL, msg);
-    if (strlen(msg) > 0)
-        printf("%s: %s\n", pFragmentShaderFileName, msg);
+    glGetShaderiv(mFragmentShader, GL_COMPILE_STATUS, &status);
+    if (status == GL_FALSE) {
+        glGetShaderInfoLog(mFragmentShader, sizeof msg, NULL, msg);
+        fprintf(stderr, "Error compiling %s: %s", pFragmentShaderFileName,
+                strlen(msg) > 0 ? msg : "[No info]");
+    }
 
     mShaderProgram = glCreateProgram();
     glAttachShader(mShaderProgram, mFragmentShader);
@@ -91,9 +98,12 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
     glBindAttribLocation(mShaderProgram, TexCoordAttribLocation, "texcoord");
 
     glLinkProgram(mShaderProgram);
-    glGetProgramInfoLog(mShaderProgram, sizeof msg, NULL, msg);
-    if (strlen(msg) > 0)
-        printf("Shader Linking: %s\n", msg);
+    glGetProgramiv(mFragmentShader, GL_LINK_STATUS, &status);
+    if (status == GL_FALSE) {
+        glGetProgramInfoLog(mShaderProgram, sizeof msg, NULL, msg);
+        fprintf(stderr, "Error linking shader program: %s",
+                strlen(msg) > 0 ? msg : "[No info]");
+    }
 
     mLocations.ModelViewProjectionMatrix = glGetUniformLocation(mShaderProgram,
             "ModelViewProjectionMatrix");
