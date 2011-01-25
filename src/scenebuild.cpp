@@ -91,6 +91,9 @@ void SceneBuild::start()
     mRunning = true;
     mStartTime = SDL_GetTicks() / 1000.0;
     mLastTime = mStartTime;
+
+    if (mCurrentPart == 0)
+        printf("[Suite] Precompilation\n");
 }
 
 void SceneBuild::update()
@@ -108,11 +111,10 @@ void SceneBuild::update()
         switch(mCurrentPart)
         {
         case 0:
-            printf("Precompilation\n");
-            printf("    Vertex array                  FPS: %u\n", mAverageFPS[mCurrentPart]);
+            printf("    [Benchmark] Vertex array                FPS: %u\n", mAverageFPS[mCurrentPart]);
             break;
         case 1:
-            printf("    Vertex buffer object          FPS: %u\n", mAverageFPS[mCurrentPart]);
+            printf("    [Benchmark] Vertex buffer object        FPS: %u\n", mAverageFPS[mCurrentPart]);
             break;
         }
         mCurrentPart++;

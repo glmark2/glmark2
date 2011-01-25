@@ -97,6 +97,9 @@ void SceneTexture::start()
     mRunning = true;
     mStartTime = SDL_GetTicks() / 1000.0;
     mLastTime = mStartTime;
+
+    if (mCurrentPart == 0)
+        printf("[Suite] Texture filtering\n");
 }
 
 void SceneTexture::update()
@@ -113,14 +116,13 @@ void SceneTexture::update()
 
         switch(mCurrentPart) {
             case 0:
-                printf("Texture filtering\n");
-                printf("    Nearest                       FPS: %u\n",  mAverageFPS[mCurrentPart]);
+                printf("    [Benchmark] Nearest                     FPS: %u\n",  mAverageFPS[mCurrentPart]);
                 break;
             case 1:
-                printf("    Linear                        FPS: %u\n",  mAverageFPS[mCurrentPart]);
+                printf("    [Benchmark] Linear                      FPS: %u\n",  mAverageFPS[mCurrentPart]);
                 break;
             case 2:
-                printf("    Mipmapped                     FPS: %u\n",  mAverageFPS[mCurrentPart]);
+                printf("    [Benchmark] Mipmapped                   FPS: %u\n",  mAverageFPS[mCurrentPart]);
                 break;
         }
         mCurrentPart++;

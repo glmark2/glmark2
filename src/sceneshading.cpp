@@ -113,6 +113,9 @@ void SceneShading::start()
     mRunning = true;
     mStartTime = SDL_GetTicks() / 1000.0;
     mLastTime = mStartTime;
+
+    if (mCurrentPart == 0)
+        printf("[Suite] Shading\n");
 }
 
 void SceneShading::update()
@@ -129,12 +132,11 @@ void SceneShading::update()
 
         switch(mCurrentPart) {
             case 0:
-                printf("Shading\n");
-                printf("    GLSL per vertex lighting      FPS: %u\n",
+                printf("    [Benchmark] GLSL per vertex lighting    FPS: %u\n",
                        mAverageFPS[mCurrentPart]);
                 break;
             case 1:
-                printf("    GLSL per pixel lighting       FPS: %u\n",
+                printf("    [Benchmark] GLSL per pixel lighting     FPS: %u\n",
                        mAverageFPS[mCurrentPart]);
                 break;
         }
