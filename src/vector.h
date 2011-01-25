@@ -21,8 +21,8 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef _VECTOR_H
-#define _VECTOR_H
+#ifndef GLMARK2_VECTOR_H_
+#define GLMARK2_VECTOR_H_
 
 #include "oglsdl.h"
 

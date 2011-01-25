@@ -21,8 +21,8 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef _SCREEN_SDL_H
-#define _SCREEN_SDL_H
+#ifndef GLMARK2_SCREEN_SDL_H_
+#define GLMARK2_SCREEN_SDL_H_
 
 #include "screen.h"
 

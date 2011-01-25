@@ -21,8 +21,8 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef _OGLSDL_H
-#define _OGLSDL_H
+#ifndef GLMARK2_OGLSDL_H_
+#define GLMARK2_OGLSDL_H_
 
 #include <SDL/SDL.h>
 

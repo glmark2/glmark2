@@ -21,8 +21,8 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef _MESH_H
-#define _MESH_H
+#ifndef GLMARK2_MESH_H_
+#define GLMARK2_MESH_H_
 
 #include "screen.h"
 #include "vector.h"

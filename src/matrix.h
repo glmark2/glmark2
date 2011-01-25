@@ -19,8 +19,8 @@
  * Authors:
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef _MATRIX_H
-#define _MATRIX_H
+#ifndef GLMARK2_MATRIX_H_
+#define GLMARK2_MATRIX_H_
 
 #include "oglsdl.h"
 

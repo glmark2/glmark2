@@ -21,8 +21,8 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef _SHADER_H
-#define _SHADER_H
+#ifndef GLMARK2_SHADER_H_
+#define GLMARK2_SHADER_H_
 
 #include "oglsdl.h"
 

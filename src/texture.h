@@ -21,8 +21,8 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef _TEXTURE_H
-#define _TEXTURE_H
+#ifndef GLMARK2_TEXTURE_H_
+#define GLMARK2_TEXTURE_H_
 
 #include "oglsdl.h"
 
