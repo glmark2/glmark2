@@ -21,15 +21,15 @@ def set_options(opt):
 	opt.tool_options('compiler_cc')
 	opt.tool_options('compiler_cxx')
 
-	opt.add_option('--gl', action='store_true', dest = 'gl', default = False, help='build using OpenGL 2.0')
-	opt.add_option('--glesv2', action='store_true', dest = 'glesv2', default = False, help='build using OpenGL ES 2.0')
+	opt.add_option('--enable-gl', action='store_true', dest = 'gl', default = False, help='build using OpenGL 2.0')
+	opt.add_option('--enable-glesv2', action='store_true', dest = 'glesv2', default = False, help='build using OpenGL ES 2.0')
 	opt.add_option('--no-debug', action='store_false', dest = 'debug', default = True, help='disable compiler debug information')
 	opt.add_option('--no-opt', action='store_false', dest = 'opt', default = True, help='disable compiler optimizations')
 	opt.add_option('--data-path', action='store', dest = 'data_path', help='the path to install the data to')
 
 def configure(conf):
 	if not Options.options.gl and not Options.options.glesv2:
-		conf.fatal("You must configure using at least one of --gl, --glesv2")
+		conf.fatal("You must configure using at least one of --enable-gl, --enable-glesv2")
 
 	conf.check_tool('compiler_cc')
 	conf.check_tool('compiler_cxx')
