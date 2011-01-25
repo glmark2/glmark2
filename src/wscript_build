@@ -1,31 +1,31 @@
-all_sources = bld.path.ant_glob('*.cpp').split();
-common_sources = [f for f in all_sources if f.find('screen-') == -1]
+all_sources = bld.path.ant_glob('*.cpp')
+common_sources = [f for f in all_sources if f.name.find('screen-') == -1]
 gl_sources = ['screen-sdl.cpp', 'screen-sdl-gl.cpp']
 glesv2_sources = ['screen-sdl.cpp', 'screen-sdl-glesv2.cpp']
 
 if bld.env.USE_GL:
-	bld(
-		features     = ['cxx', 'cprogram'],
-		source       = common_sources + gl_sources,
-		target       = 'glmark2',
-		uselib       = ['sdl', 'gl'],
-		lib          = ['m'],
-		defines      = ['USE_GL']
-		)
+    bld(
+        features     = ['cxx', 'cprogram'],
+        source       = common_sources + gl_sources,
+        target       = 'glmark2',
+        uselib       = ['sdl', 'gl'],
+        lib          = ['m'],
+        defines      = ['USE_GL']
+        )
 
 if bld.env.USE_GLESv2:
-	bld(
-		features     = ['cc', 'cstaticlib'],
-		source       = bld.path.ant_glob('sdlgles/*.c'),
-		target       = 'sdlgles',
-		uselib       = ['sdl', 'glesv2', 'egl']
-		)
-	bld(
-		features     = ['cxx', 'cprogram'],
-		source       = common_sources + glesv2_sources,
-		target       = 'glmark2-es2',
-		uselib       = ['sdl', 'glesv2'],
-		uselib_local = ['sdlgles'],
-		lib          = ['m', 'dl'],
-		defines      = ['USE_GLESv2']
-		)
+    bld(
+        features     = ['c', 'cstlib'],
+        source       = bld.path.ant_glob('sdlgles/*.c'),
+        target       = 'sdlgles',
+        uselib       = ['sdl', 'glesv2', 'egl']
+        )
+    bld(
+        features     = ['cxx', 'cprogram'],
+        source       = common_sources + glesv2_sources,
+        target       = 'glmark2-es2',
+        uselib       = ['sdl', 'glesv2'],
+        use          = ['sdlgles'],
+        lib          = ['m', 'dl'],
+        defines      = ['USE_GLESv2']
+        )

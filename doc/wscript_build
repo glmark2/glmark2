@@ -1,7 +1,7 @@
 if bld.env.USE_GL:
-	bld.install_files('${PREFIX}/share/man/man1',
-		bld.path.ant_glob('glmark2.1'))
+    bld.install_files('${PREFIX}/share/man/man1',
+                      bld.path.ant_glob('glmark2.1'))
 
 if bld.env.USE_GLESv2:
-	bld.install_files('${PREFIX}/share/man/man1',
-		bld.path.ant_glob('glmark2-es2.1'))
+    bld.install_files('${PREFIX}/share/man/man1',
+                      bld.path.ant_glob('glmark2-es2.1'))
