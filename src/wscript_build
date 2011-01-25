@@ -18,8 +18,7 @@ if bld.env.USE_GLESv2:
 		features     = ['cc', 'cstaticlib'],
 		source       = bld.path.ant_glob('sdlgles/*.c'),
 		target       = 'sdlgles',
-		uselib       = ['sdl', 'glesv2', 'egl'],
-		lib          = ['m'],
+		uselib       = ['sdl', 'glesv2', 'egl']
 		)
 	bld(
 		features     = ['cxx', 'cprogram'],
@@ -27,6 +26,6 @@ if bld.env.USE_GLESv2:
 		target       = 'glmark2-es2',
 		uselib       = ['sdl', 'glesv2'],
 		uselib_local = ['sdlgles'],
-		lib          = ['m'],
+		lib          = ['m', 'dl'],
 		defines      = ['USE_GLESv2']
 		)
