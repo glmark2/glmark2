@@ -99,7 +99,7 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
     glBindAttribLocation(mShaderProgram, TexCoordAttribLocation, "texcoord");
 
     glLinkProgram(mShaderProgram);
-    glGetProgramiv(mFragmentShader, GL_LINK_STATUS, &status);
+    glGetProgramiv(mShaderProgram, GL_LINK_STATUS, &status);
     if (status == GL_FALSE) {
         glGetProgramInfoLog(mShaderProgram, sizeof msg, NULL, msg);
         fprintf(stderr, "Error linking shader program: %s",
