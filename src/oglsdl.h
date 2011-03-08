@@ -26,9 +26,13 @@
 
 #include <SDL/SDL.h>
 
+#if USE_GL
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
-
+#elif USE_GLESv2
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#endif
 
 #endif
