@@ -93,6 +93,12 @@ extern DECLSPEC int SDLCALL SDL_GLES_SetVideoMode(void);
   */
 extern DECLSPEC int SDLCALL SDL_GLES_MakeCurrent(SDL_GLES_Context *context);
 
+/** Sets the swap interval for the current SDL_GLES context
+  * @param interval 0 for immediate updates, 1 for updates synchronized with the vertical retrace.
+  * @return 0 if everything went OK.
+  */
+extern DECLSPEC int SDLCALL SDL_GLES_SetSwapInterval(int interval);
+
 /** Equivalent to SDL_Flip(). Call when you're finished issuing GL calls
   * and want to draw the color buffer contents to the window surface.
   */

@@ -377,6 +377,17 @@ int SDL_GLES_MakeCurrent(SDL_GLES_Context* c)
 	return 0;
 }
 
+int SDL_GLES_SetSwapInterval(int interval)
+{
+	if (!eglSwapInterval(egl_display, interval)) {
+		SDL_SetError("EGL failed to set swap interval: %s",
+			get_error_string(eglGetError()));
+		return -1;
+	}
+
+	return 0;
+}
+
 void SDL_GLES_SwapBuffers()
 {
 	eglSwapBuffers(egl_display, egl_surface);

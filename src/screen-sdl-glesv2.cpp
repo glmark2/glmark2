@@ -45,6 +45,11 @@ ScreenSDLGLESv2::ScreenSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullScr
         return;
     }
 
+    if (SDL_GLES_SetSwapInterval(0) != 0) {
+        fprintf(stderr, "[ Fail ] - GLES set swap interval: %s\n", SDL_GetError());
+        return;
+    }
+
 #ifdef _DEBUG
     {
     int buf, red, green, blue, alpha, depth;
