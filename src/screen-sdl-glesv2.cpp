@@ -25,7 +25,7 @@
 #include "sdlgles/SDL_gles.h"
 
 ScreenSDLGLESv2::ScreenSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
-    : ScreenSDL(pWidth, pHeight, pBpp, pFullScreen, pFlags | SDL_OPENGL)
+    : ScreenSDL(pWidth, pHeight, pBpp, pFullScreen, pFlags)
 {
     mInitSuccess = 0;
 
