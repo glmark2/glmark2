@@ -23,6 +23,11 @@
  */
 #include "scene.h"
 
+SceneBuild::SceneBuild(Screen &pScreen) :
+    Scene(pScreen, "build")
+{
+}
+
 SceneBuild::~SceneBuild()
 {
 }

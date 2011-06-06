@@ -24,6 +24,11 @@
 #include "scene.h"
 #include "matrix.h"
 
+SceneTexture::SceneTexture(Screen &pScreen) :
+    Scene(pScreen, "texture")
+{
+}
+
 SceneTexture::~SceneTexture()
 {
     for(unsigned i = 0; i < 3; i++)

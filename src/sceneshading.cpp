@@ -24,6 +24,11 @@
 #include "scene.h"
 #include "matrix.h"
 
+SceneShading::SceneShading(Screen &pScreen) :
+    Scene(pScreen, "shading")
+{
+}
+
 SceneShading::~SceneShading()
 {
 }

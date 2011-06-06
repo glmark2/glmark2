@@ -33,10 +33,13 @@
 
 #include <math.h>
 
+#include <string>
+
+using std::string;
+
 class Scene
 {
 public:
-    Scene(Screen &pScreen);
     ~Scene();
 
     virtual int load();
@@ -48,7 +51,11 @@ public:
     unsigned calculate_score();
     bool is_running();
 
+    const string &name() { return mName; }
+
 protected:
+    Scene(Screen &pScreen, const string &name);
+
     unsigned mPartsQty;         // How many parts for the scene
     unsigned mCurrentPart;      // The current part being rendered
     double *mPartDuration;      // Duration per part in seconds
@@ -64,12 +71,13 @@ protected:
     double mElapsedTime;
 
     Screen &mScreen;
+    string mName;
 };
 
 class SceneBuild : public Scene
 {
 public:
-    SceneBuild(Screen &pScreen) : Scene(pScreen) {}
+    SceneBuild(Screen &pScreen);
     int load();
     void unload();
     void start();
@@ -89,7 +97,7 @@ protected:
 class SceneTexture : public Scene
 {
 public:
-    SceneTexture(Screen &pScreen) : Scene(pScreen) {}
+    SceneTexture(Screen &pScreen);
     int load();
     void unload();
     void start();
@@ -110,7 +118,7 @@ protected:
 class SceneShading : public Scene
 {
 public:
-    SceneShading(Screen &pScreen) : Scene(pScreen) {}
+    SceneShading(Screen &pScreen);
     int load();
     void unload();
     void start();

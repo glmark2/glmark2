@@ -23,8 +23,8 @@
  */
 #include "scene.h"
 
-Scene::Scene(Screen &pScreen) :
-    mScreen(pScreen)
+Scene::Scene(Screen &pScreen, const string &name) :
+    mScreen(pScreen), mName(name)
 {
     mPartsQty = 0;
     mCurrentPart = 0;
