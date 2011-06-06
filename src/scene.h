@@ -34,13 +34,25 @@
 #include <math.h>
 
 #include <string>
+#include <map>
 
 using std::string;
+using std::map;
 
 class Scene
 {
 public:
     ~Scene();
+
+    struct Option {
+        Option(string nam, string val, string desc) :
+            name(nam), value(val), default_value(val), description(desc) {}
+        Option() {}
+        string name;
+        string value;
+        string default_value;
+        string description;
+    };
 
     virtual int load();
     virtual void unload();
@@ -52,6 +64,7 @@ public:
     bool is_running();
 
     const string &name() { return mName; }
+    map<string, Option> &options() { return mOptions; }
 
 protected:
     Scene(Screen &pScreen, const string &name);
@@ -72,6 +85,7 @@ protected:
 
     Screen &mScreen;
     string mName;
+    map<string, Option> mOptions;
 };
 
 class SceneBuild : public Scene
