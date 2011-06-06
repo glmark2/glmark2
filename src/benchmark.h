@@ -36,10 +36,10 @@ using std::map;
 class Benchmark
 {
 public:
-    typedef vector< pair<string, string> > OptionVector;
+    typedef pair<string, string> OptionPair;
 
-    Benchmark(Scene &scene, OptionVector &options);
-    Benchmark(const string &name, OptionVector &options);
+    Benchmark(Scene &scene, vector<OptionPair> &options);
+    Benchmark(const string &name, vector<OptionPair> &options);
 
     Scene &setup_scene();
     void teardown_scene();
@@ -49,7 +49,7 @@ public:
 
 private:
     Scene &mScene;
-    OptionVector mOptions;
+    vector<OptionPair> mOptions;
 
     static map<string, Scene *> mSceneMap;
 };

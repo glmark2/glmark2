@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
     // Add the benchmarks to run
     vector<Benchmark *> benchmarks;
-    Benchmark::OptionVector opts;
+    vector<Benchmark::OptionPair> opts;
 
     benchmarks.push_back(new Benchmark("build", opts));
     benchmarks.push_back(new Benchmark("texture", opts));
