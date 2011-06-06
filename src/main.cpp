@@ -23,6 +23,7 @@
  */
 #include "oglsdl.h"
 #include "scene.h"
+#include "benchmark.h"
 
 #if USE_GL
 #include "screen-sdl-gl.h"
@@ -32,14 +33,34 @@
 
 #define UNUSED_PARAM(x) (void)(x)
 
+bool should_keep_running()
+{
+    bool running = true;
+    SDL_Event event;
+
+    while(SDL_PollEvent(&event))
+    {
+        switch(event.type)
+        {
+            case SDL_QUIT:
+                running = false;
+                break;
+            case SDL_KEYDOWN:
+                if(event.key.keysym.sym == SDLK_ESCAPE)
+                    running = false;
+                break;
+        }
+    }
+
+    return running;
+}
+
 int main(int argc, char *argv[])
 {
     UNUSED_PARAM(argc);
     UNUSED_PARAM(argv);
 
-    SDL_Event event;
-    int running = 1;
-    unsigned current_scene = 0;
+    unsigned score = 0;
 
     // Create the screen
 #if USE_GL
@@ -59,74 +80,50 @@ int main(int argc, char *argv[])
     screen.print_info();
     printf("=======================================================\n");
 
-    // Create the scenes.
-    Scene *scene[] = {
-        new SceneBuild(screen),
-        new SceneTexture(screen),
-        new SceneShading(screen),
-    };
+    // Register the scenes, so they can be looked-up by name
+    Benchmark::register_scene(*new SceneBuild(screen));
+    Benchmark::register_scene(*new SceneTexture(screen));
+    Benchmark::register_scene(*new SceneShading(screen));
 
-    unsigned num_scenes = sizeof(scene) / sizeof(*scene);
+    // Add the benchmarks to run
+    vector<Benchmark *> benchmarks;
+    Benchmark::OptionVector opts;
 
-    // Load the first scene
-    if (!scene[current_scene]->load())
-        return 1;
-    scene[current_scene]->start();
+    benchmarks.push_back(new Benchmark("build", opts));
+    benchmarks.push_back(new Benchmark("texture", opts));
+    benchmarks.push_back(new Benchmark("shading", opts));
 
-    while(running)
+    // Run the benchmarks
+    for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
+         bench_iter != benchmarks.end();
+         bench_iter++)
     {
-        while(SDL_PollEvent(&event))
+        bool keep_running = true;
+        Benchmark *bench = *bench_iter;
+        Scene &scene = bench->setup_scene();
+
+        while (scene.is_running() &&
+               (keep_running = should_keep_running()))
         {
-            switch(event.type)
-            {
-            case SDL_QUIT:
-                running = 0;
-                break;
-            case SDL_KEYDOWN:
-                if(event.key.keysym.sym == SDLK_ESCAPE)
-                    running = 0;
-                break;
-            }
+            screen.clear();
+
+            scene.draw();
+            scene.update();
+
+            screen.update();
         }
 
-        screen.clear();
+        score += scene.calculate_score();
 
-        // Update the state of the current scene
-        scene[current_scene]->update();
+        bench->teardown_scene();
 
-        // If the current scene is still running then draw it,
-        // otherwise move to the next scene
-        if (scene[current_scene]->is_running()) {
-            scene[current_scene]->draw();
-        }
-        else {
-            // Unload the current scene
-            scene[current_scene]->unload();
-
-            current_scene++;
-
-            // Do we have another scene?
-            if (current_scene < num_scenes) {
-                // Load and start next scene
-                if (!scene[current_scene]->load())
-                    return 1;
-                scene[current_scene]->start();
-            }
-            else
-                running = false;
-        }
-
-
-        screen.update();
+        if (!keep_running)
+            break;
     }
-
-    unsigned score = 0;
-    for (unsigned i = 0; i < num_scenes; i++)
-        score += scene[i]->calculate_score();
 
     printf("=======================================================\n");
     printf("                                  glmark2 Score: %u \n", score);
-	printf("=======================================================\n");
+    printf("=======================================================\n");
 
     return 0;
 }
