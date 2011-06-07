@@ -64,10 +64,12 @@ public:
     Mesh();                 // Default Constructor, should set pointers to null
     ~Mesh();
 
+    void reset();
     void make_cube();
     void make_torus();
     void render_array();
     void build_vbo();
+    void delete_vbo();
     void render_vbo();
 };
 
