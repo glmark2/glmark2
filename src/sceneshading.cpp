@@ -81,7 +81,7 @@ void SceneShading::unload()
     }
 }
 
-void SceneShading::start()
+void SceneShading::setup()
 {
     GLfloat lightAmbient[] = {0.1f, 0.1f, 0.1f, 1.0f};
     GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
@@ -146,11 +146,12 @@ void SceneShading::update()
                        mAverageFPS[mCurrentPart]);
                 break;
         }
+        teardown();
         mCurrentPart++;
         if(mCurrentPart >= mPartsQty)
             mRunning = false;
         else
-            start();
+            setup();
     }
 
     mRotation += mRotationSpeed * mDt;

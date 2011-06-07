@@ -52,7 +52,7 @@ Benchmark::setup_scene()
     // TODO: Set the options
 
     mScene.load();
-    mScene.start();
+    mScene.setup();
 
     return mScene;
 }
@@ -60,6 +60,7 @@ Benchmark::setup_scene()
 void
 Benchmark::teardown_scene()
 {
+    mScene.teardown();
     mScene.unload();
 
     // TODO: Reset options

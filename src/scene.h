@@ -54,9 +54,19 @@ public:
         string description;
     };
 
+    // load() and unload() handle option-independent configuration.
+    // It should be safe to call these only once per program execution,
+    // although you may choose to do so more times to better manage
+    // resource consumption.
     virtual int load();
     virtual void unload();
-    virtual void start();
+
+    // setup() and teardown() handle option-dependent configuration and
+    // also prepare a scene for a benchmark run.
+    // They should be called just before and after running a scene/benchmark.
+    virtual void setup();
+    virtual void teardown();
+
     virtual void update();
     virtual void draw();
 
@@ -96,7 +106,7 @@ public:
     SceneBuild(Screen &pScreen);
     int load();
     void unload();
-    void start();
+    void setup();
     void update();
     void draw();
 
@@ -116,7 +126,7 @@ public:
     SceneTexture(Screen &pScreen);
     int load();
     void unload();
-    void start();
+    void setup();
     void update();
     void draw();
 
@@ -137,7 +147,7 @@ public:
     SceneShading(Screen &pScreen);
     int load();
     void unload();
-    void start();
+    void setup();
     void update();
     void draw();
 

@@ -76,7 +76,7 @@ void SceneBuild::unload()
     mShader.unload();
 }
 
-void SceneBuild::start()
+void SceneBuild::setup()
 {
     GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
     GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
@@ -123,11 +123,12 @@ void SceneBuild::update()
             printf("    [Benchmark] Vertex buffer object        FPS: %u\n", mAverageFPS[mCurrentPart]);
             break;
         }
+        teardown();
         mCurrentPart++;
         if(mCurrentPart >= mPartsQty)
             mRunning = false;
         else
-            start();
+            setup();
     }
 
     mRotation += mRotationSpeed * mDt;

@@ -82,7 +82,7 @@ void SceneTexture::unload()
     mShader.unload();
 }
 
-void SceneTexture::start()
+void SceneTexture::setup()
 {
     GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
     GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
@@ -131,11 +131,12 @@ void SceneTexture::update()
                 printf("    [Benchmark] Mipmapped                   FPS: %u\n",  mAverageFPS[mCurrentPart]);
                 break;
         }
+        teardown();
         mCurrentPart++;
         if(mCurrentPart >= mPartsQty)
             mRunning = false;
         else
-            start();
+            setup();
     }
 
     mRotation += mRotationSpeed * mDt;

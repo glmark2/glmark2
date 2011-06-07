@@ -59,7 +59,11 @@ void Scene::unload()
 {
 }
 
-void Scene::start()
+void Scene::setup()
+{
+}
+
+void Scene::teardown()
 {
 }
 
