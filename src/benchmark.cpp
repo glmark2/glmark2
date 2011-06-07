@@ -36,12 +36,12 @@ Benchmark::get_scene_by_name(const string &name)
     return *mSceneMap[name];
 }
 
-Benchmark::Benchmark(Scene &scene, vector<OptionPair> &options) :
+Benchmark::Benchmark(Scene &scene, const vector<OptionPair> &options) :
     mScene(scene), mOptions(options)
 {
 }
 
-Benchmark::Benchmark(const string &name, vector<OptionPair> &options) :
+Benchmark::Benchmark(const string &name, const vector<OptionPair> &options) :
     mScene(Benchmark::get_scene_by_name(name)), mOptions(options)
 {
 }

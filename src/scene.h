@@ -45,7 +45,7 @@ public:
     ~Scene();
 
     struct Option {
-        Option(string nam, string val, string desc) :
+        Option(const string &nam, const string &val, const string &desc) :
             name(nam), value(val), default_value(val), description(desc) {}
         Option() {}
         string name;

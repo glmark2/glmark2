@@ -38,8 +38,8 @@ class Benchmark
 public:
     typedef pair<string, string> OptionPair;
 
-    Benchmark(Scene &scene, vector<OptionPair> &options);
-    Benchmark(const string &name, vector<OptionPair> &options);
+    Benchmark(Scene &scene, const vector<OptionPair> &options);
+    Benchmark(const string &name, const vector<OptionPair> &options);
 
     Scene &setup_scene();
     void teardown_scene();
