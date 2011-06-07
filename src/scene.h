@@ -83,23 +83,17 @@ protected:
     Scene(Screen &pScreen, const string &name);
     string construct_title(const string &title);
 
-    unsigned mPartsQty;         // How many parts for the scene
-    unsigned mCurrentPart;      // The current part being rendered
-    double *mPartDuration;      // Duration per part in seconds
-
-    double mLastTime, mCurrentTime, mDt;
-    unsigned mCurrentFrame;
-    bool mRunning;
-
-    unsigned *mAverageFPS;      // Average FPS per part
-    float *mScoreScale;
-
-    double mStartTime;
-    double mElapsedTime;
-
     Screen &mScreen;
     string mName;
     map<string, Option> mOptions;
+
+    double mStartTime;
+    double mLastUpdateTime;
+    unsigned mCurrentFrame;
+    unsigned mAverageFPS;      // Average FPS of run
+
+    bool mRunning;
+    double mDuration;      // Duration of run in seconds
 };
 
 class SceneBuild : public Scene
@@ -109,6 +103,7 @@ public:
     int load();
     void unload();
     void setup();
+    void teardown();
     void update();
     void draw();
 
@@ -120,6 +115,7 @@ protected:
     Mesh mMesh;
     float mRotation;
     float mRotationSpeed;
+    bool mUseVbo;
 };
 
 class SceneTexture : public Scene
@@ -129,6 +125,7 @@ public:
     int load();
     void unload();
     void setup();
+    void teardown();
     void update();
     void draw();
 
@@ -138,7 +135,7 @@ protected:
     Shader mShader;
 
     Mesh mCubeMesh;
-    GLuint mTexture[3];
+    GLuint mTexture;
     Vector3f mRotation;
     Vector3f mRotationSpeed;
 };
@@ -150,13 +147,14 @@ public:
     int load();
     void unload();
     void setup();
+    void teardown();
     void update();
     void draw();
 
     ~SceneShading();
 
 protected:
-    Shader mShader[2];
+    Shader mShader;
 
     Mesh mMesh;
     float mRotation;

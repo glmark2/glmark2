@@ -27,30 +27,16 @@
 using std::stringstream;
 
 Scene::Scene(Screen &pScreen, const string &name) :
-    mScreen(pScreen), mName(name)
+    mScreen(pScreen), mName(name),
+    mStartTime(0), mLastUpdateTime(0), mCurrentFrame(0), mAverageFPS(0), 
+    mRunning(0), mDuration(0)
 {
-    mPartsQty = 0;
-    mCurrentPart = 0;
-    mPartDuration = 0;
-
-    mLastTime = 0;
-    mCurrentTime = 0;
-    mDt = 0;
-    mCurrentFrame = 0;
-    mRunning = false;
-
-    mAverageFPS = 0;
-    mScoreScale = 0;
-
-    mStartTime = 0;
-    mElapsedTime = 0;
+    mOptions["duration"] = Scene::Option("duration", "10.0",
+                                         "The duration of each benchmark in seconds");
 }
 
 Scene::~Scene()
 {
-    delete [] mPartDuration;
-    delete [] mAverageFPS;
-    delete [] mScoreScale;
 }
 
 int Scene::load()
@@ -64,6 +50,8 @@ void Scene::unload()
 
 void Scene::setup()
 {
+    stringstream ss(mOptions["duration"].value);
+    ss >> mDuration;
 }
 
 void Scene::teardown()
@@ -84,19 +72,14 @@ Scene::result_string(const string &title)
     stringstream ss;
 
     ss << "[" << mName << "] " << Scene::construct_title(title) << " ";
-    ss << "FPS: " << mAverageFPS[0];
+    ss << "FPS: " << mAverageFPS;
 
     return ss.str();
 }
 
 unsigned Scene::calculate_score()
 {
-    unsigned mScore = 0;
-
-    for(unsigned i = 0; i < mPartsQty; i++)
-        mScore += mAverageFPS[i] * mScoreScale[i];
-
-    return mScore;
+    return mAverageFPS;
 }
 
 

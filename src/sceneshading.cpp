@@ -27,6 +27,8 @@
 SceneShading::SceneShading(Screen &pScreen) :
     Scene(pScreen, "shading")
 {
+    mOptions["shading"] = Scene::Option("shading", "gouraud",
+                                        "[gouraud, phong]");
 }
 
 SceneShading::~SceneShading()
@@ -45,44 +47,22 @@ int SceneShading::load()
 
     mMesh.build_vbo();
 
-    mShader[0].load(GLMARK_DATA_PATH"/shaders/light-basic.vert",
-                    GLMARK_DATA_PATH"/shaders/light-basic.frag");
-    mShader[1].load(GLMARK_DATA_PATH"/shaders/light-advanced.vert",
-                    GLMARK_DATA_PATH"/shaders/light-advanced.frag");
-
     mRotationSpeed = 36.0f;
-    mRotation = 0.0f;
 
     mRunning = false;
-
-    mPartsQty = 2;
-    mPartDuration = new double[mPartsQty];
-    mAverageFPS = new unsigned[mPartsQty];
-    mScoreScale = new float[mPartsQty];
-
-    mScoreScale[0] = 1.0f / mPartsQty;
-    mScoreScale[1] = 1.0f / mPartsQty;
-
-    mPartDuration[0] = 10.0;
-    mPartDuration[1] = 10.0;
-
-    memset(mAverageFPS, 0, mPartsQty * sizeof(*mAverageFPS));
-
-    mCurrentPart = 0;
 
     return 1;
 }
 
 void SceneShading::unload()
 {
-    for(unsigned i = 0; i < mPartsQty; i++) {
-        mShader[i].remove();
-        mShader[i].unload();
-    }
+    mMesh.reset();
 }
 
 void SceneShading::setup()
 {
+    Scene::setup();
+
     GLfloat lightAmbient[] = {0.1f, 0.1f, 0.1f, 1.0f};
     GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
     GLfloat lightSpecular[] = {0.8f, 0.8f, 0.8f, 1.0f};
@@ -93,68 +73,68 @@ void SceneShading::setup()
     float materialSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
     float materialColor[] = {0.0f, 0.0f, 1.0f, 1.0f};
 
-    mShader[mCurrentPart].use();
+    const string &shading = mOptions["shading"].value;
+
+    if (shading == "gouraud") {
+        mShader.load(GLMARK_DATA_PATH"/shaders/light-basic.vert",
+                     GLMARK_DATA_PATH"/shaders/light-basic.frag");
+    }
+    else if (shading == "phong") {
+        mShader.load(GLMARK_DATA_PATH"/shaders/light-advanced.vert",
+                     GLMARK_DATA_PATH"/shaders/light-advanced.frag");
+    }
+
+    mShader.use();
 
     // Load lighting and material uniforms
-    glUniform4fv(mShader[mCurrentPart].mLocations.LightSourcePosition, 1, lightPosition);
+    glUniform4fv(mShader.mLocations.LightSourcePosition, 1, lightPosition);
 
-    glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceAmbient, 1, lightAmbient);
-    glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceDiffuse, 1, lightDiffuse);
-    glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceSpecular, 1, lightSpecular);
+    glUniform3fv(mShader.mLocations.LightSourceAmbient, 1, lightAmbient);
+    glUniform3fv(mShader.mLocations.LightSourceDiffuse, 1, lightDiffuse);
+    glUniform3fv(mShader.mLocations.LightSourceSpecular, 1, lightSpecular);
 
-    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialAmbient, 1, materialAmbient);
-    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialDiffuse, 1, materialDiffuse);
-    glUniform3fv(mShader[mCurrentPart].mLocations.MaterialSpecular, 1, materialSpecular);
-    glUniform4fv(mShader[mCurrentPart].mLocations.MaterialColor, 1, materialColor);
+    glUniform3fv(mShader.mLocations.MaterialAmbient, 1, materialAmbient);
+    glUniform3fv(mShader.mLocations.MaterialDiffuse, 1, materialDiffuse);
+    glUniform3fv(mShader.mLocations.MaterialSpecular, 1, materialSpecular);
+    glUniform4fv(mShader.mLocations.MaterialColor, 1, materialColor);
 
     // Calculate and load the half vector
     Vector3f halfVector = Vector3f(lightPosition[0], lightPosition[1], lightPosition[2]);
     halfVector.normalize();
     halfVector += Vector3f(0.0, 0.0, 1.0);
     halfVector.normalize();
-    glUniform3fv(mShader[mCurrentPart].mLocations.LightSourceHalfVector, 1,
+    glUniform3fv(mShader.mLocations.LightSourceHalfVector, 1,
                  (GLfloat *)&halfVector);
 
     mCurrentFrame = 0;
+    mRotation = 0.0f;
     mRunning = true;
     mStartTime = SDL_GetTicks() / 1000.0;
-    mLastTime = mStartTime;
+    mLastUpdateTime = mStartTime;
+}
 
-    if (mCurrentPart == 0)
-        printf("[Suite] Shading\n");
+void SceneShading::teardown()
+{
+    mShader.remove();
+    mShader.unload();
+
+    Scene::teardown();
 }
 
 void SceneShading::update()
 {
-    mCurrentTime = SDL_GetTicks() / 1000.0;
-    mDt = mCurrentTime - mLastTime;
-    mLastTime = mCurrentTime;
+    double current_time = SDL_GetTicks() / 1000.0;
+    double dt = current_time - mLastUpdateTime;
+    double elapsed_time = current_time - mStartTime;
 
-    mElapsedTime = mCurrentTime - mStartTime;
+    mLastUpdateTime = current_time;
 
-    if(mElapsedTime >= mPartDuration[mCurrentPart])
-    {
-        mAverageFPS[mCurrentPart] = mCurrentFrame / mElapsedTime;
-
-        switch(mCurrentPart) {
-            case 0:
-                printf("    [Benchmark] GLSL per vertex lighting    FPS: %u\n",
-                       mAverageFPS[mCurrentPart]);
-                break;
-            case 1:
-                printf("    [Benchmark] GLSL per pixel lighting     FPS: %u\n",
-                       mAverageFPS[mCurrentPart]);
-                break;
-        }
-        teardown();
-        mCurrentPart++;
-        if(mCurrentPart >= mPartsQty)
-            mRunning = false;
-        else
-            setup();
+    if (elapsed_time >= mDuration) {
+        mAverageFPS = mCurrentFrame / elapsed_time;
+        mRunning = false;
     }
 
-    mRotation += mRotationSpeed * mDt;
+    mRotation += mRotationSpeed * dt;
 
     mCurrentFrame++;
 }
@@ -169,13 +149,13 @@ void SceneShading::draw()
     model_view.rotate(2 * M_PI * mRotation / 360.0, 0.0f, 1.0f, 0.0f);
     model_view_proj *= model_view;
 
-    glUniformMatrix4fv(mShader[mCurrentPart].mLocations.ModelViewProjectionMatrix, 1,
+    glUniformMatrix4fv(mShader.mLocations.ModelViewProjectionMatrix, 1,
                        GL_FALSE, model_view_proj.m);
 
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
     model_view.invert().transpose();
-    glUniformMatrix4fv(mShader[mCurrentPart].mLocations.NormalMatrix, 1,
+    glUniformMatrix4fv(mShader.mLocations.NormalMatrix, 1,
                        GL_FALSE, model_view.m);
 
     mMesh.render_vbo();

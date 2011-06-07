@@ -26,6 +26,8 @@
 SceneBuild::SceneBuild(Screen &pScreen) :
     Scene(pScreen, "build")
 {
+    mOptions["use-vbo"] = Scene::Option("use-vbo", "true",
+                                        "Whether to use VBOs for rendering [true,false]");
 }
 
 SceneBuild::~SceneBuild()
@@ -42,46 +44,37 @@ int SceneBuild::load()
     model.calculate_normals();
     model.convert_to_mesh(&mMesh);
 
-    mMesh.build_vbo();
-
     mShader.load(GLMARK_DATA_PATH"/shaders/light-basic.vert",
                  GLMARK_DATA_PATH"/shaders/light-basic.frag");
 
     mRotationSpeed = 36.0f;
-    mRotation = 0.0;
 
     mRunning = false;
-
-    mPartsQty = 2;
-    mPartDuration = new double[mPartsQty];
-    mAverageFPS = new unsigned[mPartsQty];
-    mScoreScale = new float[mPartsQty];
-
-    mScoreScale[0] = 1.0f / mPartsQty;
-    mScoreScale[1] = 1.0f / mPartsQty;
-
-    mPartDuration[0] = 10.0;
-    mPartDuration[1] = 10.0;
-
-    memset(mAverageFPS, 0, mPartsQty * sizeof(*mAverageFPS));
-
-    mCurrentPart = 0;
 
     return 1;
 }
 
 void SceneBuild::unload()
 {
+    mMesh.reset();
     mShader.remove();
     mShader.unload();
 }
 
 void SceneBuild::setup()
 {
+    Scene::setup();
+
     GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
     GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
     GLfloat lightPosition[] = {20.0f, 20.0f, 10.0f, 1.0f};
     GLfloat materialColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+
+    mUseVbo = (mOptions["use-vbo"].value == "true");
+
+    if (mUseVbo)
+        mMesh.build_vbo();
 
     mShader.use();
 
@@ -94,44 +87,37 @@ void SceneBuild::setup()
     glUniform4fv(mShader.mLocations.MaterialColor, 1, materialColor);
 
     mCurrentFrame = 0;
+    mRotation = 0.0;
     mRunning = true;
     mStartTime = SDL_GetTicks() / 1000.0;
-    mLastTime = mStartTime;
+    mLastUpdateTime = mStartTime;
+}
 
-    if (mCurrentPart == 0)
-        printf("[Suite] Precompilation\n");
+void
+SceneBuild::teardown()
+{
+    mShader.remove();
+
+    if (mUseVbo)
+        mMesh.delete_vbo();
+
+    Scene::teardown();
 }
 
 void SceneBuild::update()
 {
-    mCurrentTime = SDL_GetTicks() / 1000.0;
-    mDt = mCurrentTime - mLastTime;
-    mLastTime = mCurrentTime;
+    double current_time = SDL_GetTicks() / 1000.0;
+    double dt = current_time - mLastUpdateTime;
+    double elapsed_time = current_time - mStartTime;
 
-    mElapsedTime = mCurrentTime - mStartTime;
+    mLastUpdateTime = current_time;
 
-    if(mElapsedTime >= mPartDuration[mCurrentPart])
-    {
-        mAverageFPS[mCurrentPart] = mCurrentFrame / mElapsedTime;
-
-        switch(mCurrentPart)
-        {
-        case 0:
-            printf("    [Benchmark] Vertex array                FPS: %u\n", mAverageFPS[mCurrentPart]);
-            break;
-        case 1:
-            printf("    [Benchmark] Vertex buffer object        FPS: %u\n", mAverageFPS[mCurrentPart]);
-            break;
-        }
-        teardown();
-        mCurrentPart++;
-        if(mCurrentPart >= mPartsQty)
-            mRunning = false;
-        else
-            setup();
+    if (elapsed_time >= mDuration) {
+        mAverageFPS = mCurrentFrame / elapsed_time;
+        mRunning = false;
     }
 
-    mRotation += mRotationSpeed * mDt;
+    mRotation += mRotationSpeed * dt;
 
     mCurrentFrame++;
 }
@@ -155,13 +141,8 @@ void SceneBuild::draw()
     glUniformMatrix4fv(mShader.mLocations.NormalMatrix, 1,
                        GL_FALSE, model_view.m);
 
-    switch(mCurrentPart)
-    {
-    case 0:
-        mMesh.render_array();
-        break;
-    case 1:
+    if (mUseVbo)
         mMesh.render_vbo();
-        break;
-    }
+    else
+        mMesh.render_array();
 }

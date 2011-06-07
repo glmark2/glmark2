@@ -25,6 +25,8 @@
 #include "scene.h"
 #include "benchmark.h"
 
+#include <iostream>
+
 #if USE_GL
 #include "screen-sdl-gl.h"
 #elif USE_GLESv2
@@ -53,6 +55,40 @@ bool should_keep_running()
     }
 
     return running;
+}
+
+void
+add_default_benchmarks(vector<Benchmark *> &benchmarks)
+{
+    vector<Benchmark::OptionPair> opts;
+
+    opts.clear();
+    opts.push_back(Benchmark::OptionPair("use-vbo", "false"));
+    benchmarks.push_back(new Benchmark("build", opts));
+
+    opts.clear();
+    opts.push_back(Benchmark::OptionPair("use-vbo", "true"));
+    benchmarks.push_back(new Benchmark("build", opts));
+
+    opts.clear();
+    opts.push_back(Benchmark::OptionPair("texture-filter", "nearest"));
+    benchmarks.push_back(new Benchmark("texture", opts));
+
+    opts.clear();
+    opts.push_back(Benchmark::OptionPair("texture-filter", "linear"));
+    benchmarks.push_back(new Benchmark("texture", opts));
+
+    opts.clear();
+    opts.push_back(Benchmark::OptionPair("texture-filter", "mipmap"));
+    benchmarks.push_back(new Benchmark("texture", opts));
+
+    opts.clear();
+    opts.push_back(Benchmark::OptionPair("shading", "gouraud"));
+    benchmarks.push_back(new Benchmark("shading", opts));
+
+    opts.clear();
+    opts.push_back(Benchmark::OptionPair("shading", "phong"));
+    benchmarks.push_back(new Benchmark("shading", opts));
 }
 
 int main(int argc, char *argv[])
@@ -87,11 +123,8 @@ int main(int argc, char *argv[])
 
     // Add the benchmarks to run
     vector<Benchmark *> benchmarks;
-    vector<Benchmark::OptionPair> opts;
 
-    benchmarks.push_back(new Benchmark("build", opts));
-    benchmarks.push_back(new Benchmark("texture", opts));
-    benchmarks.push_back(new Benchmark("shading", opts));
+    add_default_benchmarks(benchmarks);
 
     // Run the benchmarks
     for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
@@ -113,6 +146,7 @@ int main(int argc, char *argv[])
             screen.update();
         }
 
+        std::cout << scene.result_string() << std::endl;
         score += scene.calculate_score();
 
         bench->teardown_scene();
