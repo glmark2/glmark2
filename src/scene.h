@@ -69,9 +69,9 @@ public:
 
     virtual void update();
     virtual void draw();
-    virtual string result_string(const string &title = "");
+    virtual string info_string(const string &title = "");
 
-    unsigned calculate_score();
+    unsigned average_fps();
     bool is_running();
 
     const string &name() { return mName; }

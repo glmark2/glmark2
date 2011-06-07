@@ -134,6 +134,7 @@ int main(int argc, char *argv[])
         bool keep_running = true;
         Benchmark *bench = *bench_iter;
         Scene &scene = bench->setup_scene();
+        std::cout << scene.info_string() << std::flush;
 
         while (scene.is_running() &&
                (keep_running = should_keep_running()))
@@ -146,8 +147,8 @@ int main(int argc, char *argv[])
             screen.update();
         }
 
-        std::cout << scene.result_string() << std::endl;
-        score += scene.calculate_score();
+        std::cout << " FPS: " << scene.average_fps() << std::endl;
+        score += scene.average_fps();
 
         bench->teardown_scene();
 

@@ -67,17 +67,16 @@ void Scene::draw()
 }
 
 string
-Scene::result_string(const string &title)
+Scene::info_string(const string &title)
 {
     stringstream ss;
 
     ss << "[" << mName << "] " << Scene::construct_title(title) << " ";
-    ss << "FPS: " << mAverageFPS;
 
     return ss.str();
 }
 
-unsigned Scene::calculate_score()
+unsigned Scene::average_fps()
 {
     return mAverageFPS;
 }
