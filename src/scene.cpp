@@ -86,3 +86,29 @@ bool Scene::is_running()
 {
     return mRunning;
 }
+
+bool
+Scene::set_option(const string &opt, const string &val)
+{ 
+    map<string, Option>::iterator iter = mOptions.find(opt);
+
+    if (iter == mOptions.end())
+        return false;
+
+    iter->second.value = val;
+
+    return true;
+}
+
+void
+Scene::reset_options()
+{
+    for (map<string, Option>::iterator iter = mOptions.begin();
+         iter != mOptions.end();
+         iter++)
+    {
+        Option &opt = iter->second;
+
+        opt.value = opt.default_value;
+    }
+}

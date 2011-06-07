@@ -64,7 +64,9 @@ public:
     bool is_running();
 
     const string &name() { return mName; }
-    map<string, Option> &options() { return mOptions; }
+    bool set_option(const string &opt, const string &val);
+    void reset_options();
+    const map<string, Option> &options() { return mOptions; }
 
 protected:
     Scene(Screen &pScreen, const string &name);
