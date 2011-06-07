@@ -49,7 +49,8 @@ Benchmark::Benchmark(const string &name, const vector<OptionPair> &options) :
 Scene &
 Benchmark::setup_scene()
 {
-    // TODO: Set the options
+    mScene.reset_options();
+    load_options();
 
     mScene.load();
     mScene.setup();
@@ -62,6 +63,16 @@ Benchmark::teardown_scene()
 {
     mScene.teardown();
     mScene.unload();
-
-    // TODO: Reset options
 }
+
+void
+Benchmark::load_options()
+{
+    for (vector<OptionPair>::iterator iter = mOptions.begin();
+         iter != mOptions.end();
+         iter++)
+    {
+        mScene.set_option(iter->first, iter->second);
+    }
+}
+

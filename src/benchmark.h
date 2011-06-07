@@ -51,6 +51,8 @@ private:
     Scene &mScene;
     vector<OptionPair> mOptions;
 
+    void load_options();
+
     static map<string, Scene *> mSceneMap;
 };
 
