@@ -25,6 +25,8 @@
 #include <sstream>
 
 using std::stringstream;
+using std::string;
+using std::map;
 
 Scene::Scene(Screen &pScreen, const string &name) :
     mScreen(pScreen), mName(name),

@@ -73,7 +73,7 @@ void SceneShading::setup()
     float materialSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
     float materialColor[] = {0.0f, 0.0f, 1.0f, 1.0f};
 
-    const string &shading = mOptions["shading"].value;
+    const std::string &shading = mOptions["shading"].value;
 
     if (shading == "gouraud") {
         mShader.load(GLMARK_DATA_PATH"/shaders/light-basic.vert",

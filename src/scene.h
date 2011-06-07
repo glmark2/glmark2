@@ -36,22 +36,19 @@
 #include <string>
 #include <map>
 
-using std::string;
-using std::map;
-
 class Scene
 {
 public:
     ~Scene();
 
     struct Option {
-        Option(const string &nam, const string &val, const string &desc) :
+        Option(const std::string &nam, const std::string &val, const std::string &desc) :
             name(nam), value(val), default_value(val), description(desc) {}
         Option() {}
-        string name;
-        string value;
-        string default_value;
-        string description;
+        std::string name;
+        std::string value;
+        std::string default_value;
+        std::string description;
     };
 
     // load() and unload() handle option-independent configuration.
@@ -69,23 +66,23 @@ public:
 
     virtual void update();
     virtual void draw();
-    virtual string info_string(const string &title = "");
+    virtual std::string info_string(const std::string &title = "");
 
     unsigned average_fps();
     bool is_running();
 
-    const string &name() { return mName; }
-    bool set_option(const string &opt, const string &val);
+    const std::string &name() { return mName; }
+    bool set_option(const std::string &opt, const std::string &val);
     void reset_options();
-    const map<string, Option> &options() { return mOptions; }
+    const std::map<std::string, Option> &options() { return mOptions; }
 
 protected:
-    Scene(Screen &pScreen, const string &name);
-    string construct_title(const string &title);
+    Scene(Screen &pScreen, const std::string &name);
+    std::string construct_title(const std::string &title);
 
     Screen &mScreen;
-    string mName;
-    map<string, Option> mOptions;
+    std::string mName;
+    std::map<std::string, Option> mOptions;
 
     double mStartTime;
     double mLastUpdateTime;

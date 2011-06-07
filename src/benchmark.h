@@ -28,32 +28,27 @@
 
 #include "scene.h"
 
-using std::vector;
-using std::pair;
-using std::string;
-using std::map;
-
 class Benchmark
 {
 public:
-    typedef pair<string, string> OptionPair;
+    typedef std::pair<std::string, std::string> OptionPair;
 
-    Benchmark(Scene &scene, const vector<OptionPair> &options);
-    Benchmark(const string &name, const vector<OptionPair> &options);
+    Benchmark(Scene &scene, const std::vector<OptionPair> &options);
+    Benchmark(const std::string &name, const std::vector<OptionPair> &options);
 
     Scene &setup_scene();
     void teardown_scene();
 
     static void register_scene(Scene &scene);
-    static Scene &get_scene_by_name(const string &name);
+    static Scene &get_scene_by_name(const std::string &name);
 
 private:
     Scene &mScene;
-    vector<OptionPair> mOptions;
+    std::vector<OptionPair> mOptions;
 
     void load_options();
 
-    static map<string, Scene *> mSceneMap;
+    static std::map<std::string, Scene *> mSceneMap;
 };
 
 #endif

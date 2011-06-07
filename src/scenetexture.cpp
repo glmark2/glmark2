@@ -74,7 +74,7 @@ void SceneTexture::setup()
     // Create texture according to selected filtering
     GLint min_filter = GL_NONE;
     GLint mag_filter = GL_NONE;
-    const string &filter = mOptions["texture-filter"].value;
+    const std::string &filter = mOptions["texture-filter"].value;
 
     if (filter == "nearest") {
         min_filter = GL_NEAREST;

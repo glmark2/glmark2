@@ -22,7 +22,10 @@
 
 #include "benchmark.h"
 
-map<string, Scene *> Benchmark::mSceneMap;
+using std::string;
+using std::vector;
+
+std::map<string, Scene *> Benchmark::mSceneMap;
 
 void
 Benchmark::register_scene(Scene &scene)

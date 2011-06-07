@@ -35,6 +35,8 @@
 
 #define UNUSED_PARAM(x) (void)(x)
 
+using std::vector;
+
 bool should_keep_running()
 {
     bool running = true;
