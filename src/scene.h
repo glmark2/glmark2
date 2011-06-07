@@ -69,6 +69,7 @@ public:
 
     virtual void update();
     virtual void draw();
+    virtual string result_string(const string &title = "");
 
     unsigned calculate_score();
     bool is_running();
@@ -80,6 +81,7 @@ public:
 
 protected:
     Scene(Screen &pScreen, const string &name);
+    string construct_title(const string &title);
 
     unsigned mPartsQty;         // How many parts for the scene
     unsigned mCurrentPart;      // The current part being rendered

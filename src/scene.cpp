@@ -22,6 +22,9 @@
  *  Alexandros Frantzis (glmark2)
  */
 #include "scene.h"
+#include <sstream>
+
+using std::stringstream;
 
 Scene::Scene(Screen &pScreen, const string &name) :
     mScreen(pScreen), mName(name)
@@ -75,6 +78,17 @@ void Scene::draw()
 {
 }
 
+string
+Scene::result_string(const string &title)
+{
+    stringstream ss;
+
+    ss << "[" << mName << "] " << Scene::construct_title(title) << " ";
+    ss << "FPS: " << mAverageFPS[0];
+
+    return ss.str();
+}
+
 unsigned Scene::calculate_score()
 {
     unsigned mScore = 0;
@@ -115,4 +129,24 @@ Scene::reset_options()
 
         opt.value = opt.default_value;
     }
+}
+
+
+string
+Scene::construct_title(const string &title)
+{
+    stringstream ss;
+
+    if (title == "") {
+        for (map<string, Option>::iterator iter = mOptions.begin();
+             iter != mOptions.end();
+             iter++)
+        {
+            ss << iter->first << "=" << iter->second.value << ":";
+        }
+    }
+    else
+        ss << title;
+
+    return ss.str();
 }
