@@ -42,8 +42,14 @@ int SceneTexture::load()
     if(!model.load_3ds(GLMARK_DATA_PATH"/models/cube.3ds"))
         return 0;
 
-    if(!load_texture(GLMARK_DATA_PATH"/textures/crate-base.bmp", mTexture))
+    if(!Texture::load(GLMARK_DATA_PATH"/textures/crate-base.bmp", mTexture,
+                      GL_NEAREST, GL_NEAREST,
+                      GL_LINEAR, GL_LINEAR,
+                      GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
+                      0))
+    {
         return 0;
+    }
 
     model.calculate_normals();
     model.convert_to_mesh(&mCubeMesh);

@@ -23,7 +23,26 @@
  */
 #include "texture.h"
 
-int load_texture(const char pFilename[], GLuint *pTexture)
+static void
+setup_texture(GLuint *tex, GLenum format, SDL_Surface *surface,
+              GLint min_filter, GLint mag_filter)
+{
+    glGenTextures(1, tex);
+    glBindTexture(GL_TEXTURE_2D, *tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, surface->w, surface->h, 0,
+                 format, GL_UNSIGNED_BYTE, surface->pixels);
+
+    if ((min_filter != GL_NEAREST && min_filter != GL_LINEAR) ||
+        (mag_filter != GL_NEAREST && mag_filter != GL_LINEAR))
+    {
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+}
+
+int
+Texture::load(const char pFilename[], GLuint *pTexture, ...)
 {
     SDL_Surface *surface;
     GLenum texture_format = GL_RGB;
@@ -79,29 +98,17 @@ int load_texture(const char pFilename[], GLuint *pTexture)
             printf("warning: the image is not truecolor..  this will probably break\n");
         }
 
-        glGenTextures(3, pTexture);
+        va_list ap;
+        va_start(ap, pTexture);
+        GLint arg;
 
-        // Create Nearest Filtered Texture
-        glBindTexture(GL_TEXTURE_2D, pTexture[0]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, texture_format, surface->w, surface->h, 0,
-                     texture_format, GL_UNSIGNED_BYTE, surface->pixels);
+        while ((arg = va_arg(ap, GLint)) != 0) {
+            GLint arg2 = va_arg(ap, GLint);
+            setup_texture(pTexture, texture_format, surface, arg, arg2);
+            pTexture++;
+        }
 
-        // Create Linear Filtered Texture
-        glBindTexture(GL_TEXTURE_2D, pTexture[1]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, texture_format, surface->w, surface->h, 0,
-                     texture_format, GL_UNSIGNED_BYTE, surface->pixels);
-
-        // Create trilinear filtered mipmapped texture
-        glBindTexture(GL_TEXTURE_2D, pTexture[2]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, texture_format, surface->w, surface->h, 0,
-                     texture_format, GL_UNSIGNED_BYTE, surface->pixels);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        va_end(ap);
     }
     else {
         fprintf(stderr, "SDL could not load image.bmp: %s\n", SDL_GetError());

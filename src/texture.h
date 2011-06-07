@@ -28,6 +28,10 @@
 
 #include <stdio.h>
 
-int load_texture(const char pFilename[], GLuint *pTexture);
+class Texture
+{
+public:
+    static int load(const char pFilename[], GLuint *pTexture, ...);
+};
 
 #endif
