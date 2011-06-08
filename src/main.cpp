@@ -24,6 +24,7 @@
 #include "oglsdl.h"
 #include "scene.h"
 #include "benchmark.h"
+#include "options.h"
 
 #include <iostream>
 
@@ -95,10 +96,14 @@ add_default_benchmarks(vector<Benchmark *> &benchmarks)
 
 int main(int argc, char *argv[])
 {
-    UNUSED_PARAM(argc);
-    UNUSED_PARAM(argv);
-
     unsigned score = 0;
+
+    Options::parse_args(argc, argv);
+
+    if (Options::show_help) {
+        Options::print_help();
+        return 0;
+    }
 
     // Create the screen
 #if USE_GL
