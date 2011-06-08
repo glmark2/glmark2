@@ -42,13 +42,13 @@ setup_texture(GLuint *tex, GLenum format, SDL_Surface *surface,
 }
 
 int
-Texture::load(const char pFilename[], GLuint *pTexture, ...)
+Texture::load(const std::string &filename, GLuint *pTexture, ...)
 {
     SDL_Surface *surface;
     GLenum texture_format = GL_RGB;
     GLint  nOfColors;
 
-    if ((surface = SDL_LoadBMP(pFilename))) {
+    if ((surface = SDL_LoadBMP(filename.c_str()))) {
         if ((surface->w & (surface->w - 1)) != 0)
             printf("warning: image.bmp's width is not a power of 2\n");
 
