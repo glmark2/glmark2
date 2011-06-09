@@ -41,6 +41,7 @@ public:
 
     static void register_scene(Scene &scene);
     static Scene &get_scene_by_name(const std::string &name);
+    static const std::map<std::string, Scene *> &scenes() { return mSceneMap; }
 
 private:
     Scene &mScene;
