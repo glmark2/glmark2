@@ -49,14 +49,14 @@ Options::print_help()
     printf("A benchmark for Open GL (ES) 2.0\n"
            "\n"
            "Options:\n"
-           "  --benchmark, -b    A benchmark to run, using the format 'scene(:opt1=val1)*'\n"
-           "                     (the option can be used multiple times)\n"
-           "  --no-swap-buffers  Don't update the screen by swapping the front and\n"
-           "                     back buffer, use glFinish() instead\n"
-           "  --list-scenes      Display information about the available scenes\n"
-           "                     and their options\n"
-           "  --debug            Display debug messages\n"
-           "  --help             Display help\n");
+           "  -b, --benchmark BENCH  A benchmark to run: 'scene(:opt1=val1)*'\n"
+           "                         (the option can be used multiple times)\n"
+           "      --no-swap-buffers  Don't update the screen by swapping the front and\n"
+           "                         back buffer, use glFinish() instead\n"
+           "  -l, --list-scenes      Display information about the available scenes\n"
+           "                         and their options\n"
+           "  -d, --debug            Display debug messages\n"
+           "  -h, --help             Display help\n");
 }
 
 bool
@@ -67,7 +67,7 @@ Options::parse_args(int argc, char **argv)
         int c;
         const char *optname = "";
 
-        c = getopt_long(argc, argv, "b:",
+        c = getopt_long(argc, argv, "b:ldh",
                         long_options, &option_index);
         if (c == -1)
             break;
@@ -81,11 +81,11 @@ Options::parse_args(int argc, char **argv)
             Options::benchmarks.push_back(optarg);
         else if (!strcmp(optname, "no-swap-buffers"))
             Options::swap_buffers = false;
-        else if (!strcmp(optname, "list-scenes"))
+        else if (c == 'l' || !strcmp(optname, "list-scenes"))
             Options::list_scenes = true;
-        else if (!strcmp(optname, "debug"))
+        else if (c == 'd' || !strcmp(optname, "debug"))
             Options::show_debug = true;
-        else if (!strcmp(optname, "help"))
+        else if (c == 'h' || !strcmp(optname, "help"))
             Options::show_help = true;
     }
 
