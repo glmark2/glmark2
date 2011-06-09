@@ -128,7 +128,8 @@ int main(int argc, char *argv[])
 {
     unsigned score = 0;
 
-    Options::parse_args(argc, argv);
+    if (!Options::parse_args(argc, argv))
+        return 1;
 
     if (Options::show_help) {
         Options::print_help();

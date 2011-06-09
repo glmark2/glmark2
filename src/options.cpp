@@ -55,7 +55,7 @@ Options::print_help()
            "  --help             Display help\n");
 }
 
-void
+bool
 Options::parse_args(int argc, char **argv)
 {
     while (1) {
@@ -67,6 +67,8 @@ Options::parse_args(int argc, char **argv)
                         long_options, &option_index);
         if (c == -1)
             break;
+        if (c == ':' || c == '?')
+            return false;
 
        optname = long_options[option_index].name;
 
@@ -79,4 +81,6 @@ Options::parse_args(int argc, char **argv)
        else if (!strcmp(optname, "help"))
            Options::show_help = true;
     }
+
+    return true;
 }

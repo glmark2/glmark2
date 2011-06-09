@@ -25,7 +25,7 @@
 #define OPTIONS_H_
 
 struct Options {
-    static void parse_args(int argc, char **argv);
+    static bool parse_args(int argc, char **argv);
     static void print_help();
 
     static bool swap_buffers;
