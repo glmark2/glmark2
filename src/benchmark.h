@@ -35,6 +35,9 @@ public:
 
     Benchmark(Scene &scene, const std::vector<OptionPair> &options);
     Benchmark(const std::string &name, const std::vector<OptionPair> &options);
+    // Create a benchmark from a description string of the form:
+    // scene[:opt1=val1:opt2=val2...]
+    Benchmark(const std::string &s);
 
     Scene &setup_scene();
     void teardown_scene();

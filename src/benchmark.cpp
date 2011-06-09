@@ -21,12 +21,62 @@
  */
 
 #include "benchmark.h"
+#include "log.h"
+#include <sstream>
 
 using std::string;
 using std::vector;
 using std::map;
 
 std::map<string, Scene *> Benchmark::mSceneMap;
+
+static void
+split(const string &s, char delim, vector<string> &elems)
+{
+    std::stringstream ss(s);
+
+    string item;
+    while(std::getline(ss, item, delim))
+        elems.push_back(item);
+}
+
+static Scene &
+get_scene_from_description(const string &s)
+{
+    vector<string> elems;
+
+    split(s, ':', elems);
+
+    const string &name = !elems.empty() ? elems[0] : ""; 
+
+    return Benchmark::get_scene_by_name(name);
+}
+
+static vector<Benchmark::OptionPair>
+get_options_from_description(const string &s)
+{
+    vector<Benchmark::OptionPair> options;
+    vector<string> elems;
+
+    split(s, ':', elems);
+
+    for (vector<string>::const_iterator iter = ++elems.begin();
+         iter != elems.end();
+         iter++)
+    {
+        vector<string> opt;
+
+        split(*iter, '=', opt);
+        if (opt.size() == 2)
+            options.push_back(Benchmark::OptionPair(opt[0], opt[1]));
+        else
+            Log::info("Warning: ignoring invalid option string '%s' "
+                      "in benchmark description\n",
+                      iter->c_str());
+    }
+
+    return options;
+}
 
 void
 Benchmark::register_scene(Scene &scene)
@@ -52,6 +102,12 @@ Benchmark::Benchmark(Scene &scene, const vector<OptionPair> &options) :
 
 Benchmark::Benchmark(const string &name, const vector<OptionPair> &options) :
     mScene(Benchmark::get_scene_by_name(name)), mOptions(options)
+{
+}
+
+Benchmark::Benchmark(const string &s) :
+    mScene(get_scene_from_description(s)),
+    mOptions(get_options_from_description(s))
 {
 }
 
