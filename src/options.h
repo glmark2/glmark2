@@ -28,6 +28,7 @@ struct Options {
     static void parse_args(int argc, char **argv);
     static void print_help();
 
+    static bool swap_buffers;
     static bool list_scenes;
     static bool show_debug;
     static bool show_help;

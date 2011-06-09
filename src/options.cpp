@@ -28,11 +28,13 @@
 
 #include "options.h"
 
+bool Options::swap_buffers = true;
 bool Options::list_scenes = false;
 bool Options::show_debug = false;
 bool Options::show_help = false;
 
 static struct option long_options[] = {
+    {"no-swap-buffers", 0, 0, 0},
     {"list-scenes", 0, 0, 0},
     {"debug", 0, 0, 0},
     {"help", 0, 0, 0},
@@ -45,6 +47,8 @@ Options::print_help()
     printf("A benchmark for Open GL (ES) 2.0\n"
            "\n"
            "Options:\n"
+           "  --no-swap-buffers  Don't update the screen by swapping the front and\n"
+           "                     back buffer, use glFinish() instead\n"
            "  --list-scenes      Display information about the available scenes\n"
            "                     and their options\n"
            "  --debug            Display debug messages\n"
@@ -66,7 +70,9 @@ Options::parse_args(int argc, char **argv)
 
        optname = long_options[option_index].name;
 
-       if (!strcmp(optname, "list-scenes"))
+       if (!strcmp(optname, "no-swap-buffers"))
+           Options::swap_buffers = false;
+       else if (!strcmp(optname, "list-scenes"))
            Options::list_scenes = true;
        else if (!strcmp(optname, "debug"))
            Options::show_debug = true;
