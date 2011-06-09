@@ -95,6 +95,17 @@ add_default_benchmarks(vector<Benchmark *> &benchmarks)
     benchmarks.push_back(new Benchmark("shading", opts));
 }
 
+void
+add_custom_benchmarks(vector<Benchmark *> &benchmarks)
+{
+    for (vector<string>::const_iterator iter = Options::benchmarks.begin();
+         iter != Options::benchmarks.end();
+         iter++)
+    {
+        benchmarks.push_back(new Benchmark(*iter));
+    }
+}
+
 static void
 list_scenes()
 {
@@ -161,7 +172,10 @@ int main(int argc, char *argv[])
     // Add the benchmarks to run
     vector<Benchmark *> benchmarks;
 
-    add_default_benchmarks(benchmarks);
+    if (Options::benchmarks.empty())
+        add_default_benchmarks(benchmarks);
+    else
+        add_custom_benchmarks(benchmarks);
 
     printf("=======================================================\n");
     printf("    glmark2 %s\n", GLMARK_VERSION);

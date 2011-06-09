@@ -28,12 +28,14 @@
 
 #include "options.h"
 
+std::vector<std::string> Options::benchmarks;
 bool Options::swap_buffers = true;
 bool Options::list_scenes = false;
 bool Options::show_debug = false;
 bool Options::show_help = false;
 
 static struct option long_options[] = {
+    {"benchmark", 1, 0, 0},
     {"no-swap-buffers", 0, 0, 0},
     {"list-scenes", 0, 0, 0},
     {"debug", 0, 0, 0},
@@ -47,6 +49,8 @@ Options::print_help()
     printf("A benchmark for Open GL (ES) 2.0\n"
            "\n"
            "Options:\n"
+           "  --benchmark, -b    A benchmark to run, using the format 'scene(:opt1=val1)*'\n"
+           "                     (the option can be used multiple times)\n"
            "  --no-swap-buffers  Don't update the screen by swapping the front and\n"
            "                     back buffer, use glFinish() instead\n"
            "  --list-scenes      Display information about the available scenes\n"
@@ -63,7 +67,7 @@ Options::parse_args(int argc, char **argv)
         int c;
         const char *optname;
 
-        c = getopt_long(argc, argv, "",
+        c = getopt_long(argc, argv, "b:",
                         long_options, &option_index);
         if (c == -1)
             break;
@@ -72,7 +76,9 @@ Options::parse_args(int argc, char **argv)
 
        optname = long_options[option_index].name;
 
-       if (!strcmp(optname, "no-swap-buffers"))
+       if (c == 'b' || !strcmp(optname, "benchmark"))
+           Options::benchmarks.push_back(optarg);
+       else if (!strcmp(optname, "no-swap-buffers"))
            Options::swap_buffers = false;
        else if (!strcmp(optname, "list-scenes"))
            Options::list_scenes = true;

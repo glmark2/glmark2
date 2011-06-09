@@ -24,10 +24,14 @@
 #ifndef OPTIONS_H_
 #define OPTIONS_H_
 
+#include <string>
+#include <vector>
+
 struct Options {
     static bool parse_args(int argc, char **argv);
     static void print_help();
 
+    static std::vector<std::string> benchmarks;
     static bool swap_buffers;
     static bool list_scenes;
     static bool show_debug;
