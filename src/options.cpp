@@ -63,9 +63,9 @@ bool
 Options::parse_args(int argc, char **argv)
 {
     while (1) {
-        int option_index = 0;
+        int option_index = -1;
         int c;
-        const char *optname;
+        const char *optname = "";
 
         c = getopt_long(argc, argv, "b:",
                         long_options, &option_index);
@@ -74,7 +74,8 @@ Options::parse_args(int argc, char **argv)
         if (c == ':' || c == '?')
             return false;
 
-        optname = long_options[option_index].name;
+        if (option_index != -1)
+            optname = long_options[option_index].name;
 
         if (c == 'b' || !strcmp(optname, "benchmark"))
             Options::benchmarks.push_back(optarg);
