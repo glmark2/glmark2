@@ -32,6 +32,8 @@
 class Screen
 {
 public:
+    ~Screen() {}
+
     int mWidth;
     int mHeight;
     int mBpp;
@@ -39,9 +41,18 @@ public:
     Matrix4f mProjection;
     int mInitSuccess;
 
-    virtual void clear() = 0;
-    virtual void update() = 0;
-    virtual void print_info() = 0;
+    virtual void clear() {}
+    virtual void update() {}
+    virtual void print_info() {}
+
+    static Screen &dummy()
+    {
+        static Screen dummy_screen;
+        return dummy_screen;
+    }
+
+protected:
+    Screen() {}
 };
 
 #endif

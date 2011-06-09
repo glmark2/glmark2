@@ -76,6 +76,12 @@ public:
     void reset_options();
     const std::map<std::string, Option> &options() { return mOptions; }
 
+    static Scene &dummy()
+    {
+        static Scene dummy_scene(Screen::dummy(), "");
+        return dummy_scene;
+    }
+
 protected:
     Scene(Screen &pScreen, const std::string &name);
     std::string construct_title(const std::string &title);
