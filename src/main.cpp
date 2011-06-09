@@ -25,6 +25,7 @@
 #include "scene.h"
 #include "benchmark.h"
 #include "options.h"
+#include "log.h"
 
 #include <iostream>
 
@@ -34,9 +35,9 @@
 #include "screen-sdl-glesv2.h"
 #endif
 
-#define UNUSED_PARAM(x) (void)(x)
-
 using std::vector;
+using std::map;
+using std::string;
 
 bool should_keep_running()
 {
@@ -94,6 +95,35 @@ add_default_benchmarks(vector<Benchmark *> &benchmarks)
     benchmarks.push_back(new Benchmark("shading", opts));
 }
 
+static void
+list_scenes()
+{
+    const map<string, Scene *> &scenes = Benchmark::scenes();
+
+    for (map<string, Scene *>::const_iterator scene_iter = scenes.begin();
+         scene_iter != scenes.end();
+         scene_iter++)
+    {
+        Scene *scene = scene_iter->second;
+        Log::info("[Scene] %s\n", scene->name().c_str());
+
+        const map<string, Scene::Option> &options = scene->options();
+
+        for (map<string, Scene::Option>::const_iterator opt_iter = options.begin();
+             opt_iter != options.end();
+             opt_iter++)
+        {
+            const Scene::Option &opt = opt_iter->second;
+            Log::info("  [Option] %s\n"
+                      "    Description  : %s\n"
+                      "    Default Value: %s\n",
+                      opt.name.c_str(), 
+                      opt.description.c_str(),
+                      opt.default_value.c_str());
+        }
+    }
+}
+
 int main(int argc, char *argv[])
 {
     unsigned score = 0;
@@ -117,21 +147,26 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    printf("=======================================================\n");
-    printf("    glmark2 %s\n", GLMARK_VERSION);
-    printf("=======================================================\n");
-    screen.print_info();
-    printf("=======================================================\n");
-
     // Register the scenes, so they can be looked-up by name
     Benchmark::register_scene(*new SceneBuild(screen));
     Benchmark::register_scene(*new SceneTexture(screen));
     Benchmark::register_scene(*new SceneShading(screen));
 
+    if (Options::list_scenes) {
+        list_scenes();
+        return 0;
+    }
+
     // Add the benchmarks to run
     vector<Benchmark *> benchmarks;
 
     add_default_benchmarks(benchmarks);
+
+    printf("=======================================================\n");
+    printf("    glmark2 %s\n", GLMARK_VERSION);
+    printf("=======================================================\n");
+    screen.print_info();
+    printf("=======================================================\n");
 
     // Run the benchmarks
     for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();

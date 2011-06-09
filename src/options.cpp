@@ -28,10 +28,12 @@
 
 #include "options.h"
 
+bool Options::list_scenes = false;
 bool Options::show_debug = false;
 bool Options::show_help = false;
 
 static struct option long_options[] = {
+    {"list-scenes", 0, 0, 0},
     {"debug", 0, 0, 0},
     {"help", 0, 0, 0},
     {0, 0, 0, 0}
@@ -43,6 +45,8 @@ Options::print_help()
     printf("A benchmark for Open GL (ES) 2.0\n"
            "\n"
            "Options:\n"
+           "  --list-scenes      Display information about the available scenes\n"
+           "                     and their options\n"
            "  --debug            Display debug messages\n"
            "  --help             Display help\n");
 }
@@ -62,7 +66,9 @@ Options::parse_args(int argc, char **argv)
 
        optname = long_options[option_index].name;
 
-       if (!strcmp(optname, "debug"))
+       if (!strcmp(optname, "list-scenes"))
+           Options::list_scenes = true;
+       else if (!strcmp(optname, "debug"))
            Options::show_debug = true;
        else if (!strcmp(optname, "help"))
            Options::show_help = true;
