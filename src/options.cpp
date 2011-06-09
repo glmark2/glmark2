@@ -74,18 +74,18 @@ Options::parse_args(int argc, char **argv)
         if (c == ':' || c == '?')
             return false;
 
-       optname = long_options[option_index].name;
+        optname = long_options[option_index].name;
 
-       if (c == 'b' || !strcmp(optname, "benchmark"))
-           Options::benchmarks.push_back(optarg);
-       else if (!strcmp(optname, "no-swap-buffers"))
-           Options::swap_buffers = false;
-       else if (!strcmp(optname, "list-scenes"))
-           Options::list_scenes = true;
-       else if (!strcmp(optname, "debug"))
-           Options::show_debug = true;
-       else if (!strcmp(optname, "help"))
-           Options::show_help = true;
+        if (c == 'b' || !strcmp(optname, "benchmark"))
+            Options::benchmarks.push_back(optarg);
+        else if (!strcmp(optname, "no-swap-buffers"))
+            Options::swap_buffers = false;
+        else if (!strcmp(optname, "list-scenes"))
+            Options::list_scenes = true;
+        else if (!strcmp(optname, "debug"))
+            Options::show_debug = true;
+        else if (!strcmp(optname, "help"))
+            Options::show_help = true;
     }
 
     return true;
