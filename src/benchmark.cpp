@@ -24,6 +24,7 @@
 
 using std::string;
 using std::vector;
+using std::map;
 
 std::map<string, Scene *> Benchmark::mSceneMap;
 
@@ -36,7 +37,12 @@ Benchmark::register_scene(Scene &scene)
 Scene &
 Benchmark::get_scene_by_name(const string &name)
 {
-    return *mSceneMap[name];
+    map<string, Scene *>::const_iterator iter;
+
+    if ((iter = mSceneMap.find(name)) != mSceneMap.end())
+        return *(iter->second);
+    else
+        return Scene::dummy();
 }
 
 Benchmark::Benchmark(Scene &scene, const vector<OptionPair> &options) :
