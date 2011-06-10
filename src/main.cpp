@@ -39,6 +39,17 @@ using std::vector;
 using std::map;
 using std::string;
 
+static const char *default_benchmarks[] = {
+    "build:use-vbo=false",
+    "build:use-vbo=true",
+    "texture:texture-filter=nearest",
+    "texture:texture-filter=linear",
+    "texture:texture-filter=mipmap",
+    "shading:shading=gouraud",
+    "shading:shading=phong",
+    NULL
+};
+
 bool should_keep_running()
 {
     bool running = true;
@@ -64,35 +75,8 @@ bool should_keep_running()
 void
 add_default_benchmarks(vector<Benchmark *> &benchmarks)
 {
-    vector<Benchmark::OptionPair> opts;
-
-    opts.clear();
-    opts.push_back(Benchmark::OptionPair("use-vbo", "false"));
-    benchmarks.push_back(new Benchmark("build", opts));
-
-    opts.clear();
-    opts.push_back(Benchmark::OptionPair("use-vbo", "true"));
-    benchmarks.push_back(new Benchmark("build", opts));
-
-    opts.clear();
-    opts.push_back(Benchmark::OptionPair("texture-filter", "nearest"));
-    benchmarks.push_back(new Benchmark("texture", opts));
-
-    opts.clear();
-    opts.push_back(Benchmark::OptionPair("texture-filter", "linear"));
-    benchmarks.push_back(new Benchmark("texture", opts));
-
-    opts.clear();
-    opts.push_back(Benchmark::OptionPair("texture-filter", "mipmap"));
-    benchmarks.push_back(new Benchmark("texture", opts));
-
-    opts.clear();
-    opts.push_back(Benchmark::OptionPair("shading", "gouraud"));
-    benchmarks.push_back(new Benchmark("shading", opts));
-
-    opts.clear();
-    opts.push_back(Benchmark::OptionPair("shading", "phong"));
-    benchmarks.push_back(new Benchmark("shading", opts));
+    for (const char **s = default_benchmarks; *s != NULL; s++)
+        benchmarks.push_back(new Benchmark(*s));
 }
 
 void
