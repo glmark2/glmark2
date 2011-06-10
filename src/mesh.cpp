@@ -44,8 +44,20 @@ Mesh::Mesh()
 
 Mesh::~Mesh()
 {
+    reset();
+}
+
+void
+Mesh::reset()
+{
     delete [] mVertex;
-    //deleteArray
+
+    delete_vbo();
+
+    mPolygonQty = 0;
+    mVertexQty = 0;
+    mMode = GL_TRIANGLES;
+    mVertex = 0;
 }
 
 void Mesh::make_cube()
@@ -178,6 +190,14 @@ void Mesh::build_vbo()
 #ifdef _DEBUG
     printf("[ Done ]\n");
 #endif
+}
+
+void
+Mesh::delete_vbo()
+{
+    glDeleteBuffers(1, &mVBOVertices);
+    glDeleteBuffers(1, &mVBONormals);
+    glDeleteBuffers(1, &mVBOTexCoords);
 }
 
 void Mesh::render_vbo()

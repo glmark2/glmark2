@@ -49,6 +49,8 @@ void Model::convert_to_mesh(Mesh *pMesh)
 #ifdef _DEBUG
     printf("Converting model to mesh...      ");
 #endif
+    pMesh->reset();
+
     pMesh->mVertexQty = 3 * mPolygonQty;
     pMesh->mPolygonQty = mPolygonQty;
     pMesh->mMode = GL_TRIANGLES;

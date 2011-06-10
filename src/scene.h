@@ -33,46 +33,80 @@
 
 #include <math.h>
 
+#include <string>
+#include <map>
+
 class Scene
 {
 public:
-    Scene(Screen &pScreen);
     ~Scene();
 
+    struct Option {
+        Option(const std::string &nam, const std::string &val, const std::string &desc) :
+            name(nam), value(val), default_value(val), description(desc) {}
+        Option() {}
+        std::string name;
+        std::string value;
+        std::string default_value;
+        std::string description;
+    };
+
+    // load() and unload() handle option-independent configuration.
+    // It should be safe to call these only once per program execution,
+    // although you may choose to do so more times to better manage
+    // resource consumption.
     virtual int load();
     virtual void unload();
-    virtual void start();
+
+    // setup() and teardown() handle option-dependent configuration and
+    // also prepare a scene for a benchmark run.
+    // They should be called just before and after running a scene/benchmark.
+    virtual void setup();
+    virtual void teardown();
+
     virtual void update();
     virtual void draw();
+    virtual std::string info_string(const std::string &title = "");
 
-    unsigned calculate_score();
+    unsigned average_fps();
     bool is_running();
 
+    const std::string &name() { return mName; }
+    bool set_option(const std::string &opt, const std::string &val);
+    void reset_options();
+    const std::map<std::string, Option> &options() { return mOptions; }
+
+    static Scene &dummy()
+    {
+        static Scene dummy_scene(Screen::dummy(), "");
+        return dummy_scene;
+    }
+
 protected:
-    unsigned mPartsQty;         // How many parts for the scene
-    unsigned mCurrentPart;      // The current part being rendered
-    double *mPartDuration;      // Duration per part in seconds
-
-    double mLastTime, mCurrentTime, mDt;
-    unsigned mCurrentFrame;
-    bool mRunning;
-
-    unsigned *mAverageFPS;      // Average FPS per part
-    float *mScoreScale;
-
-    double mStartTime;
-    double mElapsedTime;
+    Scene(Screen &pScreen, const std::string &name);
+    std::string construct_title(const std::string &title);
 
     Screen &mScreen;
+    std::string mName;
+    std::map<std::string, Option> mOptions;
+
+    double mStartTime;
+    double mLastUpdateTime;
+    unsigned mCurrentFrame;
+    unsigned mAverageFPS;      // Average FPS of run
+
+    bool mRunning;
+    double mDuration;      // Duration of run in seconds
 };
 
 class SceneBuild : public Scene
 {
 public:
-    SceneBuild(Screen &pScreen) : Scene(pScreen) {}
+    SceneBuild(Screen &pScreen);
     int load();
     void unload();
-    void start();
+    void setup();
+    void teardown();
     void update();
     void draw();
 
@@ -84,15 +118,17 @@ protected:
     Mesh mMesh;
     float mRotation;
     float mRotationSpeed;
+    bool mUseVbo;
 };
 
 class SceneTexture : public Scene
 {
 public:
-    SceneTexture(Screen &pScreen) : Scene(pScreen) {}
+    SceneTexture(Screen &pScreen);
     int load();
     void unload();
-    void start();
+    void setup();
+    void teardown();
     void update();
     void draw();
 
@@ -102,7 +138,7 @@ protected:
     Shader mShader;
 
     Mesh mCubeMesh;
-    GLuint mTexture[3];
+    GLuint mTexture;
     Vector3f mRotation;
     Vector3f mRotationSpeed;
 };
@@ -110,17 +146,18 @@ protected:
 class SceneShading : public Scene
 {
 public:
-    SceneShading(Screen &pScreen) : Scene(pScreen) {}
+    SceneShading(Screen &pScreen);
     int load();
     void unload();
-    void start();
+    void setup();
+    void teardown();
     void update();
     void draw();
 
     ~SceneShading();
 
 protected:
-    Shader mShader[2];
+    Shader mShader;
 
     Mesh mMesh;
     float mRotation;

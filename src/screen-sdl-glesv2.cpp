@@ -23,6 +23,7 @@
  */
 #include "screen-sdl-glesv2.h"
 #include "sdlgles/SDL_gles.h"
+#include "options.h"
 
 ScreenSDLGLESv2::ScreenSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
     : ScreenSDL(pWidth, pHeight, pBpp, pFullScreen, pFlags)
@@ -96,7 +97,10 @@ void ScreenSDLGLESv2::clear()
 
 void ScreenSDLGLESv2::update()
 {
-    SDL_GLES_SwapBuffers();
+    if (Options::swap_buffers)
+        SDL_GLES_SwapBuffers();
+    else
+        glFinish();
 }
 
 void ScreenSDLGLESv2::print_info()

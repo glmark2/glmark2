@@ -22,32 +22,23 @@
  *  Alexandros Frantzis (glmark2)
  */
 #include "scene.h"
+#include <sstream>
 
-Scene::Scene(Screen &pScreen) :
-    mScreen(pScreen)
+using std::stringstream;
+using std::string;
+using std::map;
+
+Scene::Scene(Screen &pScreen, const string &name) :
+    mScreen(pScreen), mName(name),
+    mStartTime(0), mLastUpdateTime(0), mCurrentFrame(0), mAverageFPS(0), 
+    mRunning(0), mDuration(0)
 {
-    mPartsQty = 0;
-    mCurrentPart = 0;
-    mPartDuration = 0;
-
-    mLastTime = 0;
-    mCurrentTime = 0;
-    mDt = 0;
-    mCurrentFrame = 0;
-    mRunning = false;
-
-    mAverageFPS = 0;
-    mScoreScale = 0;
-
-    mStartTime = 0;
-    mElapsedTime = 0;
+    mOptions["duration"] = Scene::Option("duration", "10.0",
+                                         "The duration of each benchmark in seconds");
 }
 
 Scene::~Scene()
 {
-    delete [] mPartDuration;
-    delete [] mAverageFPS;
-    delete [] mScoreScale;
 }
 
 int Scene::load()
@@ -59,7 +50,13 @@ void Scene::unload()
 {
 }
 
-void Scene::start()
+void Scene::setup()
+{
+    stringstream ss(mOptions["duration"].value);
+    ss >> mDuration;
+}
+
+void Scene::teardown()
 {
 }
 
@@ -71,18 +68,69 @@ void Scene::draw()
 {
 }
 
-unsigned Scene::calculate_score()
+string
+Scene::info_string(const string &title)
 {
-    unsigned mScore = 0;
+    stringstream ss;
 
-    for(unsigned i = 0; i < mPartsQty; i++)
-        mScore += mAverageFPS[i] * mScoreScale[i];
+    ss << "[" << mName << "] " << Scene::construct_title(title) << " ";
 
-    return mScore;
+    return ss.str();
+}
+
+unsigned Scene::average_fps()
+{
+    return mAverageFPS;
 }
 
 
 bool Scene::is_running()
 {
     return mRunning;
+}
+
+bool
+Scene::set_option(const string &opt, const string &val)
+{ 
+    map<string, Option>::iterator iter = mOptions.find(opt);
+
+    if (iter == mOptions.end())
+        return false;
+
+    iter->second.value = val;
+
+    return true;
+}
+
+void
+Scene::reset_options()
+{
+    for (map<string, Option>::iterator iter = mOptions.begin();
+         iter != mOptions.end();
+         iter++)
+    {
+        Option &opt = iter->second;
+
+        opt.value = opt.default_value;
+    }
+}
+
+
+string
+Scene::construct_title(const string &title)
+{
+    stringstream ss;
+
+    if (title == "") {
+        for (map<string, Option>::iterator iter = mOptions.begin();
+             iter != mOptions.end();
+             iter++)
+        {
+            ss << iter->first << "=" << iter->second.value << ":";
+        }
+    }
+    else
+        ss << title;
+
+    return ss.str();
 }

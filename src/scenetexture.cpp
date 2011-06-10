@@ -24,10 +24,15 @@
 #include "scene.h"
 #include "matrix.h"
 
+SceneTexture::SceneTexture(Screen &pScreen) :
+    Scene(pScreen, "texture")
+{
+    mOptions["texture-filter"] = Scene::Option("texture-filter", "nearest",
+                                               "[nearest, linear, mipmap]");
+}
+
 SceneTexture::~SceneTexture()
 {
-    for(unsigned i = 0; i < 3; i++)
-        glDeleteTextures(1, &mTexture[i]);
 }
 
 int SceneTexture::load()
@@ -35,9 +40,6 @@ int SceneTexture::load()
     Model model;
 
     if(!model.load_3ds(GLMARK_DATA_PATH"/models/cube.3ds"))
-        return 0;
-
-    if(!load_texture(GLMARK_DATA_PATH"/textures/crate-base.bmp", mTexture))
         return 0;
 
     model.calculate_normals();
@@ -51,38 +53,44 @@ int SceneTexture::load()
 
     mRunning = false;
 
-    mPartsQty = 3;
-    mPartDuration = new double[mPartsQty];
-    mAverageFPS = new unsigned[mPartsQty];
-    mScoreScale = new float[mPartsQty];
-
-    mScoreScale[0] = 1.0f / mPartsQty;
-    mScoreScale[1] = 1.0f / mPartsQty;
-    mScoreScale[2] = 1.0f / mPartsQty;
-
-    mPartDuration[0] = 10.0;
-    mPartDuration[1] = 10.0;
-    mPartDuration[2] = 10.0;
-
-    memset(mAverageFPS, 0, mPartsQty * sizeof(*mAverageFPS));
-
-    mCurrentPart = 0;
-
     return 1;
 }
 
 void SceneTexture::unload()
 {
-    mShader.remove();
+    mCubeMesh.reset();
     mShader.unload();
 }
 
-void SceneTexture::start()
+void SceneTexture::setup()
 {
+    Scene::setup();
+
     GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
     GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
     GLfloat lightPosition[] = {20.0f, 20.0f, 10.0f, 1.0f};
     GLfloat materialColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    // Create texture according to selected filtering
+    GLint min_filter = GL_NONE;
+    GLint mag_filter = GL_NONE;
+    const std::string &filter = mOptions["texture-filter"].value;
+
+    if (filter == "nearest") {
+        min_filter = GL_NEAREST;
+        mag_filter = GL_NEAREST;
+    }
+    else if (filter == "linear") {
+        min_filter = GL_LINEAR;
+        mag_filter = GL_LINEAR;
+    }
+    else if (filter == "mipmap") {
+        min_filter = GL_LINEAR_MIPMAP_LINEAR;
+        mag_filter = GL_LINEAR;
+    }
+
+    Texture::load(GLMARK_DATA_PATH"/textures/crate-base.bmp", &mTexture,
+                  min_filter, mag_filter, 0);
 
     mShader.use();
 
@@ -95,45 +103,34 @@ void SceneTexture::start()
     glUniform4fv(mShader.mLocations.MaterialColor, 1, materialColor);
 
     mCurrentFrame = 0;
+    mRotation = Vector3f();
     mRunning = true;
     mStartTime = SDL_GetTicks() / 1000.0;
-    mLastTime = mStartTime;
+    mLastUpdateTime = mStartTime;
+}
 
-    if (mCurrentPart == 0)
-        printf("[Suite] Texture filtering\n");
+void SceneTexture::teardown()
+{
+    mShader.remove();
+    glDeleteTextures(1, &mTexture);
+
+    Scene::teardown();
 }
 
 void SceneTexture::update()
 {
-    mCurrentTime = SDL_GetTicks() / 1000.0;
-    mDt = mCurrentTime - mLastTime;
-    mLastTime = mCurrentTime;
+    double current_time = SDL_GetTicks() / 1000.0;
+    double dt = current_time - mLastUpdateTime;
+    double elapsed_time = current_time - mStartTime;
 
-    mElapsedTime = mCurrentTime - mStartTime;
+    mLastUpdateTime = current_time;
 
-    if(mElapsedTime >= mPartDuration[mCurrentPart])
-    {
-        mAverageFPS[mCurrentPart] = mCurrentFrame / mElapsedTime;
-
-        switch(mCurrentPart) {
-            case 0:
-                printf("    [Benchmark] Nearest                     FPS: %u\n",  mAverageFPS[mCurrentPart]);
-                break;
-            case 1:
-                printf("    [Benchmark] Linear                      FPS: %u\n",  mAverageFPS[mCurrentPart]);
-                break;
-            case 2:
-                printf("    [Benchmark] Mipmapped                   FPS: %u\n",  mAverageFPS[mCurrentPart]);
-                break;
-        }
-        mCurrentPart++;
-        if(mCurrentPart >= mPartsQty)
-            mRunning = false;
-        else
-            start();
+    if (elapsed_time >= mDuration) {
+        mAverageFPS = mCurrentFrame / elapsed_time;
+        mRunning = false;
     }
 
-    mRotation += mRotationSpeed * mDt;
+    mRotation += mRotationSpeed * dt;
 
     mCurrentFrame++;
 }
@@ -160,7 +157,7 @@ void SceneTexture::draw()
                        GL_FALSE, model_view.m);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, mTexture[mCurrentPart]);
+    glBindTexture(GL_TEXTURE_2D, mTexture);
 
     mCubeMesh.render_vbo();
 }

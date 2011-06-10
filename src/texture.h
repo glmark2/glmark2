@@ -26,8 +26,12 @@
 
 #include "oglsdl.h"
 
-#include <stdio.h>
+#include <string>
 
-int load_texture(const char pFilename[], GLuint *pTexture);
+class Texture
+{
+public:
+    static int load(const std::string &filename, GLuint *pTexture, ...);
+};
 
 #endif

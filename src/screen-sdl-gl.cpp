@@ -22,6 +22,7 @@
  *  Alexandros Frantzis (glmark2)
  */
 #include "screen-sdl-gl.h"
+#include "options.h"
 
 ScreenSDLGL::ScreenSDLGL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
     : ScreenSDL(pWidth, pHeight, pBpp, pFullScreen, pFlags | SDL_OPENGL)
@@ -50,7 +51,10 @@ void ScreenSDLGL::clear()
 
 void ScreenSDLGL::update()
 {
-    SDL_GL_SwapBuffers();
+    if (Options::swap_buffers)
+        SDL_GL_SwapBuffers();
+    else
+        glFinish();
 }
 
 void ScreenSDLGL::print_info()
