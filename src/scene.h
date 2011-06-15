@@ -85,6 +85,8 @@ public:
 protected:
     Scene(Screen &pScreen, const std::string &name);
     std::string construct_title(const std::string &title);
+    double pixel_value_distance(Screen::Pixel p1, Screen::Pixel p2,
+                                bool use_alpha=false);
 
     Screen &mScreen;
     std::string mName;
