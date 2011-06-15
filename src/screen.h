@@ -27,6 +27,7 @@
 #include "oglsdl.h"
 #include "matrix.h"
 
+#include <string>
 #include <stdio.h>
 
 class Screen
@@ -69,6 +70,7 @@ public:
         (void)y;
         return Pixel();
     }
+    virtual void write_to_file(std::string &filename) { (void)filename; }
 
     static Screen &dummy()
     {
