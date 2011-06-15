@@ -51,6 +51,12 @@ public:
         std::string description;
     };
 
+    enum ValidationResult {
+        ValidationFailure,
+        ValidationSuccess,
+        ValidationUnknown
+    };
+
     // load() and unload() handle option-independent configuration.
     // It should be safe to call these only once per program execution,
     // although you may choose to do so more times to better manage
@@ -81,6 +87,8 @@ public:
         static Scene dummy_scene(Screen::dummy(), "");
         return dummy_scene;
     }
+
+    virtual ValidationResult validate() { return ValidationUnknown; }
 
 protected:
     Scene(Screen &pScreen, const std::string &name);
