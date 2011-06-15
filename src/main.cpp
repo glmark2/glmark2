@@ -119,9 +119,86 @@ list_scenes()
     }
 }
 
-int main(int argc, char *argv[])
+void
+do_benchmark(Screen &screen, vector<Benchmark *> &benchmarks)
 {
     unsigned score = 0;
+
+    for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
+         bench_iter != benchmarks.end();
+         bench_iter++)
+    {
+        bool keep_running = true;
+        Benchmark *bench = *bench_iter;
+        Scene &scene = bench->setup_scene();
+        Log::info("%s", scene.info_string().c_str());
+        Log::flush();
+
+        while (scene.is_running() &&
+               (keep_running = should_keep_running()))
+        {
+            screen.clear();
+
+            scene.draw();
+            scene.update();
+
+            screen.update();
+        }
+
+        Log::info(" FPS: %u\n", scene.average_fps());
+        score += scene.average_fps();
+
+        bench->teardown_scene();
+
+        if (!keep_running)
+            break;
+    }
+
+    Log::info("=======================================================\n");
+    Log::info("                                  glmark2 Score: %u \n", score);
+    Log::info("=======================================================\n");
+
+}
+
+void
+do_validation(Screen &screen, vector<Benchmark *> &benchmarks)
+{
+    for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
+         bench_iter != benchmarks.end();
+         bench_iter++)
+    {
+        Benchmark *bench = *bench_iter;
+        Scene &scene = bench->setup_scene();
+        Log::info("%s", scene.info_string().c_str());
+        Log::flush();
+
+        screen.clear();
+        scene.draw();
+        screen.update();
+
+        string result;
+        switch(scene.validate()) {
+            case Scene::ValidationSuccess:
+                result = "Success";
+                break;
+            case Scene::ValidationFailure:
+                result = "Failure";
+                break;
+            case Scene::ValidationUnknown:
+                result = "Unknown";
+                break;
+            default:
+                break;
+        }
+
+        Log::info(" Validation: %s\n", result.c_str());
+
+        bench->teardown_scene();
+    }
+}
+
+int main(int argc, char *argv[])
+{
 
     if (!Options::parse_args(argc, argv))
         return 1;
@@ -139,7 +216,7 @@ int main(int argc, char *argv[])
 #endif
 
     if (!screen.mInitSuccess) {
-        printf("Error: %s: Could not initialize screen\n", __FUNCTION__);
+        Log::error("Error: %s: Could not initialize screen\n", __FUNCTION__);
         return 1;
     }
 
@@ -161,45 +238,16 @@ int main(int argc, char *argv[])
     else
         add_custom_benchmarks(benchmarks);
 
-    printf("=======================================================\n");
-    printf("    glmark2 %s\n", GLMARK_VERSION);
-    printf("=======================================================\n");
+    Log::info("=======================================================\n");
+    Log::info("    glmark2 %s\n", GLMARK_VERSION);
+    Log::info("=======================================================\n");
     screen.print_info();
-    printf("=======================================================\n");
+    Log::info("=======================================================\n");
 
-    // Run the benchmarks
-    for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
-         bench_iter != benchmarks.end();
-         bench_iter++)
-    {
-        bool keep_running = true;
-        Benchmark *bench = *bench_iter;
-        Scene &scene = bench->setup_scene();
-        std::cout << scene.info_string() << std::flush;
-
-        while (scene.is_running() &&
-               (keep_running = should_keep_running()))
-        {
-            screen.clear();
-
-            scene.draw();
-            scene.update();
-
-            screen.update();
-        }
-
-        std::cout << " FPS: " << scene.average_fps() << std::endl;
-        score += scene.average_fps();
-
-        bench->teardown_scene();
-
-        if (!keep_running)
-            break;
-    }
-
-    printf("=======================================================\n");
-    printf("                                  glmark2 Score: %u \n", score);
-    printf("=======================================================\n");
+    if (Options::validate)
+        do_validation(screen, benchmarks);
+    else
+        do_benchmark(screen, benchmarks);
 
     return 0;
 }
