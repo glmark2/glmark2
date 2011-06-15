@@ -29,6 +29,7 @@
 #include "options.h"
 
 std::vector<std::string> Options::benchmarks;
+bool Options::validate = false;
 bool Options::swap_buffers = true;
 bool Options::list_scenes = false;
 bool Options::show_debug = false;
@@ -36,6 +37,7 @@ bool Options::show_help = false;
 
 static struct option long_options[] = {
     {"benchmark", 1, 0, 0},
+    {"validate", 0, 0, 0},
     {"no-swap-buffers", 0, 0, 0},
     {"list-scenes", 0, 0, 0},
     {"debug", 0, 0, 0},
@@ -51,6 +53,8 @@ Options::print_help()
            "Options:\n"
            "  -b, --benchmark BENCH  A benchmark to run: 'scene(:opt1=val1)*'\n"
            "                         (the option can be used multiple times)\n"
+           "      --validate         Run a quick output validation test instead of \n"
+           "                         running the benchmarks\n"
            "      --no-swap-buffers  Don't update the screen by swapping the front and\n"
            "                         back buffer, use glFinish() instead\n"
            "  -l, --list-scenes      Display information about the available scenes\n"
@@ -79,6 +83,8 @@ Options::parse_args(int argc, char **argv)
 
         if (c == 'b' || !strcmp(optname, "benchmark"))
             Options::benchmarks.push_back(optarg);
+        else if (!strcmp(optname, "validate"))
+            Options::validate = true;
         else if (!strcmp(optname, "no-swap-buffers"))
             Options::swap_buffers = false;
         else if (c == 'l' || !strcmp(optname, "list-scenes"))
