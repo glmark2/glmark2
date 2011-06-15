@@ -64,3 +64,13 @@ void ScreenSDLGL::print_info()
     printf("    GL_RENDERER:   %s\n", glGetString(GL_RENDERER));
     printf("    GL_VERSION:    %s\n", glGetString(GL_VERSION));
 }
+
+Screen::Pixel
+ScreenSDLGL::read_pixel(int x, int y)
+{
+    Uint8 pixel[4];
+
+    glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+
+    return Screen::Pixel(pixel[0], pixel[1], pixel[2], pixel[3]);
+}

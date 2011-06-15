@@ -111,3 +111,13 @@ void ScreenSDLGLESv2::print_info()
     printf("    GL_VERSION:    %s\n", glGetString(GL_VERSION));
 }
 
+Screen::Pixel
+ScreenSDLGLESv2::read_pixel(int x, int y)
+{
+    Uint8 pixel[4];
+
+    glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+
+    return Screen::Pixel(pixel[0], pixel[1], pixel[2], pixel[3]);
+}
+

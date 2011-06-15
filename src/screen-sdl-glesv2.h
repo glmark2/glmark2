@@ -35,6 +35,7 @@ public:
     virtual void clear();
     virtual void update();
     virtual void print_info();
+    virtual Pixel read_pixel(int x, int y);
 };
 
 #endif

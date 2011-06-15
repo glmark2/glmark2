@@ -34,6 +34,25 @@ class Screen
 public:
     ~Screen() {}
 
+    struct Pixel {
+        Pixel():
+            r(0), g(0), b(0), a(0) {}
+        Pixel(Uint8 r, Uint8 g, Uint8 b, Uint8 a):
+            r(r), g(g), b(b), a(a) {}
+        Uint32 to_le32()
+        {
+            return static_cast<Uint32>(r) +
+                   (static_cast<Uint32>(g) << 8) +
+                   (static_cast<Uint32>(b) << 16) +
+                   (static_cast<Uint32>(a) << 24);
+
+        }
+        Uint8 r;
+        Uint8 g;
+        Uint8 b;
+        Uint8 a;
+    };
+
     int mWidth;
     int mHeight;
     int mBpp;
@@ -44,6 +63,12 @@ public:
     virtual void clear() {}
     virtual void update() {}
     virtual void print_info() {}
+    virtual Pixel read_pixel(int x, int y)
+    {
+        (void)x;
+        (void)y;
+        return Pixel();
+    }
 
     static Screen &dummy()
     {
