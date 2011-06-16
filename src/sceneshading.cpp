@@ -23,6 +23,9 @@
  */
 #include "scene.h"
 #include "matrix.h"
+#include "log.h"
+
+#include <cmath>
 
 SceneShading::SceneShading(Screen &pScreen) :
     Scene(pScreen, "shading")
@@ -159,4 +162,38 @@ void SceneShading::draw()
                        GL_FALSE, model_view.m);
 
     mMesh.render_vbo();
+}
+
+Scene::ValidationResult
+SceneShading::validate()
+{
+    static const double radius_3d(std::sqrt(3.0));
+
+    if (mRotation != 0) 
+        return Scene::ValidationUnknown;
+
+    Screen::Pixel ref;
+
+    Screen::Pixel pixel = mScreen.read_pixel(mScreen.mWidth / 2,
+                                             mScreen.mHeight / 2);
+
+    const std::string &filter = mOptions["shading"].value;
+
+    if (filter == "gouraud")
+        ref = Screen::Pixel(0x00, 0x00, 0xca, 0xff);
+    else if (filter == "phong")
+        ref = Screen::Pixel(0x1a, 0x1a, 0xbb, 0xff);
+    else
+        return Scene::ValidationUnknown;
+
+    double dist = pixel_value_distance(pixel, ref);
+
+    if (dist < radius_3d + 0.01) {
+        return Scene::ValidationSuccess;
+    }
+    else {
+        Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
+                    ref.to_le32(), pixel.to_le32(), dist);
+        return Scene::ValidationFailure;
+    }
 }

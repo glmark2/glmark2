@@ -165,6 +165,7 @@ public:
     void teardown();
     void update();
     void draw();
+    ValidationResult validate();
 
     ~SceneShading();
 
