@@ -142,6 +142,7 @@ public:
     void teardown();
     void update();
     void draw();
+    ValidationResult validate();
 
     ~SceneTexture();
 
