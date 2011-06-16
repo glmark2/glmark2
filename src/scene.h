@@ -51,6 +51,12 @@ public:
         std::string description;
     };
 
+    enum ValidationResult {
+        ValidationFailure,
+        ValidationSuccess,
+        ValidationUnknown
+    };
+
     // load() and unload() handle option-independent configuration.
     // It should be safe to call these only once per program execution,
     // although you may choose to do so more times to better manage
@@ -82,9 +88,13 @@ public:
         return dummy_scene;
     }
 
+    virtual ValidationResult validate() { return ValidationUnknown; }
+
 protected:
     Scene(Screen &pScreen, const std::string &name);
     std::string construct_title(const std::string &title);
+    double pixel_value_distance(Screen::Pixel p1, Screen::Pixel p2,
+                                bool use_alpha=false);
 
     Screen &mScreen;
     std::string mName;
@@ -109,6 +119,7 @@ public:
     void teardown();
     void update();
     void draw();
+    ValidationResult validate();
 
     ~SceneBuild();
 
@@ -131,6 +142,7 @@ public:
     void teardown();
     void update();
     void draw();
+    ValidationResult validate();
 
     ~SceneTexture();
 
@@ -153,6 +165,7 @@ public:
     void teardown();
     void update();
     void draw();
+    ValidationResult validate();
 
     ~SceneShading();
 

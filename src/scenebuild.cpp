@@ -22,6 +22,8 @@
  *  Alexandros Frantzis (glmark2)
  */
 #include "scene.h"
+#include "log.h"
+#include <cmath>
 
 SceneBuild::SceneBuild(Screen &pScreen) :
     Scene(pScreen, "build")
@@ -145,4 +147,27 @@ void SceneBuild::draw()
         mMesh.render_vbo();
     else
         mMesh.render_array();
+}
+
+Scene::ValidationResult
+SceneBuild::validate()
+{
+    static const double radius_3d(std::sqrt(3.0));
+
+    if (mRotation != 0)
+        return Scene::ValidationUnknown;
+
+    Screen::Pixel ref(0xa7, 0xa7, 0xa7, 0xff);
+    Screen::Pixel pixel = mScreen.read_pixel(mScreen.mWidth / 2,
+                                             mScreen.mHeight / 2);
+
+    double dist = pixel_value_distance(pixel, ref);
+    if (dist < radius_3d + 0.01) {
+        return Scene::ValidationSuccess;
+    }
+    else {
+        Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
+                    ref.to_le32(), pixel.to_le32(), dist);
+        return Scene::ValidationFailure;
+    }
 }

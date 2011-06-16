@@ -23,6 +23,9 @@
  */
 #include "scene.h"
 #include "matrix.h"
+#include "log.h"
+
+#include <cmath>
 
 SceneTexture::SceneTexture(Screen &pScreen) :
     Scene(pScreen, "texture")
@@ -160,4 +163,40 @@ void SceneTexture::draw()
     glBindTexture(GL_TEXTURE_2D, mTexture);
 
     mCubeMesh.render_vbo();
+}
+
+Scene::ValidationResult
+SceneTexture::validate()
+{
+    static const double radius_3d(std::sqrt(3.0));
+
+    if (mRotation.x != 0 || mRotation.y != 0 || mRotation.z != 0)
+        return Scene::ValidationUnknown;
+
+    Screen::Pixel ref;
+
+    Screen::Pixel pixel = mScreen.read_pixel(mScreen.mWidth / 2,
+                                             mScreen.mHeight / 2);
+
+    const std::string &filter = mOptions["texture-filter"].value;
+
+    if (filter == "nearest")
+        ref = Screen::Pixel(0x3a, 0x3a, 0x3b, 0xff);
+    else if (filter == "linear")
+        ref = Screen::Pixel(0x34, 0x34, 0x35, 0xff);
+    else if (filter == "mipmap")
+        ref = Screen::Pixel(0x33, 0x33, 0x35, 0xff);
+    else
+        return Scene::ValidationUnknown;
+
+    double dist = pixel_value_distance(pixel, ref);
+
+    if (dist < radius_3d + 0.01) {
+        return Scene::ValidationSuccess;
+    }
+    else {
+        Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
+                    ref.to_le32(), pixel.to_le32(), dist);
+        return Scene::ValidationFailure;
+    }
 }

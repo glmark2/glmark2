@@ -24,6 +24,7 @@
 #include "screen-sdl-glesv2.h"
 #include "sdlgles/SDL_gles.h"
 #include "options.h"
+#include <fstream>
 
 ScreenSDLGLESv2::ScreenSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
     : ScreenSDL(pWidth, pHeight, pBpp, pFullScreen, pFlags)
@@ -111,3 +112,28 @@ void ScreenSDLGLESv2::print_info()
     printf("    GL_VERSION:    %s\n", glGetString(GL_VERSION));
 }
 
+Screen::Pixel
+ScreenSDLGLESv2::read_pixel(int x, int y)
+{
+    Uint8 pixel[4];
+
+    glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+
+    return Screen::Pixel(pixel[0], pixel[1], pixel[2], pixel[3]);
+}
+
+void
+ScreenSDLGLESv2::write_to_file(std::string &filename)
+{
+    char *pixels = new char[mWidth * mHeight * 4];
+
+    for (int i = 0; i < mHeight; i++) {
+        glReadPixels(0, i, mWidth, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                     &pixels[(mHeight - i - 1) * mWidth * 4]);
+    }
+
+    std::ofstream output (filename.c_str(), std::ios::out | std::ios::binary);
+    output.write(pixels, 4 * mWidth * mHeight);
+
+    delete [] pixels;
+}

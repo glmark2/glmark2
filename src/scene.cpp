@@ -23,6 +23,7 @@
  */
 #include "scene.h"
 #include <sstream>
+#include <cmath>
 
 using std::stringstream;
 using std::string;
@@ -133,4 +134,23 @@ Scene::construct_title(const string &title)
         ss << title;
 
     return ss.str();
+
+}
+
+double
+Scene::pixel_value_distance(Screen::Pixel p1, Screen::Pixel p2,
+                            bool use_alpha)
+{
+    double s(0.0);
+
+    // These work without casts because of integer promotion rules
+    // (the Uint8s are promoted to ints)
+    s += (p1.r - p2.r) * (p1.r - p2.r);
+    s += (p1.g - p2.g) * (p1.g - p2.g);
+    s += (p1.b - p2.b) * (p1.b - p2.b);
+
+    if (use_alpha)
+        s += (p1.a - p2.a) * (p1.a - p2.a);
+
+    return std::sqrt(s);
 }

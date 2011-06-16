@@ -23,6 +23,7 @@
  */
 #include "screen-sdl-gl.h"
 #include "options.h"
+#include <fstream>
 
 ScreenSDLGL::ScreenSDLGL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
     : ScreenSDL(pWidth, pHeight, pBpp, pFullScreen, pFlags | SDL_OPENGL)
@@ -63,4 +64,30 @@ void ScreenSDLGL::print_info()
     printf("    GL_VENDOR:     %s\n", glGetString(GL_VENDOR));
     printf("    GL_RENDERER:   %s\n", glGetString(GL_RENDERER));
     printf("    GL_VERSION:    %s\n", glGetString(GL_VERSION));
+}
+
+Screen::Pixel
+ScreenSDLGL::read_pixel(int x, int y)
+{
+    Uint8 pixel[4];
+
+    glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+
+    return Screen::Pixel(pixel[0], pixel[1], pixel[2], pixel[3]);
+}
+
+void
+ScreenSDLGL::write_to_file(std::string &filename)
+{
+    char *pixels = new char[mWidth * mHeight * 4];
+
+    for (int i = 0; i < mHeight; i++) {
+        glReadPixels(0, i, mWidth, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                     &pixels[(mHeight - i - 1) * mWidth * 4]);
+    }
+
+    std::ofstream output(filename.c_str(), std::ios::out | std::ios::binary);
+    output.write(pixels, 4 * mWidth * mHeight);
+
+    delete [] pixels;
 }

@@ -56,3 +56,9 @@ Log::error(const char *fmt, ...)
     va_end(ap);
 }
 
+void
+Log::flush()
+{
+    fflush(stdout);
+    fflush(stderr);
+}

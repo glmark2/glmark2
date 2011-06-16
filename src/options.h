@@ -32,6 +32,7 @@ struct Options {
     static void print_help();
 
     static std::vector<std::string> benchmarks;
+    static bool validate;
     static bool swap_buffers;
     static bool list_scenes;
     static bool show_debug;
