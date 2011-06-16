@@ -123,24 +123,24 @@ void Mesh::make_torus()
 void Mesh::render_array()
 {
     // Enable the attributes
-    glEnableVertexAttribArray(Shader::VertexAttribLocation);
-    glEnableVertexAttribArray(Shader::NormalAttribLocation);
-    glEnableVertexAttribArray(Shader::TexCoordAttribLocation);
+    glEnableVertexAttribArray(OldShader::VertexAttribLocation);
+    glEnableVertexAttribArray(OldShader::NormalAttribLocation);
+    glEnableVertexAttribArray(OldShader::TexCoordAttribLocation);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glVertexAttribPointer(Shader::VertexAttribLocation, 3, GL_FLOAT,
+    glVertexAttribPointer(OldShader::VertexAttribLocation, 3, GL_FLOAT,
                           GL_FALSE, sizeof(Vertex), &mVertex[0].v.x);
-    glVertexAttribPointer(Shader::NormalAttribLocation, 3, GL_FLOAT,
+    glVertexAttribPointer(OldShader::NormalAttribLocation, 3, GL_FLOAT,
                           GL_FALSE, sizeof(Vertex), &mVertex[0].n.x);
-    glVertexAttribPointer(Shader::TexCoordAttribLocation, 2, GL_FLOAT,
+    glVertexAttribPointer(OldShader::TexCoordAttribLocation, 2, GL_FLOAT,
                           GL_FALSE, sizeof(Vertex), &mVertex[0].t.u);
 
     glDrawArrays(GL_TRIANGLES, 0, mVertexQty);
 
     // Disable the attributes
-    glDisableVertexAttribArray(Shader::TexCoordAttribLocation);
-    glDisableVertexAttribArray(Shader::NormalAttribLocation);
-    glDisableVertexAttribArray(Shader::VertexAttribLocation);
+    glDisableVertexAttribArray(OldShader::TexCoordAttribLocation);
+    glDisableVertexAttribArray(OldShader::NormalAttribLocation);
+    glDisableVertexAttribArray(OldShader::VertexAttribLocation);
 }
 
 void Mesh::build_vbo()
@@ -203,21 +203,21 @@ Mesh::delete_vbo()
 void Mesh::render_vbo()
 {
     // Enable the attributes
-    glEnableVertexAttribArray(Shader::VertexAttribLocation);
-    glEnableVertexAttribArray(Shader::NormalAttribLocation);
-    glEnableVertexAttribArray(Shader::TexCoordAttribLocation);
+    glEnableVertexAttribArray(OldShader::VertexAttribLocation);
+    glEnableVertexAttribArray(OldShader::NormalAttribLocation);
+    glEnableVertexAttribArray(OldShader::TexCoordAttribLocation);
 
     glBindBuffer(GL_ARRAY_BUFFER, mVBOVertices);
-    glVertexAttribPointer(Shader::VertexAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(OldShader::VertexAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ARRAY_BUFFER, mVBONormals);
-    glVertexAttribPointer(Shader::NormalAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(OldShader::NormalAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ARRAY_BUFFER, mVBOTexCoords);
-    glVertexAttribPointer(Shader::TexCoordAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(OldShader::TexCoordAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, mVertexQty);
 
     // Disable the attributes
-    glDisableVertexAttribArray(Shader::TexCoordAttribLocation);
-    glDisableVertexAttribArray(Shader::NormalAttribLocation);
-    glDisableVertexAttribArray(Shader::VertexAttribLocation);
+    glDisableVertexAttribArray(OldShader::TexCoordAttribLocation);
+    glDisableVertexAttribArray(OldShader::NormalAttribLocation);
+    glDisableVertexAttribArray(OldShader::VertexAttribLocation);
 }

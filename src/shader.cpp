@@ -48,12 +48,12 @@ char *readShaderFile(const char *FileName)
     return DATA;
 }
 
-Shader::~Shader()
+OldShader::~OldShader()
 {
     unload();
 }
 
-void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShaderFileName)
+void OldShader::load(const char *pVertexShaderFileName, const char *pFragmentShaderFileName)
 {
     char *vertex_shader_source, *fragment_shader_source;
     char msg[512];
@@ -154,17 +154,17 @@ void Shader::load(const char *pVertexShaderFileName, const char *pFragmentShader
 
 }
 
-void Shader::use()
+void OldShader::use()
 {
     glUseProgram(mShaderProgram);
 }
 
-void Shader::remove()
+void OldShader::remove()
 {
     glUseProgram(0);
 }
 
-void Shader::unload()
+void OldShader::unload()
 {
     glDetachShader(mShaderProgram, mVertexShader);
     glDetachShader(mShaderProgram, mFragmentShader);

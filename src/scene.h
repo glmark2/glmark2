@@ -124,7 +124,7 @@ public:
     ~SceneBuild();
 
 protected:
-    Shader mShader;
+    OldShader mShader;
 
     Mesh mMesh;
     float mRotation;
@@ -147,7 +147,7 @@ public:
     ~SceneTexture();
 
 protected:
-    Shader mShader;
+    OldShader mShader;
 
     Mesh mCubeMesh;
     GLuint mTexture;
@@ -170,7 +170,7 @@ public:
     ~SceneShading();
 
 protected:
-    Shader mShader;
+    OldShader mShader;
 
     Mesh mMesh;
     float mRotation;

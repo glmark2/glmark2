@@ -29,10 +29,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-class Shader
+class OldShader
 {
 public:
-    ~Shader();
+    ~OldShader();
     void load(const char *pVertexShaderFileName, const char *pFragmentShaderFileName);
     void unload();
 
