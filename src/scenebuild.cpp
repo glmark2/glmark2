@@ -23,6 +23,8 @@
  */
 #include "scene.h"
 #include "log.h"
+#include "mat.h"
+#include "stack.h"
 #include <cmath>
 
 SceneBuild::SceneBuild(Screen &pScreen) :
@@ -126,22 +128,24 @@ void SceneBuild::update()
 
 void SceneBuild::draw()
 {
+    LibMatrix::Stack4 model_view;
+
     // Load the ModelViewProjectionMatrix uniform in the shader
-    Matrix4f model_view(1.0f, 1.0f, 1.0f);
-    Matrix4f model_view_proj(mScreen.mProjection);
+    LibMatrix::mat4 model_view_proj(mScreen.mProjection);
 
     model_view.translate(0.0f, 0.0f, -2.5f);
-    model_view.rotate(2 * M_PI * mRotation / 360.0, 0.0f, 1.0f, 0.0f);
-    model_view_proj *= model_view;
+    model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
+    model_view_proj *= model_view.getCurrent();
 
     glUniformMatrix4fv(mShader.mLocations.ModelViewProjectionMatrix, 1,
-                       GL_FALSE, model_view_proj.m);
+                       GL_FALSE, model_view_proj);
 
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
-    model_view.invert().transpose();
+    LibMatrix::mat4 normal_matrix(model_view.getCurrent());
+    normal_matrix.inverse().transpose();
     glUniformMatrix4fv(mShader.mLocations.NormalMatrix, 1,
-                       GL_FALSE, model_view.m);
+                       GL_FALSE, normal_matrix);
 
     if (mUseVbo)
         mMesh.render_vbo();

@@ -25,7 +25,7 @@
 #define GLMARK2_SCREEN_H_
 
 #include "oglsdl.h"
-#include "matrix.h"
+#include "mat.h"
 
 #include <string>
 #include <stdio.h>
@@ -58,7 +58,7 @@ public:
     int mHeight;
     int mBpp;
     int mFullScreen;
-    Matrix4f mProjection;
+    LibMatrix::mat4 mProjection;
     int mInitSuccess;
 
     virtual void clear() {}
