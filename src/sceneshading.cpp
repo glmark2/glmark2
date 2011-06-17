@@ -24,6 +24,7 @@
 #include "scene.h"
 #include "mat.h"
 #include "stack.h"
+#include "vec.h"
 #include "log.h"
 
 #include <cmath>
@@ -103,12 +104,11 @@ void SceneShading::setup()
     glUniform4fv(mShader.mLocations.MaterialColor, 1, materialColor);
 
     // Calculate and load the half vector
-    Vector3f halfVector = Vector3f(lightPosition[0], lightPosition[1], lightPosition[2]);
+    LibMatrix::vec3 halfVector(lightPosition[0], lightPosition[1], lightPosition[2]);
     halfVector.normalize();
-    halfVector += Vector3f(0.0, 0.0, 1.0);
+    halfVector += LibMatrix::vec3(0.0, 0.0, 1.0);
     halfVector.normalize();
-    glUniform3fv(mShader.mLocations.LightSourceHalfVector, 1,
-                 (GLfloat *)&halfVector);
+    glUniform3fv(mShader.mLocations.LightSourceHalfVector, 1, halfVector);
 
     mCurrentFrame = 0;
     mRotation = 0.0f;

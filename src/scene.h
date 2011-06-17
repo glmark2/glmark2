@@ -30,6 +30,7 @@
 #include "model.h"
 #include "texture.h"
 #include "shader.h"
+#include "vec.h"
 
 #include <math.h>
 
@@ -151,8 +152,8 @@ protected:
 
     Mesh mCubeMesh;
     GLuint mTexture;
-    Vector3f mRotation;
-    Vector3f mRotationSpeed;
+    LibMatrix::vec3 mRotation;
+    LibMatrix::vec3 mRotationSpeed;
 };
 
 class SceneShading : public Scene

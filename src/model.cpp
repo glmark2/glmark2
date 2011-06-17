@@ -22,6 +22,7 @@
  *  Alexandros Frantzis (glmark2)
  */
 #include "model.h"
+#include "vec.h"
 
 long filelength(int f)
 {
@@ -82,11 +83,13 @@ void Model::calculate_normals()
 #ifdef _DEBUG
     printf("Calculating normals for model... ");
 #endif
-    Vector3f n;
+    LibMatrix::vec3 n;
 
     for(unsigned i = 0; i < mPolygonQty; i++)
     {
-        n = normal(mVertex[mPolygon[i].mA].v, mVertex[mPolygon[i].mB].v, mVertex[mPolygon[i].mC].v);
+        n = LibMatrix::vec3::cross(mVertex[mPolygon[i].mB].v - mVertex[mPolygon[i].mA].v,
+                                   mVertex[mPolygon[i].mC].v - mVertex[mPolygon[i].mA].v);
+        n.normalize();
         mVertex[mPolygon[i].mA].n += n;
         mVertex[mPolygon[i].mB].n += n;
         mVertex[mPolygon[i].mC].n += n;
@@ -102,21 +105,22 @@ void Model::calculate_normals()
 
 void Model::center()
 {
-    Vector3f center;
-    Vector3f max = mVertex[0].v, min = mVertex[0].v;
+    LibMatrix::vec3 max(mVertex[0].v);
+    LibMatrix::vec3 min(mVertex[0].v);
 
     for(unsigned i = 1; i < mVertexQty; i++)
     {
-        if(mVertex[i].v.x > max.x) max.x = mVertex[i].v.x;
-        if(mVertex[i].v.y > max.y) max.y = mVertex[i].v.y;
-        if(mVertex[i].v.z > max.z) max.z = mVertex[i].v.z;
+        if(mVertex[i].v.x() > max.x()) max.x(mVertex[i].v.x());
+        if(mVertex[i].v.y() > max.y()) max.y(mVertex[i].v.y());
+        if(mVertex[i].v.z() > max.z()) max.z(mVertex[i].v.z());
 
-        if(mVertex[i].v.x < min.x) min.x = mVertex[i].v.x;
-        if(mVertex[i].v.y < min.y) min.y = mVertex[i].v.y;
-        if(mVertex[i].v.z < min.z) min.z = mVertex[i].v.z;
+        if(mVertex[i].v.x() < min.x()) min.x(mVertex[i].v.x());
+        if(mVertex[i].v.y() < min.y()) min.y(mVertex[i].v.y());
+        if(mVertex[i].v.z() < min.z()) min.z(mVertex[i].v.z());
     }
 
-    center = (max + min) / 2.0f;
+    LibMatrix::vec3 center(max + min);
+    center /= 2.0f;
 
     for(unsigned i = 0; i < mVertexQty; i++)
         mVertex[i].v -= center;
@@ -210,9 +214,11 @@ int Model::load_3ds(const char *pFileName)
                 mVertexQty = l_qty;
                 mVertex = new Vertex[mVertexQty];
                 for (i = 0; i < l_qty; i++) {
-                    nread = fread (&mVertex[i].v.x, sizeof(float), 1, l_file);
-                    nread = fread (&mVertex[i].v.y, sizeof(float), 1, l_file);
-                    nread = fread (&mVertex[i].v.z, sizeof(float), 1, l_file);
+                    float f[3];
+                    nread = fread (f, sizeof(float), 3, l_file);
+                    mVertex[i].v.x(f[0]);
+                    mVertex[i].v.y(f[1]);
+                    mVertex[i].v.z(f[2]);
                 }
                 break;
 
@@ -245,8 +251,10 @@ int Model::load_3ds(const char *pFileName)
             case 0x4140:
                 nread = fread (&l_qty, sizeof (unsigned short), 1, l_file);
                 for (i = 0; i < l_qty; i++) {
-                    nread = fread (&mVertex[i].t.u, sizeof (float), 1, l_file);
-                    nread = fread (&mVertex[i].t.v, sizeof (float), 1, l_file);
+                    float f[2];
+                    nread = fread (f, sizeof(float), 2, l_file);
+                    mVertex[i].t.x(f[0]);
+                    mVertex[i].t.y(f[1]);
                 }
                 break;
 

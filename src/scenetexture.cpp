@@ -24,6 +24,7 @@
 #include "scene.h"
 #include "mat.h"
 #include "stack.h"
+#include "vec.h"
 #include "log.h"
 
 #include <cmath>
@@ -53,7 +54,7 @@ int SceneTexture::load()
     mShader.load(GLMARK_DATA_PATH"/shaders/light-basic.vert",
                  GLMARK_DATA_PATH"/shaders/light-basic-tex.frag");
 
-    mRotationSpeed = Vector3f(36.0f, 36.0f, 36.0f);
+    mRotationSpeed = LibMatrix::vec3(36.0f, 36.0f, 36.0f);
 
     mRunning = false;
 
@@ -107,7 +108,7 @@ void SceneTexture::setup()
     glUniform4fv(mShader.mLocations.MaterialColor, 1, materialColor);
 
     mCurrentFrame = 0;
-    mRotation = Vector3f();
+    mRotation = LibMatrix::vec3();
     mRunning = true;
     mStartTime = SDL_GetTicks() / 1000.0;
     mLastUpdateTime = mStartTime;
@@ -146,9 +147,9 @@ void SceneTexture::draw()
     LibMatrix::mat4 model_view_proj(mScreen.mProjection);
 
     model_view.translate(0.0f, 0.0f, -5.0f);
-    model_view.rotate(mRotation.x, 1.0f, 0.0f, 0.0f);
-    model_view.rotate(mRotation.y, 0.0f, 1.0f, 0.0f);
-    model_view.rotate(mRotation.z, 0.0f, 0.0f, 1.0f);
+    model_view.rotate(mRotation.x(), 1.0f, 0.0f, 0.0f);
+    model_view.rotate(mRotation.y(), 0.0f, 1.0f, 0.0f);
+    model_view.rotate(mRotation.z(), 0.0f, 0.0f, 1.0f);
     model_view_proj *= model_view.getCurrent();
 
     glUniformMatrix4fv(mShader.mLocations.ModelViewProjectionMatrix, 1,
@@ -161,7 +162,6 @@ void SceneTexture::draw()
     glUniformMatrix4fv(mShader.mLocations.NormalMatrix, 1,
                        GL_FALSE, normal_matrix);
 
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mTexture);
 
@@ -173,7 +173,7 @@ SceneTexture::validate()
 {
     static const double radius_3d(std::sqrt(3.0));
 
-    if (mRotation.x != 0 || mRotation.y != 0 || mRotation.z != 0)
+    if (mRotation.x() != 0 || mRotation.y() != 0 || mRotation.z() != 0)
         return Scene::ValidationUnknown;
 
     Screen::Pixel ref;
