@@ -14,7 +14,8 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include <GL/glew.h>
+
+#include "oglsdl.h"
 #include "program.h"
 
 using std::string;

@@ -5,15 +5,16 @@ glesv2_sources = ['screen-sdl.cpp', 'screen-sdl-glesv2.cpp']
 libmatrix_sources = [f for f in bld.path.ant_glob('libmatrix/*.cc')
                      if not f.name.endswith('test.cc')]
 
-bld(
-    features = ['cxx', 'cxxstlib'],
-    source   = libmatrix_sources,
-    target   = 'matrix',
-    lib      = ['m'],
-    export_includes = 'libmatrix'
-    )
-
 if bld.env.USE_GL:
+    bld(
+        features = ['cxx', 'cxxstlib'],
+        source   = libmatrix_sources,
+        target   = 'matrix',
+        lib      = ['m'],
+        includes = ['.'],
+        export_includes = 'libmatrix',
+        defines  = ['USE_GL']
+        )
     bld(
         features     = ['cxx', 'cprogram'],
         source       = common_sources + gl_sources,
@@ -25,6 +26,15 @@ if bld.env.USE_GL:
 
 if bld.env.USE_GLESv2:
     bld(
+        features = ['cxx', 'cxxstlib'],
+        source   = libmatrix_sources,
+        target   = 'matrix-es2',
+        lib      = ['m'],
+        includes = ['.'],
+        export_includes = 'libmatrix',
+        defines  = ['USE_GLESv2']
+        )
+    bld(
         features     = ['c', 'cstlib'],
         source       = bld.path.ant_glob('sdlgles/*.c'),
         target       = 'sdlgles',
@@ -34,7 +44,7 @@ if bld.env.USE_GLESv2:
         features     = ['cxx', 'cprogram'],
         source       = common_sources + glesv2_sources,
         target       = 'glmark2-es2',
-        use          = ['sdl', 'glesv2', 'sdlgles', 'matrix'],
+        use          = ['sdl', 'glesv2', 'sdlgles', 'matrix-es2'],
         lib          = ['m', 'dl'],
         defines      = ['USE_GLESv2']
         )
