@@ -29,8 +29,8 @@
 #include "mesh.h"
 #include "model.h"
 #include "texture.h"
-#include "shader.h"
 #include "vec.h"
+#include "program.h"
 
 #include <math.h>
 
@@ -91,6 +91,10 @@ public:
 
     virtual ValidationResult validate() { return ValidationUnknown; }
 
+    static bool load_shaders(Program &program,
+                             const std::string &vtx_shader_filename,
+                             const std::string &frg_shader_filename);
+
 protected:
     Scene(Screen &pScreen, const std::string &name);
     std::string construct_title(const std::string &title);
@@ -125,7 +129,10 @@ public:
     ~SceneBuild();
 
 protected:
-    OldShader mShader;
+    Program mProgram;
+    int mVertexAttribLocation;
+    int mNormalAttribLocation;
+    int mTexcoordAttribLocation;
 
     Mesh mMesh;
     float mRotation;
@@ -148,7 +155,10 @@ public:
     ~SceneTexture();
 
 protected:
-    OldShader mShader;
+    Program mProgram;
+    int mVertexAttribLocation;
+    int mNormalAttribLocation;
+    int mTexcoordAttribLocation;
 
     Mesh mCubeMesh;
     GLuint mTexture;
@@ -171,7 +181,10 @@ public:
     ~SceneShading();
 
 protected:
-    OldShader mShader;
+    Program mProgram;
+    int mVertexAttribLocation;
+    int mNormalAttribLocation;
+    int mTexcoordAttribLocation;
 
     Mesh mMesh;
     float mRotation;

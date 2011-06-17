@@ -27,6 +27,7 @@
 #include "vec.h"
 #include "log.h"
 
+#include "program.h"
 #include <cmath>
 
 SceneTexture::SceneTexture(Screen &pScreen) :
@@ -42,6 +43,8 @@ SceneTexture::~SceneTexture()
 
 int SceneTexture::load()
 {
+    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
+    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic-tex.frag");
     Model model;
 
     if(!model.load_3ds(GLMARK_DATA_PATH"/models/cube.3ds"))
@@ -51,8 +54,12 @@ int SceneTexture::load()
     model.convert_to_mesh(&mCubeMesh);
     mCubeMesh.build_vbo();
 
-    mShader.load(GLMARK_DATA_PATH"/shaders/light-basic.vert",
-                 GLMARK_DATA_PATH"/shaders/light-basic-tex.frag");
+    if (!Scene::load_shaders(mProgram, vtx_shader_filename, frg_shader_filename))
+        return 0;
+
+    mVertexAttribLocation = mProgram.getAttribIndex("position");
+    mNormalAttribLocation = mProgram.getAttribIndex("normal");
+    mTexcoordAttribLocation = mProgram.getAttribIndex("texcoord");
 
     mRotationSpeed = LibMatrix::vec3(36.0f, 36.0f, 36.0f);
 
@@ -64,17 +71,19 @@ int SceneTexture::load()
 void SceneTexture::unload()
 {
     mCubeMesh.reset();
-    mShader.unload();
+
+    mProgram.stop();
+    mProgram.release();
 }
 
 void SceneTexture::setup()
 {
     Scene::setup();
 
-    GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
-    GLfloat lightPosition[] = {20.0f, 20.0f, 10.0f, 1.0f};
-    GLfloat materialColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    static const LibMatrix::vec4 lightAmbient(0.0f, 0.0f, 0.0f, 1.0f);
+    static const LibMatrix::vec4 lightDiffuse(0.8f, 0.8f, 0.8f, 1.0f);
+    static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
+    static const LibMatrix::vec4 materialColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     // Create texture according to selected filtering
     GLint min_filter = GL_NONE;
@@ -97,15 +106,13 @@ void SceneTexture::setup()
     Texture::load(GLMARK_DATA_PATH"/textures/crate-base.bmp", &mTexture,
                   min_filter, mag_filter, 0);
 
-    mShader.use();
+    mProgram.start();
 
     // Load lighting and material uniforms
-    glUniform4fv(mShader.mLocations.LightSourcePosition, 1, lightPosition);
-
-    glUniform3fv(mShader.mLocations.LightSourceAmbient, 1, lightAmbient);
-    glUniform3fv(mShader.mLocations.LightSourceDiffuse, 1, lightDiffuse);
-
-    glUniform4fv(mShader.mLocations.MaterialColor, 1, materialColor);
+    mProgram.loadUniformVector(lightAmbient, "LightSourceAmbient");
+    mProgram.loadUniformVector(lightPosition, "LightSourcePosition");
+    mProgram.loadUniformVector(lightDiffuse, "LightSourceDiffuse");
+    mProgram.loadUniformVector(materialColor, "MaterialColor");
 
     mCurrentFrame = 0;
     mRotation = LibMatrix::vec3();
@@ -116,7 +123,7 @@ void SceneTexture::setup()
 
 void SceneTexture::teardown()
 {
-    mShader.remove();
+    mProgram.stop();
     glDeleteTextures(1, &mTexture);
 
     Scene::teardown();
@@ -152,20 +159,20 @@ void SceneTexture::draw()
     model_view.rotate(mRotation.z(), 0.0f, 0.0f, 1.0f);
     model_view_proj *= model_view.getCurrent();
 
-    glUniformMatrix4fv(mShader.mLocations.ModelViewProjectionMatrix, 1,
-                       GL_FALSE, model_view_proj);
+    mProgram.loadUniformMatrix(model_view_proj, "ModelViewProjectionMatrix");
 
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
     LibMatrix::mat4 normal_matrix(model_view.getCurrent());
     normal_matrix.inverse().transpose();
-    glUniformMatrix4fv(mShader.mLocations.NormalMatrix, 1,
-                       GL_FALSE, normal_matrix);
+    mProgram.loadUniformMatrix(normal_matrix, "NormalMatrix");
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mTexture);
 
-    mCubeMesh.render_vbo();
+    mCubeMesh.render_vbo(mVertexAttribLocation,
+                         mNormalAttribLocation,
+                         mTexcoordAttribLocation);
 }
 
 Scene::ValidationResult

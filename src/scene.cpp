@@ -22,6 +22,7 @@
  *  Alexandros Frantzis (glmark2)
  */
 #include "scene.h"
+#include "log.h"
 #include <sstream>
 #include <cmath>
 
@@ -153,4 +154,51 @@ Scene::pixel_value_distance(Screen::Pixel p1, Screen::Pixel p2,
         s += (p1.a - p2.a) * (p1.a - p2.a);
 
     return std::sqrt(s);
+}
+
+bool
+Scene::load_shaders(Program &program,
+                    const std::string &vtx_shader_filename,
+                    const std::string &frg_shader_filename)
+{
+    std::string vtx_shader;
+    std::string frg_shader;
+
+    if (!gotSource(vtx_shader_filename, vtx_shader))
+        return false;
+
+    if (!gotSource(frg_shader_filename, frg_shader))
+        return false;
+
+    program.init();
+
+    program.addShader(GL_VERTEX_SHADER, vtx_shader);
+    if (!program.valid()) {
+        Log::error("Failed to add vertex shader from file %s:\n  %s\n",
+                   vtx_shader_filename.c_str(),
+                   program.errorMessage().c_str());
+        program.release();
+        return false;
+    }
+
+    program.addShader(GL_FRAGMENT_SHADER, frg_shader);
+    if (!program.valid()) {
+        Log::error("Failed to add fragment shader from file %s:\n  %s\n",
+                   frg_shader_filename.c_str(),
+                   program.errorMessage().c_str());
+        program.release();
+        return false;
+    }
+
+    program.build();
+    if (!program.ready()) {
+        Log::error("Failed to link program created from files %s and %s:  %s\n",
+                   vtx_shader_filename.c_str(),
+                   frg_shader_filename.c_str(),
+                   program.errorMessage().c_str());
+        program.release();
+        return false;
+    }
+
+    return true;
 }

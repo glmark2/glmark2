@@ -68,47 +68,55 @@ void SceneShading::setup()
 {
     Scene::setup();
 
-    GLfloat lightAmbient[] = {0.1f, 0.1f, 0.1f, 1.0f};
-    GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
-    GLfloat lightSpecular[] = {0.8f, 0.8f, 0.8f, 1.0f};
-    GLfloat lightPosition[] = {20.0f, 20.0f, 10.0f, 1.0f};
+    static const LibMatrix::vec3 lightAmbient(0.1f, 0.1f, 0.1f);
+    static const LibMatrix::vec3 lightDiffuse(0.8f, 0.8f, 0.8f);
+    static const LibMatrix::vec3 lightSpecular(0.8f, 0.8f, 0.8f);
+    static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
 
-    float materialAmbient[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    float materialDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    float materialSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    float materialColor[] = {0.0f, 0.0f, 1.0f, 1.0f};
+    static const LibMatrix::vec3 materialAmbient(1.0f, 1.0f, 1.0f);
+    static const LibMatrix::vec3 materialDiffuse(1.0f, 1.0f, 1.0f);
+    static const LibMatrix::vec3 materialSpecular(1.0f, 1.0f, 1.0f);
+    static const LibMatrix::vec4 materialColor(0.0f, 0.0f, 1.0f, 1.0f);
 
+    std::string vtx_shader_filename;
+    std::string frg_shader_filename;
     const std::string &shading = mOptions["shading"].value;
 
     if (shading == "gouraud") {
-        mShader.load(GLMARK_DATA_PATH"/shaders/light-basic.vert",
-                     GLMARK_DATA_PATH"/shaders/light-basic.frag");
+        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.vert";
+        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.frag";
     }
     else if (shading == "phong") {
-        mShader.load(GLMARK_DATA_PATH"/shaders/light-advanced.vert",
-                     GLMARK_DATA_PATH"/shaders/light-advanced.frag");
+        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced.vert";
+        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced.frag";
     }
 
-    mShader.use();
+    if (!Scene::load_shaders(mProgram, vtx_shader_filename, frg_shader_filename))
+        return;
+
+    mProgram.start();
+
+    mVertexAttribLocation = mProgram.getAttribIndex("position");
+    mNormalAttribLocation = mProgram.getAttribIndex("normal");
+    mTexcoordAttribLocation = mProgram.getAttribIndex("texcoord");
 
     // Load lighting and material uniforms
-    glUniform4fv(mShader.mLocations.LightSourcePosition, 1, lightPosition);
+    mProgram.loadUniformVector(lightAmbient, "LightSourceAmbient");
+    mProgram.loadUniformVector(lightPosition, "LightSourcePosition");
+    mProgram.loadUniformVector(lightDiffuse, "LightSourceDiffuse");
+    mProgram.loadUniformVector(lightSpecular, "LightSourceSpecular");
 
-    glUniform3fv(mShader.mLocations.LightSourceAmbient, 1, lightAmbient);
-    glUniform3fv(mShader.mLocations.LightSourceDiffuse, 1, lightDiffuse);
-    glUniform3fv(mShader.mLocations.LightSourceSpecular, 1, lightSpecular);
-
-    glUniform3fv(mShader.mLocations.MaterialAmbient, 1, materialAmbient);
-    glUniform3fv(mShader.mLocations.MaterialDiffuse, 1, materialDiffuse);
-    glUniform3fv(mShader.mLocations.MaterialSpecular, 1, materialSpecular);
-    glUniform4fv(mShader.mLocations.MaterialColor, 1, materialColor);
+    mProgram.loadUniformVector(materialAmbient, "MaterialAmbient");
+    mProgram.loadUniformVector(materialDiffuse, "MaterialDiffuse");
+    mProgram.loadUniformVector(materialSpecular, "MaterialSpecular");
+    mProgram.loadUniformVector(materialColor, "MaterialColor");
 
     // Calculate and load the half vector
     LibMatrix::vec3 halfVector(lightPosition[0], lightPosition[1], lightPosition[2]);
     halfVector.normalize();
     halfVector += LibMatrix::vec3(0.0, 0.0, 1.0);
     halfVector.normalize();
-    glUniform3fv(mShader.mLocations.LightSourceHalfVector, 1, halfVector);
+    mProgram.loadUniformVector(halfVector, "LightSourceHalfVector");
 
     mCurrentFrame = 0;
     mRotation = 0.0f;
@@ -119,8 +127,8 @@ void SceneShading::setup()
 
 void SceneShading::teardown()
 {
-    mShader.remove();
-    mShader.unload();
+    mProgram.stop();
+    mProgram.release();
 
     Scene::teardown();
 }
@@ -153,17 +161,17 @@ void SceneShading::draw()
     model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
     model_view_proj *= model_view.getCurrent();
 
-    glUniformMatrix4fv(mShader.mLocations.ModelViewProjectionMatrix, 1,
-                       GL_FALSE, model_view_proj);
+    mProgram.loadUniformMatrix(model_view_proj, "ModelViewProjectionMatrix");
 
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
     LibMatrix::mat4 normal_matrix(model_view.getCurrent());
     normal_matrix.inverse().transpose();
-    glUniformMatrix4fv(mShader.mLocations.NormalMatrix, 1,
-                       GL_FALSE, normal_matrix);
+    mProgram.loadUniformMatrix(normal_matrix, "NormalMatrix");
 
-    mMesh.render_vbo();
+    mMesh.render_vbo(mVertexAttribLocation,
+                     mNormalAttribLocation,
+                     mTexcoordAttribLocation);
 }
 
 Scene::ValidationResult

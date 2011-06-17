@@ -22,7 +22,6 @@
  *  Alexandros Frantzis (glmark2)
  */
 #include "mesh.h"
-#include "shader.h"
 
 
 Mesh::Mesh()
@@ -113,27 +112,31 @@ void Mesh::make_torus()
         }
 }
 
-void Mesh::render_array()
+void Mesh::render_array(int vertex_loc, int normal_loc, int texcoord_loc)
 {
-    // Enable the attributes
-    glEnableVertexAttribArray(OldShader::VertexAttribLocation);
-    glEnableVertexAttribArray(OldShader::NormalAttribLocation);
-    glEnableVertexAttribArray(OldShader::TexCoordAttribLocation);
+    // Enable the attributes (texcoord is optional)
+    glEnableVertexAttribArray(vertex_loc);
+    glEnableVertexAttribArray(normal_loc);
+    if (texcoord_loc >= 0)
+        glEnableVertexAttribArray(texcoord_loc);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glVertexAttribPointer(OldShader::VertexAttribLocation, 3, GL_FLOAT,
-                          GL_FALSE, 8 * sizeof(float), mVertex[0].v);
-    glVertexAttribPointer(OldShader::NormalAttribLocation, 3, GL_FLOAT,
-                          GL_FALSE, 8 * sizeof(float), mVertex[0].n);
-    glVertexAttribPointer(OldShader::TexCoordAttribLocation, 2, GL_FLOAT,
-                          GL_FALSE, 8 * sizeof(float), mVertex[0].t);
+    glVertexAttribPointer(vertex_loc, 3, GL_FLOAT, GL_FALSE,
+                          8 * sizeof(float), mVertex[0].v);
+    glVertexAttribPointer(normal_loc, 3, GL_FLOAT, GL_FALSE,
+                          8 * sizeof(float), mVertex[0].n);
+    if (texcoord_loc >= 0) {
+        glVertexAttribPointer(texcoord_loc, 2, GL_FLOAT, GL_FALSE,
+                              8 * sizeof(float), mVertex[0].t);
+    }
 
     glDrawArrays(GL_TRIANGLES, 0, mVertexQty);
 
     // Disable the attributes
-    glDisableVertexAttribArray(OldShader::TexCoordAttribLocation);
-    glDisableVertexAttribArray(OldShader::NormalAttribLocation);
-    glDisableVertexAttribArray(OldShader::VertexAttribLocation);
+    glDisableVertexAttribArray(vertex_loc);
+    glDisableVertexAttribArray(normal_loc);
+    if (texcoord_loc >= 0)
+        glDisableVertexAttribArray(texcoord_loc);
 }
 
 void Mesh::build_vbo()
@@ -198,24 +201,28 @@ Mesh::delete_vbo()
     glDeleteBuffers(1, &mVBOTexCoords);
 }
 
-void Mesh::render_vbo()
+void Mesh::render_vbo(int vertex_loc, int normal_loc, int texcoord_loc)
 {
-    // Enable the attributes
-    glEnableVertexAttribArray(OldShader::VertexAttribLocation);
-    glEnableVertexAttribArray(OldShader::NormalAttribLocation);
-    glEnableVertexAttribArray(OldShader::TexCoordAttribLocation);
+    // Enable the attributes (texcoord is optional)
+    glEnableVertexAttribArray(vertex_loc);
+    glEnableVertexAttribArray(normal_loc);
+    if (texcoord_loc >= 0)
+        glEnableVertexAttribArray(texcoord_loc);
 
     glBindBuffer(GL_ARRAY_BUFFER, mVBOVertices);
-    glVertexAttribPointer(OldShader::VertexAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(vertex_loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ARRAY_BUFFER, mVBONormals);
-    glVertexAttribPointer(OldShader::NormalAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, mVBOTexCoords);
-    glVertexAttribPointer(OldShader::TexCoordAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(normal_loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    if (texcoord_loc >= 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, mVBOTexCoords);
+        glVertexAttribPointer(texcoord_loc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    }
 
     glDrawArrays(GL_TRIANGLES, 0, mVertexQty);
 
     // Disable the attributes
-    glDisableVertexAttribArray(OldShader::TexCoordAttribLocation);
-    glDisableVertexAttribArray(OldShader::NormalAttribLocation);
-    glDisableVertexAttribArray(OldShader::VertexAttribLocation);
+    glDisableVertexAttribArray(vertex_loc);
+    glDisableVertexAttribArray(normal_loc);
+    if (texcoord_loc >= 0)
+        glDisableVertexAttribArray(texcoord_loc);
 }

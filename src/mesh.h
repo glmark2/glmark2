@@ -56,10 +56,10 @@ public:
     void reset();
     void make_cube();
     void make_torus();
-    void render_array();
+    void render_array(int vertex_loc, int normal_loc, int texcoord_loc);
     void build_vbo();
     void delete_vbo();
-    void render_vbo();
+    void render_vbo(int vertex_loc, int normal_loc, int texcoord_loc);
 };
 
 #endif
