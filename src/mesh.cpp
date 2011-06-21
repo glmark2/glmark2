@@ -140,10 +140,6 @@ void Mesh::render_array(int vertex_loc, int normal_loc, int texcoord_loc)
 
 void Mesh::build_vbo()
 {
-#ifdef _DEBUG
-    printf("Building vbo for mesh...         ");
-#endif
-
     float *vertex;
     float *texel;
     float *normal;
@@ -187,9 +183,6 @@ void Mesh::build_vbo()
     delete [] vertex;
     delete [] texel;
     delete [] normal;
-#ifdef _DEBUG
-    printf("[ Done ]\n");
-#endif
 }
 
 void

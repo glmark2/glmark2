@@ -22,6 +22,7 @@
  *  Alexandros Frantzis (glmark2)
  */
 #include "screen-sdl.h"
+#include "log.h"
 
 ScreenSDL::ScreenSDL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
 {
@@ -33,12 +34,9 @@ ScreenSDL::ScreenSDL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFl
     if (mFullScreen)
         pFlags |= SDL_FULLSCREEN;
 
-#ifdef _DEBUG
-    printf("Initializing Screen...           ");
-#endif
     if(SDL_Init(SDL_INIT_VIDEO) < 0)
     {
-        fprintf(stderr, "[ Fail ] - Video initialization failed: %s\n", SDL_GetError());
+        Log::error("[ Fail ] - Video initialization failed: %s\n", SDL_GetError());
         return;
     }
 
@@ -55,7 +53,7 @@ ScreenSDL::ScreenSDL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFl
 
     if(SDL_SetVideoMode(mWidth, mHeight, mBpp, pFlags) == 0)
     {
-        fprintf(stderr, "[ Fail ] - Video mode set failed: %s\n", SDL_GetError());
+        Log::error("[ Fail ] - Video mode set failed: %s\n", SDL_GetError());
         return;
     }
 
@@ -63,11 +61,6 @@ ScreenSDL::ScreenSDL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFl
 
     mProjection = LibMatrix::Mat4::perspective(60.0, mWidth / (float)mHeight,
                                                1.0, 1024.0);
-
-#ifdef _DEBUG
-    mProjection.print();
-#endif
-
     mInitSuccess = 1;
 }
 

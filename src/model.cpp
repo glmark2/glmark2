@@ -23,6 +23,7 @@
  */
 #include "model.h"
 #include "vec.h"
+#include "log.h"
 
 long filelength(int f)
 {
@@ -47,9 +48,6 @@ Model::~Model()
 
 void Model::convert_to_mesh(Mesh *pMesh)
 {
-#ifdef _DEBUG
-    printf("Converting model to mesh...      ");
-#endif
     pMesh->reset();
 
     pMesh->mVertexQty = 3 * mPolygonQty;
@@ -72,17 +70,10 @@ void Model::convert_to_mesh(Mesh *pMesh)
         pMesh->mVertex[i + 1].t = mVertex[mPolygon[i / 3].mB].t;
         pMesh->mVertex[i + 2].t = mVertex[mPolygon[i / 3].mC].t;
     }
-
-#ifdef _DEBUG
-    printf("[ Done ]\n");
-#endif
 }
 
 void Model::calculate_normals()
 {
-#ifdef _DEBUG
-    printf("Calculating normals for model... ");
-#endif
     LibMatrix::vec3 n;
 
     for(unsigned i = 0; i < mPolygonQty; i++)
@@ -97,10 +88,6 @@ void Model::calculate_normals()
 
     for(unsigned i = 0; i < mVertexQty; i++)
         mVertex[i].n.normalize();
-
-#ifdef _DEBUG
-    printf("[ Done ]\n");
-#endif
 }
 
 void Model::center()
@@ -142,16 +129,10 @@ int Model::load_3ds(const char *pFileName)
     unsigned short l_qty;
     size_t nread;
 
-#ifdef _DEBUG
-    printf("Loading model from 3ds file...   ");
-#endif
+    Log::debug("Loading model from 3ds file '%s'\n", pFileName);
 
-    if ((l_file=fopen (pFileName, "rb"))== NULL) {
-#ifdef _DEBUG
-        printf("[ Fail ]\n");
-#else
-        printf("Could not open 3ds file\n");
-#endif
+    if ((l_file = fopen (pFileName, "rb")) == NULL) {
+        Log::error("Could not open 3ds file '%s'\n", pFileName);
         return 0;
     }
 
@@ -269,12 +250,10 @@ int Model::load_3ds(const char *pFileName)
     }
     fclose(l_file); // Closes the file stream
 
-#ifdef _DEBUG
-    printf("[ Success ]\n");
-    printf("    Model Information\n");
-    printf("    Name:          %s\n", mName);
-    printf("    Vertex count:  %d\n", mVertexQty);
-    printf("    Polygon count: %d\n", mPolygonQty);
-#endif
+    Log::debug("    Model Information\n"
+               "    Name:          %s\n"
+               "    Vertex count:  %d\n"
+               "    Polygon count: %d\n",
+               mName, mVertexQty, mPolygonQty);
     return 1;
 }

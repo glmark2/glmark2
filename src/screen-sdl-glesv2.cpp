@@ -24,6 +24,7 @@
 #include "screen-sdl-glesv2.h"
 #include "sdlgles/SDL_gles.h"
 #include "options.h"
+#include "log.h"
 #include <fstream>
 
 ScreenSDLGLESv2::ScreenSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
@@ -52,25 +53,23 @@ ScreenSDLGLESv2::ScreenSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullScr
         return;
     }
 
-#ifdef _DEBUG
-    {
-    int buf, red, green, blue, alpha, depth;
-    SDL_GLES_GetAttribute(SDL_GLES_BUFFER_SIZE, &buf);
-    SDL_GLES_GetAttribute(SDL_GLES_RED_SIZE, &red);
-    SDL_GLES_GetAttribute(SDL_GLES_GREEN_SIZE, &green);
-    SDL_GLES_GetAttribute(SDL_GLES_BLUE_SIZE, &blue);
-    SDL_GLES_GetAttribute(SDL_GLES_ALPHA_SIZE, &alpha);
-    SDL_GLES_GetAttribute(SDL_GLES_DEPTH_SIZE, &depth);
-    printf("EGL chosen config:\n"
-           "  Buffer: %d bits\n"
-           "     Red: %d bits\n"
-           "   Green: %d bits\n"
-           "    Blue: %d bits\n"
-           "   Alpha: %d bits\n"
-           "   Depth: %d bits\n",
-           buf, red, green, blue, alpha, depth);
+    if (Options::show_debug) {
+        int buf, red, green, blue, alpha, depth;
+        SDL_GLES_GetAttribute(SDL_GLES_BUFFER_SIZE, &buf);
+        SDL_GLES_GetAttribute(SDL_GLES_RED_SIZE, &red);
+        SDL_GLES_GetAttribute(SDL_GLES_GREEN_SIZE, &green);
+        SDL_GLES_GetAttribute(SDL_GLES_BLUE_SIZE, &blue);
+        SDL_GLES_GetAttribute(SDL_GLES_ALPHA_SIZE, &alpha);
+        SDL_GLES_GetAttribute(SDL_GLES_DEPTH_SIZE, &depth);
+        Log::debug("EGL chosen config:\n"
+                   "  Buffer: %d bits\n"
+                   "     Red: %d bits\n"
+                   "   Green: %d bits\n"
+                   "    Blue: %d bits\n"
+                   "   Alpha: %d bits\n"
+                   "   Depth: %d bits\n",
+                   buf, red, green, blue, alpha, depth);
     }
-#endif
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
     glClearDepthf(1.0f);
