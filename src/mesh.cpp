@@ -24,12 +24,11 @@
 #include "mesh.h"
 
 
-Mesh::Mesh()
+Mesh::Mesh() :
+    mVertexQty(0), mPolygonQty(0),
+    mMode(GL_TRIANGLES), mVertex(0),
+    mVBOVertices(0), mVBONormals(0), mVBOTexCoords(0)
 {
-    mPolygonQty = 0;
-    mVertexQty = 0;
-    mMode = GL_TRIANGLES;
-    mVertex = 0;
 }
 
 Mesh::~Mesh()
@@ -199,6 +198,10 @@ Mesh::delete_vbo()
     glDeleteBuffers(1, &mVBOVertices);
     glDeleteBuffers(1, &mVBONormals);
     glDeleteBuffers(1, &mVBOTexCoords);
+
+    mVBOVertices = 0;
+    mVBONormals = 0;
+    mVBOTexCoords = 0;
 }
 
 void Mesh::render_vbo(int vertex_loc, int normal_loc, int texcoord_loc)
