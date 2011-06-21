@@ -25,26 +25,15 @@
 #define GLMARK2_MESH_H_
 
 #include "screen.h"
-#include "vector.h"
+#include "vec.h"
 
 #include <stdio.h>
 #include <math.h>
 
-class Texel
-{
-public:
-    GLfloat u, v;
-
-    Texel();
-    Texel(GLfloat pU, GLfloat pV);
-};
-
-class Vertex
-{
-public:
-    Vector3f v;
-    Vector3f n;
-    Texel t;
+struct Vertex {
+    LibMatrix::vec3 v;
+    LibMatrix::vec3 n;
+    LibMatrix::vec2 t;
 };
 
 // Data for a mesh to be rendered by vertex arrays' or vbos' has 3 verticies per
@@ -67,10 +56,10 @@ public:
     void reset();
     void make_cube();
     void make_torus();
-    void render_array();
+    void render_array(int vertex_loc, int normal_loc, int texcoord_loc);
     void build_vbo();
     void delete_vbo();
-    void render_vbo();
+    void render_vbo(int vertex_loc, int normal_loc, int texcoord_loc);
 };
 
 #endif

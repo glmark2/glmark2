@@ -23,6 +23,8 @@
  */
 #include "scene.h"
 #include "log.h"
+#include "mat.h"
+#include "stack.h"
 #include <cmath>
 
 SceneBuild::SceneBuild(Screen &pScreen) :
@@ -38,6 +40,8 @@ SceneBuild::~SceneBuild()
 
 int SceneBuild::load()
 {
+    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
+    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.frag");
     Model model;
 
     if(!model.load_3ds(GLMARK_DATA_PATH"/models/horse.3ds"))
@@ -46,8 +50,12 @@ int SceneBuild::load()
     model.calculate_normals();
     model.convert_to_mesh(&mMesh);
 
-    mShader.load(GLMARK_DATA_PATH"/shaders/light-basic.vert",
-                 GLMARK_DATA_PATH"/shaders/light-basic.frag");
+    if (!Scene::load_shaders(mProgram, vtx_shader_filename, frg_shader_filename))
+        return 0;
+
+    mVertexAttribLocation = mProgram.getAttribIndex("position");
+    mNormalAttribLocation = mProgram.getAttribIndex("normal");
+    mTexcoordAttribLocation = mProgram.getAttribIndex("texcoord");
 
     mRotationSpeed = 36.0f;
 
@@ -59,34 +67,32 @@ int SceneBuild::load()
 void SceneBuild::unload()
 {
     mMesh.reset();
-    mShader.remove();
-    mShader.unload();
+
+    mProgram.stop();
+    mProgram.release();
 }
 
 void SceneBuild::setup()
 {
     Scene::setup();
 
-    GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    GLfloat lightDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
-    GLfloat lightPosition[] = {20.0f, 20.0f, 10.0f, 1.0f};
-    GLfloat materialColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-
+    static const LibMatrix::vec4 lightAmbient(0.0f, 0.0f, 0.0f, 1.0f);
+    static const LibMatrix::vec4 lightDiffuse(0.8f, 0.8f, 0.8f, 1.0f);
+    static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
+    static const LibMatrix::vec4 materialColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     mUseVbo = (mOptions["use-vbo"].value == "true");
 
     if (mUseVbo)
         mMesh.build_vbo();
 
-    mShader.use();
+    mProgram.start();
 
     // Load lighting and material uniforms
-    glUniform4fv(mShader.mLocations.LightSourcePosition, 1, lightPosition);
-
-    glUniform3fv(mShader.mLocations.LightSourceAmbient, 1, lightAmbient);
-    glUniform3fv(mShader.mLocations.LightSourceDiffuse, 1, lightDiffuse);
-
-    glUniform4fv(mShader.mLocations.MaterialColor, 1, materialColor);
+    mProgram.loadUniformVector(lightAmbient, "LightSourceAmbient");
+    mProgram.loadUniformVector(lightPosition, "LightSourcePosition");
+    mProgram.loadUniformVector(lightDiffuse, "LightSourceDiffuse");
+    mProgram.loadUniformVector(materialColor, "MaterialColor");
 
     mCurrentFrame = 0;
     mRotation = 0.0;
@@ -98,7 +104,7 @@ void SceneBuild::setup()
 void
 SceneBuild::teardown()
 {
-    mShader.remove();
+    mProgram.stop();
 
     if (mUseVbo)
         mMesh.delete_vbo();
@@ -126,27 +132,33 @@ void SceneBuild::update()
 
 void SceneBuild::draw()
 {
+    LibMatrix::Stack4 model_view;
+
     // Load the ModelViewProjectionMatrix uniform in the shader
-    Matrix4f model_view(1.0f, 1.0f, 1.0f);
-    Matrix4f model_view_proj(mScreen.mProjection);
+    LibMatrix::mat4 model_view_proj(mScreen.mProjection);
 
     model_view.translate(0.0f, 0.0f, -2.5f);
-    model_view.rotate(2 * M_PI * mRotation / 360.0, 0.0f, 1.0f, 0.0f);
-    model_view_proj *= model_view;
+    model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
+    model_view_proj *= model_view.getCurrent();
 
-    glUniformMatrix4fv(mShader.mLocations.ModelViewProjectionMatrix, 1,
-                       GL_FALSE, model_view_proj.m);
+    mProgram.loadUniformMatrix(model_view_proj, "ModelViewProjectionMatrix");
 
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
-    model_view.invert().transpose();
-    glUniformMatrix4fv(mShader.mLocations.NormalMatrix, 1,
-                       GL_FALSE, model_view.m);
+    LibMatrix::mat4 normal_matrix(model_view.getCurrent());
+    normal_matrix.inverse().transpose();
+    mProgram.loadUniformMatrix(normal_matrix, "NormalMatrix");
 
-    if (mUseVbo)
-        mMesh.render_vbo();
-    else
-        mMesh.render_array();
+    if (mUseVbo) {
+        mMesh.render_vbo(mVertexAttribLocation,
+                         mNormalAttribLocation,
+                         mTexcoordAttribLocation);
+    }
+    else {
+        mMesh.render_array(mVertexAttribLocation,
+                           mNormalAttribLocation,
+                           mTexcoordAttribLocation);
+    }
 }
 
 Scene::ValidationResult

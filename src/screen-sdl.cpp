@@ -61,10 +61,11 @@ ScreenSDL::ScreenSDL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFl
 
     SDL_WM_SetCaption("glmark2 " GLMARK_VERSION, NULL);
 
-    mProjection.perspective(60.0, mWidth / (float)mHeight, 1.0, 1024.0);
+    mProjection = LibMatrix::Mat4::perspective(60.0, mWidth / (float)mHeight,
+                                               1.0, 1024.0);
 
 #ifdef _DEBUG
-    mProjection.display("Projection");
+    mProjection.print();
 #endif
 
     mInitSuccess = 1;
