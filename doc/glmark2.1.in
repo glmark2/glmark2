@@ -1,0 +1,70 @@
+.TH @APPNAME@ "1" "June 2011" "@appname@ 11.06"
+.SH NAME
+@appname@ \- OpenGL (ES) 2.0 benchmark suite
+.SH SYNOPSIS
+.B @appname@ [options]
+.SH DESCRIPTION
+\fB@appname@\fP is a benchmark for OpenGL (ES) 2.0. It only uses the subset of
+the OpenGL 2.0 API that is compatible with OpenGL ES 2.0.
+.SH OPTIONS
+.TP
+\fB\-b\fR, \fB\-\-benchmark\fR BENCH
+A benchmark to run: 'scene(:opt1=val1)*'
+(the option can be used multiple times)
+.TP
+\fB\-\-validate\fR
+Run a quick output validation test instead of
+running the benchmarks
+.TP
+\fB\-\-no\-swap\-buffers\fR
+Don't update the screen by swapping the front and
+back buffer, use glFinish() instead
+.TP
+\fB\-l\fR, \fB\-\-list\-scenes\fR
+Display information about the available scenes
+and their options
+.TP
+\fB\-d\fR, \fB\-\-debug\fR
+Display debug messages
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Display help
+.SH BENCHMARKS
+@appname@ offers a suite of scenes that can be used to measure many aspects
+of OpenGL (ES) 2.0 performance. The way in which each scene is rendered is
+configurable through a set of options. To get the available scenes and their
+acceptable options you can use the \fB\-l\fR, \fB\-\-list\-scenes\fR command
+line option.
+
+In @appname@, a benchmark is defined as a scene plus a set of option values.
+You can specify the list and order of the benchmarks to run by using the
+\fB\-b\fR, \fB\-\-benchmark\fR command line option (possibly multiple times).
+If no benchmarks are specified, a default set of benchmarks is used. If a
+benchmark option is not specified it assumes its default value (listed with
+\fB\-l\fR, \fB\-\-list\-scenes\fR).
+
+.SH EXAMPLES
+To run the default benchmarks:
+.PP
+.RS
+\fB@appname@\fR
+.RE
+.PP
+To run a benchmark using scene 'shading' with a 'duration' of '5.0' seconds and
+ 'shading' of type 'phong':
+.PP
+.RS
+\fB@appname@ -b shading:duration=5.0:shading=phong\fR
+.RE
+.PP
+To run a series of benchmarks use the \fB\-b\fR, \fB\-\-benchmark\fR command
+line option multiple times:
+.PP
+.RS
+\fB@appname@ -b shading:duration=5.0 -b build:use-vbo=false -b texture\fR
+.RE
+.PP
+
+.SH AUTHOR
+@appname@ was written by Alexandros Frantzis based on the original glmark by
+Ben Smith.
