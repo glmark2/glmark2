@@ -43,6 +43,11 @@ If no benchmarks are specified, a default set of benchmarks is used. If a
 benchmark option is not specified it assumes its default value (listed with
 \fB\-l\fR, \fB\-\-list\-scenes\fR).
 
+As a special case, a benchmark description string is allowed to not contain a
+scene name (i.e. to start with ':'). In this case, any specified option values
+are used as the default values for benchmarks following this description
+string.
+
 .SH EXAMPLES
 To run the default benchmarks:
 .PP
@@ -62,6 +67,12 @@ line option multiple times:
 .PP
 .RS
 \fB@appname@ -b shading:duration=5.0 -b build:use-vbo=false -b texture\fR
+.RE
+.PP
+To set default option values for benchmarks:
+.PP
+.RS
+\fB@appname@ -b :duration=2.0 -b shading -b build -b :duration=5.0 -b texture\fR
 .RE
 .PP
 
