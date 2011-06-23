@@ -117,6 +117,19 @@ Scene::reset_options()
     }
 }
 
+bool
+Scene::set_option_default(const string &opt, const string &val)
+{ 
+    map<string, Option>::iterator iter = mOptions.find(opt);
+
+    if (iter == mOptions.end())
+        return false;
+
+    iter->second.default_value = val;
+
+    return true;
+}
+
 
 string
 Scene::construct_title(const string &title)

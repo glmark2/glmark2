@@ -36,6 +36,7 @@
 
 #include <string>
 #include <map>
+#include <list>
 
 class Scene
 {
@@ -79,8 +80,9 @@ public:
     bool is_running();
 
     const std::string &name() { return mName; }
-    bool set_option(const std::string &opt, const std::string &val);
+    virtual bool set_option(const std::string &opt, const std::string &val);
     void reset_options();
+    bool set_option_default(const std::string &opt, const std::string &val);
     const std::map<std::string, Option> &options() { return mOptions; }
 
     static Scene &dummy()
@@ -112,6 +114,20 @@ protected:
 
     bool mRunning;
     double mDuration;      // Duration of run in seconds
+};
+
+/*
+ * Special Scene used for setting the default options
+ */
+class SceneDefaultOptions : public Scene
+{
+public:
+    SceneDefaultOptions(Screen &pScreen) : Scene(pScreen, "") {}
+    bool set_option(const std::string &opt, const std::string &val);
+    void setup();
+
+private:
+    std::list<std::pair<std::string, std::string> > mDefaultOptions;
 };
 
 class SceneBuild : public Scene

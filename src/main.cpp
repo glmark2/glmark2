@@ -100,6 +100,8 @@ list_scenes()
          scene_iter++)
     {
         Scene *scene = scene_iter->second;
+        if (scene->name().empty())
+            continue;
         Log::info("[Scene] %s\n", scene->name().c_str());
 
         const map<string, Scene::Option> &options = scene->options();
@@ -131,22 +133,25 @@ do_benchmark(Screen &screen, vector<Benchmark *> &benchmarks)
         bool keep_running = true;
         Benchmark *bench = *bench_iter;
         Scene &scene = bench->setup_scene();
-        Log::info("%s", scene.info_string().c_str());
-        Log::flush();
 
-        while (scene.is_running() &&
-               (keep_running = should_keep_running()))
-        {
-            screen.clear();
+        if (!scene.name().empty()) {
+            Log::info("%s", scene.info_string().c_str());
+            Log::flush();
 
-            scene.draw();
-            scene.update();
+            while (scene.is_running() &&
+                   (keep_running = should_keep_running()))
+            {
+                screen.clear();
 
-            screen.update();
+                scene.draw();
+                scene.update();
+
+                screen.update();
+            }
+
+            Log::info(" FPS: %u\n", scene.average_fps());
+            score += scene.average_fps();
         }
-
-        Log::info(" FPS: %u\n", scene.average_fps());
-        score += scene.average_fps();
 
         bench->teardown_scene();
 
@@ -169,29 +174,32 @@ do_validation(Screen &screen, vector<Benchmark *> &benchmarks)
     {
         Benchmark *bench = *bench_iter;
         Scene &scene = bench->setup_scene();
-        Log::info("%s", scene.info_string().c_str());
-        Log::flush();
 
-        screen.clear();
-        scene.draw();
-        screen.update();
+        if (!scene.name().empty()) {
+            Log::info("%s", scene.info_string().c_str());
+            Log::flush();
 
-        string result;
-        switch(scene.validate()) {
-            case Scene::ValidationSuccess:
-                result = "Success";
-                break;
-            case Scene::ValidationFailure:
-                result = "Failure";
-                break;
-            case Scene::ValidationUnknown:
-                result = "Unknown";
-                break;
-            default:
-                break;
+            screen.clear();
+            scene.draw();
+            screen.update();
+
+            string result;
+            switch(scene.validate()) {
+                case Scene::ValidationSuccess:
+                    result = "Success";
+                    break;
+                case Scene::ValidationFailure:
+                    result = "Failure";
+                    break;
+                case Scene::ValidationUnknown:
+                    result = "Unknown";
+                    break;
+                default:
+                    break;
+            }
+
+            Log::info(" Validation: %s\n", result.c_str());
         }
-
-        Log::info(" Validation: %s\n", result.c_str());
 
         bench->teardown_scene();
     }
@@ -221,6 +229,7 @@ int main(int argc, char *argv[])
     }
 
     // Register the scenes, so they can be looked-up by name
+    Benchmark::register_scene(*new SceneDefaultOptions(screen));
     Benchmark::register_scene(*new SceneBuild(screen));
     Benchmark::register_scene(*new SceneTexture(screen));
     Benchmark::register_scene(*new SceneShading(screen));
