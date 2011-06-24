@@ -119,6 +119,16 @@ void Model::scale(GLfloat pAmount)
         mVertex[i].v *= pAmount;
 }
 
+#define fread_or_fail(a, b, c, d) do { \
+    size_t nread_; \
+    nread_ = fread((a), (b), (c), (d));\
+    if (nread_ < (c)) { \
+        Log::error("Failed to read %zd bytes from 3ds file (read %zd)\n", \
+                   (size_t)((c) * (b)), nread_ * (b)); \
+        return 0; \
+    } \
+} while(0);
+
 int Model::load_3ds(const char *pFileName)
 {
     int i;
@@ -127,7 +137,6 @@ int Model::load_3ds(const char *pFileName)
     unsigned int l_chunk_length;
     unsigned char l_char;
     unsigned short l_qty;
-    size_t nread;
 
     Log::debug("Loading model from 3ds file '%s'\n", pFileName);
 
@@ -139,9 +148,9 @@ int Model::load_3ds(const char *pFileName)
     // Loop to scan the whole file
     while (ftell (l_file) < filelength (fileno (l_file))) {
         // Read the chunk header
-        nread = fread (&l_chunk_id, 2, 1, l_file);
+        fread_or_fail (&l_chunk_id, 2, 1, l_file);
         //Read the lenght of the chunk
-        nread = fread (&l_chunk_length, 4, 1, l_file);
+        fread_or_fail (&l_chunk_length, 4, 1, l_file);
 
         switch (l_chunk_id)
         {
@@ -169,7 +178,7 @@ int Model::load_3ds(const char *pFileName)
             case 0x4000:
                 i = 0;
                 do {
-                    nread = fread (&l_char, 1, 1, l_file);
+                    fread_or_fail (&l_char, 1, 1, l_file);
                     mName[i] = l_char;
                     i++;
                 } while(l_char != '\0' && i<20);
@@ -191,12 +200,12 @@ int Model::load_3ds(const char *pFileName)
             //             + sub chunks
             //-------------------------------------------
             case 0x4110:
-                nread = fread (&l_qty, sizeof (unsigned short), 1, l_file);
+                fread_or_fail (&l_qty, sizeof (unsigned short), 1, l_file);
                 mVertexQty = l_qty;
                 mVertex = new Vertex[mVertexQty];
                 for (i = 0; i < l_qty; i++) {
                     float f[3];
-                    nread = fread (f, sizeof(float), 3, l_file);
+                    fread_or_fail (f, sizeof(float), 3, l_file);
                     mVertex[i].v.x(f[0]);
                     mVertex[i].v.y(f[1]);
                     mVertex[i].v.z(f[2]);
@@ -211,14 +220,14 @@ int Model::load_3ds(const char *pFileName)
             //             + sub chunks
             //-------------------------------------------
             case 0x4120:
-                nread = fread (&l_qty, sizeof (unsigned short), 1, l_file);
+                fread_or_fail (&l_qty, sizeof (unsigned short), 1, l_file);
                 mPolygonQty = l_qty;
                 mPolygon = new Polygon[mPolygonQty];
                 for (i = 0; i < l_qty; i++) {
-                    nread = fread (&mPolygon[i].mA, sizeof (unsigned short), 1, l_file);
-                    nread = fread (&mPolygon[i].mB, sizeof (unsigned short), 1, l_file);
-                    nread = fread (&mPolygon[i].mC, sizeof (unsigned short), 1, l_file);
-                    nread = fread (&mPolygon[i].mFaceFlags, sizeof (unsigned short), 1, l_file);
+                    fread_or_fail (&mPolygon[i].mA, sizeof (unsigned short), 1, l_file);
+                    fread_or_fail (&mPolygon[i].mB, sizeof (unsigned short), 1, l_file);
+                    fread_or_fail (&mPolygon[i].mC, sizeof (unsigned short), 1, l_file);
+                    fread_or_fail (&mPolygon[i].mFaceFlags, sizeof (unsigned short), 1, l_file);
                 }
                 break;
 
@@ -230,10 +239,10 @@ int Model::load_3ds(const char *pFileName)
             //             + sub chunks
             //-------------------------------------------
             case 0x4140:
-                nread = fread (&l_qty, sizeof (unsigned short), 1, l_file);
+                fread_or_fail (&l_qty, sizeof (unsigned short), 1, l_file);
                 for (i = 0; i < l_qty; i++) {
                     float f[2];
-                    nread = fread (f, sizeof(float), 2, l_file);
+                    fread_or_fail (f, sizeof(float), 2, l_file);
                     mVertex[i].t.x(f[0]);
                     mVertex[i].t.y(f[1]);
                 }
