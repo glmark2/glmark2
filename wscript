@@ -77,6 +77,7 @@ def configure(ctx):
     ctx.env.append_unique('GLMARK_DATA_PATH', Options.options.data_path)
     ctx.env.append_unique('DEFINES', 'GLMARK_DATA_PATH="%s"' % Options.options.data_path)
     ctx.env.append_unique('DEFINES', 'GLMARK_VERSION="%s"' % VERSION)
+    ctx.env.GLMARK2_VERSION = VERSION
 
     ctx.env.USE_GL = Options.options.gl
     ctx.env.USE_GLESv2 = Options.options.glesv2

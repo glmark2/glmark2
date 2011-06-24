@@ -5,6 +5,7 @@ if bld.env.USE_GL:
         target = bld.path.find_or_declare('glmark2.1'),
         APPNAME = 'GLMARK2',
         appname = 'glmark2',
+        appversion = bld.env.GLMARK2_VERSION,
         install_path = '${PREFIX}/share/man/man1'
     )
 
@@ -15,5 +16,6 @@ if bld.env.USE_GLESv2:
         target = bld.path.find_or_declare('glmark2-es2.1'),
         APPNAME = 'GLMARK2-ES2',
         appname = 'glmark2-es2',
+        appversion = bld.env.GLMARK2_VERSION,
         install_path = '${PREFIX}/share/man/man1'
     )
