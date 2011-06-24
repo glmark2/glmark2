@@ -10,6 +10,7 @@ glmark2 2011.06 (20110624)
 * Add basic output validation functionality (--validate).
 * Add command line option to call glFinish() instead of swapping
   the front and back buffers (--no-swap-buffers).
+* Manually disable VSync for GL/GLX (work around an SDL bug).
 * Replace custom math and shader infrastructure with functionality
   provided by LibMatrix (lp:libmatrix).
 * Improve user documentation (--help and man page).

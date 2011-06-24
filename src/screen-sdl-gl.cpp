@@ -23,6 +23,7 @@
  */
 #include "screen-sdl-gl.h"
 #include "options.h"
+#include "glx-disable-vsync.h"
 #include <fstream>
 
 ScreenSDLGL::ScreenSDLGL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
@@ -37,6 +38,13 @@ ScreenSDLGL::ScreenSDLGL(int pWidth, int pHeight, int pBpp, int pFullScreen, int
 
     glViewport(0, 0, mWidth, mHeight);
 
+    /*
+     * There is a bug in SDL that prevents us from setting the swap
+     * interval using the SDL_GL_SWAP_CONTROL attribute. We take care
+     * of this manually for now.
+     */
+    glx_disable_vsync();
+    
     clear();
 }
 
