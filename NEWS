@@ -1,3 +1,19 @@
+glmark2 2011.06 (20110624)
+==========================
+
+* Improve benchmark versatility by allowing runtime-configurable,
+  per-scene options.
+* Add command line option to list avalaible scenes and their
+  supported options (-l,--list-scenes).
+* Allow specifying the scenes to run and their options from the
+  command line (-b,--benchmark).
+* Add basic output validation functionality (--validate).
+* Add command line option to call glFinish() instead of swapping
+  the front and back buffers (--no-swap-buffers).
+* Replace custom math and shader infrastructure with functionality
+  provided by LibMatrix (lp:libmatrix).
+* Improve user documentation (--help and man page).
+
 glmark2 11.05 (20110530)
 ==========================
 
