@@ -103,7 +103,7 @@ void SceneTexture::setup()
         mag_filter = GL_LINEAR;
     }
 
-    Texture::load(GLMARK_DATA_PATH"/textures/crate-base.bmp", &mTexture,
+    Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &mTexture,
                   min_filter, mag_filter, 0);
 
     mProgram.start();
