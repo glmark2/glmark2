@@ -21,10 +21,10 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#include "screen-sdl.h"
+#include "canvas-sdl.h"
 #include "log.h"
 
-ScreenSDL::ScreenSDL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
+CanvasSDL::CanvasSDL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
 {
     mWidth = pWidth;
     mHeight = pHeight;
@@ -64,21 +64,21 @@ ScreenSDL::ScreenSDL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFl
     mInitSuccess = 1;
 }
 
-ScreenSDL::~ScreenSDL()
+CanvasSDL::~CanvasSDL()
 {
     SDL_Quit();
 }
 
 
-void ScreenSDL::clear()
+void CanvasSDL::clear()
 {
 }
 
-void ScreenSDL::update()
+void CanvasSDL::update()
 {
 }
 
-void ScreenSDL::print_info()
+void CanvasSDL::print_info()
 {
 }
 

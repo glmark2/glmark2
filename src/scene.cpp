@@ -30,8 +30,8 @@ using std::stringstream;
 using std::string;
 using std::map;
 
-Scene::Scene(Screen &pScreen, const string &name) :
-    mScreen(pScreen), mName(name),
+Scene::Scene(Canvas &pCanvas, const string &name) :
+    mCanvas(pCanvas), mName(name),
     mStartTime(0), mLastUpdateTime(0), mCurrentFrame(0), mAverageFPS(0), 
     mRunning(0), mDuration(0)
 {
@@ -152,7 +152,7 @@ Scene::construct_title(const string &title)
 }
 
 double
-Scene::pixel_value_distance(Screen::Pixel p1, Screen::Pixel p2,
+Scene::pixel_value_distance(Canvas::Pixel p1, Canvas::Pixel p2,
                             bool use_alpha)
 {
     double s(0.0);

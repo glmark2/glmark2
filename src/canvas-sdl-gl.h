@@ -21,23 +21,22 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef GLMARK2_SCREEN_SDL_H_
-#define GLMARK2_SCREEN_SDL_H_
+#ifndef GLMARK2_CANVAS_SDL_GL_H_
+#define GLMARK2_CANVAS_SDL_GL_H_
 
-#include "screen.h"
+#include "canvas-sdl.h"
 
-class ScreenSDL : public Screen
+class CanvasSDLGL : public CanvasSDL
 {
 public:
-    ScreenSDL(int pWidth, int pHeight, int pBpp, int pFullscreen, int pFlags = 0);
-    ~ScreenSDL();
+    CanvasSDLGL(int pWidth, int pHeight, int pBpp, int pFullcanvas, int pFlags = 0);
+    ~CanvasSDLGL();
 
     virtual void clear();
     virtual void update();
     virtual void print_info();
-
-protected:
-    const SDL_VideoInfo *mInfo;
+    virtual Pixel read_pixel(int x, int y);
+    virtual void write_to_file(std::string &filename);
 };
 
 #endif

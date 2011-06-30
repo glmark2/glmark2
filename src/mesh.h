@@ -24,7 +24,7 @@
 #ifndef GLMARK2_MESH_H_
 #define GLMARK2_MESH_H_
 
-#include "screen.h"
+#include "canvas.h"
 #include "vec.h"
 
 #include <stdio.h>

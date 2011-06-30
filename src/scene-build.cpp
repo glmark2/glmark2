@@ -27,8 +27,8 @@
 #include "stack.h"
 #include <cmath>
 
-SceneBuild::SceneBuild(Screen &pScreen) :
-    Scene(pScreen, "build")
+SceneBuild::SceneBuild(Canvas &pCanvas) :
+    Scene(pCanvas, "build")
 {
     mOptions["use-vbo"] = Scene::Option("use-vbo", "true",
                                         "Whether to use VBOs for rendering [true,false]");
@@ -135,7 +135,7 @@ void SceneBuild::draw()
     LibMatrix::Stack4 model_view;
 
     // Load the ModelViewProjectionMatrix uniform in the shader
-    LibMatrix::mat4 model_view_proj(mScreen.mProjection);
+    LibMatrix::mat4 model_view_proj(mCanvas.mProjection);
 
     model_view.translate(0.0f, 0.0f, -2.5f);
     model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
@@ -169,9 +169,9 @@ SceneBuild::validate()
     if (mRotation != 0)
         return Scene::ValidationUnknown;
 
-    Screen::Pixel ref(0xa7, 0xa7, 0xa7, 0xff);
-    Screen::Pixel pixel = mScreen.read_pixel(mScreen.mWidth / 2,
-                                             mScreen.mHeight / 2);
+    Canvas::Pixel ref(0xa7, 0xa7, 0xa7, 0xff);
+    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.mWidth / 2,
+                                             mCanvas.mHeight / 2);
 
     double dist = pixel_value_distance(pixel, ref);
     if (dist < radius_3d + 0.01) {

@@ -21,8 +21,8 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef GLMARK2_SCREEN_H_
-#define GLMARK2_SCREEN_H_
+#ifndef GLMARK2_CANVAS_H_
+#define GLMARK2_CANVAS_H_
 
 #include "oglsdl.h"
 #include "mat.h"
@@ -30,10 +30,10 @@
 #include <string>
 #include <stdio.h>
 
-class Screen
+class Canvas
 {
 public:
-    ~Screen() {}
+    ~Canvas() {}
 
     struct Pixel {
         Pixel():
@@ -72,14 +72,14 @@ public:
     }
     virtual void write_to_file(std::string &filename) { (void)filename; }
 
-    static Screen &dummy()
+    static Canvas &dummy()
     {
-        static Screen dummy_screen;
-        return dummy_screen;
+        static Canvas dummy_canvas;
+        return dummy_canvas;
     }
 
 protected:
-    Screen() {}
+    Canvas() {}
 };
 
 #endif

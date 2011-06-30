@@ -21,14 +21,14 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#include "screen-sdl-glesv2.h"
+#include "canvas-sdl-glesv2.h"
 #include "sdlgles/SDL_gles.h"
 #include "options.h"
 #include "log.h"
 #include <fstream>
 
-ScreenSDLGLESv2::ScreenSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
-    : ScreenSDL(pWidth, pHeight, pBpp, pFullScreen, pFlags)
+CanvasSDLGLESv2::CanvasSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
+    : CanvasSDL(pWidth, pHeight, pBpp, pFullScreen, pFlags)
 {
     mInitSuccess = 0;
 
@@ -85,17 +85,17 @@ ScreenSDLGLESv2::ScreenSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullScr
     mInitSuccess = 1;
 }
 
-ScreenSDLGLESv2::~ScreenSDLGLESv2()
+CanvasSDLGLESv2::~CanvasSDLGLESv2()
 {
 }
 
 
-void ScreenSDLGLESv2::clear()
+void CanvasSDLGLESv2::clear()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void ScreenSDLGLESv2::update()
+void CanvasSDLGLESv2::update()
 {
     if (Options::swap_buffers)
         SDL_GLES_SwapBuffers();
@@ -103,7 +103,7 @@ void ScreenSDLGLESv2::update()
         glFinish();
 }
 
-void ScreenSDLGLESv2::print_info()
+void CanvasSDLGLESv2::print_info()
 {
     printf("    OpenGL Information\n");
     printf("    GL_VENDOR:     %s\n", glGetString(GL_VENDOR));
@@ -111,18 +111,18 @@ void ScreenSDLGLESv2::print_info()
     printf("    GL_VERSION:    %s\n", glGetString(GL_VERSION));
 }
 
-Screen::Pixel
-ScreenSDLGLESv2::read_pixel(int x, int y)
+Canvas::Pixel
+CanvasSDLGLESv2::read_pixel(int x, int y)
 {
     Uint8 pixel[4];
 
     glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
 
-    return Screen::Pixel(pixel[0], pixel[1], pixel[2], pixel[3]);
+    return Canvas::Pixel(pixel[0], pixel[1], pixel[2], pixel[3]);
 }
 
 void
-ScreenSDLGLESv2::write_to_file(std::string &filename)
+CanvasSDLGLESv2::write_to_file(std::string &filename)
 {
     char *pixels = new char[mWidth * mHeight * 4];
 

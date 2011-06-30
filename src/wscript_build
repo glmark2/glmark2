@@ -1,7 +1,7 @@
 all_sources = bld.path.ant_glob('*.cpp')
-common_sources = [f for f in all_sources if f.name.find('screen-') == -1]
-gl_sources = ['screen-sdl.cpp', 'screen-sdl-gl.cpp']
-glesv2_sources = ['screen-sdl.cpp', 'screen-sdl-glesv2.cpp']
+common_sources = [f for f in all_sources if f.name.find('canvas-') == -1]
+gl_sources = ['canvas-sdl.cpp', 'canvas-sdl-gl.cpp']
+glesv2_sources = ['canvas-sdl.cpp', 'canvas-sdl-glesv2.cpp']
 libmatrix_sources = [f for f in bld.path.ant_glob('libmatrix/*.cc')
                      if not f.name.endswith('test.cc')]
 
