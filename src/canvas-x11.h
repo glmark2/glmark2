@@ -38,6 +38,7 @@ public:
     virtual void print_info();
     virtual Pixel read_pixel(int x, int y);
     virtual void write_to_file(std::string &filename);
+    virtual bool should_quit();
 
 protected:
     CanvasX11(int width, int height) : Canvas(width, height) {}

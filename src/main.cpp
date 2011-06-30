@@ -50,28 +50,6 @@ static const char *default_benchmarks[] = {
     NULL
 };
 
-bool should_keep_running()
-{
-    bool running = true;
-    SDL_Event event;
-
-    while(SDL_PollEvent(&event))
-    {
-        switch(event.type)
-        {
-            case SDL_QUIT:
-                running = false;
-                break;
-            case SDL_KEYDOWN:
-                if(event.key.keysym.sym == SDLK_ESCAPE)
-                    running = false;
-                break;
-        }
-    }
-
-    return running;
-}
-
 void
 add_default_benchmarks(vector<Benchmark *> &benchmarks)
 {
@@ -139,7 +117,7 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
             Log::flush();
 
             while (scene.is_running() &&
-                   (keep_running = should_keep_running()))
+                   (keep_running = !canvas.should_quit()))
             {
                 canvas.clear();
 

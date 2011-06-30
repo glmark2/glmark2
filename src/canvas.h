@@ -73,6 +73,7 @@ public:
         return Pixel();
     }
     virtual void write_to_file(std::string &filename) { (void)filename; }
+    virtual bool should_quit() { return false; }
 
     static Canvas &dummy()
     {

@@ -22,6 +22,8 @@
 #include "canvas-x11.h"
 #include "log.h"
 #include "options.h"
+
+#include <X11/keysym.h>
 #include <fstream>
 #include <sstream>
 
@@ -40,7 +42,7 @@ create_canvas_x_window(Display *xdpy, const char *name, int width, int height,
     attr.background_pixel = 0;
     attr.border_pixel = 0;
     attr.colormap = XCreateColormap(xdpy, root, vis_info->visual, AllocNone);
-    attr.event_mask = StructureNotifyMask | ExposureMask;
+    attr.event_mask = KeyPressMask;
     mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
     win = XCreateWindow(xdpy, root, 0, 0, width, height,
@@ -160,4 +162,22 @@ CanvasX11::write_to_file(std::string &filename)
     output.write(pixels, 4 * mWidth * mHeight);
 
     delete [] pixels;
+}
+
+bool
+CanvasX11::should_quit()
+{ 
+    XEvent event;
+
+    if (!XPending(xdpy_))
+        return false;
+
+    XNextEvent(xdpy_, &event);
+
+    if (event.type == KeyPress) {
+        if (XLookupKeysym(&event.xkey, 0) == XK_Escape)
+            return true;
+    }
+
+    return false;
 }
