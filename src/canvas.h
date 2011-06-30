@@ -61,6 +61,8 @@ public:
     LibMatrix::mat4 mProjection;
     int mInitSuccess;
 
+    virtual bool init() { return false; }
+    virtual void visible(bool visible) { (void)visible; }
     virtual void clear() {}
     virtual void update() {}
     virtual void print_info() {}

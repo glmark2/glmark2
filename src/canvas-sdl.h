@@ -32,6 +32,7 @@ public:
     CanvasSDL(int pWidth, int pHeight, int pBpp, int pFullcanvas, int pFlags = 0);
     ~CanvasSDL();
 
+    virtual bool init() { return mInitSuccess; }
     virtual void clear();
     virtual void update();
     virtual void print_info();

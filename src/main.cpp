@@ -223,11 +223,6 @@ int main(int argc, char *argv[])
     CanvasSDLGLESv2 canvas(800, 600, 24, 0);
 #endif
 
-    if (!canvas.mInitSuccess) {
-        Log::error("Error: %s: Could not initialize canvas\n", __FUNCTION__);
-        return 1;
-    }
-
     // Register the scenes, so they can be looked-up by name
     Benchmark::register_scene(*new SceneDefaultOptions(canvas));
     Benchmark::register_scene(*new SceneBuild(canvas));
@@ -237,6 +232,11 @@ int main(int argc, char *argv[])
     if (Options::list_scenes) {
         list_scenes();
         return 0;
+    }
+
+    if (!canvas.init()) {
+        Log::error("Error: %s: Could not initialize canvas\n", __FUNCTION__);
+        return 1;
     }
 
     // Add the benchmarks to run
@@ -252,6 +252,8 @@ int main(int argc, char *argv[])
     Log::info("=======================================================\n");
     canvas.print_info();
     Log::info("=======================================================\n");
+
+    canvas.visible(true);
 
     if (Options::validate)
         do_validation(canvas, benchmarks);
