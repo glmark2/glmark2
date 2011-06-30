@@ -49,6 +49,9 @@ CanvasX11GLX::make_current()
     if (!ensure_glx_context())
         return false;
 
+    if (glx_context_ == glXGetCurrentContext())
+        return true;
+
     init_extensions();
 
     if (!glXMakeCurrent(xdpy_, xwin_, glx_context_)) {

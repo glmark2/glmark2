@@ -200,6 +200,9 @@ CanvasX11EGL::make_current()
     if (!ensure_egl_surface())
         return false;
 
+    if (egl_context_ == eglGetCurrentContext())
+        return true;
+
     if (!eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_)) {
         Log::error("Error: eglMakeCurrent failed with error %d\n", eglGetError());
         return false;
