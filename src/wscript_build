@@ -19,7 +19,7 @@ if bld.env.USE_GL:
         features     = ['cxx', 'cprogram'],
         source       = common_sources + gl_sources,
         target       = 'glmark2',
-        use          = ['gl', 'matrix', 'libpng12'],
+        use          = ['x11', 'gl', 'matrix', 'libpng12'],
         lib          = ['m'],
         defines      = ['USE_GL']
         )
@@ -38,7 +38,7 @@ if bld.env.USE_GLESv2:
         features     = ['cxx', 'cprogram'],
         source       = common_sources + glesv2_sources,
         target       = 'glmark2-es2',
-        use          = ['egl', 'glesv2', 'matrix-es2', 'libpng12'],
+        use          = ['x11', 'egl', 'glesv2', 'matrix-es2', 'libpng12'],
         lib          = ['m', 'dl'],
         defines      = ['USE_GLESv2']
         )

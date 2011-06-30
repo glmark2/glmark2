@@ -49,7 +49,7 @@ def configure(ctx):
                       uselib = uselib, mandatory = True)
 
     # Check required packages
-    req_pkgs = [('libpng12', 'libpng12')]
+    req_pkgs = [('x11', 'x11'), ('libpng12', 'libpng12')]
     for (pkg, uselib) in req_pkgs:
         ctx.check_cfg(package = pkg, uselib_store = uselib,
                       args = '--cflags --libs', mandatory = True)
