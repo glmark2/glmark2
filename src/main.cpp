@@ -32,7 +32,7 @@
 #if USE_GL
 #include "canvas-sdl-gl.h"
 #elif USE_GLESv2
-#include "canvas-sdl-glesv2.h"
+#include "canvas-x11-egl.h"
 #endif
 
 using std::vector;
@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
 #if USE_GL
     CanvasSDLGL canvas(800, 600, 24, 0);
 #elif USE_GLESv2
-    CanvasSDLGLESv2 canvas(800, 600, 24, 0);
+    CanvasX11EGL canvas(800, 600);
 #endif
 
     // Register the scenes, so they can be looked-up by name
