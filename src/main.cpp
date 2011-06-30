@@ -21,7 +21,7 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#include "oglsdl.h"
+#include "gl-headers.h"
 #include "scene.h"
 #include "benchmark.h"
 #include "options.h"

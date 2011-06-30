@@ -24,9 +24,10 @@
 #ifndef GLMARK2_CANVAS_H_
 #define GLMARK2_CANVAS_H_
 
-#include "oglsdl.h"
+#include "gl-headers.h"
 #include "mat.h"
 
+#include <sys/types.h>
 #include <string>
 #include <stdio.h>
 
@@ -38,20 +39,20 @@ public:
     struct Pixel {
         Pixel():
             r(0), g(0), b(0), a(0) {}
-        Pixel(Uint8 r, Uint8 g, Uint8 b, Uint8 a):
+        Pixel(uint8_t r, uint8_t g, uint8_t b, uint8_t a):
             r(r), g(g), b(b), a(a) {}
-        Uint32 to_le32()
+        uint32_t to_le32()
         {
-            return static_cast<Uint32>(r) +
-                   (static_cast<Uint32>(g) << 8) +
-                   (static_cast<Uint32>(b) << 16) +
-                   (static_cast<Uint32>(a) << 24);
+            return static_cast<uint32_t>(r) +
+                   (static_cast<uint32_t>(g) << 8) +
+                   (static_cast<uint32_t>(b) << 16) +
+                   (static_cast<uint32_t>(a) << 24);
 
         }
-        Uint8 r;
-        Uint8 g;
-        Uint8 b;
-        Uint8 a;
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+        uint8_t a;
     };
 
     int mWidth;

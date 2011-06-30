@@ -1,5 +1,4 @@
 /*
- * Copyright © 2008 Ben Smith
  * Copyright © 2010-2011 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
@@ -18,13 +17,10 @@
  * glmark2.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Authors:
- *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef GLMARK2_OGLSDL_H_
-#define GLMARK2_OGLSDL_H_
-
-#include <SDL/SDL.h>
+#ifndef GLMARK2_GL_HEADERS_H_
+#define GLMARK2_GL_HEADERS_H_
 
 #if USE_GL
 #define GL_GLEXT_PROTOTYPES

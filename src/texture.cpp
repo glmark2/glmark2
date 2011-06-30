@@ -24,6 +24,7 @@
 #include "texture.h"
 #include "log.h"
 
+#include <cstdarg>
 #include <png.h>
 
 class ImageData {

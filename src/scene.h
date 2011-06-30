@@ -24,7 +24,7 @@
 #ifndef GLMARK2_SCENE_H_
 #define GLMARK2_SCENE_H_
 
-#include "oglsdl.h"
+#include "gl-headers.h"
 
 #include "mesh.h"
 #include "model.h"

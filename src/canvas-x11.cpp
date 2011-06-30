@@ -145,7 +145,7 @@ CanvasX11::print_info()
 Canvas::Pixel
 CanvasX11::read_pixel(int x, int y)
 {
-    Uint8 pixel[4];
+    uint8_t pixel[4];
 
     glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
 

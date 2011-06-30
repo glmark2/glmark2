@@ -15,7 +15,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "oglsdl.h"
+#include "gl-headers.h"
 #include "program.h"
 
 using std::string;
