@@ -24,10 +24,9 @@
 #include "canvas-sdl.h"
 #include "log.h"
 
-CanvasSDL::CanvasSDL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags)
+CanvasSDL::CanvasSDL(int pWidth, int pHeight, int pBpp, int pFullScreen, int pFlags) :
+    Canvas(pWidth, pHeight)
 {
-    mWidth = pWidth;
-    mHeight = pHeight;
     mFullScreen = pFullScreen;
     mBpp = pBpp;
 

@@ -74,12 +74,12 @@ public:
 
     static Canvas &dummy()
     {
-        static Canvas dummy_canvas;
+        static Canvas dummy_canvas(0, 0);
         return dummy_canvas;
     }
 
 protected:
-    Canvas() {}
+    Canvas(int width, int height) : mWidth(width), mHeight(height) {}
 };
 
 #endif
