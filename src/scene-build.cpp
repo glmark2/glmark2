@@ -135,7 +135,7 @@ void SceneBuild::draw()
     LibMatrix::Stack4 model_view;
 
     // Load the ModelViewProjectionMatrix uniform in the shader
-    LibMatrix::mat4 model_view_proj(mCanvas.mProjection);
+    LibMatrix::mat4 model_view_proj(mCanvas.projection());
 
     model_view.translate(0.0f, 0.0f, -2.5f);
     model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
@@ -170,8 +170,8 @@ SceneBuild::validate()
         return Scene::ValidationUnknown;
 
     Canvas::Pixel ref(0xa7, 0xa7, 0xa7, 0xff);
-    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.mWidth / 2,
-                                             mCanvas.mHeight / 2);
+    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 2,
+                                             mCanvas.height() / 2);
 
     double dist = pixel_value_distance(pixel, ref);
     if (dist < radius_3d + 0.01) {

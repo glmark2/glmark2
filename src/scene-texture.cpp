@@ -151,7 +151,7 @@ void SceneTexture::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;
-    LibMatrix::mat4 model_view_proj(mCanvas.mProjection);
+    LibMatrix::mat4 model_view_proj(mCanvas.projection());
 
     model_view.translate(0.0f, 0.0f, -5.0f);
     model_view.rotate(mRotation.x(), 1.0f, 0.0f, 0.0f);
@@ -185,8 +185,8 @@ SceneTexture::validate()
 
     Canvas::Pixel ref;
 
-    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.mWidth / 2 - 3,
-                                             mCanvas.mHeight / 2 - 3);
+    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 2 - 3,
+                                             mCanvas.height() / 2 - 3);
 
     const std::string &filter = mOptions["texture-filter"].value;
 

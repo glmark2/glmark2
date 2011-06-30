@@ -55,13 +55,6 @@ public:
         uint8_t a;
     };
 
-    int mWidth;
-    int mHeight;
-    int mBpp;
-    int mFullScreen;
-    LibMatrix::mat4 mProjection;
-    int mInitSuccess;
-
     virtual bool init() { return false; }
     virtual void visible(bool visible) { (void)visible; }
     virtual void clear() {}
@@ -82,8 +75,16 @@ public:
         return dummy_canvas;
     }
 
+    int width() { return mWidth; }
+    int height() { return mWidth; }
+    const LibMatrix::mat4 &projection() { return mProjection; }
+
 protected:
     Canvas(int width, int height) : mWidth(width), mHeight(height) {}
+
+    int mWidth;
+    int mHeight;
+    LibMatrix::mat4 mProjection;
 };
 
 #endif
