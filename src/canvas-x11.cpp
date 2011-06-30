@@ -62,6 +62,10 @@ create_canvas_x_window(Display *xdpy, const char *name, int width, int height,
                                None, NULL, 0, &sizehints);
     }
 
+    /* Gracefully handle Window Delete event from window manager */
+    Atom wmDelete = XInternAtom(xdpy, "WM_DELETE_WINDOW", True);
+    XSetWMProtocols(xdpy, win, &wmDelete, 1);
+
     return win;
 }
 
@@ -177,6 +181,10 @@ CanvasX11::should_quit()
     if (event.type == KeyPress) {
         if (XLookupKeysym(&event.xkey, 0) == XK_Escape)
             return true;
+    }
+    else if (event.type == ClientMessage) {
+        /* Window Delete event from window manager */
+        return true;
     }
 
     return false;
