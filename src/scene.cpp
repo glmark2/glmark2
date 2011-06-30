@@ -25,6 +25,7 @@
 #include "log.h"
 #include <sstream>
 #include <cmath>
+#include <sys/time.h>
 
 using std::stringstream;
 using std::string;
@@ -214,4 +215,14 @@ Scene::load_shaders(Program &program,
     }
 
     return true;
+}
+
+uint64_t
+Scene::get_timestamp_us()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    uint64_t now = static_cast<uint64_t>(tv.tv_sec) * 1000000 +
+                   static_cast<double>(tv.tv_usec);
+    return now;
 }

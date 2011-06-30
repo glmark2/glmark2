@@ -97,6 +97,8 @@ public:
                              const std::string &vtx_shader_filename,
                              const std::string &frg_shader_filename);
 
+    static uint64_t get_timestamp_us();
+
 protected:
     Scene(Canvas &pCanvas, const std::string &name);
     std::string construct_title(const std::string &title);

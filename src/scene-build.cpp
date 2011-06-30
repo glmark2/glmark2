@@ -97,7 +97,7 @@ void SceneBuild::setup()
     mCurrentFrame = 0;
     mRotation = 0.0;
     mRunning = true;
-    mStartTime = SDL_GetTicks() / 1000.0;
+    mStartTime = Scene::get_timestamp_us() / 1000000.0;
     mLastUpdateTime = mStartTime;
 }
 
@@ -114,7 +114,7 @@ SceneBuild::teardown()
 
 void SceneBuild::update()
 {
-    double current_time = SDL_GetTicks() / 1000.0;
+    double current_time = Scene::get_timestamp_us() / 1000000.0;
     double dt = current_time - mLastUpdateTime;
     double elapsed_time = current_time - mStartTime;
 
