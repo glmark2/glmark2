@@ -89,7 +89,11 @@ CanvasX11::init()
         return false;
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+#if USE_GL
+    glClearDepth(1.0f);
+#elif USE_GLESv2
     glClearDepthf(1.0f);
+#endif
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_CULL_FACE);
