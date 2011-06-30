@@ -1,6 +1,6 @@
 all_sources = bld.path.ant_glob('*.cpp')
 common_sources = [f for f in all_sources if f.name.find('canvas-') == -1]
-gl_sources = ['canvas-sdl.cpp', 'canvas-sdl-gl.cpp']
+gl_sources = ['canvas-x11.cpp', 'canvas-x11-glx.cpp']
 glesv2_sources = ['canvas-x11.cpp', 'canvas-x11-egl.cpp']
 libmatrix_sources = [f for f in bld.path.ant_glob('libmatrix/*.cc')
                      if not f.name.endswith('test.cc')]

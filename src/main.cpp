@@ -30,7 +30,7 @@
 #include <iostream>
 
 #if USE_GL
-#include "canvas-sdl-gl.h"
+#include "canvas-x11-glx.h"
 #elif USE_GLESv2
 #include "canvas-x11-egl.h"
 #endif
@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
 
     // Create the canvas
 #if USE_GL
-    CanvasSDLGL canvas(800, 600, 24, 0);
+    CanvasX11GLX canvas(800, 600);
 #elif USE_GLESv2
     CanvasX11EGL canvas(800, 600);
 #endif
