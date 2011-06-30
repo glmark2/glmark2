@@ -184,15 +184,15 @@ SceneShading::validate()
 
     Canvas::Pixel ref;
 
-    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 2,
-                                             mCanvas.height() / 2);
+    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 3,
+                                             mCanvas.height() / 3);
 
     const std::string &filter = mOptions["shading"].value;
 
     if (filter == "gouraud")
-        ref = Canvas::Pixel(0x00, 0x00, 0xca, 0xff);
+        ref = Canvas::Pixel(0x00, 0x00, 0x76, 0xff);
     else if (filter == "phong")
-        ref = Canvas::Pixel(0x1a, 0x1a, 0xbb, 0xff);
+        ref = Canvas::Pixel(0x1a, 0x1a, 0x79, 0xff);
     else
         return Scene::ValidationUnknown;
 

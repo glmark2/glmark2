@@ -191,11 +191,11 @@ SceneTexture::validate()
     const std::string &filter = mOptions["texture-filter"].value;
 
     if (filter == "nearest")
-        ref = Canvas::Pixel(0x2b, 0x2a, 0x28, 0xff);
+        ref = Canvas::Pixel(0x24, 0x22, 0x23, 0xff);
     else if (filter == "linear")
-        ref = Canvas::Pixel(0x2c, 0x2b, 0x29, 0xff);
+        ref = Canvas::Pixel(0x29, 0x27, 0x28, 0xff);
     else if (filter == "mipmap")
-        ref = Canvas::Pixel(0x2d, 0x2c, 0x2a, 0xff);
+        ref = Canvas::Pixel(0x2c, 0x2a, 0x2b, 0xff);
     else
         return Scene::ValidationUnknown;
 
