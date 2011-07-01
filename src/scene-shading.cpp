@@ -48,7 +48,13 @@ int SceneShading::load()
         return 0;
 
     model.calculate_normals();
-    model.convert_to_mesh(mMesh);
+
+    /* Tell the converter that we only care about position and normal attributes */
+    std::vector<std::pair<Model::AttribType, int> > attribs;
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
+
+    model.convert_to_mesh(mMesh, attribs);
 
     mMesh.build_vbo();
 
@@ -99,7 +105,6 @@ void SceneShading::setup()
     std::vector<GLint> attrib_locations;
     attrib_locations.push_back(mProgram.getAttribIndex("position"));
     attrib_locations.push_back(mProgram.getAttribIndex("normal"));
-    attrib_locations.push_back(mProgram.getAttribIndex("texcoord"));
     mMesh.set_attrib_locations(attrib_locations);
 
     // Load lighting and material uniforms

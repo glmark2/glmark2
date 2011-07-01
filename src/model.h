@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 class Polygon
 {
@@ -54,6 +55,13 @@ public:
     Polygon *mPolygon;
     char mName[20];
 
+    typedef enum {
+        AttribTypePosition = 1,
+        AttribTypeNormal = 2,
+        AttribTypeTexcoord = 4,
+        AttribTypeCustom = 8
+    } AttribType;
+
     Model();
     ~Model();
 
@@ -62,6 +70,8 @@ public:
     void center();
     void scale(GLfloat pAmount);
     void convert_to_mesh(Mesh &mesh);
+    void convert_to_mesh(Mesh &mesh, 
+                         const std::vector<std::pair<AttribType, int> > &attribs);
 };
 
 #endif
