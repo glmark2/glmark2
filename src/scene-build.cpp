@@ -120,6 +120,8 @@ SceneBuild::teardown()
 
     if (mUseVbo)
         mMesh.delete_vbo();
+    else
+        mMesh.delete_array();
 
     Scene::teardown();
 }
