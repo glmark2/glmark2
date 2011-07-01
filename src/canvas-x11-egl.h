@@ -1,5 +1,4 @@
 /*
- * Copyright © 2008 Ben Smith
  * Copyright © 2010-2011 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
@@ -18,25 +17,39 @@
  * glmark2.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Authors:
- *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef GLMARK2_SCREEN_SDL_GLESv2_H_
-#define GLMARK2_SCREEN_SDL_GLESv2_H_
+#ifndef GLMARK2_CANVAS_X11_EGL_H_
+#define GLMARK2_CANVAS_X11_EGL_H_
 
-#include "screen-sdl.h"
+#include "canvas-x11.h"
 
-class ScreenSDLGLESv2 : public ScreenSDL
+#include <EGL/egl.h>
+
+class CanvasX11EGL : public CanvasX11
 {
 public:
-    ScreenSDLGLESv2(int pWidth, int pHeight, int pBpp, int pFullscreen, int pFlags = 0);
-    ~ScreenSDLGLESv2();
+    CanvasX11EGL(int width, int height) :
+        CanvasX11(width, height), egl_display_(EGL_NO_DISPLAY),
+        egl_surface_(EGL_NO_SURFACE), egl_config_(0),
+        egl_context_(EGL_NO_CONTEXT) {}
+    ~CanvasX11EGL() {}
 
-    virtual void clear();
-    virtual void update();
-    virtual void print_info();
-    virtual Pixel read_pixel(int x, int y);
-    virtual void write_to_file(std::string &filename);
+protected:
+    XVisualInfo *get_xvisualinfo();
+    bool make_current();
+    void swap_buffers() { eglSwapBuffers(egl_display_, egl_surface_); }
+
+private:
+    bool ensure_egl_display();
+    bool ensure_egl_config();
+    bool ensure_egl_surface();
+
+    EGLDisplay egl_display_;
+    EGLSurface egl_surface_;
+    EGLConfig egl_config_;
+    EGLContext egl_context_;
 };
 
 #endif
+

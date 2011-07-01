@@ -55,7 +55,7 @@ Options::print_help()
            "                         (the option can be used multiple times)\n"
            "      --validate         Run a quick output validation test instead of \n"
            "                         running the benchmarks\n"
-           "      --no-swap-buffers  Don't update the screen by swapping the front and\n"
+           "      --no-swap-buffers  Don't update the canvas by swapping the front and\n"
            "                         back buffer, use glFinish() instead\n"
            "  -l, --list-scenes      Display information about the available scenes\n"
            "                         and their options\n"

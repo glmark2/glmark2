@@ -21,7 +21,7 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#include "oglsdl.h"
+#include "gl-headers.h"
 #include "scene.h"
 #include "benchmark.h"
 #include "options.h"
@@ -30,9 +30,9 @@
 #include <iostream>
 
 #if USE_GL
-#include "screen-sdl-gl.h"
+#include "canvas-x11-glx.h"
 #elif USE_GLESv2
-#include "screen-sdl-glesv2.h"
+#include "canvas-x11-egl.h"
 #endif
 
 using std::vector;
@@ -49,28 +49,6 @@ static const char *default_benchmarks[] = {
     "shading:shading=phong",
     NULL
 };
-
-bool should_keep_running()
-{
-    bool running = true;
-    SDL_Event event;
-
-    while(SDL_PollEvent(&event))
-    {
-        switch(event.type)
-        {
-            case SDL_QUIT:
-                running = false;
-                break;
-            case SDL_KEYDOWN:
-                if(event.key.keysym.sym == SDLK_ESCAPE)
-                    running = false;
-                break;
-        }
-    }
-
-    return running;
-}
 
 void
 add_default_benchmarks(vector<Benchmark *> &benchmarks)
@@ -122,7 +100,7 @@ list_scenes()
 }
 
 void
-do_benchmark(Screen &screen, vector<Benchmark *> &benchmarks)
+do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
 {
     unsigned score = 0;
 
@@ -139,14 +117,14 @@ do_benchmark(Screen &screen, vector<Benchmark *> &benchmarks)
             Log::flush();
 
             while (scene.is_running() &&
-                   (keep_running = should_keep_running()))
+                   (keep_running = !canvas.should_quit()))
             {
-                screen.clear();
+                canvas.clear();
 
                 scene.draw();
                 scene.update();
 
-                screen.update();
+                canvas.update();
             }
 
             Log::info(" FPS: %u\n", scene.average_fps());
@@ -166,7 +144,7 @@ do_benchmark(Screen &screen, vector<Benchmark *> &benchmarks)
 }
 
 void
-do_validation(Screen &screen, vector<Benchmark *> &benchmarks)
+do_validation(Canvas &canvas, vector<Benchmark *> &benchmarks)
 {
     for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
          bench_iter != benchmarks.end();
@@ -179,9 +157,9 @@ do_validation(Screen &screen, vector<Benchmark *> &benchmarks)
             Log::info("%s", scene.info_string().c_str());
             Log::flush();
 
-            screen.clear();
+            canvas.clear();
             scene.draw();
-            screen.update();
+            canvas.update();
 
             string result;
             switch(scene.validate()) {
@@ -216,27 +194,27 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // Create the screen
+    // Create the canvas
 #if USE_GL
-    ScreenSDLGL screen(800, 600, 24, 0);
+    CanvasX11GLX canvas(800, 600);
 #elif USE_GLESv2
-    ScreenSDLGLESv2 screen(800, 600, 24, 0);
+    CanvasX11EGL canvas(800, 600);
 #endif
 
-    if (!screen.mInitSuccess) {
-        Log::error("Error: %s: Could not initialize screen\n", __FUNCTION__);
-        return 1;
-    }
-
     // Register the scenes, so they can be looked-up by name
-    Benchmark::register_scene(*new SceneDefaultOptions(screen));
-    Benchmark::register_scene(*new SceneBuild(screen));
-    Benchmark::register_scene(*new SceneTexture(screen));
-    Benchmark::register_scene(*new SceneShading(screen));
+    Benchmark::register_scene(*new SceneDefaultOptions(canvas));
+    Benchmark::register_scene(*new SceneBuild(canvas));
+    Benchmark::register_scene(*new SceneTexture(canvas));
+    Benchmark::register_scene(*new SceneShading(canvas));
 
     if (Options::list_scenes) {
         list_scenes();
         return 0;
+    }
+
+    if (!canvas.init()) {
+        Log::error("Error: %s: Could not initialize canvas\n", __FUNCTION__);
+        return 1;
     }
 
     // Add the benchmarks to run
@@ -250,13 +228,15 @@ int main(int argc, char *argv[])
     Log::info("=======================================================\n");
     Log::info("    glmark2 %s\n", GLMARK_VERSION);
     Log::info("=======================================================\n");
-    screen.print_info();
+    canvas.print_info();
     Log::info("=======================================================\n");
 
+    canvas.visible(true);
+
     if (Options::validate)
-        do_validation(screen, benchmarks);
+        do_validation(canvas, benchmarks);
     else
-        do_benchmark(screen, benchmarks);
+        do_benchmark(canvas, benchmarks);
 
     return 0;
 }

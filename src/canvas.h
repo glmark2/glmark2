@@ -21,46 +21,42 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef GLMARK2_SCREEN_H_
-#define GLMARK2_SCREEN_H_
+#ifndef GLMARK2_CANVAS_H_
+#define GLMARK2_CANVAS_H_
 
-#include "oglsdl.h"
+#include "gl-headers.h"
 #include "mat.h"
 
+#include <sys/types.h>
 #include <string>
 #include <stdio.h>
 
-class Screen
+class Canvas
 {
 public:
-    ~Screen() {}
+    ~Canvas() {}
 
     struct Pixel {
         Pixel():
             r(0), g(0), b(0), a(0) {}
-        Pixel(Uint8 r, Uint8 g, Uint8 b, Uint8 a):
+        Pixel(uint8_t r, uint8_t g, uint8_t b, uint8_t a):
             r(r), g(g), b(b), a(a) {}
-        Uint32 to_le32()
+        uint32_t to_le32()
         {
-            return static_cast<Uint32>(r) +
-                   (static_cast<Uint32>(g) << 8) +
-                   (static_cast<Uint32>(b) << 16) +
-                   (static_cast<Uint32>(a) << 24);
+            return static_cast<uint32_t>(r) +
+                   (static_cast<uint32_t>(g) << 8) +
+                   (static_cast<uint32_t>(b) << 16) +
+                   (static_cast<uint32_t>(a) << 24);
 
         }
-        Uint8 r;
-        Uint8 g;
-        Uint8 b;
-        Uint8 a;
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+        uint8_t a;
     };
 
-    int mWidth;
-    int mHeight;
-    int mBpp;
-    int mFullScreen;
-    LibMatrix::mat4 mProjection;
-    int mInitSuccess;
-
+    virtual bool init() { return false; }
+    virtual void visible(bool visible) { (void)visible; }
     virtual void clear() {}
     virtual void update() {}
     virtual void print_info() {}
@@ -71,15 +67,24 @@ public:
         return Pixel();
     }
     virtual void write_to_file(std::string &filename) { (void)filename; }
+    virtual bool should_quit() { return false; }
 
-    static Screen &dummy()
+    static Canvas &dummy()
     {
-        static Screen dummy_screen;
-        return dummy_screen;
+        static Canvas dummy_canvas(0, 0);
+        return dummy_canvas;
     }
 
+    int width() { return mWidth; }
+    int height() { return mWidth; }
+    const LibMatrix::mat4 &projection() { return mProjection; }
+
 protected:
-    Screen() {}
+    Canvas(int width, int height) : mWidth(width), mHeight(height) {}
+
+    int mWidth;
+    int mHeight;
+    LibMatrix::mat4 mProjection;
 };
 
 #endif

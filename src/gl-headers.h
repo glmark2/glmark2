@@ -19,10 +19,16 @@
  * Authors:
  *  Alexandros Frantzis (glmark2)
  */
+#ifndef GLMARK2_GL_HEADERS_H_
+#define GLMARK2_GL_HEADERS_H_
 
-#ifndef GLMARK2_GLX_DISABLE_VSYNC_H_
-#define GLMARK2_GLX_DISABLE_VSYNC_H_
-
-void glx_disable_vsync();
+#if USE_GL
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glext.h>
+#elif USE_GLESv2
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#endif
 
 #endif

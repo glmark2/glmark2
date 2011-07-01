@@ -29,8 +29,8 @@
 
 #include <cmath>
 
-SceneShading::SceneShading(Screen &pScreen) :
-    Scene(pScreen, "shading")
+SceneShading::SceneShading(Canvas &pCanvas) :
+    Scene(pCanvas, "shading")
 {
     mOptions["shading"] = Scene::Option("shading", "gouraud",
                                         "[gouraud, phong]");
@@ -121,7 +121,7 @@ void SceneShading::setup()
     mCurrentFrame = 0;
     mRotation = 0.0f;
     mRunning = true;
-    mStartTime = SDL_GetTicks() / 1000.0;
+    mStartTime = Scene::get_timestamp_us() / 1000000.0;
     mLastUpdateTime = mStartTime;
 }
 
@@ -135,7 +135,7 @@ void SceneShading::teardown()
 
 void SceneShading::update()
 {
-    double current_time = SDL_GetTicks() / 1000.0;
+    double current_time = Scene::get_timestamp_us() / 1000000.0;
     double dt = current_time - mLastUpdateTime;
     double elapsed_time = current_time - mStartTime;
 
@@ -155,7 +155,7 @@ void SceneShading::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;
-    LibMatrix::mat4 model_view_proj(mScreen.mProjection);
+    LibMatrix::mat4 model_view_proj(mCanvas.projection());
 
     model_view.translate(0.0f, 0.0f, -5.0f);
     model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
@@ -182,17 +182,17 @@ SceneShading::validate()
     if (mRotation != 0) 
         return Scene::ValidationUnknown;
 
-    Screen::Pixel ref;
+    Canvas::Pixel ref;
 
-    Screen::Pixel pixel = mScreen.read_pixel(mScreen.mWidth / 2,
-                                             mScreen.mHeight / 2);
+    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 3,
+                                             mCanvas.height() / 3);
 
     const std::string &filter = mOptions["shading"].value;
 
     if (filter == "gouraud")
-        ref = Screen::Pixel(0x00, 0x00, 0xca, 0xff);
+        ref = Canvas::Pixel(0x00, 0x00, 0x76, 0xff);
     else if (filter == "phong")
-        ref = Screen::Pixel(0x1a, 0x1a, 0xbb, 0xff);
+        ref = Canvas::Pixel(0x1a, 0x1a, 0x79, 0xff);
     else
         return Scene::ValidationUnknown;
 

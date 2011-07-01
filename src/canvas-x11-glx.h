@@ -1,5 +1,4 @@
 /*
- * Copyright © 2008 Ben Smith
  * Copyright © 2010-2011 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
@@ -18,21 +17,39 @@
  * glmark2.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Authors:
- *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef GLMARK2_OGLSDL_H_
-#define GLMARK2_OGLSDL_H_
+#ifndef GLMARK2_CANVAS_X11_GLX_H_
+#define GLMARK2_CANVAS_X11_GLX_H_
 
-#include <SDL/SDL.h>
+#include "canvas-x11.h"
 
-#if USE_GL
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-#elif USE_GLESv2
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#define GLX_GLXEXT_PROTOTYPES
+#include <GL/glx.h>
+#include <GL/glxext.h>
+
+class CanvasX11GLX : public CanvasX11
+{
+public:
+    CanvasX11GLX(int width, int height) :
+        CanvasX11(width, height), glx_fbconfig_(0), glx_context_(0) {}
+    ~CanvasX11GLX() {}
+
+protected:
+    XVisualInfo *get_xvisualinfo();
+    bool make_current();
+    void swap_buffers() { glXSwapBuffers(xdpy_, xwin_); }
+
+private:
+    bool check_glx_version();
+    void init_extensions();
+    bool ensure_glx_fbconfig();
+    bool ensure_glx_context();
+
+    GLXFBConfig glx_fbconfig_;
+    GLXContext glx_context_;
+
+};
+
 #endif
 
-#endif

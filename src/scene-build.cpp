@@ -27,8 +27,8 @@
 #include "stack.h"
 #include <cmath>
 
-SceneBuild::SceneBuild(Screen &pScreen) :
-    Scene(pScreen, "build")
+SceneBuild::SceneBuild(Canvas &pCanvas) :
+    Scene(pCanvas, "build")
 {
     mOptions["use-vbo"] = Scene::Option("use-vbo", "true",
                                         "Whether to use VBOs for rendering [true,false]");
@@ -97,7 +97,7 @@ void SceneBuild::setup()
     mCurrentFrame = 0;
     mRotation = 0.0;
     mRunning = true;
-    mStartTime = SDL_GetTicks() / 1000.0;
+    mStartTime = Scene::get_timestamp_us() / 1000000.0;
     mLastUpdateTime = mStartTime;
 }
 
@@ -114,7 +114,7 @@ SceneBuild::teardown()
 
 void SceneBuild::update()
 {
-    double current_time = SDL_GetTicks() / 1000.0;
+    double current_time = Scene::get_timestamp_us() / 1000000.0;
     double dt = current_time - mLastUpdateTime;
     double elapsed_time = current_time - mStartTime;
 
@@ -135,7 +135,7 @@ void SceneBuild::draw()
     LibMatrix::Stack4 model_view;
 
     // Load the ModelViewProjectionMatrix uniform in the shader
-    LibMatrix::mat4 model_view_proj(mScreen.mProjection);
+    LibMatrix::mat4 model_view_proj(mCanvas.projection());
 
     model_view.translate(0.0f, 0.0f, -2.5f);
     model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
@@ -169,9 +169,9 @@ SceneBuild::validate()
     if (mRotation != 0)
         return Scene::ValidationUnknown;
 
-    Screen::Pixel ref(0xa7, 0xa7, 0xa7, 0xff);
-    Screen::Pixel pixel = mScreen.read_pixel(mScreen.mWidth / 2,
-                                             mScreen.mHeight / 2);
+    Canvas::Pixel ref(0xcf, 0xcf, 0xcf, 0xff);
+    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 2,
+                                             mCanvas.height() / 2);
 
     double dist = pixel_value_distance(pixel, ref);
     if (dist < radius_3d + 0.01) {

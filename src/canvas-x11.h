@@ -1,5 +1,4 @@
 /*
- * Copyright © 2008 Ben Smith
  * Copyright © 2010-2011 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
@@ -18,25 +17,39 @@
  * glmark2.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Authors:
- *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef GLMARK2_SCREEN_SDL_GL_H_
-#define GLMARK2_SCREEN_SDL_GL_H_
+#ifndef GLMARK2_CANVAS_X11_H_
+#define GLMARK2_CANVAS_X11_H_
 
-#include "screen-sdl.h"
+#include "canvas.h"
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
-class ScreenSDLGL : public ScreenSDL
+class CanvasX11 : public Canvas
 {
 public:
-    ScreenSDLGL(int pWidth, int pHeight, int pBpp, int pFullscreen, int pFlags = 0);
-    ~ScreenSDLGL();
+    ~CanvasX11() {}
 
+    virtual bool init();
+    virtual void visible(bool visible);
     virtual void clear();
     virtual void update();
     virtual void print_info();
     virtual Pixel read_pixel(int x, int y);
     virtual void write_to_file(std::string &filename);
+    virtual bool should_quit();
+
+protected:
+    CanvasX11(int width, int height) : Canvas(width, height) {}
+
+    virtual XVisualInfo *get_xvisualinfo() = 0;
+    virtual bool make_current() = 0;
+    virtual void swap_buffers() = 0;
+
+    Window xwin_;
+    Display *xdpy_;
 };
 
 #endif
+

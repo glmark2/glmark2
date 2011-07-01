@@ -24,7 +24,7 @@
 #ifndef GLMARK2_TEXTURE_H_
 #define GLMARK2_TEXTURE_H_
 
-#include "oglsdl.h"
+#include "gl-headers.h"
 
 #include <string>
 

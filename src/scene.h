@@ -24,7 +24,7 @@
 #ifndef GLMARK2_SCENE_H_
 #define GLMARK2_SCENE_H_
 
-#include "oglsdl.h"
+#include "gl-headers.h"
 
 #include "mesh.h"
 #include "model.h"
@@ -87,7 +87,7 @@ public:
 
     static Scene &dummy()
     {
-        static Scene dummy_scene(Screen::dummy(), "");
+        static Scene dummy_scene(Canvas::dummy(), "");
         return dummy_scene;
     }
 
@@ -97,13 +97,15 @@ public:
                              const std::string &vtx_shader_filename,
                              const std::string &frg_shader_filename);
 
+    static uint64_t get_timestamp_us();
+
 protected:
-    Scene(Screen &pScreen, const std::string &name);
+    Scene(Canvas &pCanvas, const std::string &name);
     std::string construct_title(const std::string &title);
-    double pixel_value_distance(Screen::Pixel p1, Screen::Pixel p2,
+    double pixel_value_distance(Canvas::Pixel p1, Canvas::Pixel p2,
                                 bool use_alpha=false);
 
-    Screen &mScreen;
+    Canvas &mCanvas;
     std::string mName;
     std::map<std::string, Option> mOptions;
 
@@ -122,7 +124,7 @@ protected:
 class SceneDefaultOptions : public Scene
 {
 public:
-    SceneDefaultOptions(Screen &pScreen) : Scene(pScreen, "") {}
+    SceneDefaultOptions(Canvas &pCanvas) : Scene(pCanvas, "") {}
     bool set_option(const std::string &opt, const std::string &val);
     void setup();
 
@@ -133,7 +135,7 @@ private:
 class SceneBuild : public Scene
 {
 public:
-    SceneBuild(Screen &pScreen);
+    SceneBuild(Canvas &pCanvas);
     int load();
     void unload();
     void setup();
@@ -159,7 +161,7 @@ protected:
 class SceneTexture : public Scene
 {
 public:
-    SceneTexture(Screen &pScreen);
+    SceneTexture(Canvas &pCanvas);
     int load();
     void unload();
     void setup();
@@ -185,7 +187,7 @@ protected:
 class SceneShading : public Scene
 {
 public:
-    SceneShading(Screen &pScreen);
+    SceneShading(Canvas &pCanvas);
     int load();
     void unload();
     void setup();

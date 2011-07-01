@@ -30,8 +30,8 @@
 #include "program.h"
 #include <cmath>
 
-SceneTexture::SceneTexture(Screen &pScreen) :
-    Scene(pScreen, "texture")
+SceneTexture::SceneTexture(Canvas &pCanvas) :
+    Scene(pCanvas, "texture")
 {
     mOptions["texture-filter"] = Scene::Option("texture-filter", "nearest",
                                                "[nearest, linear, mipmap]");
@@ -103,7 +103,7 @@ void SceneTexture::setup()
         mag_filter = GL_LINEAR;
     }
 
-    Texture::load(GLMARK_DATA_PATH"/textures/crate-base.bmp", &mTexture,
+    Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &mTexture,
                   min_filter, mag_filter, 0);
 
     mProgram.start();
@@ -117,7 +117,7 @@ void SceneTexture::setup()
     mCurrentFrame = 0;
     mRotation = LibMatrix::vec3();
     mRunning = true;
-    mStartTime = SDL_GetTicks() / 1000.0;
+    mStartTime = Scene::get_timestamp_us() / 1000000.0;
     mLastUpdateTime = mStartTime;
 }
 
@@ -131,7 +131,7 @@ void SceneTexture::teardown()
 
 void SceneTexture::update()
 {
-    double current_time = SDL_GetTicks() / 1000.0;
+    double current_time = Scene::get_timestamp_us() / 1000000.0;
     double dt = current_time - mLastUpdateTime;
     double elapsed_time = current_time - mStartTime;
 
@@ -151,7 +151,7 @@ void SceneTexture::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;
-    LibMatrix::mat4 model_view_proj(mScreen.mProjection);
+    LibMatrix::mat4 model_view_proj(mCanvas.projection());
 
     model_view.translate(0.0f, 0.0f, -5.0f);
     model_view.rotate(mRotation.x(), 1.0f, 0.0f, 0.0f);
@@ -183,19 +183,19 @@ SceneTexture::validate()
     if (mRotation.x() != 0 || mRotation.y() != 0 || mRotation.z() != 0)
         return Scene::ValidationUnknown;
 
-    Screen::Pixel ref;
+    Canvas::Pixel ref;
 
-    Screen::Pixel pixel = mScreen.read_pixel(mScreen.mWidth / 2 - 3,
-                                             mScreen.mHeight / 2 - 3);
+    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 2 - 3,
+                                             mCanvas.height() / 2 - 3);
 
     const std::string &filter = mOptions["texture-filter"].value;
 
     if (filter == "nearest")
-        ref = Screen::Pixel(0x2b, 0x2a, 0x28, 0xff);
+        ref = Canvas::Pixel(0x24, 0x22, 0x23, 0xff);
     else if (filter == "linear")
-        ref = Screen::Pixel(0x2c, 0x2b, 0x29, 0xff);
+        ref = Canvas::Pixel(0x29, 0x27, 0x28, 0xff);
     else if (filter == "mipmap")
-        ref = Screen::Pixel(0x2d, 0x2c, 0x2a, 0xff);
+        ref = Canvas::Pixel(0x2c, 0x2a, 0x2b, 0xff);
     else
         return Scene::ValidationUnknown;
 
