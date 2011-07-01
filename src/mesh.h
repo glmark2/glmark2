@@ -47,7 +47,7 @@ public:
 
     void reset();
     void build_array(bool interleaved = false);
-    void build_vbo();
+    void build_vbo(bool interleaved = false);
     void delete_array();
     void delete_vbo();
 

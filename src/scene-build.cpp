@@ -94,7 +94,7 @@ void SceneBuild::setup()
     bool interleave = (mOptions["interleave"].value == "true");
 
     if (mUseVbo)
-        mMesh.build_vbo();
+        mMesh.build_vbo(interleave);
     else
         mMesh.build_array(interleave);
 

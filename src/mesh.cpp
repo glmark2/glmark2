@@ -226,33 +226,54 @@ Mesh::build_array(bool interleaved)
 }
 
 void
-Mesh::build_vbo()
+Mesh::build_vbo(bool interleave)
 {
-    bool have_arrays = !vertex_arrays_.empty();
-
-    if (!have_arrays)
-        build_array();
+    delete_array();
+    build_array(interleave);
 
     int nvertices = vertices_.size();
 
-    /* Create a vbo for each attribute */
-    for (std::vector<std::pair<int, int> >::const_iterator ai = vertex_format_.begin();
-         ai != vertex_format_.end();
-         ai++)
-    {
-        float *data = vertex_arrays_[ai - vertex_format_.begin()];
-        GLuint vbo;
+    attrib_data_ptr_.clear();
 
+    if (!interleave) {
+        /* Create a vbo for each attribute */
+        for (std::vector<std::pair<int, int> >::const_iterator ai = vertex_format_.begin();
+             ai != vertex_format_.end();
+             ai++)
+        {
+            float *data = vertex_arrays_[ai - vertex_format_.begin()];
+            GLuint vbo;
+
+            glGenBuffers(1, &vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, nvertices * ai->first * sizeof(float),
+                         data, GL_STATIC_DRAW);
+
+            vbos_.push_back(vbo);
+            attrib_data_ptr_.push_back(0);
+        }
+
+        vertex_stride_ = 0;
+    }
+    else {
+        GLuint vbo;
+        /* Create a single vbo to store all attribute data */
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, nvertices * ai->first * sizeof(float),
-                     data, GL_STATIC_DRAW);
 
-        vbos_.push_back(vbo);
+        glBufferData(GL_ARRAY_BUFFER, nvertices * vertex_size_ * sizeof(float),
+                     vertex_arrays_[0], GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        for (size_t i = 0; i < vertex_format_.size(); i++) {
+            attrib_data_ptr_.push_back(reinterpret_cast<float *>(sizeof(float) * vertex_format_[i].second));
+            vbos_.push_back(vbo);
+        }
+        vertex_stride_ = vertex_size_ * sizeof(float);
     }
 
-    if (!have_arrays)
-        delete_array();
+    delete_array();
 }
 
 void
@@ -301,7 +322,8 @@ Mesh::render_vbo()
         glEnableVertexAttribArray(attrib_locations_[i]);
         glBindBuffer(GL_ARRAY_BUFFER, vbos_[i]);
         glVertexAttribPointer(attrib_locations_[i], vertex_format_[i].first,
-                              GL_FLOAT, GL_FALSE, 0, 0);
+                              GL_FLOAT, GL_FALSE, vertex_stride_,
+                              attrib_data_ptr_[i]);
     }
 
     glDrawArrays(GL_TRIANGLES, 0, vertices_.size());
