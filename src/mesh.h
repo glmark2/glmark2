@@ -46,7 +46,7 @@ public:
     void next_vertex();
 
     void reset();
-    void build_array();
+    void build_array(bool interleaved = false);
     void build_vbo();
     void delete_array();
     void delete_vbo();
@@ -66,6 +66,8 @@ private:
 
     std::vector<float *> vertex_arrays_;
     std::vector<GLuint> vbos_;
+    std::vector<float *> attrib_data_ptr_;
+    int vertex_stride_;
 };
 
 #endif

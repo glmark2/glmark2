@@ -171,32 +171,57 @@ Mesh::reset()
     vertices_.clear();
     vertex_format_.clear();
     attrib_locations_.clear();
+    attrib_data_ptr_.clear();
     vertex_size_ = 0;
+    vertex_stride_ = 0;
 }
 
 void
-Mesh::build_array()
+Mesh::build_array(bool interleaved)
 {
     int nvertices = vertices_.size();
 
-    /* Create an array for each attribute */
-    for (std::vector<std::pair<int, int> >::const_iterator ai = vertex_format_.begin();
-         ai != vertex_format_.end();
-         ai++)
-    {
-        float *array = new float[nvertices * ai->first];
+    if (!interleaved) {
+        /* Create an array for each attribute */
+        for (std::vector<std::pair<int, int> >::const_iterator ai = vertex_format_.begin();
+             ai != vertex_format_.end();
+             ai++)
+        {
+            float *array = new float[nvertices * ai->first];
+            float *cur = array;
+
+            /* Fill in the array */
+            for (std::vector<std::vector<float> >::const_iterator vi = vertices_.begin();
+                    vi != vertices_.end();
+                    vi++)
+            {
+                for (int i = 0; i < ai->first; i++)
+                    *cur++ = (*vi)[ai->second + i];
+            }
+
+            vertex_arrays_.push_back(array);
+            attrib_data_ptr_.push_back(array);
+        }
+        vertex_stride_ = 0;
+    }
+    else {
+        float *array = new float[nvertices * vertex_size_];
         float *cur = array;
 
-        /* Fill in the array */
         for (std::vector<std::vector<float> >::const_iterator vi = vertices_.begin();
              vi != vertices_.end();
              vi++)
         {
-            for (int i = 0; i < ai->first; i++)
-                *cur++ = (*vi)[ai->second + i];
+            /* Fill in the array */
+            for (int i = 0; i < vertex_size_; i++)
+                *cur++ = (*vi)[i];
         }
 
+        for (size_t i = 0; i < vertex_format_.size(); i++)
+            attrib_data_ptr_.push_back(array + vertex_format_[i].second);
+
         vertex_arrays_.push_back(array);
+        vertex_stride_ = vertex_size_ * sizeof(float);
     }
 }
 
@@ -258,7 +283,8 @@ Mesh::render_array()
     for (size_t i = 0; i < vertex_format_.size(); i++) {
         glEnableVertexAttribArray(attrib_locations_[i]);
         glVertexAttribPointer(attrib_locations_[i], vertex_format_[i].first,
-                              GL_FLOAT, GL_FALSE, 0, vertex_arrays_[i]);
+                              GL_FLOAT, GL_FALSE, vertex_stride_,
+                              attrib_data_ptr_[i]);
     }
 
     glDrawArrays(GL_TRIANGLES, 0, vertices_.size());

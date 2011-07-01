@@ -32,6 +32,8 @@ SceneBuild::SceneBuild(Canvas &pCanvas) :
 {
     mOptions["use-vbo"] = Scene::Option("use-vbo", "true",
                                         "Whether to use VBOs for rendering [true,false]");
+    mOptions["interleave"] = Scene::Option("interleave", "false",
+                                           "Whether to interleave vertex attribute data [true,false]");
 }
 
 SceneBuild::~SceneBuild()
@@ -89,11 +91,12 @@ void SceneBuild::setup()
     static const LibMatrix::vec4 materialColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     mUseVbo = (mOptions["use-vbo"].value == "true");
+    bool interleave = (mOptions["interleave"].value == "true");
 
     if (mUseVbo)
         mMesh.build_vbo();
     else
-        mMesh.build_array();
+        mMesh.build_array(interleave);
 
     mProgram.start();
 
