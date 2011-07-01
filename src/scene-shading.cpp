@@ -48,7 +48,7 @@ int SceneShading::load()
         return 0;
 
     model.calculate_normals();
-    model.convert_to_mesh(&mMesh);
+    model.convert_to_mesh(mMesh);
 
     mMesh.build_vbo();
 

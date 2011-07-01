@@ -61,7 +61,7 @@ public:
     void calculate_normals();
     void center();
     void scale(GLfloat pAmount);
-    void convert_to_mesh(Mesh *pMesh);
+    void convert_to_mesh(Mesh &mesh);
 };
 
 #endif

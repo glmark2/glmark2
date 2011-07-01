@@ -48,7 +48,7 @@ int SceneBuild::load()
         return 0;
 
     model.calculate_normals();
-    model.convert_to_mesh(&mMesh);
+    model.convert_to_mesh(mMesh);
 
     if (!Scene::load_shaders(mProgram, vtx_shader_filename, frg_shader_filename))
         return 0;

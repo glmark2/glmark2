@@ -51,7 +51,7 @@ int SceneTexture::load()
         return 0;
 
     model.calculate_normals();
-    model.convert_to_mesh(&mCubeMesh);
+    model.convert_to_mesh(mCubeMesh);
     mCubeMesh.build_vbo();
 
     if (!Scene::load_shaders(mProgram, vtx_shader_filename, frg_shader_filename))

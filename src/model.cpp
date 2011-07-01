@@ -46,29 +46,29 @@ Model::~Model()
     delete [] mPolygon;
 }
 
-void Model::convert_to_mesh(Mesh *pMesh)
+void Model::convert_to_mesh(Mesh &mesh)
 {
     static const int format[3] = {3, 3, 2};
-    pMesh->reset();
+    mesh.reset();
 
-    pMesh->set_vertex_format(std::vector<int>(format, format + 3));
+    mesh.set_vertex_format(std::vector<int>(format, format + 3));
 
     for(unsigned i = 0; i < 3 * mPolygonQty; i += 3)
     {
-        pMesh->next_vertex();
-        pMesh->set_attrib(0, mVertex[mPolygon[i / 3].mA].v);
-        pMesh->set_attrib(1, mVertex[mPolygon[i / 3].mA].n);
-        pMesh->set_attrib(2, mVertex[mPolygon[i / 3].mA].t);
+        mesh.next_vertex();
+        mesh.set_attrib(0, mVertex[mPolygon[i / 3].mA].v);
+        mesh.set_attrib(1, mVertex[mPolygon[i / 3].mA].n);
+        mesh.set_attrib(2, mVertex[mPolygon[i / 3].mA].t);
 
-        pMesh->next_vertex();
-        pMesh->set_attrib(0, mVertex[mPolygon[i / 3].mB].v);
-        pMesh->set_attrib(1, mVertex[mPolygon[i / 3].mB].n);
-        pMesh->set_attrib(2, mVertex[mPolygon[i / 3].mB].t);
+        mesh.next_vertex();
+        mesh.set_attrib(0, mVertex[mPolygon[i / 3].mB].v);
+        mesh.set_attrib(1, mVertex[mPolygon[i / 3].mB].n);
+        mesh.set_attrib(2, mVertex[mPolygon[i / 3].mB].t);
 
-        pMesh->next_vertex();
-        pMesh->set_attrib(0, mVertex[mPolygon[i / 3].mC].v);
-        pMesh->set_attrib(1, mVertex[mPolygon[i / 3].mC].n);
-        pMesh->set_attrib(2, mVertex[mPolygon[i / 3].mC].t);
+        mesh.next_vertex();
+        mesh.set_attrib(0, mVertex[mPolygon[i / 3].mC].v);
+        mesh.set_attrib(1, mVertex[mPolygon[i / 3].mC].n);
+        mesh.set_attrib(2, mVertex[mPolygon[i / 3].mC].t);
     }
 }
 
