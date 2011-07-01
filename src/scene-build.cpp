@@ -53,9 +53,11 @@ int SceneBuild::load()
     if (!Scene::load_shaders(mProgram, vtx_shader_filename, frg_shader_filename))
         return 0;
 
-    mVertexAttribLocation = mProgram.getAttribIndex("position");
-    mNormalAttribLocation = mProgram.getAttribIndex("normal");
-    mTexcoordAttribLocation = mProgram.getAttribIndex("texcoord");
+    std::vector<GLint> attrib_locations;
+    attrib_locations.push_back(mProgram.getAttribIndex("position"));
+    attrib_locations.push_back(mProgram.getAttribIndex("normal"));
+    attrib_locations.push_back(mProgram.getAttribIndex("texcoord"));
+    mMesh.set_attrib_locations(attrib_locations);
 
     mRotationSpeed = 36.0f;
 
@@ -85,6 +87,8 @@ void SceneBuild::setup()
 
     if (mUseVbo)
         mMesh.build_vbo();
+    else
+        mMesh.build_array();
 
     mProgram.start();
 
@@ -150,14 +154,10 @@ void SceneBuild::draw()
     mProgram.loadUniformMatrix(normal_matrix, "NormalMatrix");
 
     if (mUseVbo) {
-        mMesh.render_vbo(mVertexAttribLocation,
-                         mNormalAttribLocation,
-                         mTexcoordAttribLocation);
+        mMesh.render_vbo();
     }
     else {
-        mMesh.render_array(mVertexAttribLocation,
-                           mNormalAttribLocation,
-                           mTexcoordAttribLocation);
+        mMesh.render_array();
     }
 }
 

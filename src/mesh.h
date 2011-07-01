@@ -29,37 +29,43 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <vector>
 
-struct Vertex {
-    LibMatrix::vec3 v;
-    LibMatrix::vec3 n;
-    LibMatrix::vec2 t;
-};
-
-// Data for a mesh to be rendered by vertex arrays' or vbos' has 3 verticies per
-// polygon and no polygonal data
 class Mesh
 {
 public:
-    unsigned mVertexQty;         // Quantity of Verticies
-    unsigned mPolygonQty;        // Quantity of polygons, not really needed
-    GLenum mMode;           // Polygon mode, eg GL_QUADS, GL_TRIANGLES etc...
-    Vertex *mVertex;        // Storage for the verticies
-
-    GLuint mVBOVertices;    // Vertex VBO name
-    GLuint mVBONormals;     // Texture coordinate VBO name
-    GLuint mVBOTexCoords;   // Texture coordinate VBO name
-
-    Mesh();                 // Default Constructor, should set pointers to null
+    Mesh();
     ~Mesh();
 
+    void set_vertex_format(const std::vector<int> &format);
+    void set_attrib_locations(const std::vector<int> &locations);
+
+    void set_attrib(int pos, const LibMatrix::vec2 &v);
+    void set_attrib(int pos, const LibMatrix::vec3 &v);
+    void set_attrib(int pos, const LibMatrix::vec4 &v);
+    void next_vertex();
+
     void reset();
-    void make_cube();
-    void make_torus();
-    void render_array(int vertex_loc, int normal_loc, int texcoord_loc);
+    void build_array();
     void build_vbo();
+    void delete_array();
     void delete_vbo();
-    void render_vbo(int vertex_loc, int normal_loc, int texcoord_loc);
+
+    void render_array();
+    void render_vbo();
+
+private:
+    bool check_attrib(int pos, int size);
+    std::vector<float> &ensure_vertex();
+
+    std::vector<std::pair<int, int> > vertex_format_;
+    std::vector<int> attrib_locations_;
+    int vertex_size_;
+
+    std::vector<std::vector<float> > vertices_;
+
+    std::vector<float *> vertex_arrays_;
+    std::vector<GLuint> vbos_;
 };
 
 #endif

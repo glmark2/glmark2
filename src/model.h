@@ -37,6 +37,13 @@ public:
     unsigned short mFaceFlags;
 };
 
+struct Vertex {
+    LibMatrix::vec3 v;
+    LibMatrix::vec3 n;
+    LibMatrix::vec2 t;
+};
+
+
 // A model as loaded from a 3ds file
 class Model
 {

@@ -22,12 +22,11 @@
  *  Alexandros Frantzis (glmark2)
  */
 #include "mesh.h"
+#include "log.h"
 
 
 Mesh::Mesh() :
-    mVertexQty(0), mPolygonQty(0),
-    mMode(GL_TRIANGLES), mVertex(0),
-    mVBOVertices(0), mVBONormals(0), mVBOTexCoords(0)
+    vertex_size_(0)
 {
 }
 
@@ -36,189 +35,254 @@ Mesh::~Mesh()
     reset();
 }
 
+/*
+ * Sets the vertex format for this mesh.
+ *
+ * The format consists of a vector of integers, each
+ * specifying the size in floats of each vertex attribute.
+ *
+ * e.g. {4, 3, 2} => 3 attributes vec4, vec3, vec2
+ */
+void
+Mesh::set_vertex_format(const std::vector<int> &format)
+{
+    int pos = 0;
+    vertex_format_.clear();
+
+    for (std::vector<int>::const_iterator iter = format.begin();
+         iter != format.end();
+         iter++)
+    {
+        int n = *iter;
+        vertex_format_.push_back(std::pair<int,int>(n, pos));
+
+        pos += n;
+    }
+
+    vertex_size_ = pos;
+}
+
+/*
+ * Sets the attribute locations.
+ *
+ * These are the locations used in glEnableVertexAttribArray()
+ * and other related functions.
+ */
+void
+Mesh::set_attrib_locations(const std::vector<int> &locations)
+{
+    if (locations.size() != vertex_format_.size())
+        Log::error("Trying to set attribute locations using wrong size\n");
+    attrib_locations_ = locations;
+}
+
+
+bool
+Mesh::check_attrib(int pos, int size)
+{
+    if (pos > (int)vertex_format_.size()) {
+        Log::error("Trying to set non-existent attribute\n");
+        return false;
+    }
+
+    if (vertex_format_[pos].first != size) {
+        Log::error("Trying to set attribute with value of invalid type\n");
+        return false;
+    }
+
+    return true;
+}
+
+
+std::vector<float> &
+Mesh::ensure_vertex()
+{
+    if (vertices_.empty())
+        next_vertex();
+
+    return vertices_.back();
+}
+
+/*
+ * Sets the value of an attribute in the current vertex.
+ *
+ * The pos parameter refers to the position of the attribute
+ * as specified indirectly when setting the format using
+ * set_vertex_format(). e.g. 0 = first attribute, 1 = second
+ * etc
+ */
+void
+Mesh::set_attrib(int pos, const LibMatrix::vec2 &v)
+{
+    if (!check_attrib(pos, 2))
+        return;
+
+    std::vector<float> &vertex = ensure_vertex();
+
+    int offset = vertex_format_[pos].second;
+    vertex[offset] = v.x();
+    vertex[offset + 1] = v.y();
+}
+
+void
+Mesh::set_attrib(int pos, const LibMatrix::vec3 &v)
+{
+    if (!check_attrib(pos, 3))
+        return;
+
+    std::vector<float> &vertex = ensure_vertex();
+
+    int offset = vertex_format_[pos].second;
+    vertex[offset] = v.x();
+    vertex[offset + 1] = v.y();
+    vertex[offset + 2] = v.z();
+}
+
+void
+Mesh::set_attrib(int pos, const LibMatrix::vec4 &v)
+{
+    if (!check_attrib(pos, 4))
+        return;
+
+    std::vector<float> &vertex = ensure_vertex();
+
+    int offset = vertex_format_[pos].second;
+    vertex[offset] = v.x();
+    vertex[offset + 1] = v.y();
+    vertex[offset + 2] = v.z();
+    vertex[offset + 3] = v.w();
+}
+
+/*
+ * Adds a new vertex to the list and makes it current.
+ */
+void
+Mesh::next_vertex()
+{
+    vertices_.push_back(std::vector<float>(vertex_size_));
+}
+
 void
 Mesh::reset()
 {
-    delete [] mVertex;
-
+    delete_array();
     delete_vbo();
 
-    mPolygonQty = 0;
-    mVertexQty = 0;
-    mMode = GL_TRIANGLES;
-    mVertex = 0;
+    vertices_.clear();
+    vertex_format_.clear();
+    attrib_locations_.clear();
+    vertex_size_ = 0;
 }
 
-void Mesh::make_cube()
+void
+Mesh::build_array()
 {
-    fprintf(stderr, "Warning: %s: Not implemented\n", __FUNCTION__);
-}
+    int nvertices = vertices_.size();
 
-void Mesh::make_torus()
-{
-    unsigned wraps_qty = 64;
-    unsigned per_wrap_qty = 64;
-    float major_radius = 0.8;
-    float minor_radius = 0.4;
-    unsigned i, j;
-    unsigned k = 0;
-
-    LibMatrix::vec3 a, b, c, d, n;
-
-    mMode = GL_TRIANGLES;
-    mVertexQty = wraps_qty * per_wrap_qty * 6;
-    mVertex = new Vertex[mVertexQty];
-
-    for(i = 0; i < wraps_qty; i++)
-        for(j = 0; j < per_wrap_qty; j++)
-        {
-            float wrap_frac = j / (float)per_wrap_qty;
-            float phi = 2 * M_PI * wrap_frac;
-            float theta = 2 * M_PI * (i + wrap_frac) / (float)wraps_qty;
-            float r = major_radius + minor_radius * (float)cos(phi);
-            a.x((float)sin(theta) * r);
-            a.y(minor_radius * (float)sin(phi));
-            a.z((float)cos(theta) * r);
-
-            theta = 2 * M_PI * (i + wrap_frac + 1) / (float)wraps_qty;
-            b.x((float)sin(theta) * r);
-            b.y(minor_radius * (float)sin(phi));
-            b.z((float)cos(theta) * r);
-
-            wrap_frac = (j + 1) / (float)per_wrap_qty;
-            phi = 2 * M_PI * wrap_frac;
-            theta = 2 * M_PI * (i + wrap_frac) / (float)wraps_qty;
-            r = major_radius + minor_radius * (float)cos(phi);
-            c.x((float)sin(theta) * r);
-            c.y(minor_radius * (float)sin(phi));
-            c.z((float)cos(theta) * r);
-
-            theta = 2 * M_PI * (i + wrap_frac + 1) / (float)wraps_qty;
-            d.x((float)sin(theta) * r);
-            d.y(minor_radius * (float)sin(phi));
-            d.z((float)cos(theta) * r);
-
-            n = LibMatrix::vec3::cross(b - a, c - a);
-            n.normalize();
-            mVertex[k].n = n;   mVertex[k].v = a;   k++;
-            mVertex[k].n = n;   mVertex[k].v = b;   k++;
-            mVertex[k].n = n;   mVertex[k].v = c;   k++;
-            n = LibMatrix::vec3::cross(c - b, d - b);
-            n.normalize();
-            mVertex[k].n = n;   mVertex[k].v = b;   k++;
-            mVertex[k].n = n;   mVertex[k].v = c;   k++;
-            mVertex[k].n = n;   mVertex[k].v = d;   k++;
-        }
-}
-
-void Mesh::render_array(int vertex_loc, int normal_loc, int texcoord_loc)
-{
-    // Enable the attributes (texcoord is optional)
-    glEnableVertexAttribArray(vertex_loc);
-    glEnableVertexAttribArray(normal_loc);
-    if (texcoord_loc >= 0)
-        glEnableVertexAttribArray(texcoord_loc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glVertexAttribPointer(vertex_loc, 3, GL_FLOAT, GL_FALSE,
-                          8 * sizeof(float), mVertex[0].v);
-    glVertexAttribPointer(normal_loc, 3, GL_FLOAT, GL_FALSE,
-                          8 * sizeof(float), mVertex[0].n);
-    if (texcoord_loc >= 0) {
-        glVertexAttribPointer(texcoord_loc, 2, GL_FLOAT, GL_FALSE,
-                              8 * sizeof(float), mVertex[0].t);
-    }
-
-    glDrawArrays(GL_TRIANGLES, 0, mVertexQty);
-
-    // Disable the attributes
-    glDisableVertexAttribArray(vertex_loc);
-    glDisableVertexAttribArray(normal_loc);
-    if (texcoord_loc >= 0)
-        glDisableVertexAttribArray(texcoord_loc);
-}
-
-void Mesh::build_vbo()
-{
-    float *vertex;
-    float *texel;
-    float *normal;
-
-    vertex = new float[mVertexQty * 3];
-    texel = new float[mVertexQty * 2];
-    normal = new float[mVertexQty * 3];
-
-    for(unsigned i = 0; i < mVertexQty; i++)
+    /* Create an array for each attribute */
+    for (std::vector<std::pair<int, int> >::const_iterator ai = vertex_format_.begin();
+         ai != vertex_format_.end();
+         ai++)
     {
-        vertex[3 * i] = mVertex[i].v.x();
-        vertex[3 * i + 1] = mVertex[i].v.y();
-        vertex[3 * i + 2] = mVertex[i].v.z();
-        texel[2 * i] = mVertex[i].t.x();
-        texel[2 * i + 1] = mVertex[i].t.y();
-        normal[3 * i] = mVertex[i].n.x();
-        normal[3 * i + 1] = mVertex[i].n.y();
-        normal[3 * i + 2] = mVertex[i].n.z();
+        float *array = new float[nvertices * ai->first];
+        float *cur = array;
+
+        /* Fill in the array */
+        for (std::vector<std::vector<float> >::const_iterator vi = vertices_.begin();
+             vi != vertices_.end();
+             vi++)
+        {
+            for (int i = 0; i < ai->first; i++)
+                *cur++ = (*vi)[ai->second + i];
+        }
+
+        vertex_arrays_.push_back(array);
+    }
+}
+
+void
+Mesh::build_vbo()
+{
+    bool have_arrays = !vertex_arrays_.empty();
+
+    if (!have_arrays)
+        build_array();
+
+    int nvertices = vertices_.size();
+
+    /* Create a vbo for each attribute */
+    for (std::vector<std::pair<int, int> >::const_iterator ai = vertex_format_.begin();
+         ai != vertex_format_.end();
+         ai++)
+    {
+        float *data = vertex_arrays_[ai - vertex_format_.begin()];
+        GLuint vbo;
+
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, nvertices * ai->first * sizeof(float),
+                     data, GL_STATIC_DRAW);
+
+        vbos_.push_back(vbo);
     }
 
-    // Generate And Bind The Vertex Buffer
-    glGenBuffers(1, &mVBOVertices);
-    glBindBuffer(GL_ARRAY_BUFFER, mVBOVertices);
-    // Load The Data
-    glBufferData(GL_ARRAY_BUFFER, mVertexQty * 3 * sizeof(float), vertex, GL_STATIC_DRAW);
+    if (!have_arrays)
+        delete_array();
+}
 
-    // Generate And Bind The normal Buffer
-    glGenBuffers(1, &mVBONormals);
-    glBindBuffer(GL_ARRAY_BUFFER, mVBONormals);
-    // Load The Data
-    glBufferData(GL_ARRAY_BUFFER, mVertexQty * 3 * sizeof(float), normal, GL_STATIC_DRAW);
+void
+Mesh::delete_array()
+{
+    for (size_t i = 0; i < vertex_arrays_.size(); i++) {
+        delete [] vertex_arrays_[i];
+    }
 
-    // Generate And Bind The Texture Coordinate Buffer
-    glGenBuffers(1, &mVBOTexCoords);
-    glBindBuffer(GL_ARRAY_BUFFER, mVBOTexCoords);
-    // Load The Data
-    glBufferData(GL_ARRAY_BUFFER, mVertexQty * 2 * sizeof(float), texel, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    delete [] vertex;
-    delete [] texel;
-    delete [] normal;
+    vertex_arrays_.clear();
 }
 
 void
 Mesh::delete_vbo()
 {
-    glDeleteBuffers(1, &mVBOVertices);
-    glDeleteBuffers(1, &mVBONormals);
-    glDeleteBuffers(1, &mVBOTexCoords);
-
-    mVBOVertices = 0;
-    mVBONormals = 0;
-    mVBOTexCoords = 0;
-}
-
-void Mesh::render_vbo(int vertex_loc, int normal_loc, int texcoord_loc)
-{
-    // Enable the attributes (texcoord is optional)
-    glEnableVertexAttribArray(vertex_loc);
-    glEnableVertexAttribArray(normal_loc);
-    if (texcoord_loc >= 0)
-        glEnableVertexAttribArray(texcoord_loc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, mVBOVertices);
-    glVertexAttribPointer(vertex_loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, mVBONormals);
-    glVertexAttribPointer(normal_loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    if (texcoord_loc >= 0) {
-        glBindBuffer(GL_ARRAY_BUFFER, mVBOTexCoords);
-        glVertexAttribPointer(texcoord_loc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    for (size_t i = 0; i < vbos_.size(); i++) {
+        GLuint vbo = vbos_[i];
+        glDeleteBuffers(1, &vbo);
     }
 
-    glDrawArrays(GL_TRIANGLES, 0, mVertexQty);
-
-    // Disable the attributes
-    glDisableVertexAttribArray(vertex_loc);
-    glDisableVertexAttribArray(normal_loc);
-    if (texcoord_loc >= 0)
-        glDisableVertexAttribArray(texcoord_loc);
+    vbos_.clear();
 }
+
+
+void
+Mesh::render_array()
+{
+    for (size_t i = 0; i < vertex_format_.size(); i++) {
+        glEnableVertexAttribArray(attrib_locations_[i]);
+        glVertexAttribPointer(attrib_locations_[i], vertex_format_[i].first,
+                              GL_FLOAT, GL_FALSE, 0, vertex_arrays_[i]);
+    }
+
+    glDrawArrays(GL_TRIANGLES, 0, vertices_.size());
+
+    for (size_t i = 0; i < vertex_format_.size(); i++) {
+        glDisableVertexAttribArray(attrib_locations_[i]);
+    }
+}
+
+void
+Mesh::render_vbo()
+{
+    for (size_t i = 0; i < vertex_format_.size(); i++) {
+        glEnableVertexAttribArray(attrib_locations_[i]);
+        glBindBuffer(GL_ARRAY_BUFFER, vbos_[i]);
+        glVertexAttribPointer(attrib_locations_[i], vertex_format_[i].first,
+                              GL_FLOAT, GL_FALSE, 0, 0);
+    }
+
+    glDrawArrays(GL_TRIANGLES, 0, vertices_.size());
+
+    for (size_t i = 0; i < vertex_format_.size(); i++) {
+        glDisableVertexAttribArray(attrib_locations_[i]);
+    }
+}
+
+

@@ -48,27 +48,27 @@ Model::~Model()
 
 void Model::convert_to_mesh(Mesh *pMesh)
 {
+    static const int format[3] = {3, 3, 2};
     pMesh->reset();
 
-    pMesh->mVertexQty = 3 * mPolygonQty;
-    pMesh->mPolygonQty = mPolygonQty;
-    pMesh->mMode = GL_TRIANGLES;
+    pMesh->set_vertex_format(std::vector<int>(format, format + 3));
 
-    pMesh->mVertex = new Vertex[pMesh->mVertexQty];
-
-    for(unsigned i = 0; i < pMesh->mVertexQty; i += 3)
+    for(unsigned i = 0; i < 3 * mPolygonQty; i += 3)
     {
-        pMesh->mVertex[i + 0].v = mVertex[mPolygon[i / 3].mA].v;
-        pMesh->mVertex[i + 1].v = mVertex[mPolygon[i / 3].mB].v;
-        pMesh->mVertex[i + 2].v = mVertex[mPolygon[i / 3].mC].v;
+        pMesh->next_vertex();
+        pMesh->set_attrib(0, mVertex[mPolygon[i / 3].mA].v);
+        pMesh->set_attrib(1, mVertex[mPolygon[i / 3].mA].n);
+        pMesh->set_attrib(2, mVertex[mPolygon[i / 3].mA].t);
 
-        pMesh->mVertex[i + 0].n = mVertex[mPolygon[i / 3].mA].n;
-        pMesh->mVertex[i + 1].n = mVertex[mPolygon[i / 3].mB].n;
-        pMesh->mVertex[i + 2].n = mVertex[mPolygon[i / 3].mC].n;
+        pMesh->next_vertex();
+        pMesh->set_attrib(0, mVertex[mPolygon[i / 3].mB].v);
+        pMesh->set_attrib(1, mVertex[mPolygon[i / 3].mB].n);
+        pMesh->set_attrib(2, mVertex[mPolygon[i / 3].mB].t);
 
-        pMesh->mVertex[i + 0].t = mVertex[mPolygon[i / 3].mA].t;
-        pMesh->mVertex[i + 1].t = mVertex[mPolygon[i / 3].mB].t;
-        pMesh->mVertex[i + 2].t = mVertex[mPolygon[i / 3].mC].t;
+        pMesh->next_vertex();
+        pMesh->set_attrib(0, mVertex[mPolygon[i / 3].mC].v);
+        pMesh->set_attrib(1, mVertex[mPolygon[i / 3].mC].n);
+        pMesh->set_attrib(2, mVertex[mPolygon[i / 3].mC].t);
     }
 }
 

@@ -148,9 +148,6 @@ public:
 
 protected:
     Program mProgram;
-    int mVertexAttribLocation;
-    int mNormalAttribLocation;
-    int mTexcoordAttribLocation;
 
     Mesh mMesh;
     float mRotation;
@@ -174,9 +171,6 @@ public:
 
 protected:
     Program mProgram;
-    int mVertexAttribLocation;
-    int mNormalAttribLocation;
-    int mTexcoordAttribLocation;
 
     Mesh mCubeMesh;
     GLuint mTexture;
@@ -200,9 +194,6 @@ public:
 
 protected:
     Program mProgram;
-    int mVertexAttribLocation;
-    int mNormalAttribLocation;
-    int mTexcoordAttribLocation;
 
     Mesh mMesh;
     float mRotation;

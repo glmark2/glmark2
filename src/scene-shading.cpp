@@ -96,9 +96,11 @@ void SceneShading::setup()
 
     mProgram.start();
 
-    mVertexAttribLocation = mProgram.getAttribIndex("position");
-    mNormalAttribLocation = mProgram.getAttribIndex("normal");
-    mTexcoordAttribLocation = mProgram.getAttribIndex("texcoord");
+    std::vector<GLint> attrib_locations;
+    attrib_locations.push_back(mProgram.getAttribIndex("position"));
+    attrib_locations.push_back(mProgram.getAttribIndex("normal"));
+    attrib_locations.push_back(mProgram.getAttribIndex("texcoord"));
+    mMesh.set_attrib_locations(attrib_locations);
 
     // Load lighting and material uniforms
     mProgram.loadUniformVector(lightAmbient, "LightSourceAmbient");
@@ -169,9 +171,7 @@ void SceneShading::draw()
     normal_matrix.inverse().transpose();
     mProgram.loadUniformMatrix(normal_matrix, "NormalMatrix");
 
-    mMesh.render_vbo(mVertexAttribLocation,
-                     mNormalAttribLocation,
-                     mTexcoordAttribLocation);
+    mMesh.render_vbo();
 }
 
 Scene::ValidationResult
