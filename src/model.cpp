@@ -46,29 +46,67 @@ Model::~Model()
     delete [] mPolygon;
 }
 
-void Model::convert_to_mesh(Mesh *pMesh)
+void Model::convert_to_mesh(Mesh &mesh)
 {
-    pMesh->reset();
+    std::vector<std::pair<AttribType, int> > attribs;
 
-    pMesh->mVertexQty = 3 * mPolygonQty;
-    pMesh->mPolygonQty = mPolygonQty;
-    pMesh->mMode = GL_TRIANGLES;
+    attribs.push_back(std::pair<AttribType, int>(AttribTypePosition, 3));
+    attribs.push_back(std::pair<AttribType, int>(AttribTypeNormal, 3));
+    attribs.push_back(std::pair<AttribType, int>(AttribTypeTexcoord, 2));
 
-    pMesh->mVertex = new Vertex[pMesh->mVertexQty];
+    convert_to_mesh(mesh, attribs);
+}
 
-    for(unsigned i = 0; i < pMesh->mVertexQty; i += 3)
+void Model::convert_to_mesh(Mesh &mesh,
+                            const std::vector<std::pair<AttribType, int> > &attribs)
+{
+    std::vector<int> format;
+    int p_pos = -1;
+    int n_pos = -1;
+    int t_pos = -1;
+
+    mesh.reset();
+
+    for (std::vector<std::pair<AttribType, int> >::const_iterator ai = attribs.begin();
+         ai != attribs.end();
+         ai++)
     {
-        pMesh->mVertex[i + 0].v = mVertex[mPolygon[i / 3].mA].v;
-        pMesh->mVertex[i + 1].v = mVertex[mPolygon[i / 3].mB].v;
-        pMesh->mVertex[i + 2].v = mVertex[mPolygon[i / 3].mC].v;
+        format.push_back(ai->second);
+        if (ai->first == AttribTypePosition)
+            p_pos = ai - attribs.begin();
+        else if (ai->first == AttribTypeNormal)
+            n_pos = ai - attribs.begin();
+        else if (ai->first == AttribTypeTexcoord)
+            t_pos = ai - attribs.begin();
+    }
 
-        pMesh->mVertex[i + 0].n = mVertex[mPolygon[i / 3].mA].n;
-        pMesh->mVertex[i + 1].n = mVertex[mPolygon[i / 3].mB].n;
-        pMesh->mVertex[i + 2].n = mVertex[mPolygon[i / 3].mC].n;
+    mesh.set_vertex_format(format);
 
-        pMesh->mVertex[i + 0].t = mVertex[mPolygon[i / 3].mA].t;
-        pMesh->mVertex[i + 1].t = mVertex[mPolygon[i / 3].mB].t;
-        pMesh->mVertex[i + 2].t = mVertex[mPolygon[i / 3].mC].t;
+    for(unsigned i = 0; i < 3 * mPolygonQty; i += 3)
+    {
+        mesh.next_vertex();
+        if (p_pos >= 0)
+            mesh.set_attrib(p_pos, mVertex[mPolygon[i / 3].mA].v);
+        if (n_pos >= 0)
+            mesh.set_attrib(n_pos, mVertex[mPolygon[i / 3].mA].n);
+        if (t_pos >= 0)
+            mesh.set_attrib(t_pos, mVertex[mPolygon[i / 3].mA].t);
+
+        mesh.next_vertex();
+        if (p_pos >= 0)
+            mesh.set_attrib(p_pos, mVertex[mPolygon[i / 3].mB].v);
+        if (n_pos >= 0)
+            mesh.set_attrib(n_pos, mVertex[mPolygon[i / 3].mB].n);
+        if (t_pos >= 0)
+            mesh.set_attrib(t_pos, mVertex[mPolygon[i / 3].mB].t);
+
+        mesh.next_vertex();
+        if (p_pos >= 0)
+            mesh.set_attrib(p_pos, mVertex[mPolygon[i / 3].mC].v);
+        if (n_pos >= 0)
+            mesh.set_attrib(n_pos, mVertex[mPolygon[i / 3].mC].n);
+        if (t_pos >= 0)
+            mesh.set_attrib(t_pos, mVertex[mPolygon[i / 3].mC].t);
     }
 }
 

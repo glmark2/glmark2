@@ -32,6 +32,8 @@ SceneBuild::SceneBuild(Canvas &pCanvas) :
 {
     mOptions["use-vbo"] = Scene::Option("use-vbo", "true",
                                         "Whether to use VBOs for rendering [true,false]");
+    mOptions["interleave"] = Scene::Option("interleave", "false",
+                                           "Whether to interleave vertex attribute data [true,false]");
 }
 
 SceneBuild::~SceneBuild()
@@ -48,14 +50,21 @@ int SceneBuild::load()
         return 0;
 
     model.calculate_normals();
-    model.convert_to_mesh(&mMesh);
+
+    /* Tell the converter that we only care about position and normal attributes */
+    std::vector<std::pair<Model::AttribType, int> > attribs;
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
+
+    model.convert_to_mesh(mMesh, attribs);
 
     if (!Scene::load_shaders(mProgram, vtx_shader_filename, frg_shader_filename))
         return 0;
 
-    mVertexAttribLocation = mProgram.getAttribIndex("position");
-    mNormalAttribLocation = mProgram.getAttribIndex("normal");
-    mTexcoordAttribLocation = mProgram.getAttribIndex("texcoord");
+    std::vector<GLint> attrib_locations;
+    attrib_locations.push_back(mProgram.getAttribIndex("position"));
+    attrib_locations.push_back(mProgram.getAttribIndex("normal"));
+    mMesh.set_attrib_locations(attrib_locations);
 
     mRotationSpeed = 36.0f;
 
@@ -82,9 +91,12 @@ void SceneBuild::setup()
     static const LibMatrix::vec4 materialColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     mUseVbo = (mOptions["use-vbo"].value == "true");
+    bool interleave = (mOptions["interleave"].value == "true");
 
     if (mUseVbo)
-        mMesh.build_vbo();
+        mMesh.build_vbo(interleave);
+    else
+        mMesh.build_array(interleave);
 
     mProgram.start();
 
@@ -108,6 +120,8 @@ SceneBuild::teardown()
 
     if (mUseVbo)
         mMesh.delete_vbo();
+    else
+        mMesh.delete_array();
 
     Scene::teardown();
 }
@@ -150,14 +164,10 @@ void SceneBuild::draw()
     mProgram.loadUniformMatrix(normal_matrix, "NormalMatrix");
 
     if (mUseVbo) {
-        mMesh.render_vbo(mVertexAttribLocation,
-                         mNormalAttribLocation,
-                         mTexcoordAttribLocation);
+        mMesh.render_vbo();
     }
     else {
-        mMesh.render_array(mVertexAttribLocation,
-                           mNormalAttribLocation,
-                           mTexcoordAttribLocation);
+        mMesh.render_array();
     }
 }
 

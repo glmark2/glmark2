@@ -51,15 +51,17 @@ int SceneTexture::load()
         return 0;
 
     model.calculate_normals();
-    model.convert_to_mesh(&mCubeMesh);
+    model.convert_to_mesh(mCubeMesh);
     mCubeMesh.build_vbo();
 
     if (!Scene::load_shaders(mProgram, vtx_shader_filename, frg_shader_filename))
         return 0;
 
-    mVertexAttribLocation = mProgram.getAttribIndex("position");
-    mNormalAttribLocation = mProgram.getAttribIndex("normal");
-    mTexcoordAttribLocation = mProgram.getAttribIndex("texcoord");
+    std::vector<GLint> attrib_locations;
+    attrib_locations.push_back(mProgram.getAttribIndex("position"));
+    attrib_locations.push_back(mProgram.getAttribIndex("normal"));
+    attrib_locations.push_back(mProgram.getAttribIndex("texcoord"));
+    mCubeMesh.set_attrib_locations(attrib_locations);
 
     mRotationSpeed = LibMatrix::vec3(36.0f, 36.0f, 36.0f);
 
@@ -170,9 +172,7 @@ void SceneTexture::draw()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mTexture);
 
-    mCubeMesh.render_vbo(mVertexAttribLocation,
-                         mNormalAttribLocation,
-                         mTexcoordAttribLocation);
+    mCubeMesh.render_vbo();
 }
 
 Scene::ValidationResult
