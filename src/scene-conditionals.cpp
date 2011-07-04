@@ -31,33 +31,21 @@
 static const std::string shader_file_base(GLMARK_DATA_PATH"/shaders/conditionals-");
 static const std::string vtx_file(shader_file_base + "simple.vert");
 static const std::string frg_file_prologue(shader_file_base + "prologue.frag");
-static const std::string frg_file_conditional(shader_file_base + "conditional.frag");
+static const std::string frg_file_step_conditional(shader_file_base + "step-conditional.frag");
+static const std::string frg_file_step_simple(shader_file_base + "step-simple.frag");
 static const std::string frg_file_epilogue(shader_file_base + "epilogue.frag");
 
 SceneConditionals::SceneConditionals(Canvas &pCanvas) :
     Scene(pCanvas, "conditionals")
 {
-    mOptions["fragment-conditionals"] = Scene::Option("fragment-conditionals", "1",
-            "The number of if-else conditional clauses to use");
+    mOptions["fragment-steps"] = Scene::Option("fragment-steps", "1",
+            "The number of computational steps in the fragment shader");
+    mOptions["fragment-conditionals"] = Scene::Option("fragment-conditionals", "true",
+            "Whether each computational step includes an if-else clause");
 }
 
 SceneConditionals::~SceneConditionals()
 {
-}
-
-static void
-grid_conf(Mesh &mesh, int x, int y, int n_x, int n_y,
-          std::vector<float> &upper_left, std::vector<float> &upper_right,
-          std::vector<float> &lower_right, std::vector<float> &lower_left)
-{
-    static const double step = 0.3;
-    double x_normalized = static_cast<double>(x) / n_x;
-    double y_normalized = static_cast<double>(y) / n_y;
-
-    mesh.set_attrib(1, LibMatrix::vec4(x_normalized, y_normalized, 0.0, 1.0), &upper_left);
-    mesh.set_attrib(1, LibMatrix::vec4(x_normalized + step, y_normalized, 0.0, 1.0), &upper_right);
-    mesh.set_attrib(1, LibMatrix::vec4(x_normalized + step, y_normalized + step, 0.0, 1.0), &lower_right);
-    mesh.set_attrib(1, LibMatrix::vec4(x_normalized, y_normalized + step, 0.0, 1.0), &lower_left);
 }
 
 static std::string
@@ -72,12 +60,13 @@ get_vertex_shader_source()
 }
 
 static std::string
-get_fragment_shader_source(int conditionals)
+get_fragment_shader_source(int steps, bool conditionals)
 {
-    std::string frg_prologue, frg_conditional, frg_epilogue;
+    std::string frg_prologue, frg_step_conditional, frg_step_simple, frg_epilogue;
 
     if (!gotSource(frg_file_prologue, frg_prologue) ||
-        !gotSource(frg_file_conditional, frg_conditional) ||
+        !gotSource(frg_file_step_conditional, frg_step_conditional) ||
+        !gotSource(frg_file_step_simple, frg_step_simple) ||
         !gotSource(frg_file_epilogue, frg_epilogue))
     {
         return "";
@@ -86,8 +75,12 @@ get_fragment_shader_source(int conditionals)
     std::stringstream ss;
 
     ss << frg_prologue;
-    for (int i = 0; i < conditionals; i++)
-        ss << frg_conditional;
+    for (int i = 0; i < steps; i++) {
+        if (conditionals)
+            ss << frg_step_conditional;
+        else
+            ss << frg_step_simple;
+    }
     ss << frg_epilogue;
 
     return ss.str();
@@ -97,10 +90,9 @@ int SceneConditionals::load()
 {
     std::vector<int> vertex_format;
     vertex_format.push_back(3);
-    vertex_format.push_back(4);
-    
     mMesh.set_vertex_format(vertex_format);
-    mMesh.make_grid(32, 32, 5.0, 5.0, 0.02, grid_conf);
+
+    mMesh.make_grid(32, 32, 5.0, 5.0, 0.02);
     mMesh.build_vbo();
 
     mRotationSpeed = 36.0f;
@@ -119,13 +111,14 @@ void SceneConditionals::setup()
 {
     Scene::setup();
 
-    int frg_conditionals;
-    std::stringstream ss(mOptions["fragment-conditionals"].value);
+    bool frg_conditionals = mOptions["fragment-conditionals"].value == "true";
+    int frg_steps;
 
-    ss >> frg_conditionals;
+    std::stringstream ss(mOptions["fragment-steps"].value);
+    ss >> frg_steps;
 
     std::string vtx_shader(get_vertex_shader_source());
-    std::string frg_shader(get_fragment_shader_source(frg_conditionals));
+    std::string frg_shader(get_fragment_shader_source(frg_steps, frg_conditionals));
 
     Log::debug("%s\n", frg_shader.c_str());
     if (!Scene::load_shaders_from_strings(mProgram, vtx_shader, frg_shader))

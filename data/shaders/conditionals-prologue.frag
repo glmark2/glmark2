@@ -11,5 +11,4 @@ float rand(vec2 n)
 
 void main(void)
 {
-    float x = rand(gl_FragCoord.xy);
-    float y = rand(gl_FragCoord.yx);
+    float n = rand(gl_FragCoord.xy);
