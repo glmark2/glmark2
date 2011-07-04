@@ -97,8 +97,11 @@ void SceneShading::setup()
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced.frag";
     }
 
-    if (!Scene::load_shaders(mProgram, vtx_shader_filename, frg_shader_filename))
+    if (!Scene::load_shaders_from_files(mProgram, vtx_shader_filename,
+                                        frg_shader_filename))
+    {
         return;
+    }
 
     mProgram.start();
 

@@ -93,9 +93,14 @@ public:
 
     virtual ValidationResult validate() { return ValidationUnknown; }
 
-    static bool load_shaders(Program &program,
-                             const std::string &vtx_shader_filename,
-                             const std::string &frg_shader_filename);
+    static bool load_shaders_from_strings(Program &program,
+                                          const std::string &vtx_shader,
+                                          const std::string &frg_shader,
+                                          const std::string &vtx_shader_filename = "None",
+                                          const std::string &frg_shader_filename = "None");
+    static bool load_shaders_from_files(Program &program,
+                                        const std::string &vtx_shader_filename,
+                                        const std::string &frg_shader_filename);
 
     static uint64_t get_timestamp_us();
 

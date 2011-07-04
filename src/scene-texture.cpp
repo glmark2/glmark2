@@ -54,8 +54,11 @@ int SceneTexture::load()
     model.convert_to_mesh(mCubeMesh);
     mCubeMesh.build_vbo();
 
-    if (!Scene::load_shaders(mProgram, vtx_shader_filename, frg_shader_filename))
+    if (!Scene::load_shaders_from_files(mProgram, vtx_shader_filename,
+                                        frg_shader_filename))
+    {
         return 0;
+    }
 
     std::vector<GLint> attrib_locations;
     attrib_locations.push_back(mProgram.getAttribIndex("position"));

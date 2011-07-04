@@ -171,19 +171,12 @@ Scene::pixel_value_distance(Canvas::Pixel p1, Canvas::Pixel p2,
 }
 
 bool
-Scene::load_shaders(Program &program,
-                    const std::string &vtx_shader_filename,
-                    const std::string &frg_shader_filename)
+Scene::load_shaders_from_strings(Program &program,
+                                 const std::string &vtx_shader,
+                                 const std::string &frg_shader,
+                                 const std::string &vtx_shader_filename,
+                                 const std::string &frg_shader_filename)
 {
-    std::string vtx_shader;
-    std::string frg_shader;
-
-    if (!gotSource(vtx_shader_filename, vtx_shader))
-        return false;
-
-    if (!gotSource(frg_shader_filename, frg_shader))
-        return false;
-
     program.init();
 
     program.addShader(GL_VERTEX_SHADER, vtx_shader);
@@ -215,6 +208,26 @@ Scene::load_shaders(Program &program,
     }
 
     return true;
+}
+
+bool
+Scene::load_shaders_from_files(Program &program,
+                               const std::string &vtx_shader_filename,
+                               const std::string &frg_shader_filename)
+{
+    std::string vtx_shader;
+    std::string frg_shader;
+
+    if (!gotSource(vtx_shader_filename, vtx_shader))
+        return false;
+
+    if (!gotSource(frg_shader_filename, frg_shader))
+        return false;
+
+    return Scene::load_shaders_from_strings(program, vtx_shader, frg_shader,
+                                            vtx_shader_filename,
+                                            frg_shader_filename);
+
 }
 
 uint64_t
