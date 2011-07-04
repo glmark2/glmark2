@@ -54,6 +54,15 @@ public:
     void render_array();
     void render_vbo();
 
+    typedef void (*grid_configuration_func)(Mesh &mesh, int x, int y, int n_x, int n_y,
+                                            std::vector<float> &upper_left,
+                                            std::vector<float> &upper_right,
+                                            std::vector<float> &lower_right,
+                                            std::vector<float> &lower_left);
+
+    void make_grid(int n_x, int n_y, double width, double height,
+                   double spacing, grid_configuration_func conf_func = 0);
+
 private:
     bool check_attrib(int pos, int size);
     std::vector<float> &ensure_vertex();
