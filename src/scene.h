@@ -205,4 +205,25 @@ protected:
     float mRotationSpeed;
 };
 
+class SceneConditionals : public Scene
+{
+public:
+    SceneConditionals(Canvas &pCanvas);
+    int load();
+    void unload();
+    void setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+
+    ~SceneConditionals();
+
+protected:
+    Program mProgram;
+
+    Mesh mMesh;
+    float mRotation;
+    float mRotationSpeed;
+};
 #endif

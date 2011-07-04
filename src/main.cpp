@@ -206,6 +206,7 @@ int main(int argc, char *argv[])
     Benchmark::register_scene(*new SceneBuild(canvas));
     Benchmark::register_scene(*new SceneTexture(canvas));
     Benchmark::register_scene(*new SceneShading(canvas));
+    Benchmark::register_scene(*new SceneConditionals(canvas));
 
     if (Options::list_scenes) {
         list_scenes();
