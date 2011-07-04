@@ -40,9 +40,9 @@ public:
     void set_vertex_format(const std::vector<int> &format);
     void set_attrib_locations(const std::vector<int> &locations);
 
-    void set_attrib(int pos, const LibMatrix::vec2 &v);
-    void set_attrib(int pos, const LibMatrix::vec3 &v);
-    void set_attrib(int pos, const LibMatrix::vec4 &v);
+    void set_attrib(int pos, const LibMatrix::vec2 &v, std::vector<float> *vertex = 0);
+    void set_attrib(int pos, const LibMatrix::vec3 &v, std::vector<float> *vertex = 0);
+    void set_attrib(int pos, const LibMatrix::vec4 &v, std::vector<float> *vertex = 0);
     void next_vertex();
 
     void reset();

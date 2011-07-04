@@ -112,45 +112,48 @@ Mesh::ensure_vertex()
  * etc
  */
 void
-Mesh::set_attrib(int pos, const LibMatrix::vec2 &v)
+Mesh::set_attrib(int pos, const LibMatrix::vec2 &v, std::vector<float> *vertex)
 {
     if (!check_attrib(pos, 2))
         return;
 
-    std::vector<float> &vertex = ensure_vertex();
+    std::vector<float> &vtx = !vertex ? ensure_vertex() : *vertex;
 
     int offset = vertex_format_[pos].second;
-    vertex[offset] = v.x();
-    vertex[offset + 1] = v.y();
+
+    vtx[offset] = v.x();
+    vtx[offset + 1] = v.y();
 }
 
 void
-Mesh::set_attrib(int pos, const LibMatrix::vec3 &v)
+Mesh::set_attrib(int pos, const LibMatrix::vec3 &v, std::vector<float> *vertex)
 {
     if (!check_attrib(pos, 3))
         return;
 
-    std::vector<float> &vertex = ensure_vertex();
+    std::vector<float> &vtx = !vertex ? ensure_vertex() : *vertex;
 
     int offset = vertex_format_[pos].second;
-    vertex[offset] = v.x();
-    vertex[offset + 1] = v.y();
-    vertex[offset + 2] = v.z();
+
+    vtx[offset] = v.x();
+    vtx[offset + 1] = v.y();
+    vtx[offset + 2] = v.z();
 }
 
 void
-Mesh::set_attrib(int pos, const LibMatrix::vec4 &v)
+Mesh::set_attrib(int pos, const LibMatrix::vec4 &v, std::vector<float> *vertex)
 {
     if (!check_attrib(pos, 4))
         return;
 
-    std::vector<float> &vertex = ensure_vertex();
+    std::vector<float> &vtx = !vertex ? ensure_vertex() : *vertex;
 
     int offset = vertex_format_[pos].second;
-    vertex[offset] = v.x();
-    vertex[offset + 1] = v.y();
-    vertex[offset + 2] = v.z();
-    vertex[offset + 3] = v.w();
+
+    vtx[offset] = v.x();
+    vtx[offset + 1] = v.y();
+    vtx[offset + 2] = v.z();
+    vtx[offset + 3] = v.w();
 }
 
 /*
