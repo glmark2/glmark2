@@ -52,7 +52,9 @@ SceneConditionals::SceneConditionals(Canvas &pCanvas) :
     mOptions["vertex-conditionals"] = Scene::Option("vertex-conditionals", "true",
             "Whether each computational step includes an if-else clause");
     mOptions["grid-size"] = Scene::Option("grid-size", "32",
-            "The number of squares per side of the grid");
+            "The number of squares per side of the grid (controls the number of vertices)");
+    mOptions["grid-length"] = Scene::Option("grid-length", "5.0",
+            "The length of each side of the grid (normalized) (controls the area drawn to)");
 }
 
 SceneConditionals::~SceneConditionals()
@@ -135,6 +137,7 @@ void SceneConditionals::setup()
     int vtx_steps = 0;
     int frg_steps = 0;
     int grid_size = 0;
+    double grid_length = 0;
 
     std::stringstream ss;
 
@@ -146,6 +149,9 @@ void SceneConditionals::setup()
     ss.clear();
     ss << mOptions["grid-size"].value;
     ss >> grid_size;
+    ss.clear();
+    ss << mOptions["grid-length"].value;
+    ss >> grid_length;
 
     /* Load shaders */
     std::string vtx_shader(get_vertex_shader_source(vtx_steps, vtx_conditionals));
@@ -165,9 +171,10 @@ void SceneConditionals::setup()
      * The spacing needed in order for the area of the requested grid
      * to be the same as the area of a grid with size 32 and spacing 0.02.
      */
-    double spacing = (5.0 - 4.38) / (grid_size - 1.0);
+    double spacing = grid_length * (1 - 4.38 / 5.0) / (grid_size - 1.0);
 
-    mMesh.make_grid(grid_size, grid_size, 5.0, 5.0, grid_size > 1 ? spacing : 0);
+    mMesh.make_grid(grid_size, grid_size, grid_length, grid_length,
+                    grid_size > 1 ? spacing : 0);
     mMesh.build_vbo();
 
     std::vector<GLint> attrib_locations;
