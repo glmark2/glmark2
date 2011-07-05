@@ -151,8 +151,6 @@ void SceneConditionals::setup()
     std::string vtx_shader(get_vertex_shader_source(vtx_steps, vtx_conditionals));
     std::string frg_shader(get_fragment_shader_source(frg_steps, frg_conditionals));
 
-    Log::debug("%s\n", vtx_shader.c_str());
-    Log::debug("%s\n", frg_shader.c_str());
     if (!Scene::load_shaders_from_strings(mProgram, vtx_shader, frg_shader))
         return;
 

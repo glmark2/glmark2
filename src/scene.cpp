@@ -179,6 +179,9 @@ Scene::load_shaders_from_strings(Program &program,
 {
     program.init();
 
+    Log::debug("Loading vertex shader from file %s:\n%s",
+               vtx_shader_filename.c_str(), vtx_shader.c_str());
+
     program.addShader(GL_VERTEX_SHADER, vtx_shader);
     if (!program.valid()) {
         Log::error("Failed to add vertex shader from file %s:\n  %s\n",
@@ -187,6 +190,9 @@ Scene::load_shaders_from_strings(Program &program,
         program.release();
         return false;
     }
+
+    Log::debug("Loading fragment shader from file %s:\n%s",
+               frg_shader_filename.c_str(), frg_shader.c_str());
 
     program.addShader(GL_FRAGMENT_SHADER, frg_shader);
     if (!program.valid()) {
