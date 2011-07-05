@@ -2,7 +2,7 @@
 precision mediump float;
 #endif
 
-varying vec4 Color;
+varying vec4 dummy;
 
 float rand(vec2 n)
 {

@@ -29,7 +29,12 @@
 #include <sstream>
 
 static const std::string shader_file_base(GLMARK_DATA_PATH"/shaders/conditionals-");
-static const std::string vtx_file(shader_file_base + "simple.vert");
+
+static const std::string vtx_file_prologue(shader_file_base + "prologue.vert");
+static const std::string vtx_file_step_conditional(shader_file_base + "step-conditional.vert");
+static const std::string vtx_file_step_simple(shader_file_base + "step-simple.vert");
+static const std::string vtx_file_epilogue(shader_file_base + "epilogue.vert");
+
 static const std::string frg_file_prologue(shader_file_base + "prologue.frag");
 static const std::string frg_file_step_conditional(shader_file_base + "step-conditional.frag");
 static const std::string frg_file_step_simple(shader_file_base + "step-simple.frag");
@@ -42,6 +47,10 @@ SceneConditionals::SceneConditionals(Canvas &pCanvas) :
             "The number of computational steps in the fragment shader");
     mOptions["fragment-conditionals"] = Scene::Option("fragment-conditionals", "true",
             "Whether each computational step includes an if-else clause");
+    mOptions["vertex-steps"] = Scene::Option("vertex-steps", "1",
+            "The number of computational steps in the vertex shader");
+    mOptions["vertex-conditionals"] = Scene::Option("vertex-conditionals", "true",
+            "Whether each computational step includes an if-else clause");
 }
 
 SceneConditionals::~SceneConditionals()
@@ -49,14 +58,30 @@ SceneConditionals::~SceneConditionals()
 }
 
 static std::string
-get_vertex_shader_source()
+get_vertex_shader_source(int steps, bool conditionals)
 {
-    std::string vtx_simple;
+    std::string vtx_prologue, vtx_step_conditional, vtx_step_simple, vtx_epilogue;
 
-    if (!gotSource(vtx_file, vtx_simple))
+    if (!gotSource(vtx_file_prologue, vtx_prologue) ||
+        !gotSource(vtx_file_step_conditional, vtx_step_conditional) ||
+        !gotSource(vtx_file_step_simple, vtx_step_simple) ||
+        !gotSource(vtx_file_epilogue, vtx_epilogue))
+    {
         return "";
+    }
 
-    return vtx_simple;
+    std::stringstream ss;
+
+    ss << vtx_prologue;
+    for (int i = 0; i < steps; i++) {
+        if (conditionals)
+            ss << vtx_step_conditional;
+        else
+            ss << vtx_step_simple;
+    }
+    ss << vtx_epilogue;
+
+    return ss.str();
 }
 
 static std::string
@@ -111,15 +136,22 @@ void SceneConditionals::setup()
 {
     Scene::setup();
 
+    bool vtx_conditionals = mOptions["vertex-conditionals"].value == "true";
     bool frg_conditionals = mOptions["fragment-conditionals"].value == "true";
-    int frg_steps;
+    int vtx_steps = 0;
+    int frg_steps = 0;
 
-    std::stringstream ss(mOptions["fragment-steps"].value);
+    std::stringstream ss;
+
+    ss << mOptions["vertex-steps"].value;
+    ss >> vtx_steps;
+    ss << mOptions["fragment-steps"].value;
     ss >> frg_steps;
 
-    std::string vtx_shader(get_vertex_shader_source());
+    std::string vtx_shader(get_vertex_shader_source(vtx_steps, vtx_conditionals));
     std::string frg_shader(get_fragment_shader_source(frg_steps, frg_conditionals));
 
+    Log::debug("%s\n", vtx_shader.c_str());
     Log::debug("%s\n", frg_shader.c_str());
     if (!Scene::load_shaders_from_strings(mProgram, vtx_shader, frg_shader))
         return;
