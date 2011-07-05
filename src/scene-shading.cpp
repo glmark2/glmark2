@@ -198,9 +198,9 @@ SceneShading::validate()
     const std::string &filter = mOptions["shading"].value;
 
     if (filter == "gouraud")
-        ref = Canvas::Pixel(0x00, 0x00, 0x76, 0xff);
+        ref = Canvas::Pixel(0x00, 0x00, 0x2d, 0xff);
     else if (filter == "phong")
-        ref = Canvas::Pixel(0x1a, 0x1a, 0x79, 0xff);
+        ref = Canvas::Pixel(0x1a, 0x1a, 0x3e, 0xff);
     else
         return Scene::ValidationUnknown;
 

@@ -76,7 +76,7 @@ public:
     }
 
     int width() { return mWidth; }
-    int height() { return mWidth; }
+    int height() { return mHeight; }
     const LibMatrix::mat4 &projection() { return mProjection; }
 
 protected:
