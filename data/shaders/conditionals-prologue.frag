@@ -4,11 +4,6 @@ precision mediump float;
 
 varying vec4 dummy;
 
-float rand(vec2 n)
-{
-    return fract(sin(dot(n.xy, vec2(12.9898,78.233))) * 43758.5453);
-}
-
 void main(void)
 {
-    float n = rand(gl_FragCoord.xy);
+    float n = fract(gl_FragCoord.x * gl_FragCoord.y * 0.0001);
