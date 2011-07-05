@@ -145,6 +145,7 @@ void SceneConditionals::setup()
 
     ss << mOptions["vertex-steps"].value;
     ss >> vtx_steps;
+    ss.clear();
     ss << mOptions["fragment-steps"].value;
     ss >> frg_steps;
 
