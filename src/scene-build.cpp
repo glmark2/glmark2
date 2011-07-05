@@ -182,7 +182,7 @@ SceneBuild::validate()
     if (mRotation != 0)
         return Scene::ValidationUnknown;
 
-    Canvas::Pixel ref(0xcf, 0xcf, 0xcf, 0xff);
+    Canvas::Pixel ref(0xa7, 0xa7, 0xa7, 0xff);
     Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 2,
                                              mCanvas.height() / 2);
 
