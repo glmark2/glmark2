@@ -47,6 +47,9 @@ static const char *default_benchmarks[] = {
     "texture:texture-filter=mipmap",
     "shading:shading=gouraud",
     "shading:shading=phong",
+    "conditionals:vertex-steps=0:fragment-steps=0",
+    "conditionals:vertex-steps=0:fragment-steps=5",
+    "conditionals:vertex-steps=5:fragment-steps=0",
     NULL
 };
 
@@ -206,6 +209,7 @@ int main(int argc, char *argv[])
     Benchmark::register_scene(*new SceneBuild(canvas));
     Benchmark::register_scene(*new SceneTexture(canvas));
     Benchmark::register_scene(*new SceneShading(canvas));
+    Benchmark::register_scene(*new SceneConditionals(canvas));
 
     if (Options::list_scenes) {
         list_scenes();
