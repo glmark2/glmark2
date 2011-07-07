@@ -227,26 +227,13 @@ protected:
     float mRotationSpeed;
 };
 
-class SceneConditionals : public Scene
+class SceneConditionals : public SceneGrid
 {
 public:
     SceneConditionals(Canvas &pCanvas);
-    int load();
-    void unload();
     void setup();
-    void teardown();
-    void update();
-    void draw();
-    ValidationResult validate();
 
     ~SceneConditionals();
-
-protected:
-    Program mProgram;
-
-    Mesh mMesh;
-    float mRotation;
-    float mRotationSpeed;
 };
 
 class SceneFunction : public SceneGrid
