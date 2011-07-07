@@ -25,7 +25,6 @@
 #include "vec.h"
 #include "log.h"
 
-#include <cmath>
 #include <sstream>
 
 static const std::string shader_file_base(GLMARK_DATA_PATH"/shaders/function");
@@ -37,7 +36,7 @@ static const std::string step_low_file(shader_file_base + "-step-low.all");
 static const std::string step_medium_file(shader_file_base + "-step-medium.all");
 
 SceneFunction::SceneFunction(Canvas &pCanvas) :
-    Scene(pCanvas, "function")
+    SceneGrid(pCanvas, "function")
 {
     mOptions["fragment-steps"] = Scene::Option("fragment-steps", "1",
             "The number of computational steps in the fragment shader");
@@ -51,10 +50,6 @@ SceneFunction::SceneFunction(Canvas &pCanvas) :
             "The complexity of each computational step in the vertex shader");
     mOptions["fragment-complexity"] = Scene::Option("fragment-complexity", "low",
             "The complexity of each computational step in the fragment shader");
-    mOptions["grid-size"] = Scene::Option("grid-size", "32",
-            "The number of squares per side of the grid (controls the number of vertices)");
-    mOptions["grid-length"] = Scene::Option("grid-length", "5.0",
-            "The length of each side of the grid (normalized) (controls the area drawn to)");
 }
 
 SceneFunction::~SceneFunction()
@@ -142,21 +137,9 @@ get_fragment_shader_source(int steps, bool function, std::string &complexity)
     return frg_string;
 }
 
-int SceneFunction::load()
-{
-    mRotationSpeed = 36.0f;
-    mRunning = false;
-
-    return 1;
-}
-
-void SceneFunction::unload()
-{
-}
-
 void SceneFunction::setup()
 {
-    Scene::setup();
+    SceneGrid::setup();
 
     /* Parse options */
     bool vtx_function = mOptions["vertex-function"].value == "true";
@@ -165,8 +148,6 @@ void SceneFunction::setup()
     std::string frg_complexity = mOptions["fragment-complexity"].value;
     int vtx_steps = 0;
     int frg_steps = 0;
-    int grid_size = 0;
-    double grid_length = 0;
 
     std::stringstream ss;
 
@@ -175,12 +156,6 @@ void SceneFunction::setup()
     ss.clear();
     ss << mOptions["fragment-steps"].value;
     ss >> frg_steps;
-    ss.clear();
-    ss << mOptions["grid-size"].value;
-    ss >> grid_size;
-    ss.clear();
-    ss << mOptions["grid-length"].value;
-    ss >> grid_length;
 
     /* Load shaders */
     std::string vtx_shader(get_vertex_shader_source(vtx_steps, vtx_function,
@@ -193,76 +168,11 @@ void SceneFunction::setup()
 
     mProgram.start();
 
-    /* Create and configure the grid mesh */
-    std::vector<int> vertex_format;
-    vertex_format.push_back(3);
-    mMesh.set_vertex_format(vertex_format);
-
-    /* 
-     * The spacing needed in order for the area of the requested grid
-     * to be the same as the area of a grid with size 32 and spacing 0.02.
-     */
-    double spacing = grid_length * (1 - 4.38 / 5.0) / (grid_size - 1.0);
-
-    mMesh.make_grid(grid_size, grid_size, grid_length, grid_length,
-                    grid_size > 1 ? spacing : 0);
-    mMesh.build_vbo();
-
     std::vector<GLint> attrib_locations;
     attrib_locations.push_back(mProgram.getAttribIndex("position"));
     mMesh.set_attrib_locations(attrib_locations);
 
-    mCurrentFrame = 0;
-    mRotation = 0.0f;
     mRunning = true;
     mStartTime = Scene::get_timestamp_us() / 1000000.0;
     mLastUpdateTime = mStartTime;
-}
-
-void SceneFunction::teardown()
-{
-    mProgram.stop();
-    mProgram.release();
-    mMesh.reset();
-
-    Scene::teardown();
-}
-
-void SceneFunction::update()
-{
-    double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double dt = current_time - mLastUpdateTime;
-    double elapsed_time = current_time - mStartTime;
-
-    mLastUpdateTime = current_time;
-
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
-    }
-
-    mRotation += mRotationSpeed * dt;
-
-    mCurrentFrame++;
-}
-
-void SceneFunction::draw()
-{
-    // Load the ModelViewProjectionMatrix uniform in the shader
-    LibMatrix::Stack4 model_view;
-    LibMatrix::mat4 model_view_proj(mCanvas.projection());
-
-    model_view.translate(0.0f, 0.0f, -5.0f);
-    model_view.rotate(mRotation, 0.0f, 0.0f, 1.0f);
-    model_view_proj *= model_view.getCurrent();
-
-    mProgram.loadUniformMatrix(model_view_proj, "ModelViewProjectionMatrix");
-
-    mMesh.render_vbo();
-}
-
-Scene::ValidationResult
-SceneFunction::validate()
-{
-    return Scene::ValidationUnknown;
 }

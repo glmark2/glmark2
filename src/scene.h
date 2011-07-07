@@ -205,6 +205,28 @@ protected:
     float mRotationSpeed;
 };
 
+class SceneGrid : public Scene
+{
+public:
+    SceneGrid(Canvas &pCanvas, const std::string &name);
+    virtual int load();
+    virtual void unload();
+    virtual void setup();
+    virtual void teardown();
+    virtual void update();
+    virtual void draw();
+    virtual ValidationResult validate();
+
+    ~SceneGrid();
+
+protected:
+    Program mProgram;
+
+    Mesh mMesh;
+    float mRotation;
+    float mRotationSpeed;
+};
+
 class SceneConditionals : public Scene
 {
 public:
@@ -227,25 +249,12 @@ protected:
     float mRotationSpeed;
 };
 
-class SceneFunction : public Scene
+class SceneFunction : public SceneGrid
 {
 public:
     SceneFunction(Canvas &pCanvas);
-    int load();
-    void unload();
     void setup();
-    void teardown();
-    void update();
-    void draw();
-    ValidationResult validate();
 
     ~SceneFunction();
-
-protected:
-    Program mProgram;
-
-    Mesh mMesh;
-    float mRotation;
-    float mRotationSpeed;
 };
 #endif
