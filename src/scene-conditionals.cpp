@@ -28,17 +28,12 @@
 #include <cmath>
 #include <sstream>
 
-static const std::string shader_file_base(GLMARK_DATA_PATH"/shaders/conditionals-");
+static const std::string shader_file_base(GLMARK_DATA_PATH"/shaders/conditionals");
 
-static const std::string vtx_file_prologue(shader_file_base + "prologue.vert");
-static const std::string vtx_file_step_conditional(shader_file_base + "step-conditional.vert");
-static const std::string vtx_file_step_simple(shader_file_base + "step-simple.vert");
-static const std::string vtx_file_epilogue(shader_file_base + "epilogue.vert");
-
-static const std::string frg_file_prologue(shader_file_base + "prologue.frag");
-static const std::string frg_file_step_conditional(shader_file_base + "step-conditional.frag");
-static const std::string frg_file_step_simple(shader_file_base + "step-simple.frag");
-static const std::string frg_file_epilogue(shader_file_base + "epilogue.frag");
+static const std::string vtx_file(shader_file_base + ".vert");
+static const std::string frg_file(shader_file_base + ".frag");
+static const std::string step_conditional_file(shader_file_base + "-step-conditional.all");
+static const std::string step_simple_file(shader_file_base + "-step-simple.all");
 
 SceneConditionals::SceneConditionals(Canvas &pCanvas) :
     SceneGrid(pCanvas, "conditionals")
@@ -57,58 +52,69 @@ SceneConditionals::~SceneConditionals()
 {
 }
 
+static std::string &
+replace_string(std::string &str, const std::string &remove, const std::string &insert)
+{
+    std::string::size_type pos = 0;
+
+    while ((pos = str.find(remove, pos)) != std::string::npos) {
+        str.replace(pos, remove.size(), insert);
+        pos++;
+    }
+
+    return str;
+}
+
 static std::string
 get_vertex_shader_source(int steps, bool conditionals)
 {
-    std::string vtx_prologue, vtx_step_conditional, vtx_step_simple, vtx_epilogue;
+    std::string vtx_string, step_conditional_string, step_simple_string;
 
-    if (!gotSource(vtx_file_prologue, vtx_prologue) ||
-        !gotSource(vtx_file_step_conditional, vtx_step_conditional) ||
-        !gotSource(vtx_file_step_simple, vtx_step_simple) ||
-        !gotSource(vtx_file_epilogue, vtx_epilogue))
+    if (!gotSource(vtx_file, vtx_string) ||
+        !gotSource(step_conditional_file, step_conditional_string) ||
+        !gotSource(step_simple_file, step_simple_string))
     {
         return "";
     }
 
-    std::stringstream ss;
+    std::stringstream ss_main;
 
-    ss << vtx_prologue;
     for (int i = 0; i < steps; i++) {
         if (conditionals)
-            ss << vtx_step_conditional;
+            ss_main << step_conditional_string;
         else
-            ss << vtx_step_simple;
+            ss_main  << step_simple_string;
     }
-    ss << vtx_epilogue;
 
-    return ss.str();
+    replace_string(vtx_string, "$MAIN$", ss_main.str());
+
+    return vtx_string;
 }
 
 static std::string
 get_fragment_shader_source(int steps, bool conditionals)
 {
-    std::string frg_prologue, frg_step_conditional, frg_step_simple, frg_epilogue;
+    std::string frg_string, step_conditional_string, step_simple_string;
 
-    if (!gotSource(frg_file_prologue, frg_prologue) ||
-        !gotSource(frg_file_step_conditional, frg_step_conditional) ||
-        !gotSource(frg_file_step_simple, frg_step_simple) ||
-        !gotSource(frg_file_epilogue, frg_epilogue))
+    if (!gotSource(frg_file, frg_string) ||
+        !gotSource(step_conditional_file, step_conditional_string) ||
+        !gotSource(step_simple_file, step_simple_string))
     {
         return "";
     }
 
-    std::stringstream ss;
+    std::stringstream ss_main;
 
-    ss << frg_prologue;
     for (int i = 0; i < steps; i++) {
         if (conditionals)
-            ss << frg_step_conditional;
+            ss_main << step_conditional_string;
         else
-            ss << frg_step_simple;
+            ss_main  << step_simple_string;
     }
-    ss << frg_epilogue;
 
-    return ss.str();
+    replace_string(frg_string, "$MAIN$", ss_main.str());
+
+    return frg_string;
 }
 
 void SceneConditionals::setup()
