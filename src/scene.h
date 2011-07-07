@@ -226,4 +226,26 @@ protected:
     float mRotation;
     float mRotationSpeed;
 };
+
+class SceneFunction : public Scene
+{
+public:
+    SceneFunction(Canvas &pCanvas);
+    int load();
+    void unload();
+    void setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+
+    ~SceneFunction();
+
+protected:
+    Program mProgram;
+
+    Mesh mMesh;
+    float mRotation;
+    float mRotationSpeed;
+};
 #endif
