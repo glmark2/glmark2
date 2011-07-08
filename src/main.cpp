@@ -52,9 +52,9 @@ static const char *default_benchmarks[] = {
     "conditionals:vertex-steps=5:fragment-steps=0",
     "function:fragment-steps=5:fragment-complexity=low",
     "function:fragment-steps=5:fragment-complexity=medium",
-    "loop:fragment-steps=5:fragment-loop=false",
-    "loop:fragment-steps=5:fragment-uniform=true",
-    "loop:fragment-steps=5:fragment-uniform=false",
+    "loop:vertex-steps=5:fragment-steps=5:fragment-loop=false",
+    "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=false",
+    "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=true",
     NULL
 };
 
