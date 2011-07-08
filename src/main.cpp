@@ -52,6 +52,9 @@ static const char *default_benchmarks[] = {
     "conditionals:vertex-steps=5:fragment-steps=0",
     "function:fragment-steps=5:fragment-complexity=low",
     "function:fragment-steps=5:fragment-complexity=medium",
+    "loop:vertex-steps=5:fragment-steps=5:fragment-loop=false",
+    "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=false",
+    "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=true",
     NULL
 };
 
@@ -213,6 +216,7 @@ int main(int argc, char *argv[])
     Benchmark::register_scene(*new SceneShading(canvas));
     Benchmark::register_scene(*new SceneConditionals(canvas));
     Benchmark::register_scene(*new SceneFunction(canvas));
+    Benchmark::register_scene(*new SceneLoop(canvas));
 
     if (Options::list_scenes) {
         list_scenes();
