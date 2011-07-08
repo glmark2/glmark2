@@ -244,4 +244,13 @@ public:
 
     ~SceneFunction();
 };
+
+class SceneLoop : public SceneGrid
+{
+public:
+    SceneLoop(Canvas &pCanvas);
+    void setup();
+
+    ~SceneLoop();
+};
 #endif
