@@ -40,15 +40,15 @@ SceneLoop::SceneLoop(Canvas &pCanvas) :
     mOptions["fragment-steps"] = Scene::Option("fragment-steps", "1",
             "The number of computational steps in the fragment shader");
     mOptions["fragment-loop"] = Scene::Option("fragment-function", "true",
-            "Whether each computational step includes a function call");
+            "Whether to execute the steps in the vertex shader using a for loop");
     mOptions["vertex-steps"] = Scene::Option("vertex-steps", "1",
             "The number of computational steps in the vertex shader");
     mOptions["vertex-loop"] = Scene::Option("vertex-function", "true",
-            "Whether each computational step includes an if-else clause");
+            "Whether to execute the steps in the vertex shader using a for loop");
     mOptions["vertex-uniform"] = Scene::Option("vertex-uniform", "true",
-            "The complexity of each computational step in the vertex shader");
+            "Whether to use a uniform in the vertex shader for the number of loop iterations to perform (i.e. vertex-steps)");
     mOptions["fragment-uniform"] = Scene::Option("fragment-uniform", "true",
-            "The complexity of each computational step in the fragment shader");
+            "Whether to use a uniform in the fragment shader for the number of loop iterations to perform (i.e. fragment-steps)");
 }
 
 SceneLoop::~SceneLoop()
