@@ -47,6 +47,7 @@ static const char *default_benchmarks[] = {
     "texture:texture-filter=mipmap",
     "shading:shading=gouraud",
     "shading:shading=phong",
+    "shading:shading=jesse",
     "conditionals:vertex-steps=0:fragment-steps=0",
     "conditionals:vertex-steps=0:fragment-steps=5",
     "conditionals:vertex-steps=5:fragment-steps=0",

@@ -33,7 +33,7 @@ SceneShading::SceneShading(Canvas &pCanvas) :
     Scene(pCanvas, "shading")
 {
     mOptions["shading"] = Scene::Option("shading", "gouraud",
-                                        "[gouraud, phong]");
+                                        "[gouraud, phong, jesse]");
 }
 
 SceneShading::~SceneShading()
@@ -95,6 +95,10 @@ void SceneShading::setup()
     else if (shading == "phong") {
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced.vert";
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced.frag";
+    }
+    else if (shading == "jesse") {
+        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced-jesse.vert";
+        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced-jesse.frag";
     }
 
     if (!Scene::load_shaders_from_files(mProgram, vtx_shader_filename,
@@ -178,6 +182,9 @@ void SceneShading::draw()
     LibMatrix::mat4 normal_matrix(model_view.getCurrent());
     normal_matrix.inverse().transpose();
     mProgram.loadUniformMatrix(normal_matrix, "NormalMatrix");
+
+    // Load the modelview matrix itself
+    mProgram.loadUniformMatrix(model_view.getCurrent(), "ModelViewMatrix");
 
     mMesh.render_vbo();
 }
