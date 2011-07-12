@@ -160,7 +160,7 @@ Model::calculate_normals()
 bool
 Model::load_3ds(const std::string &filename)
 {
-    Object *object;
+    Object *object(0);
 
     Log::debug("Loading model from 3ds file '%s'\n", filename.c_str());
 

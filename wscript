@@ -62,7 +62,7 @@ def configure(ctx):
         ctx.check_cfg(package = pkg, uselib_store = uselib,
                       args = '--cflags --libs', mandatory = mandatory)
 
-    ctx.env.append_unique('CXXFLAGS', '-Wall -Wextra -fms-extensions'.split(' '))
+    ctx.env.append_unique('CXXFLAGS', '-Wall -Werror -Wextra -fms-extensions'.split(' '))
 
     # Prepend -O# and -g flags so that they can be overriden by the
     # CFLAGS environment variable
