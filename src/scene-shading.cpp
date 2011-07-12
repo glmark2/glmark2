@@ -33,7 +33,7 @@ SceneShading::SceneShading(Canvas &pCanvas) :
     Scene(pCanvas, "shading")
 {
     mOptions["shading"] = Scene::Option("shading", "gouraud",
-                                        "[gouraud, phong]");
+                                        "[gouraud, blinn-phong-inf, phong]");
 }
 
 SceneShading::~SceneShading()
@@ -74,15 +74,8 @@ void SceneShading::setup()
 {
     Scene::setup();
 
-    static const LibMatrix::vec3 lightAmbient(0.1f, 0.1f, 0.1f);
-    static const LibMatrix::vec3 lightDiffuse(0.8f, 0.8f, 0.8f);
-    static const LibMatrix::vec3 lightSpecular(0.8f, 0.8f, 0.8f);
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
-
-    static const LibMatrix::vec3 materialAmbient(1.0f, 1.0f, 1.0f);
-    static const LibMatrix::vec3 materialDiffuse(1.0f, 1.0f, 1.0f);
-    static const LibMatrix::vec3 materialSpecular(1.0f, 1.0f, 1.0f);
-    static const LibMatrix::vec4 materialColor(0.0f, 0.0f, 1.0f, 1.0f);
+    static const LibMatrix::vec4 materialDiffuse(0.0f, 0.0f, 1.0f, 1.0f);
 
     std::string vtx_shader_filename;
     std::string frg_shader_filename;
@@ -92,9 +85,13 @@ void SceneShading::setup()
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.vert";
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.frag";
     }
-    else if (shading == "phong") {
+    else if (shading == "blinn-phong-inf") {
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced.vert";
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced.frag";
+    }
+    else if (shading == "phong") {
+        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.vert";
+        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.frag";
     }
 
     if (!Scene::load_shaders_from_files(mProgram, vtx_shader_filename,
@@ -111,17 +108,8 @@ void SceneShading::setup()
     mMesh.set_attrib_locations(attrib_locations);
 
     // Load lighting and material uniforms
-    mProgram.loadUniformVector(lightAmbient, "LightSourceAmbient");
     mProgram.loadUniformVector(lightPosition, "LightSourcePosition");
-    mProgram.loadUniformVector(lightDiffuse, "LightSourceDiffuse");
-    mProgram.loadUniformVector(lightSpecular, "LightSourceSpecular");
-
-    mProgram.loadUniformVector(materialAmbient, "MaterialAmbient");
-    mProgram.loadUniformVector(materialDiffuse, "MaterialDiffuse");
-    mProgram.loadUniformVector(materialSpecular, "MaterialSpecular");
-    mProgram.loadUniformVector(materialColor, "MaterialColor");
-
-    // Calculate and load the half vector
+    mProgram.loadUniformVector(materialDiffuse, "MaterialColor");
     LibMatrix::vec3 halfVector(lightPosition[0], lightPosition[1], lightPosition[2]);
     halfVector.normalize();
     halfVector += LibMatrix::vec3(0.0, 0.0, 1.0);
@@ -178,6 +166,9 @@ void SceneShading::draw()
     LibMatrix::mat4 normal_matrix(model_view.getCurrent());
     normal_matrix.inverse().transpose();
     mProgram.loadUniformMatrix(normal_matrix, "NormalMatrix");
+
+    // Load the modelview matrix itself
+    mProgram.loadUniformMatrix(model_view.getCurrent(), "ModelViewMatrix");
 
     mMesh.render_vbo();
 }
