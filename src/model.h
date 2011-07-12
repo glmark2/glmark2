@@ -31,29 +31,11 @@
 #include <stdlib.h>
 #include <vector>
 
-class Polygon
-{
-public:
-    unsigned short mA, mB, mC;
-    unsigned short mFaceFlags;
-};
-
-struct Vertex {
-    LibMatrix::vec3 v;
-    LibMatrix::vec3 n;
-    LibMatrix::vec2 t;
-};
-
 
 // A model as loaded from a 3ds file
 class Model
 {
 public:
-    unsigned mPolygonQty;
-    unsigned mVertexQty;
-    Vertex *mVertex;
-    Polygon *mPolygon;
-    char mName[20];
 
     typedef enum {
         AttribTypePosition = 1,
@@ -62,16 +44,37 @@ public:
         AttribTypeCustom = 8
     } AttribType;
 
-    Model();
-    ~Model();
+    Model() {}
+    ~Model() {}
 
-    int load_3ds(const char *pFileName);
+    bool load_3ds(const std::string &filename);
     void calculate_normals();
-    void center();
-    void scale(GLfloat pAmount);
     void convert_to_mesh(Mesh &mesh);
     void convert_to_mesh(Mesh &mesh, 
                          const std::vector<std::pair<AttribType, int> > &attribs);
+private:
+    struct Face {
+        uint16_t a, b, c;
+        uint16_t face_flags;
+    };
+
+    struct Vertex {
+        LibMatrix::vec3 v;
+        LibMatrix::vec3 n;
+        LibMatrix::vec2 t;
+    };
+
+    struct Object {
+        Object(const std::string &name) : name(name) {}
+        std::string name;
+        std::vector<Vertex> vertices;
+        std::vector<Face> faces;
+    };
+
+    void append_object_to_mesh(const Object &object, Mesh &mesh,
+                               int p_pos, int n_pos, int t_pos);
+
+    std::vector<Object> objects_;
 };
 
 #endif

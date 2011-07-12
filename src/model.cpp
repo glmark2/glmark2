@@ -24,29 +24,63 @@
 #include "model.h"
 #include "vec.h"
 #include "log.h"
+#include "options.h"
 
-long filelength(int f)
+#include <fstream>
+#include <sstream>
+
+#define read_or_fail(file, dst, size) do { \
+    file.read(reinterpret_cast<char *>((dst)), (size)); \
+    if (file.gcount() < (std::streamsize)(size)) { \
+        Log::error("%s: %d: Failed to read %zd bytes from 3ds file (read %zd)\n", \
+                   __FUNCTION__, __LINE__, \
+                   (size_t)(size), file.gcount()); \
+        return false; \
+    } \
+} while(0);
+
+void
+Model::append_object_to_mesh(const Object &object, Mesh &mesh,
+                             int p_pos, int n_pos, int t_pos)
 {
-    struct stat buf;
-    fstat(f, &buf);
-    return(buf.st_size);
+    size_t face_count = object.faces.size();
+
+    for(size_t i = 0; i < 3 * face_count; i += 3)
+    {
+        const Face &face = object.faces[i / 3];
+        const Vertex &a = object.vertices[face.a];
+        const Vertex &b = object.vertices[face.b];
+        const Vertex &c = object.vertices[face.c];
+
+        mesh.next_vertex();
+        if (p_pos >= 0)
+            mesh.set_attrib(p_pos, a.v);
+        if (n_pos >= 0)
+            mesh.set_attrib(n_pos, a.n);
+        if (t_pos >= 0)
+            mesh.set_attrib(t_pos, a.t);
+
+        mesh.next_vertex();
+        if (p_pos >= 0)
+            mesh.set_attrib(p_pos, b.v);
+        if (n_pos >= 0)
+            mesh.set_attrib(n_pos, b.n);
+        if (t_pos >= 0)
+            mesh.set_attrib(t_pos, b.t);
+
+        mesh.next_vertex();
+        if (p_pos >= 0)
+            mesh.set_attrib(p_pos, c.v);
+        if (n_pos >= 0)
+            mesh.set_attrib(n_pos, c.n);
+        if (t_pos >= 0)
+            mesh.set_attrib(t_pos, c.t);
+    }
+
 }
 
-Model::Model()
-{
-    mPolygonQty = 0;
-    mVertexQty = 0;
-    mVertex = 0;        // Set pointer to null
-    mPolygon = 0;       // Set pointer to null
-}
-
-Model::~Model()
-{
-    delete [] mVertex;
-    delete [] mPolygon;
-}
-
-void Model::convert_to_mesh(Mesh &mesh)
+void
+Model::convert_to_mesh(Mesh &mesh)
 {
     std::vector<std::pair<AttribType, int> > attribs;
 
@@ -57,8 +91,9 @@ void Model::convert_to_mesh(Mesh &mesh)
     convert_to_mesh(mesh, attribs);
 }
 
-void Model::convert_to_mesh(Mesh &mesh,
-                            const std::vector<std::pair<AttribType, int> > &attribs)
+void
+Model::convert_to_mesh(Mesh &mesh,
+                       const std::vector<std::pair<AttribType, int> > &attribs)
 {
     std::vector<int> format;
     int p_pos = -1;
@@ -82,115 +117,79 @@ void Model::convert_to_mesh(Mesh &mesh,
 
     mesh.set_vertex_format(format);
 
-    for(unsigned i = 0; i < 3 * mPolygonQty; i += 3)
+    for (std::vector<Object>::const_iterator iter = objects_.begin();
+         iter != objects_.end();
+         iter++)
     {
-        mesh.next_vertex();
-        if (p_pos >= 0)
-            mesh.set_attrib(p_pos, mVertex[mPolygon[i / 3].mA].v);
-        if (n_pos >= 0)
-            mesh.set_attrib(n_pos, mVertex[mPolygon[i / 3].mA].n);
-        if (t_pos >= 0)
-            mesh.set_attrib(t_pos, mVertex[mPolygon[i / 3].mA].t);
-
-        mesh.next_vertex();
-        if (p_pos >= 0)
-            mesh.set_attrib(p_pos, mVertex[mPolygon[i / 3].mB].v);
-        if (n_pos >= 0)
-            mesh.set_attrib(n_pos, mVertex[mPolygon[i / 3].mB].n);
-        if (t_pos >= 0)
-            mesh.set_attrib(t_pos, mVertex[mPolygon[i / 3].mB].t);
-
-        mesh.next_vertex();
-        if (p_pos >= 0)
-            mesh.set_attrib(p_pos, mVertex[mPolygon[i / 3].mC].v);
-        if (n_pos >= 0)
-            mesh.set_attrib(n_pos, mVertex[mPolygon[i / 3].mC].n);
-        if (t_pos >= 0)
-            mesh.set_attrib(t_pos, mVertex[mPolygon[i / 3].mC].t);
+        append_object_to_mesh(*iter, mesh, p_pos, n_pos, t_pos);
     }
 }
 
-void Model::calculate_normals()
+void
+Model::calculate_normals()
 {
     LibMatrix::vec3 n;
 
-    for(unsigned i = 0; i < mPolygonQty; i++)
+    for (std::vector<Object>::iterator iter = objects_.begin();
+         iter != objects_.end();
+         iter++)
     {
-        n = LibMatrix::vec3::cross(mVertex[mPolygon[i].mB].v - mVertex[mPolygon[i].mA].v,
-                                   mVertex[mPolygon[i].mC].v - mVertex[mPolygon[i].mA].v);
-        n.normalize();
-        mVertex[mPolygon[i].mA].n += n;
-        mVertex[mPolygon[i].mB].n += n;
-        mVertex[mPolygon[i].mC].n += n;
+        Object &object = *iter;
+        size_t face_count = object.faces.size();
+        size_t vertex_count = object.vertices.size();
+
+        for(unsigned i = 0; i < face_count; i++)
+        {
+            const Face &face = object.faces[i];
+            Vertex &a = object.vertices[face.a];
+            Vertex &b = object.vertices[face.b];
+            Vertex &c = object.vertices[face.c];
+
+            n = LibMatrix::vec3::cross(b.v - a.v, c.v - a.v);
+            n.normalize();
+            a.n += n;
+            b.n += n;
+            c.n += n;
+        }
+
+        for(unsigned i = 0; i < vertex_count; i++)
+            object.vertices[i].n.normalize();
     }
-
-    for(unsigned i = 0; i < mVertexQty; i++)
-        mVertex[i].n.normalize();
 }
 
-void Model::center()
+bool
+Model::load_3ds(const std::string &filename)
 {
-    LibMatrix::vec3 max(mVertex[0].v);
-    LibMatrix::vec3 min(mVertex[0].v);
+    Object *object;
 
-    for(unsigned i = 1; i < mVertexQty; i++)
-    {
-        if(mVertex[i].v.x() > max.x()) max.x(mVertex[i].v.x());
-        if(mVertex[i].v.y() > max.y()) max.y(mVertex[i].v.y());
-        if(mVertex[i].v.z() > max.z()) max.z(mVertex[i].v.z());
+    Log::debug("Loading model from 3ds file '%s'\n", filename.c_str());
 
-        if(mVertex[i].v.x() < min.x()) min.x(mVertex[i].v.x());
-        if(mVertex[i].v.y() < min.y()) min.y(mVertex[i].v.y());
-        if(mVertex[i].v.z() < min.z()) min.z(mVertex[i].v.z());
-    }
-
-    LibMatrix::vec3 center(max + min);
-    center /= 2.0f;
-
-    for(unsigned i = 0; i < mVertexQty; i++)
-        mVertex[i].v -= center;
-}
-
-void Model::scale(GLfloat pAmount)
-{
-    for(unsigned i = 1; i < mVertexQty; i++)
-        mVertex[i].v *= pAmount;
-}
-
-#define fread_or_fail(a, b, c, d) do { \
-    size_t nread_; \
-    nread_ = fread((a), (b), (c), (d));\
-    if (nread_ < (c)) { \
-        Log::error("Failed to read %zd bytes from 3ds file (read %zd)\n", \
-                   (size_t)((c) * (b)), nread_ * (b)); \
-        return 0; \
-    } \
-} while(0);
-
-int Model::load_3ds(const char *pFileName)
-{
-    int i;
-    FILE *l_file;
-    unsigned short l_chunk_id;
-    unsigned int l_chunk_length;
-    unsigned char l_char;
-    unsigned short l_qty;
-
-    Log::debug("Loading model from 3ds file '%s'\n", pFileName);
-
-    if ((l_file = fopen (pFileName, "rb")) == NULL) {
-        Log::error("Could not open 3ds file '%s'\n", pFileName);
-        return 0;
+    std::fstream input_file(filename.c_str());
+    if (!input_file) {
+        Log::error("Could not open 3ds file '%s'\n", filename.c_str());
+        return false;
     }
 
     // Loop to scan the whole file
-    while (ftell (l_file) < filelength (fileno (l_file))) {
-        // Read the chunk header
-        fread_or_fail (&l_chunk_id, 2, 1, l_file);
-        //Read the lenght of the chunk
-        fread_or_fail (&l_chunk_length, 4, 1, l_file);
+    while (!input_file.eof()) {
+        uint16_t chunk_id;
+        uint32_t chunk_length;
 
-        switch (l_chunk_id)
+        // Read the chunk header
+        input_file.read(reinterpret_cast<char *>(&chunk_id), 2);
+        if (input_file.gcount() == 0) {
+            continue;
+        }
+        else if (input_file.gcount() < 2) {
+            Log::error("%s: %d: Failed to read %zd bytes from 3ds file (read %zd)\n",
+                       __FUNCTION__, __LINE__, 2, input_file.gcount());
+            return false;
+        }
+
+        //Read the lenght of the chunk
+        read_or_fail(input_file, &chunk_length, 4);
+
+        switch (chunk_id)
         {
             //----------------- MAIN3DS -----------------
             // Description: Main chunk, contains all the other chunks
@@ -214,12 +213,18 @@ int Model::load_3ds(const char *pFileName)
             // Chunk Lenght: len(object name) + sub chunks
             //-------------------------------------------
             case 0x4000:
-                i = 0;
-                do {
-                    fread_or_fail (&l_char, 1, 1, l_file);
-                    mName[i] = l_char;
-                    i++;
-                } while(l_char != '\0' && i<20);
+                {
+                std::stringstream ss;
+                unsigned char c = 1;
+
+                for (int i = 0; i < 20 && c != '\0'; i++) {
+                    read_or_fail(input_file, &c, 1);
+                    ss << c;
+                }
+
+                objects_.push_back(Object(ss.str()));
+                object = &objects_.back();
+                }
                 break;
 
             //--------------- OBJ_TRIMESH ---------------
@@ -238,15 +243,18 @@ int Model::load_3ds(const char *pFileName)
             //             + sub chunks
             //-------------------------------------------
             case 0x4110:
-                fread_or_fail (&l_qty, sizeof (unsigned short), 1, l_file);
-                mVertexQty = l_qty;
-                mVertex = new Vertex[mVertexQty];
-                for (i = 0; i < l_qty; i++) {
+                {
+                uint16_t qty;
+                read_or_fail(input_file, &qty, sizeof(uint16_t));
+                object->vertices.resize(qty);
+
+                for (uint16_t i = 0; i < qty; i++) {
                     float f[3];
-                    fread_or_fail (f, sizeof(float), 3, l_file);
-                    mVertex[i].v.x(f[0]);
-                    mVertex[i].v.y(f[1]);
-                    mVertex[i].v.z(f[2]);
+                    read_or_fail(input_file, f, sizeof(float) * 3);
+                    object->vertices[i].v.x(f[0]);
+                    object->vertices[i].v.y(f[1]);
+                    object->vertices[i].v.z(f[2]);
+                }
                 }
                 break;
 
@@ -258,14 +266,16 @@ int Model::load_3ds(const char *pFileName)
             //             + sub chunks
             //-------------------------------------------
             case 0x4120:
-                fread_or_fail (&l_qty, sizeof (unsigned short), 1, l_file);
-                mPolygonQty = l_qty;
-                mPolygon = new Polygon[mPolygonQty];
-                for (i = 0; i < l_qty; i++) {
-                    fread_or_fail (&mPolygon[i].mA, sizeof (unsigned short), 1, l_file);
-                    fread_or_fail (&mPolygon[i].mB, sizeof (unsigned short), 1, l_file);
-                    fread_or_fail (&mPolygon[i].mC, sizeof (unsigned short), 1, l_file);
-                    fread_or_fail (&mPolygon[i].mFaceFlags, sizeof (unsigned short), 1, l_file);
+                {
+                uint16_t qty;
+                read_or_fail(input_file, &qty, sizeof(uint16_t));
+                object->faces.resize(qty);
+                for (uint16_t i = 0; i < qty; i++) {
+                    read_or_fail(input_file, &object->faces[i].a, sizeof(uint16_t));
+                    read_or_fail(input_file, &object->faces[i].b, sizeof(uint16_t));
+                    read_or_fail(input_file, &object->faces[i].c, sizeof(uint16_t));
+                    read_or_fail(input_file, &object->faces[i].face_flags, sizeof(uint16_t));
+                }
                 }
                 break;
 
@@ -277,12 +287,15 @@ int Model::load_3ds(const char *pFileName)
             //             + sub chunks
             //-------------------------------------------
             case 0x4140:
-                fread_or_fail (&l_qty, sizeof (unsigned short), 1, l_file);
-                for (i = 0; i < l_qty; i++) {
+                {
+                uint16_t qty;
+                read_or_fail(input_file, &qty, sizeof(uint16_t));
+                for (uint16_t i = 0; i < qty; i++) {
                     float f[2];
-                    fread_or_fail (f, sizeof(float), 2, l_file);
-                    mVertex[i].t.x(f[0]);
-                    mVertex[i].t.y(f[1]);
+                    read_or_fail(input_file, f, sizeof(float) * 2);
+                    object->vertices[i].t.x(f[0]);
+                    object->vertices[i].t.y(f[1]);
+                }
                 }
                 break;
 
@@ -292,15 +305,19 @@ int Model::load_3ds(const char *pFileName)
             //to the same level next chunk
             //-------------------------------------------
             default:
-                fseek(l_file, l_chunk_length - 6, SEEK_CUR);
+                input_file.seekg(chunk_length - 6, std::ios::cur);
         }
     }
-    fclose(l_file); // Closes the file stream
 
-    Log::debug("    Model Information\n"
-               "    Name:          %s\n"
-               "    Vertex count:  %d\n"
-               "    Polygon count: %d\n",
-               mName, mVertexQty, mPolygonQty);
-    return 1;
+    if (Options::show_debug) {
+        for (std::vector<Object>::const_iterator iter = objects_.begin();
+             iter != objects_.end();
+             iter++)
+        {
+            Log::debug("    Object name: %s Vertex count: %d Face count: %d\n",
+                       iter->name.c_str(), iter->vertices.size(), iter->faces.size());
+        }
+    }
+
+    return true;
 }
