@@ -2,9 +2,10 @@
 precision mediump float;
 #endif
 
+uniform vec4 LightSourcePosition;
+uniform vec3 LightSourceHalfVector;
+
 varying vec3 Normal;
-varying vec3 Light;
-varying vec3 HalfVector;
 
 void main(void)
 {
@@ -17,8 +18,12 @@ void main(void)
     const float MaterialShininess = 100.0;
 
     vec3 N = normalize(Normal);
-    vec3 L = normalize(Light);
-    vec3 H = normalize(HalfVector);
+
+    // In the lighting model we are using here (Blinn-Phong with light at
+    // infinity, viewer at infinity), the light position/direction and the
+    // half vector is constant for the all the fragments.
+    vec3 L = normalize(LightSourcePosition.xyz);
+    vec3 H = normalize(LightSourceHalfVector);
 
     // Calculate the diffuse color according to Lambertian reflectance
     vec4 diffuse = MaterialDiffuse * LightSourceDiffuse * max(dot(N, L), 0.0);
