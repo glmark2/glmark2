@@ -27,76 +27,118 @@
 #include <cstdarg>
 #include <png.h>
 
-class ImageData {
+class PNGState
+{
 public:
-    ImageData() : pixels(0), width(0), height(0), bpp(0) {}
-    ~ImageData() { delete [] pixels; }
-    bool load_png(const std::string &filename);
-    void resize(int w, int h, int b)
+    PNGState() :
+        fp_(0),
+        png_(0),
+        info_(0),
+        rows_(0) {}
+    ~PNGState()
+    {
+        if (fp_)
+        {
+           fclose(fp_);
+        }
+        if (png_)
+        {
+            png_destroy_read_struct(&png_, &info_, 0);
+        }
+    }
+    bool gotData(const std::string& filename)
+    {
+        static const int png_transforms = PNG_TRANSFORM_STRIP_16 |
+                                          PNG_TRANSFORM_GRAY_TO_RGB |
+                                          PNG_TRANSFORM_PACKING |
+                                          PNG_TRANSFORM_EXPAND;
+
+        Log::debug("Reading PNG file %s\n", filename.c_str());
+
+        fp_ = fopen(filename.c_str(), "rb");
+        if (!fp_) {
+            Log::error("Cannot open file %s!\n", filename.c_str());
+            return false;
+        }
+
+        /* Set up all the libpng structs we need */
+        png_ = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
+        if (!png_) {
+            Log::error("Couldn't create libpng read struct\n");
+            return false;
+        }
+
+        info_ = png_create_info_struct(png_);
+        if (!info_) {
+            Log::error("Couldn't create libpng info struct\n");
+            return false;
+        }
+
+        /* Set up libpng error handling */
+        if (setjmp(png_jmpbuf(png_))) {
+            Log::error("libpng error while reading file %s\n", filename.c_str());
+            return false;
+        }
+
+        /* Read the image information and data */
+        png_init_io(png_, fp_);
+
+        png_read_png(png_, info_, png_transforms, 0);
+
+        rows_ = png_get_rows(png_, info_);
+
+        return true;
+    }
+    unsigned int width() const { return png_get_image_width(png_, info_); }
+    unsigned int height() const { return png_get_image_height(png_, info_); }
+    unsigned int pixelBytes() const
+    {
+        if (png_get_color_type(png_, info_) == PNG_COLOR_TYPE_RGB)
+        {
+            return 3;
+        }
+        return 4;
+    }
+    const unsigned char* row(unsigned int idx) const { return rows_[idx]; }
+private:
+    FILE* fp_;
+    png_structp png_;
+    png_infop info_;
+    png_bytepp rows_;
+};
+
+class ImageData {
+    void resize(unsigned int w, unsigned int h, unsigned int b)
     {
         width = w;
         height = h;
         bpp = b;
         delete [] pixels;
-        pixels = new unsigned char[bpp * w * h];
+        pixels = new unsigned char[bpp * width * height];
     }
 
+public:
+    ImageData() : pixels(0), width(0), height(0), bpp(0) {}
+    ~ImageData() { delete [] pixels; }
+    bool load_png(const std::string &filename);
+
     unsigned char *pixels;
-    int width;
-    int height;
-    int bpp;
+    unsigned int width;
+    unsigned int height;
+    unsigned int bpp;
 };
 
 bool
 ImageData::load_png(const std::string &filename)
 {
-    bool ret = false;
-    png_structp png_ptr = 0;
-    png_infop info_ptr = 0;
-    png_bytepp row_pointers = 0;
-    static const int png_transforms = PNG_TRANSFORM_STRIP_16 |
-                                      PNG_TRANSFORM_GRAY_TO_RGB |
-                                      PNG_TRANSFORM_PACKING |
-                                      PNG_TRANSFORM_EXPAND;
-
-    Log::debug("Reading PNG file %s\n", filename.c_str());
-
-    FILE *fp = fopen(filename.c_str(), "rb");
-    if (!fp) {
-        Log::error("Cannot open file %s!\n", filename.c_str());
-        goto out;
+    PNGState png;
+    bool ret = png.gotData(filename);
+    if (!ret)
+    {
+        return ret;
     }
 
-    /* Set up all the libpng structs we need */
-    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
-    if (!png_ptr) {
-        Log::error("Couldn't create libpng read struct\n");
-        goto out;
-    }
-
-    info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr) {
-        Log::error("Couldn't create libpng info struct\n");
-        goto out;
-    }
-
-    /* Set up libpng error handling */
-    if (setjmp(png_jmpbuf(png_ptr))) {
-        Log::error("libpng error while reading file %s\n", filename.c_str());
-        goto out;
-    }
-
-    /* Read the image information and data */
-    png_init_io(png_ptr, fp);
-
-    png_read_png(png_ptr, info_ptr, png_transforms, 0);
-
-    row_pointers = png_get_rows(png_ptr, info_ptr);
-
-    resize(png_get_image_width(png_ptr, info_ptr),
-           png_get_image_height(png_ptr, info_ptr),
-           png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB ? 3 : 4);
-
+    resize(png.width(), png.height(), png.pixelBytes());
 
     Log::debug("    Height: %d Width: %d Bpp: %d\n", width, height, bpp);
 
@@ -104,22 +146,11 @@ ImageData::load_png(const std::string &filename)
      * Copy the image data to a contiguous memory area suitable for texture
      * upload.
      */
-    for (int i = 0; i < height; i++) {
+    for (unsigned int i = 0; i < height; i++) {
         memcpy(&pixels[bpp * width * i],
-               row_pointers[height - i - 1],
+               png.row(height - i - 1),
                width * bpp);
     }
-
-    ret = true;
-
-out:
-    if (fp)
-       fclose(fp);
-
-    if (png_ptr)
-        png_destroy_read_struct(&png_ptr,
-                                info_ptr != 0 ? &info_ptr : 0,
-                                0);
 
     return ret;
 }
