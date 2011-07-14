@@ -253,4 +253,31 @@ public:
 
     ~SceneLoop();
 };
+
+class SceneBump : public Scene
+{
+public:
+    SceneBump(Canvas &pCanvas);
+    int load();
+    void unload();
+    void setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+
+    ~SceneBump();
+
+protected:
+    Program mProgram;
+
+    Mesh mMesh;
+    GLuint mTexture;
+    float mRotation;
+    float mRotationSpeed;
+private:
+    void setup_high_polygon();
+    void setup_low_polygon(const std::string &type);
+};
+
 #endif

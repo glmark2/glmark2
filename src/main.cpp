@@ -218,6 +218,7 @@ int main(int argc, char *argv[])
     Benchmark::register_scene(*new SceneConditionals(canvas));
     Benchmark::register_scene(*new SceneFunction(canvas));
     Benchmark::register_scene(*new SceneLoop(canvas));
+    Benchmark::register_scene(*new SceneBump(canvas));
 
     if (Options::list_scenes) {
         list_scenes();
