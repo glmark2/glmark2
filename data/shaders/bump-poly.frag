@@ -4,11 +4,8 @@ precision mediump float;
 
 uniform vec4 LightSourcePosition;
 uniform vec3 LightSourceHalfVector;
-uniform sampler2D NormalMap;
-uniform mat4 NormalMatrix;
 
 varying vec3 Normal;
-varying vec2 TextureCoord;
 
 void main(void)
 {
@@ -17,18 +14,10 @@ void main(void)
     const vec4 LightSourceSpecular = vec4(0.8, 0.8, 0.8, 1.0);
     const vec4 MaterialAmbient = vec4(1.0, 1.0, 1.0, 1.0);
     const vec4 MaterialDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
-    const vec4 MaterialSpecular = vec4(1.0, 1.0, 1.0, 1.0);
+    const vec4 MaterialSpecular = vec4(0.2, 0.2, 0.2, 1.0);
     const float MaterialShininess = 100.0;
 
-    // Get the raw normal XYZ data from the normal map
-    vec3 normal_raw = texture2D(NormalMap, TextureCoord).xyz;
-    // Map "color" range [0, 1.0] to normal range [-1.0, 1.0]
-    vec3 normal_scaled = normal_raw * 2.0 - 1.0;
-                                
-    // Convert the normal to eye coordinates. Note that the normal map
-    // we are using is using object coordinates (not tangent!) for the
-    // normals, so we can multiply by the NormalMatrix as usual.
-    vec3 N = normalize(vec3(NormalMatrix * vec4(normal_scaled, 1.0)));
+    vec3 N = normalize(Normal);
 
     // In the lighting model we are using here (Blinn-Phong with light at
     // infinity, viewer at infinity), the light position/direction and the

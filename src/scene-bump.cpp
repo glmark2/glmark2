@@ -50,13 +50,18 @@ void SceneBump::unload()
 }
 
 void
-SceneBump::setup_high_polygon()
+SceneBump::setup_model_plain(const std::string &type)
 {
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-advanced.vert");
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-advanced.frag");
+    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-poly.vert");
+    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/bump-poly.frag");
+    static const std::string low_poly_filename(GLMARK_DATA_PATH"/models/asteroid-low.3ds");
+    static const std::string high_poly_filename(GLMARK_DATA_PATH"/models/asteroid-high.3ds");
     Model model;
 
-    if(!model.load_3ds(GLMARK_DATA_PATH"/models/asteroid-high.3ds"))
+    std::string poly_filename = type == "high-poly" ?
+                                high_poly_filename : low_poly_filename;
+
+    if(!model.load_3ds(poly_filename))
         return;
 
     model.calculate_normals();
@@ -81,32 +86,24 @@ SceneBump::setup_high_polygon()
 }
 
 void
-SceneBump::setup_low_polygon(const std::string &type)
+SceneBump::setup_model_normals()
 {
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-advanced.vert");
-    static const std::string frg_shader_filename_std(GLMARK_DATA_PATH"/shaders/light-advanced.frag");
-    static const std::string frg_shader_filename_normal(GLMARK_DATA_PATH"/shaders/light-advanced-normal-map.frag");
+    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals.vert");
+    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals.frag");
     Model model;
 
     if(!model.load_3ds(GLMARK_DATA_PATH"/models/asteroid-low.3ds"))
         return;
 
-    model.calculate_normals();
-
-    /* Tell the converter that we only care about position and normal attributes */
+    /* 
+     * We don't care about the vertex normals. We are using a per-fragment
+     * normal map (in object space coordinates).
+     */
     std::vector<std::pair<Model::AttribType, int> > attribs;
     attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
-    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
-    if (type != "off")
-        attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeTexcoord, 2));
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeTexcoord, 2));
 
     model.convert_to_mesh(mMesh, attribs);
-
-    std::string frg_shader_filename;
-    if (type == "off")
-        frg_shader_filename = frg_shader_filename_std;
-    else if (type == "normals")
-        frg_shader_filename = frg_shader_filename_normal;
 
     if (!Scene::load_shaders_from_files(mProgram, vtx_shader_filename,
                                         frg_shader_filename))
@@ -116,15 +113,11 @@ SceneBump::setup_low_polygon(const std::string &type)
 
     std::vector<GLint> attrib_locations;
     attrib_locations.push_back(mProgram.getAttribIndex("position"));
-    attrib_locations.push_back(mProgram.getAttribIndex("normal"));
-    if (type != "off")
-        attrib_locations.push_back(mProgram.getAttribIndex("texcoord"));
+    attrib_locations.push_back(mProgram.getAttribIndex("texcoord"));
     mMesh.set_attrib_locations(attrib_locations);
 
-    if (type != "off") {
-        Texture::load(GLMARK_DATA_PATH"/textures/asteroid-normal-map.png", &mTexture,
-                      GL_NEAREST, GL_NEAREST, 0);
-    }
+    Texture::load(GLMARK_DATA_PATH"/textures/asteroid-normal-map.png", &mTexture,
+                  GL_NEAREST, GL_NEAREST, 0);
 }
 
 void SceneBump::setup()
@@ -133,10 +126,10 @@ void SceneBump::setup()
 
     const std::string &bump_render = mOptions["bump-render"].value;
 
-    if (bump_render == "off" || bump_render == "normals")
-        setup_low_polygon(bump_render);
-    else if (bump_render == "high-poly")
-        setup_high_polygon();
+    if (bump_render == "normals")
+        setup_model_normals();
+    else if (bump_render == "off" || bump_render == "high-poly")
+        setup_model_plain(bump_render);
 
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
 

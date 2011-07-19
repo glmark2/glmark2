@@ -276,8 +276,8 @@ protected:
     float mRotation;
     float mRotationSpeed;
 private:
-    void setup_high_polygon();
-    void setup_low_polygon(const std::string &type);
+    void setup_model_plain(const std::string &type);
+    void setup_model_normals();
 };
 
 #endif
