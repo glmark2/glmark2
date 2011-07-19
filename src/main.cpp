@@ -48,6 +48,8 @@ static const char *default_benchmarks[] = {
     "shading:shading=gouraud",
     "shading:shading=blinn-phong-inf",
     "shading:shading=phong",
+    "bump:bump-render=high-poly",
+    "bump:bump-render=normals",
     "conditionals:vertex-steps=0:fragment-steps=0",
     "conditionals:vertex-steps=0:fragment-steps=5",
     "conditionals:vertex-steps=5:fragment-steps=0",
@@ -218,6 +220,7 @@ int main(int argc, char *argv[])
     Benchmark::register_scene(*new SceneConditionals(canvas));
     Benchmark::register_scene(*new SceneFunction(canvas));
     Benchmark::register_scene(*new SceneLoop(canvas));
+    Benchmark::register_scene(*new SceneBump(canvas));
 
     if (Options::list_scenes) {
         list_scenes();
