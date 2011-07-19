@@ -164,7 +164,7 @@ Model::load_3ds(const std::string &filename)
 
     Log::debug("Loading model from 3ds file '%s'\n", filename.c_str());
 
-    std::fstream input_file(filename.c_str());
+    std::ifstream input_file(filename.c_str());
     if (!input_file) {
         Log::error("Could not open 3ds file '%s'\n", filename.c_str());
         return false;
