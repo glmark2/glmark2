@@ -190,8 +190,10 @@ SceneShading::validate()
 
     if (filter == "gouraud")
         ref = Canvas::Pixel(0x00, 0x00, 0x2d, 0xff);
-    else if (filter == "phong")
+    else if (filter == "blinn-phong-inf")
         ref = Canvas::Pixel(0x1a, 0x1a, 0x3e, 0xff);
+    else if (filter == "phong")
+        ref = Canvas::Pixel(0x1a, 0x1a, 0x53, 0xff);
     else
         return Scene::ValidationUnknown;
 
