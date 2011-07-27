@@ -26,6 +26,7 @@
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
+#include "shader-source.h"
 
 #include <cmath>
 
@@ -77,6 +78,12 @@ void SceneShading::setup()
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     static const LibMatrix::vec4 materialDiffuse(0.0f, 0.0f, 1.0f, 1.0f);
 
+    // Calculate half vector for blinn-phong shading model
+    LibMatrix::vec3 halfVector(lightPosition[0], lightPosition[1], lightPosition[2]);
+    halfVector.normalize();
+    halfVector += LibMatrix::vec3(0.0, 0.0, 1.0);
+    halfVector.normalize();
+
     std::string vtx_shader_filename;
     std::string frg_shader_filename;
     const std::string &shading = mOptions["shading"].value;
@@ -94,8 +101,19 @@ void SceneShading::setup()
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.frag";
     }
 
-    if (!Scene::load_shaders_from_files(mProgram, vtx_shader_filename,
-                                        frg_shader_filename))
+    // Load shaders
+    ShaderSource vtx_source(vtx_shader_filename);
+    ShaderSource frg_source(frg_shader_filename);
+
+    // Add constants to shaders
+    vtx_source.add_global_const("LightSourcePosition", lightPosition);
+    vtx_source.add_global_const("MaterialDiffuse", materialDiffuse);
+
+    frg_source.add_global_const("LightSourcePosition", lightPosition);
+    frg_source.add_global_const("LightSourceHalfVector", halfVector);
+
+    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
+                                          frg_source.str()))
     {
         return;
     }
@@ -106,15 +124,6 @@ void SceneShading::setup()
     attrib_locations.push_back(mProgram.getAttribIndex("position"));
     attrib_locations.push_back(mProgram.getAttribIndex("normal"));
     mMesh.set_attrib_locations(attrib_locations);
-
-    // Load lighting and material uniforms
-    mProgram.loadUniformVector(lightPosition, "LightSourcePosition");
-    mProgram.loadUniformVector(materialDiffuse, "MaterialColor");
-    LibMatrix::vec3 halfVector(lightPosition[0], lightPosition[1], lightPosition[2]);
-    halfVector.normalize();
-    halfVector += LibMatrix::vec3(0.0, 0.0, 1.0);
-    halfVector.normalize();
-    mProgram.loadUniformVector(halfVector, "LightSourceHalfVector");
 
     mCurrentFrame = 0;
     mRotation = 0.0f;

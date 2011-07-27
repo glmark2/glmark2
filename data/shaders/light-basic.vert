@@ -4,8 +4,6 @@ attribute vec2 texcoord;
 
 uniform mat4 ModelViewProjectionMatrix;
 uniform mat4 NormalMatrix;
-uniform vec4 LightSourcePosition;
-uniform vec4 MaterialColor;
 
 varying vec4 Color;
 varying vec2 TextureCoord;
@@ -21,7 +19,7 @@ void main(void)
     // Multiply the diffuse value by the vertex color (which is fixed in this case)
     // to get the actual color that we will use to draw this vertex with
     float diffuse = max(dot(N, L), 0.0);
-    Color = diffuse * MaterialColor;
+    Color = diffuse * MaterialDiffuse;
 
     // Set the texture coordinates as a varying
     TextureCoord = texcoord;
