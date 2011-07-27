@@ -24,6 +24,7 @@
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
+#include "shader-source.h"
 
 #include <sstream>
 
@@ -55,87 +56,58 @@ SceneLoop::~SceneLoop()
 {
 }
 
-static std::string &
-replace_string(std::string &str, const std::string &remove, const std::string &insert)
-{
-    std::string::size_type pos = 0;
-
-    while ((pos = str.find(remove, pos)) != std::string::npos) {
-        str.replace(pos, remove.size(), insert);
-        pos++;
-    }
-
-    return str;
-}
-
 static std::string
 get_fragment_shader_source(int steps, bool loop, bool uniform)
 {
-    std::string frg_string, step_simple_string, step_loop_string;
-
-    if (!gotSource(frg_file, frg_string) ||
-        !gotSource(step_simple_file, step_simple_string) ||
-        !gotSource(step_loop_file, step_loop_string))
-    {
-        return "";
-    }
-
-    std::stringstream ss_main;
+    ShaderSource source(frg_file);
+    ShaderSource source_main;
 
     if (loop) {
+        source_main.append_file(step_loop_file);
         if (uniform) {
-            replace_string(step_loop_string, "$NLOOPS$", "FragmentLoops");
+            source_main.replace("$NLOOPS$", "FragmentLoops");
         }
         else {
             std::stringstream ss_steps;
             ss_steps << steps;
-            replace_string(step_loop_string, "$NLOOPS$", ss_steps.str());
+            source_main.replace("$NLOOPS$", ss_steps.str());
         }
-        ss_main << step_loop_string;
     }
     else {
         for (int i = 0; i < steps; i++)
-            ss_main << step_simple_string;
+            source_main.append_file(step_simple_file);
     }
 
-    replace_string(frg_string, "$MAIN$", ss_main.str());
+    source.replace("$MAIN$", source_main.str());
 
-    return frg_string;
+    return source.str();
 }
 
 static std::string
 get_vertex_shader_source(int steps, bool loop, bool uniform)
 {
-    std::string vtx_string, step_simple_string, step_loop_string;
-
-    if (!gotSource(vtx_file, vtx_string) ||
-        !gotSource(step_simple_file, step_simple_string) ||
-        !gotSource(step_loop_file, step_loop_string))
-    {
-        return "";
-    }
-
-    std::stringstream ss_main;
+    ShaderSource source(vtx_file);
+    ShaderSource source_main;
 
     if (loop) {
+        source_main.append_file(step_loop_file);
         if (uniform) {
-            replace_string(step_loop_string, "$NLOOPS$", "VertexLoops");
+            source_main.replace("$NLOOPS$", "VertexLoops");
         }
         else {
             std::stringstream ss_steps;
             ss_steps << steps;
-            replace_string(step_loop_string, "$NLOOPS$", ss_steps.str());
+            source_main.replace("$NLOOPS$", ss_steps.str());
         }
-        ss_main << step_loop_string;
     }
     else {
         for (int i = 0; i < steps; i++)
-            ss_main << step_simple_string;
+            source_main.append_file(step_simple_file);
     }
 
-    replace_string(vtx_string, "$MAIN$", ss_main.str());
+    source.replace("$MAIN$", source_main.str());
 
-    return vtx_string;
+    return source.str();
 }
 
 

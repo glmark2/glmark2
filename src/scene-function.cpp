@@ -24,6 +24,7 @@
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
+#include "shader-source.h"
 
 #include <sstream>
 
@@ -56,85 +57,62 @@ SceneFunction::~SceneFunction()
 {
 }
 
-static std::string &
-replace_string(std::string &str, const std::string &remove, const std::string &insert)
-{
-    std::string::size_type pos = 0;
-
-    while ((pos = str.find(remove, pos)) != std::string::npos) {
-        str.replace(pos, remove.size(), insert);
-        pos++;
-    }
-
-    return str;
-}
-
 static std::string
 get_vertex_shader_source(int steps, bool function, std::string &complexity)
 {
-    std::string vtx_string, step_low_string, step_medium_string, call_string;
-
-    if (!gotSource(vtx_file, vtx_string) ||
-        !gotSource(step_low_file, step_low_string) ||
-        !gotSource(step_medium_file, step_medium_string) ||
-        !gotSource(call_file, call_string))
-    {
-        return "";
-    }
-
-    std::stringstream ss_main;
-    std::string process_string;
+    ShaderSource source(vtx_file);
+    ShaderSource source_main;
+    std::string step_file;
 
     if (complexity == "low")
-        process_string = step_low_string;
+        step_file = step_low_file;
     else if (complexity == "medium")
-        process_string = step_medium_string;
+        step_file = step_medium_file;
 
     for (int i = 0; i < steps; i++) {
         if (function)
-            ss_main << call_string;
+            source_main.append_file(call_file);
         else
-            ss_main << process_string;
+            source_main.append_file(step_file);
     }
 
-    replace_string(vtx_string, "$PROCESS$", function ? process_string : "");
-    replace_string(vtx_string, "$MAIN$", ss_main.str());
+    if (function)
+        source.replace_with_file("$PROCESS$", step_file);
+    else
+        source.replace("$PROCESS$", "");
 
-    return vtx_string;
+    source.replace("$MAIN$", source_main.str());
+
+    return source.str();
 }
 
 static std::string
 get_fragment_shader_source(int steps, bool function, std::string &complexity)
 {
-    std::string frg_string, step_low_string, step_medium_string, call_string;
-
-    if (!gotSource(frg_file, frg_string) ||
-        !gotSource(step_low_file, step_low_string) ||
-        !gotSource(step_medium_file, step_medium_string) ||
-        !gotSource(call_file, call_string))
-    {
-        return "";
-    }
-
-    std::stringstream ss_main;
-    std::string process_string;
+    ShaderSource source(frg_file);
+    ShaderSource source_main;
+    std::string step_file;
 
     if (complexity == "low")
-        process_string = step_low_string;
+        step_file = step_low_file;
     else if (complexity == "medium")
-        process_string = step_medium_string;
+        step_file = step_medium_file;
 
     for (int i = 0; i < steps; i++) {
         if (function)
-            ss_main << call_string;
+            source_main.append_file(call_file);
         else
-            ss_main << process_string;
+            source_main.append_file(step_file);
     }
 
-    replace_string(frg_string, "$PROCESS$", function ? process_string : "");
-    replace_string(frg_string, "$MAIN$", ss_main.str());
+    if (function)
+        source.replace_with_file("$PROCESS$", step_file);
+    else
+        source.replace("$PROCESS$", "");
 
-    return frg_string;
+    source.replace("$MAIN$", source_main.str());
+
+    return source.str();
 }
 
 void SceneFunction::setup()
