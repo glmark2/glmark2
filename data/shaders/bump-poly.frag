@@ -2,9 +2,6 @@
 precision mediump float;
 #endif
 
-uniform vec4 LightSourcePosition;
-uniform vec3 LightSourceHalfVector;
-
 varying vec3 Normal;
 
 void main(void)

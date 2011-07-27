@@ -23,6 +23,7 @@
 #include "log.h"
 #include "mat.h"
 #include "stack.h"
+#include "shader-source.h"
 #include <cmath>
 
 SceneBump::SceneBump(Canvas &pCanvas) :
@@ -56,7 +57,14 @@ SceneBump::setup_model_plain(const std::string &type)
     static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/bump-poly.frag");
     static const std::string low_poly_filename(GLMARK_DATA_PATH"/models/asteroid-low.3ds");
     static const std::string high_poly_filename(GLMARK_DATA_PATH"/models/asteroid-high.3ds");
+    static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     Model model;
+
+    /* Calculate the half vector */
+    LibMatrix::vec3 halfVector(lightPosition.x(), lightPosition.y(), lightPosition.z());
+    halfVector.normalize();
+    halfVector += LibMatrix::vec3(0.0, 0.0, 1.0);
+    halfVector.normalize();
 
     std::string poly_filename = type == "high-poly" ?
                                 high_poly_filename : low_poly_filename;
@@ -73,8 +81,16 @@ SceneBump::setup_model_plain(const std::string &type)
 
     model.convert_to_mesh(mMesh, attribs);
 
-    if (!Scene::load_shaders_from_files(mProgram, vtx_shader_filename,
-                                        frg_shader_filename))
+    /* Load shaders */
+    ShaderSource vtx_source(vtx_shader_filename);
+    ShaderSource frg_source(frg_shader_filename);
+
+    /* Add constants to shaders */
+    frg_source.add_global_const("LightSourcePosition", lightPosition);
+    frg_source.add_global_const("LightSourceHalfVector", halfVector);
+
+    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
+                                          frg_source.str()))
     {
         return;
     }
@@ -90,10 +106,17 @@ SceneBump::setup_model_normals()
 {
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals.vert");
     static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals.frag");
+    static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     Model model;
 
     if(!model.load_3ds(GLMARK_DATA_PATH"/models/asteroid-low.3ds"))
         return;
+
+    /* Calculate the half vector */
+    LibMatrix::vec3 halfVector(lightPosition.x(), lightPosition.y(), lightPosition.z());
+    halfVector.normalize();
+    halfVector += LibMatrix::vec3(0.0, 0.0, 1.0);
+    halfVector.normalize();
 
     /* 
      * We don't care about the vertex normals. We are using a per-fragment
@@ -105,8 +128,16 @@ SceneBump::setup_model_normals()
 
     model.convert_to_mesh(mMesh, attribs);
 
-    if (!Scene::load_shaders_from_files(mProgram, vtx_shader_filename,
-                                        frg_shader_filename))
+    /* Load shaders */
+    ShaderSource vtx_source(vtx_shader_filename);
+    ShaderSource frg_source(frg_shader_filename);
+
+    /* Add constants to shaders */
+    frg_source.add_global_const("LightSourcePosition", lightPosition);
+    frg_source.add_global_const("LightSourceHalfVector", halfVector);
+
+    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
+                                          frg_source.str()))
     {
         return;
     }
@@ -131,21 +162,10 @@ void SceneBump::setup()
     else if (bump_render == "off" || bump_render == "high-poly")
         setup_model_plain(bump_render);
 
-    static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
 
     mMesh.build_vbo();
 
     mProgram.start();
-
-    // Load lighting and material uniforms
-    mProgram.loadUniformVector(lightPosition, "LightSourcePosition");
-
-    // Calculate and load the half vector
-    LibMatrix::vec3 halfVector(lightPosition.x(), lightPosition.y(), lightPosition.z());
-    halfVector.normalize();
-    halfVector += LibMatrix::vec3(0.0, 0.0, 1.0);
-    halfVector.normalize();
-    mProgram.loadUniformVector(halfVector, "LightSourceHalfVector");
 
     // Load texture sampler value
     mProgram.loadUniformScalar(0, "NormalMap");

@@ -2,8 +2,6 @@
 precision mediump float;
 #endif
 
-uniform vec4 LightSourcePosition;
-uniform vec3 LightSourceHalfVector;
 uniform sampler2D NormalMap;
 uniform mat4 NormalMatrix;
 

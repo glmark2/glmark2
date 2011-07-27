@@ -2,8 +2,6 @@
 precision mediump float;
 #endif
 
-uniform vec4 LightSourcePosition;
-
 varying vec3 vertex_normal;
 varying vec4 vertex_position;
 

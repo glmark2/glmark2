@@ -26,8 +26,9 @@
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
-
 #include "program.h"
+#include "shader-source.h"
+
 #include <cmath>
 
 SceneTexture::SceneTexture(Canvas &pCanvas) :
@@ -45,6 +46,9 @@ int SceneTexture::load()
 {
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
     static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic-tex.frag");
+    static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
+    static const LibMatrix::vec4 materialDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
+
     Model model;
 
     if(!model.load_3ds(GLMARK_DATA_PATH"/models/cube.3ds"))
@@ -54,8 +58,16 @@ int SceneTexture::load()
     model.convert_to_mesh(mCubeMesh);
     mCubeMesh.build_vbo();
 
-    if (!Scene::load_shaders_from_files(mProgram, vtx_shader_filename,
-                                        frg_shader_filename))
+    // Load shaders
+    ShaderSource vtx_source(vtx_shader_filename);
+    ShaderSource frg_source(frg_shader_filename);
+
+    // Add constants to shaders
+    vtx_source.add_global_const("LightSourcePosition", lightPosition);
+    vtx_source.add_global_const("MaterialDiffuse", materialDiffuse);
+
+    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
+                                          frg_source.str()))
     {
         return 0;
     }
@@ -85,11 +97,6 @@ void SceneTexture::setup()
 {
     Scene::setup();
 
-    static const LibMatrix::vec4 lightAmbient(0.0f, 0.0f, 0.0f, 1.0f);
-    static const LibMatrix::vec4 lightDiffuse(0.8f, 0.8f, 0.8f, 1.0f);
-    static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
-    static const LibMatrix::vec4 materialColor(1.0f, 1.0f, 1.0f, 1.0f);
-
     // Create texture according to selected filtering
     GLint min_filter = GL_NONE;
     GLint mag_filter = GL_NONE;
@@ -112,12 +119,6 @@ void SceneTexture::setup()
                   min_filter, mag_filter, 0);
 
     mProgram.start();
-
-    // Load lighting and material uniforms
-    mProgram.loadUniformVector(lightAmbient, "LightSourceAmbient");
-    mProgram.loadUniformVector(lightPosition, "LightSourcePosition");
-    mProgram.loadUniformVector(lightDiffuse, "LightSourceDiffuse");
-    mProgram.loadUniformVector(materialColor, "MaterialColor");
 
     mCurrentFrame = 0;
     mRotation = LibMatrix::vec3();
