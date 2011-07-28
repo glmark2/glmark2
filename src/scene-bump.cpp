@@ -86,8 +86,8 @@ SceneBump::setup_model_plain(const std::string &type)
     ShaderSource frg_source(frg_shader_filename);
 
     /* Add constants to shaders */
-    frg_source.add_global_const("LightSourcePosition", lightPosition);
-    frg_source.add_global_const("LightSourceHalfVector", halfVector);
+    frg_source.add_const("LightSourcePosition", lightPosition);
+    frg_source.add_const("LightSourceHalfVector", halfVector);
 
     if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
                                           frg_source.str()))
@@ -133,8 +133,8 @@ SceneBump::setup_model_normals()
     ShaderSource frg_source(frg_shader_filename);
 
     /* Add constants to shaders */
-    frg_source.add_global_const("LightSourcePosition", lightPosition);
-    frg_source.add_global_const("LightSourceHalfVector", halfVector);
+    frg_source.add_const("LightSourcePosition", lightPosition);
+    frg_source.add_const("LightSourceHalfVector", halfVector);
 
     if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
                                           frg_source.str()))

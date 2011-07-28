@@ -63,8 +63,8 @@ int SceneTexture::load()
     ShaderSource frg_source(frg_shader_filename);
 
     // Add constants to shaders
-    vtx_source.add_global_const("LightSourcePosition", lightPosition);
-    vtx_source.add_global_const("MaterialDiffuse", materialDiffuse);
+    vtx_source.add_const("LightSourcePosition", lightPosition);
+    vtx_source.add_const("MaterialDiffuse", materialDiffuse);
 
     if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
                                           frg_source.str()))

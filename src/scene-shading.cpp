@@ -106,11 +106,11 @@ void SceneShading::setup()
     ShaderSource frg_source(frg_shader_filename);
 
     // Add constants to shaders
-    vtx_source.add_global_const("LightSourcePosition", lightPosition);
-    vtx_source.add_global_const("MaterialDiffuse", materialDiffuse);
+    vtx_source.add_const("LightSourcePosition", lightPosition);
+    vtx_source.add_const("MaterialDiffuse", materialDiffuse);
 
-    frg_source.add_global_const("LightSourcePosition", lightPosition);
-    frg_source.add_global_const("LightSourceHalfVector", halfVector);
+    frg_source.add_const("LightSourcePosition", lightPosition);
+    frg_source.add_const("LightSourceHalfVector", halfVector);
 
     if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
                                           frg_source.str()))
