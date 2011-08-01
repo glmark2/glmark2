@@ -21,6 +21,7 @@
  */
 #include <cmath>
 #include <climits>
+#include <numeric>
 
 #include "scene.h"
 #include "mat.h"
@@ -37,6 +38,8 @@ SceneEffect2D::SceneEffect2D(Canvas &pCanvas) :
     mOptions["matrix"] = Scene::Option("matrix",
         "0,0,0;0,1,0;0,0,0",
         "The convolution matrix to use [format: \"a,b,c;d,e,f...\"");
+    mOptions["normalize"] = Scene::Option("normalize", "true",
+        "Whether to normalize the supplied convolution matrix [true,false]");
 }
 
 SceneEffect2D::~SceneEffect2D()
@@ -218,6 +221,47 @@ parse_matrix(std::string &str, std::vector<float> &filter,
     return true;
 }
 
+/** 
+ * Normalizes a convolution filter.
+ * 
+ * @param filter the filter to normalize
+ */
+static void
+normalize(std::vector<float> &filter)
+{
+    float sum = std::accumulate(filter.begin(), filter.end(), 0.0);
+
+    /* 
+     * If sum is essentially zero, perform a zero-sum normalization.
+     * This normalizes positive and negative values separately,
+     */
+    if (fabs(sum) < 0.00000001) {
+        sum = 0.0;
+        for (std::vector<float>::iterator iter = filter.begin();
+             iter != filter.end();
+             iter++)
+        {
+            if (*iter > 0.0)
+                sum += *iter;
+        }
+    }
+
+    /* 
+     * We can simply compare with 0.0f here, because we just care about
+     * avoiding division-by-zero.
+     */
+    if (sum == 0.0)
+        return;
+        
+    for (std::vector<float>::iterator iter = filter.begin();
+         iter != filter.end();
+         iter++)
+    {
+        *iter /= sum; 
+    }
+
+}
+
 int SceneEffect2D::load()
 {
     Texture::load(GLMARK_DATA_PATH"/textures/effect-2d.png", &texture_,
@@ -248,6 +292,10 @@ void SceneEffect2D::setup()
     {
         return;
     }
+
+    /* Normalize the matrix if needed */
+    if (mOptions["normalize"].value == "true")
+        normalize(filter);
 
     /* Create and load the shaders */
     ShaderSource vtx_source(vtx_shader_filename);
