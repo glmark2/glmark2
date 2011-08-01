@@ -20,6 +20,7 @@
  *  Alexandros Frantzis (glmark2)
  */
 #include <cmath>
+#include <climits>
 
 #include "scene.h"
 #include "mat.h"
@@ -33,6 +34,9 @@
 SceneEffect2D::SceneEffect2D(Canvas &pCanvas) :
     Scene(pCanvas, "effect")
 {
+    mOptions["matrix"] = Scene::Option("matrix",
+        "0,0,0;0,1,0;0,0,0",
+        "The convolution matrix to use [format: \"a,b,c;d,e,f...\"");
 }
 
 SceneEffect2D::~SceneEffect2D()
@@ -134,6 +138,86 @@ create_convolution_fragment_shader(std::vector<float> &array,
     return source.str();
 }
 
+/** 
+ * Splits a string using a delimiter
+ * 
+ * @param s the string to split
+ * @param delim the delimitir to use
+ * @param elems the string vector to populate
+ */
+static void
+split(const std::string &s, char delim, std::vector<std::string> &elems)
+{
+    std::stringstream ss(s);
+
+    std::string item;
+    while(std::getline(ss, item, delim))
+        elems.push_back(item);
+}
+
+/** 
+ * Parses a string representation of a matrix and returns it
+ * in row-major format.
+ *
+ * In the string representation, elements are delimited using
+ * commas (',') and rows are delimited using semi-colons (';').
+ * eg 0,0,0;0,1.0,0;0,0,0
+ * 
+ * @param str the matrix string representation to parse
+ * @param filter the float vector to populate
+ * @param[out] width the width of the matrix
+ * @param[out] height the height of the matrix 
+ * 
+ * @return whether parsing succeeded
+ */
+static bool
+parse_matrix(std::string &str, std::vector<float> &filter,
+             unsigned int &width, unsigned int &height)
+{
+    std::vector<std::string> rows;
+    unsigned int w = UINT_MAX;
+
+    split(str, ';', rows);
+
+    Log::debug("Parsing convolution matrix:\n");
+
+    for (std::vector<std::string>::const_iterator iter = rows.begin();
+         iter != rows.end();
+         iter++)
+    {
+        std::vector<std::string> elems;
+        split(*iter, ',', elems);
+
+        if (w != UINT_MAX && elems.size() != w) {
+            Log::error("Matrix row %u contains %u elements, whereas previous"
+                       " rows had %u\n", 
+                       iter - rows.begin(), elems.size(), w);
+            return false;
+        }
+
+        w = elems.size();
+        
+        for (std::vector<std::string>::const_iterator iter_el = elems.begin();
+             iter_el != elems.end();
+             iter_el++)
+        {
+            std::stringstream ss(*iter_el);
+            float f;
+
+            ss >> f;
+            filter.push_back(f);
+            Log::debug("%f ", f);
+        }
+
+        Log::debug("\n");
+    }
+
+    width = w;
+    height = rows.size();
+    
+    return true;
+}
+
 int SceneEffect2D::load()
 {
     Texture::load(GLMARK_DATA_PATH"/textures/effect-2d.png", &texture_,
@@ -153,18 +237,24 @@ void SceneEffect2D::setup()
     Scene::setup();
 
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/effect-2d.vert");
-    static float filter_data[] = {0.0,  0.0,  0.0,  0.0, 0.0,
-                                  0.0,  0.0,  0.0,  0.0, 0.0,
-                                  0.0,  0.0,  1.0,  0.0, 0.0,
-                                  0.0,  0.0,  0.0,  0.0, 0.0,
-                                  0.0,  0.0,  0.0,  0.0, 0.0};
 
-    std::vector<float> filter(filter_data,
-                              filter_data + sizeof(filter_data)/sizeof(*filter_data));
+    std::vector<float> filter;
+    unsigned int filter_width;
+    unsigned int filter_height;
 
+    /* Parse the matrix from the options */
+    if (!parse_matrix(mOptions["matrix"].value, filter,
+                      filter_width, filter_height))
+    {
+        return;
+    }
+
+    /* Create and load the shaders */
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source;
-    frg_source.append(create_convolution_fragment_shader(filter, 5, 5));
+    frg_source.append(create_convolution_fragment_shader(filter,
+                                                         filter_width,
+                                                         filter_height));
 
     if (frg_source.str().empty())
         return;
