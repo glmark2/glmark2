@@ -310,8 +310,8 @@ void SceneEffect2D::setup()
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/effect-2d.vert");
 
     std::vector<float> kernel;
-    unsigned int kernel_width;
-    unsigned int kernel_height;
+    unsigned int kernel_width = 0;
+    unsigned int kernel_height = 0;
 
     /* Parse the kernel matrix from the options */
     if (!parse_matrix(mOptions["kernel"].value, kernel,
