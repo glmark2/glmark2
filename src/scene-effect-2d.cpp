@@ -33,7 +33,7 @@
 
 
 SceneEffect2D::SceneEffect2D(Canvas &pCanvas) :
-    Scene(pCanvas, "effect")
+    Scene(pCanvas, "effect2d")
 {
     mOptions["matrix"] = Scene::Option("matrix",
         "0,0,0;0,1,0;0,0,0",
