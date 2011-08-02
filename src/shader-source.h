@@ -22,7 +22,9 @@
 
 #include <string>
 #include <sstream>
+#include <vector>
 #include "vec.h"
+#include "mat.h"
 
 /** 
  * Helper class for loading and manipulating shader sources.
@@ -39,13 +41,28 @@ public:
     void replace(const std::string &remove, const std::string &insert);
     void replace_with_file(const std::string &remove, const std::string &filename);
 
-    void add_global(const std::string &str);
-    void add_global_const(const std::string &name, const LibMatrix::vec3 &v);
-    void add_global_const(const std::string &name, const LibMatrix::vec4 &v);
+    void add(const std::string &str, const std::string &function = "");
+
+    void add_const(const std::string &name, float f,
+                   const std::string &function = "");
+    void add_const(const std::string &name, std::vector<float> &f,
+                   const std::string &function = "");
+    void add_const(const std::string &name, const LibMatrix::vec3 &v,
+                   const std::string &function = "");
+    void add_const(const std::string &name, const LibMatrix::vec4 &v,
+                   const std::string &function = "");
+    void add_const(const std::string &name, const LibMatrix::mat3 &m,
+                   const std::string &function = "");
+
+    void add_array(const std::string &name, std::vector<float> &array,
+                   const std::string &init_function,
+                   const std::string &decl_function = "");
 
     std::string str() { return source_.str(); }
 
 private:
+    void add_global(const std::string &str);
+    void add_local(const std::string &str, const std::string &function);
     bool load_file(const std::string& filename, std::string& str);
 
     std::stringstream source_;

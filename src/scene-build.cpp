@@ -64,8 +64,8 @@ int SceneBuild::load()
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source(frg_shader_filename);
 
-    vtx_source.add_global_const("LightSourcePosition", lightPosition);
-    vtx_source.add_global_const("MaterialDiffuse", materialDiffuse);
+    vtx_source.add_const("LightSourcePosition", lightPosition);
+    vtx_source.add_const("MaterialDiffuse", materialDiffuse);
 
     if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
                                           frg_source.str()))

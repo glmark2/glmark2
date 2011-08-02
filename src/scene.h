@@ -280,4 +280,24 @@ private:
     void setup_model_normals();
 };
 
+class SceneEffect2D : public Scene
+{
+public:
+    SceneEffect2D(Canvas &pCanvas);
+    int load();
+    void unload();
+    void setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+
+    ~SceneEffect2D();
+
+protected:
+    Program program_;
+
+    Mesh mesh_;
+    GLuint texture_;
+};
 #endif

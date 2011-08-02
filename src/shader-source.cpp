@@ -156,35 +156,195 @@ ShaderSource::add_global(const std::string &str)
 }
 
 /** 
- * Adds a global (per shader) vec3 constant definition.
+ * Adds a string (usually containing a constant definition) at
+ * global (per shader) scope.
+ *
+ * The string is placed after any default precision qualifiers.
+ * 
+ * @param function the function to add the string into
+ * @param str the string to add
+ */
+void
+ShaderSource::add_local(const std::string &str, const std::string &function)
+{
+    std::string::size_type pos = 0;
+    std::string source(source_.str());
+
+    /* Find the function */
+    pos = source.find(function);
+    pos = source.find('{', pos);
+
+    /* Go to the next line */
+    pos = source.find("\n", pos);
+    if (pos != std::string::npos)
+        pos++;
+
+    source.insert(pos, str);
+
+    source_.clear();
+    source_.str(source);
+}
+
+/** 
+ * Adds a string (usually containing a constant definition) to a shader source
+ *
+ * If the function parameter is empty, the string will be added to global
+ * scope, after any precision definitions.
+ *
+ * @param str the string to add
+ * @param function if not empty, the function to add the string into
+ */
+void
+ShaderSource::add(const std::string &str, const std::string &function)
+{
+    if (!function.empty())
+        add_local(str, function);
+    else
+        add_global(str);
+}
+
+/** 
+ * Adds a float constant definition.
+ *
+ * @param name the name of the constant
+ * @param f the value of the constant
+ * @param function if not empty, the function to put the definition in
+ */
+void
+ShaderSource::add_const(const std::string &name, float f,
+                        const std::string &function)
+{
+    std::stringstream ss;
+
+    ss << "const float " << name << " = " << std::fixed << f << ";" << std::endl;
+
+    add(ss.str(), function);
+}
+
+/** 
+ * Adds a float array constant definition.
+ *
+ * Note that various GLSL versions (including ES) don't support
+ * array constants.
  *
  * @param name the name of the constant
  * @param v the value of the constant
+ * @param function if not empty, the function to put the definition in
  */
 void
-ShaderSource::add_global_const(const std::string &name, const LibMatrix::vec3 &v)
+ShaderSource::add_const(const std::string &name, std::vector<float> &array,
+                        const std::string &function)
+{
+    std::stringstream ss;
+
+    ss << "const float " << name << "[" << array.size() << "] = {" << std::fixed;
+    for(std::vector<float>::const_iterator iter = array.begin();
+        iter != array.end();
+        iter++)
+    {
+        ss << *iter;
+        if (iter + 1 != array.end())
+            ss << ", " << std::endl;
+    }
+
+    ss << "};" << std::endl;
+
+    add(ss.str(), function);
+}
+
+/** 
+ * Adds a vec3 constant definition.
+ *
+ * @param name the name of the constant
+ * @param v the value of the constant
+ * @param function if not empty, the function to put the definition in
+ */
+void
+ShaderSource::add_const(const std::string &name, const LibMatrix::vec3 &v,
+                        const std::string &function)
 {
     std::stringstream ss;
 
     ss << "const vec3 " << name << " = vec3(" << std::fixed;
     ss << v.x() << ", " << v.y() << ", " << v.z() << ");" << std::endl;
 
-    add_global(ss.str());
+    add(ss.str(), function);
 }
 
 /** 
- * Adds a global (per shader) vec4 constant definition.
+ * Adds a vec4 constant definition.
  *
  * @param name the name of the constant
  * @param v the value of the constant
+ * @param function if not empty, the function to put the definition in
  */
 void
-ShaderSource::add_global_const(const std::string &name, const LibMatrix::vec4 &v)
+ShaderSource::add_const(const std::string &name, const LibMatrix::vec4 &v,
+                        const std::string &function)
 {
     std::stringstream ss;
 
     ss << "const vec4 " << name << " = vec4(" << std::fixed;
     ss << v.x() << ", " << v.y() << ", " << v.z() << ", " << v.w() << ");" << std::endl;
 
-    add_global(ss.str());
+    add(ss.str(), function);
+}
+
+/** 
+ * Adds a mat3 constant definition.
+ *
+ * @param name the name of the constant
+ * @param v the value of the constant
+ * @param function if not empty, the function to put the definition in
+ */
+void
+ShaderSource::add_const(const std::string &name, const LibMatrix::mat3 &m,
+                        const std::string &function)
+{
+    std::stringstream ss;
+
+    ss << "const mat3 " << name << " = mat3(" << std::fixed;
+    ss << m[0][0] << ", " << m[1][0] << ", " << m[2][0] << "," << std::endl;
+    ss << m[0][1] << ", " << m[1][1] << ", " << m[2][1] << "," << std::endl;
+    ss << m[0][2] << ", " << m[1][2] << ", " << m[2][2] << std::endl;
+    ss << ");" << std::endl;
+
+    add(ss.str(), function);
+}
+
+/** 
+ * Adds a float array declaration and initialization.
+ *
+ * @param name the name of the array
+ * @param array the array values
+ * @param init_function the function to put the initialization in
+ * @param decl_function if not empty, the function to put the declaration in
+ */
+void
+ShaderSource::add_array(const std::string &name, std::vector<float> &array,
+                        const std::string &init_function,
+                        const std::string &decl_function)
+{
+    if (init_function.empty() || name.empty())
+        return;
+
+    std::stringstream ss;
+    ss << "float " << name << "[" << array.size() << "];" << std::endl;
+
+    std::string decl(ss.str());
+
+    ss.clear();
+    ss.str("");
+    ss << std::fixed;
+
+    for(std::vector<float>::const_iterator iter = array.begin();
+        iter != array.end();
+        iter++)
+    {
+        ss << name << "[" << iter - array.begin() << "] = " << *iter << ";" << std::endl; 
+    }
+
+    add(ss.str(), init_function);
+
+    add(decl, decl_function);
 }
