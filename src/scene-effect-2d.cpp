@@ -35,11 +35,11 @@
 SceneEffect2D::SceneEffect2D(Canvas &pCanvas) :
     Scene(pCanvas, "effect2d")
 {
-    mOptions["matrix"] = Scene::Option("matrix",
+    mOptions["kernel"] = Scene::Option("kernel",
         "0,0,0;0,1,0;0,0,0",
-        "The convolution matrix to use [format: \"a,b,c;d,e,f...\"");
+        "The convolution kernel matrix to use [format: \"a,b,c...;d,e,f...\"");;
     mOptions["normalize"] = Scene::Option("normalize", "true",
-        "Whether to normalize the supplied convolution matrix [true,false]");
+        "Whether to normalize the supplied convolution kernel matrix [true,false]");
 }
 
 SceneEffect2D::~SceneEffect2D()
@@ -121,14 +121,14 @@ create_convolution_fragment_shader(std::vector<float> &array,
         unsigned int i = iter - array.begin();
 
         /* Add Filter coefficient const definitions */
-        ss_def << "const float Filter" << i << " = "
+        ss_def << "const float Kernel" << i << " = "
                << *iter << ";" << std::endl;
 
         /* Add convolution term using the current filter coefficient */
         LibMatrix::vec2 offset(calc_offset(i, width, height));
         ss_convolution << "texture2D(Texture0, TextureCoord + vec2("
                        << offset.x() << " * TextureStepX, "
-                       << offset.y() << " * TextureStepY)) * Filter" << i;
+                       << offset.y() << " * TextureStepY)) * Kernel" << i;
         if (iter + 1 != array.end())
             ss_convolution << " +" << std::endl;
     }
@@ -142,7 +142,7 @@ create_convolution_fragment_shader(std::vector<float> &array,
 }
 
 /** 
- * Creates a string containing a printout of a filter.
+ * Creates a string containing a printout of a kernel matrix.
  * 
  * @param filter the vector containing the filter coefficients
  * @param width the width of the filter
@@ -150,18 +150,18 @@ create_convolution_fragment_shader(std::vector<float> &array,
  * @return the printout
  */
 static std::string
-filter_printout(const std::vector<float> &matrix,
+kernel_printout(const std::vector<float> &kernel,
                 unsigned int width)
 {
     std::stringstream ss;
     ss << std::fixed;
 
-    for (std::vector<float>::const_iterator iter = matrix.begin();
-         iter != matrix.end();
+    for (std::vector<float>::const_iterator iter = kernel.begin();
+         iter != kernel.end();
          iter++)
     {
         ss << *iter << " ";
-        if ((iter - matrix.begin()) % width == width - 1)
+        if ((iter - kernel.begin()) % width == width - 1)
             ss << std::endl;
     }
 
@@ -194,14 +194,14 @@ split(const std::string &s, char delim, std::vector<std::string> &elems)
  * eg 0,0,0;0,1.0,0;0,0,0
  * 
  * @param str the matrix string representation to parse
- * @param filter the float vector to populate
+ * @param matrix the float vector to populate
  * @param[out] width the width of the matrix
  * @param[out] height the height of the matrix 
  * 
  * @return whether parsing succeeded
  */
 static bool
-parse_matrix(std::string &str, std::vector<float> &filter,
+parse_matrix(std::string &str, std::vector<float> &matrix,
              unsigned int &width, unsigned int &height)
 {
     std::vector<std::string> rows;
@@ -209,7 +209,7 @@ parse_matrix(std::string &str, std::vector<float> &filter,
 
     split(str, ';', rows);
 
-    Log::debug("Parsing convolution matrix:\n");
+    Log::debug("Parsing kernel matrix:\n");
 
     for (std::vector<std::string>::const_iterator iter = rows.begin();
          iter != rows.end();
@@ -235,7 +235,7 @@ parse_matrix(std::string &str, std::vector<float> &filter,
             float f;
 
             ss >> f;
-            filter.push_back(f);
+            matrix.push_back(f);
             Log::debug("%f ", f);
         }
 
@@ -249,14 +249,14 @@ parse_matrix(std::string &str, std::vector<float> &filter,
 }
 
 /** 
- * Normalizes a convolution filter.
+ * Normalizes a convolution kernel matrix.
  * 
  * @param filter the filter to normalize
  */
 static void
-normalize(std::vector<float> &filter)
+normalize(std::vector<float> &kernel)
 {
-    float sum = std::accumulate(filter.begin(), filter.end(), 0.0);
+    float sum = std::accumulate(kernel.begin(), kernel.end(), 0.0);
 
     /* 
      * If sum is essentially zero, perform a zero-sum normalization.
@@ -264,8 +264,8 @@ normalize(std::vector<float> &filter)
      */
     if (fabs(sum) < 0.00000001) {
         sum = 0.0;
-        for (std::vector<float>::iterator iter = filter.begin();
-             iter != filter.end();
+        for (std::vector<float>::iterator iter = kernel.begin();
+             iter != kernel.end();
              iter++)
         {
             if (*iter > 0.0)
@@ -280,8 +280,8 @@ normalize(std::vector<float> &filter)
     if (sum == 0.0)
         return;
         
-    for (std::vector<float>::iterator iter = filter.begin();
-         iter != filter.end();
+    for (std::vector<float>::iterator iter = kernel.begin();
+         iter != kernel.end();
          iter++)
     {
         *iter /= sum; 
@@ -309,30 +309,30 @@ void SceneEffect2D::setup()
 
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/effect-2d.vert");
 
-    std::vector<float> filter;
-    unsigned int filter_width;
-    unsigned int filter_height;
+    std::vector<float> kernel;
+    unsigned int kernel_width;
+    unsigned int kernel_height;
 
-    /* Parse the matrix from the options */
-    if (!parse_matrix(mOptions["matrix"].value, filter,
-                      filter_width, filter_height))
+    /* Parse the kernel matrix from the options */
+    if (!parse_matrix(mOptions["kernel"].value, kernel,
+                      kernel_width, kernel_height))
     {
         return;
     }
 
-    /* Normalize the matrix if needed */
+    /* Normalize the kernel matrix if needed */
     if (mOptions["normalize"].value == "true") {
-        normalize(filter);
-        Log::debug("Normalized matrix:\n%s",
-                   filter_printout(filter, filter_width).c_str());
+        normalize(kernel);
+        Log::debug("Normalized kernel matrix:\n%s",
+                   kernel_printout(kernel, kernel_width).c_str());
     }
 
     /* Create and load the shaders */
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source;
-    frg_source.append(create_convolution_fragment_shader(filter,
-                                                         filter_width,
-                                                         filter_height));
+    frg_source.append(create_convolution_fragment_shader(kernel,
+                                                         kernel_width,
+                                                         kernel_height));
 
     if (frg_source.str().empty())
         return;
