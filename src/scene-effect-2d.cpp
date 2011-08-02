@@ -142,6 +142,33 @@ create_convolution_fragment_shader(std::vector<float> &array,
 }
 
 /** 
+ * Creates a string containing a printout of a filter.
+ * 
+ * @param filter the vector containing the filter coefficients
+ * @param width the width of the filter
+ * 
+ * @return the printout
+ */
+static std::string
+filter_printout(const std::vector<float> &matrix,
+                unsigned int width)
+{
+    std::stringstream ss;
+    ss << std::fixed;
+
+    for (std::vector<float>::const_iterator iter = matrix.begin();
+         iter != matrix.end();
+         iter++)
+    {
+        ss << *iter << " ";
+        if ((iter - matrix.begin()) % width == width - 1)
+            ss << std::endl;
+    }
+
+    return ss.str();
+}
+
+/** 
  * Splits a string using a delimiter
  * 
  * @param s the string to split
@@ -294,8 +321,11 @@ void SceneEffect2D::setup()
     }
 
     /* Normalize the matrix if needed */
-    if (mOptions["normalize"].value == "true")
+    if (mOptions["normalize"].value == "true") {
         normalize(filter);
+        Log::debug("Normalized matrix:\n%s",
+                   filter_printout(filter, filter_width).c_str());
+    }
 
     /* Create and load the shaders */
     ShaderSource vtx_source(vtx_shader_filename);
