@@ -116,6 +116,7 @@ void
 do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
 {
     unsigned score = 0;
+    unsigned int benchmarks_run = 0;
 
     for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
          bench_iter != benchmarks.end();
@@ -142,6 +143,7 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
 
             Log::info(" FPS: %u\n", scene.average_fps());
             score += scene.average_fps();
+            benchmarks_run++;
         }
 
         bench->teardown_scene();
@@ -149,6 +151,9 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
         if (!keep_running)
             break;
     }
+
+    if (benchmarks_run)
+        score /= benchmarks_run;
 
     Log::info("=======================================================\n");
     Log::info("                                  glmark2 Score: %u \n", score);
