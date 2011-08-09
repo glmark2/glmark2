@@ -82,6 +82,7 @@ calc_offset(unsigned int i, unsigned int width, unsigned int height)
  * response). This also means that we don't need to perform the (implicit)
  * rotation of the kernel in our convolution implementation.
  *
+ * @param canvas the destination Canvas for this shader
  * @param array the array holding the filter coefficients in row-major
  *              order
  * @param width the width of the filter
@@ -90,7 +91,7 @@ calc_offset(unsigned int i, unsigned int width, unsigned int height)
  * @return a string containing the frament source code
  */
 static std::string
-create_convolution_fragment_shader(std::vector<float> &array,
+create_convolution_fragment_shader(Canvas &canvas, std::vector<float> &array,
                                    unsigned int width, unsigned int height)
 {
     static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/effect-2d-convolution.frag");
@@ -102,8 +103,8 @@ create_convolution_fragment_shader(std::vector<float> &array,
     }
 
     /* Steps are needed to be able to access nearby pixels */
-    source.add_const("TextureStepX", 1.0f/800.0f);
-    source.add_const("TextureStepY", 1.0f/600.0f);
+    source.add_const("TextureStepX", 1.0f/canvas.width());
+    source.add_const("TextureStepY", 1.0f/canvas.height());
 
     std::stringstream ss_def;
     std::stringstream ss_convolution;
@@ -314,7 +315,7 @@ void SceneEffect2D::setup()
     /* Create and load the shaders */
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source;
-    frg_source.append(create_convolution_fragment_shader(kernel,
+    frg_source.append(create_convolution_fragment_shader(mCanvas, kernel,
                                                          kernel_width,
                                                          kernel_height));
 

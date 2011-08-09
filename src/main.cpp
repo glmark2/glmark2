@@ -214,9 +214,9 @@ int main(int argc, char *argv[])
 
     // Create the canvas
 #if USE_GL
-    CanvasX11GLX canvas(800, 600);
+    CanvasX11GLX canvas(Options::size.first, Options::size.second);
 #elif USE_GLESv2
-    CanvasX11EGL canvas(800, 600);
+    CanvasX11EGL canvas(Options::size.first, Options::size.second);
 #endif
 
     // Register the scenes, so they can be looked-up by name

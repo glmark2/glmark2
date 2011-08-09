@@ -76,11 +76,7 @@ CanvasX11::init()
     if (!xdpy_)
         return false;
 
-    XVisualInfo *visinfo = get_xvisualinfo();
-
-    xwin_ = create_canvas_x_window(xdpy_, "glmark2 "GLMARK_VERSION, mWidth, mHeight, visinfo);
-
-    XFree(visinfo);
+    resize(mWidth, mHeight);
 
     if (!xwin_)
         return false;
@@ -99,12 +95,7 @@ CanvasX11::init()
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    glViewport(0, 0, mWidth, mHeight);
-
     clear();
-
-    mProjection = LibMatrix::Mat4::perspective(60.0, mWidth / (float)mHeight,
-                                               1.0, 1024.0);
 
     return true;
 }
@@ -192,4 +183,32 @@ CanvasX11::should_quit()
     }
 
     return false;
+}
+
+void
+CanvasX11::resize(int width, int height)
+{
+    /* Recreate an existing window only if it has actually been resized */
+    if (xwin_) {
+        if (mWidth != width || mHeight != height) {
+            XDestroyWindow(xdpy_, xwin_);
+            xwin_ = 0;
+        }
+        else {
+            return;
+        }
+    }
+
+    mWidth = width;
+    mHeight = height;
+
+    XVisualInfo *visinfo = get_xvisualinfo();
+
+    xwin_ = create_canvas_x_window(xdpy_, "glmark2 "GLMARK_VERSION, mWidth, mHeight, visinfo);
+
+    XFree(visinfo);
+
+    glViewport(0, 0, mWidth, mHeight);
+    mProjection = LibMatrix::Mat4::perspective(60.0, mWidth / (float)mHeight,
+                                               1.0, 1024.0);
 }
