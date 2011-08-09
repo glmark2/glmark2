@@ -39,9 +39,11 @@ public:
     virtual Pixel read_pixel(int x, int y);
     virtual void write_to_file(std::string &filename);
     virtual bool should_quit();
+    virtual void resize(int width, int height);
 
 protected:
-    CanvasX11(int width, int height) : Canvas(width, height) {}
+    CanvasX11(int width, int height) :
+        Canvas(width, height), xwin_(0), xdpy_(0) {}
 
     virtual XVisualInfo *get_xvisualinfo() = 0;
     virtual bool make_current() = 0;
