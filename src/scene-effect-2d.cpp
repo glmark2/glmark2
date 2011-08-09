@@ -30,6 +30,7 @@
 #include "log.h"
 #include "program.h"
 #include "shader-source.h"
+#include "util.h"
 
 
 SceneEffect2D::SceneEffect2D(Canvas &pCanvas) :
@@ -169,23 +170,6 @@ kernel_printout(const std::vector<float> &kernel,
 }
 
 /** 
- * Splits a string using a delimiter
- * 
- * @param s the string to split
- * @param delim the delimitir to use
- * @param elems the string vector to populate
- */
-static void
-split(const std::string &s, char delim, std::vector<std::string> &elems)
-{
-    std::stringstream ss(s);
-
-    std::string item;
-    while(std::getline(ss, item, delim))
-        elems.push_back(item);
-}
-
-/** 
  * Parses a string representation of a matrix and returns it
  * in row-major format.
  *
@@ -207,7 +191,7 @@ parse_matrix(std::string &str, std::vector<float> &matrix,
     std::vector<std::string> rows;
     unsigned int w = UINT_MAX;
 
-    split(str, ';', rows);
+    Util::split(str, ';', rows);
 
     Log::debug("Parsing kernel matrix:\n");
 
@@ -216,7 +200,7 @@ parse_matrix(std::string &str, std::vector<float> &matrix,
          iter++)
     {
         std::vector<std::string> elems;
-        split(*iter, ',', elems);
+        Util::split(*iter, ',', elems);
 
         if (w != UINT_MAX && elems.size() != w) {
             Log::error("Matrix row %u contains %u elements, whereas previous"
