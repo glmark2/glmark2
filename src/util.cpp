@@ -22,6 +22,7 @@
  */
 
 #include <sstream>
+#include <fstream>
 
 #include "util.h"
 
@@ -42,3 +43,10 @@ Util::split(const std::string &s, char delim, std::vector<std::string> &elems)
         elems.push_back(item);
 }
 
+std::istream *
+Util::get_resource(const std::string &path)
+{
+    std::ifstream *ifs = new std::ifstream(path.c_str());
+
+    return static_cast<std::istream *>(ifs);
+}

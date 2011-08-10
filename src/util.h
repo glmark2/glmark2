@@ -26,9 +26,11 @@
 
 #include <string>
 #include <vector>
+#include <istream>
 
 struct Util {
     static void split(const std::string &s, char delim, std::vector<std::string> &elems);
+    static std::istream *get_resource(const std::string &path);
 };
 
 #endif /* UTIL_H */
