@@ -20,11 +20,13 @@
  *  Alexandros Frantzis (glmark2)
  */
 
-#include <fstream>
+#include <istream>
+#include <memory>
 
 #include "shader-source.h"
 #include "log.h"
 #include "vec.h"
+#include "util.h"
 
 /** 
  * Loads the contents of a file into a string.
@@ -35,8 +37,9 @@
 bool
 ShaderSource::load_file(const std::string& filename, std::string& str)
 {
-    using std::ifstream;
-    ifstream inputFile(filename.c_str());
+    std::auto_ptr<std::istream> is_ptr(Util::get_resource(filename));
+    std::istream& inputFile(*is_ptr);
+
     if (!inputFile)
     {
         Log::error("Failed to open \"%s\"\n", filename.c_str());
