@@ -25,9 +25,10 @@
 #include "vec.h"
 #include "log.h"
 #include "options.h"
+#include "util.h"
 
-#include <fstream>
 #include <sstream>
+#include <memory>
 
 #define read_or_fail(file, dst, size) do { \
     file.read(reinterpret_cast<char *>((dst)), (size)); \
@@ -164,7 +165,9 @@ Model::load_3ds(const std::string &filename)
 
     Log::debug("Loading model from 3ds file '%s'\n", filename.c_str());
 
-    std::ifstream input_file(filename.c_str());
+    const std::auto_ptr<std::istream> input_file_ptr(Util::get_resource(filename));
+    std::istream& input_file(*input_file_ptr);
+
     if (!input_file) {
         Log::error("Could not open 3ds file '%s'\n", filename.c_str());
         return false;
