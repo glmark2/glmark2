@@ -1,5 +1,5 @@
 /*
- * Copyright © 2008 Ben Smith
+ * Copyright © 2011 Ben Smith
  * Copyright © 2010-2011 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
@@ -20,6 +20,7 @@
  * Authors:
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
+ *  Marc Ordinas i Llopis, Collabora Ltd. (pulsar scene)
  */
 #ifndef GLMARK2_SCENE_H_
 #define GLMARK2_SCENE_H_
@@ -300,4 +301,28 @@ protected:
     Mesh mesh_;
     GLuint texture_;
 };
+
+class ScenePulsar : public Scene
+{
+public:
+    ScenePulsar(Canvas &pCanvas);
+    int load();
+    void unload();
+    void setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+
+    ~ScenePulsar();
+
+protected:
+    Program mProgram;
+
+    Mesh mPlaneMesh;
+    LibMatrix::vec3 mScale;
+    LibMatrix::vec3 mRotation;
+    LibMatrix::vec3 mRotationSpeed;
+};
+
 #endif

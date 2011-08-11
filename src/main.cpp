@@ -229,6 +229,7 @@ int main(int argc, char *argv[])
     Benchmark::register_scene(*new SceneLoop(canvas));
     Benchmark::register_scene(*new SceneBump(canvas));
     Benchmark::register_scene(*new SceneEffect2D(canvas));
+    Benchmark::register_scene(*new ScenePulsar(canvas));
 
     if (Options::list_scenes) {
         list_scenes();
