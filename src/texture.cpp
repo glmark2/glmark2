@@ -165,6 +165,8 @@ setup_texture(GLuint *tex, ImageData &image, GLint min_filter, GLint mag_filter)
     glBindTexture(GL_TEXTURE_2D, *tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, format, image.width, image.height, 0,
                  format, GL_UNSIGNED_BYTE, image.pixels);
 
