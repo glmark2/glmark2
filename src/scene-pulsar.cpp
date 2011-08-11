@@ -71,7 +71,7 @@ int ScenePulsar::load()
     mPlaneMesh.set_attrib(1, LibMatrix::vec4(0.0, 0.0, 1.0, 0.4));
     mPlaneMesh.next_vertex();
     mPlaneMesh.set_attrib(0, LibMatrix::vec3(1.0, -1.0, 0.0));
-    mPlaneMesh.set_attrib(1, LibMatrix::vec4(1.0, 1.0, 1.0, 0.4));
+    mPlaneMesh.set_attrib(1, LibMatrix::vec4(1.0, 1.0, 1.0, 1.0));
     mPlaneMesh.build_vbo();
 
     // Load shaders
@@ -108,6 +108,8 @@ void ScenePulsar::setup()
 
     // Disable back-face culling
     glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     std::stringstream ss;
     ss << mOptions["quads"].value;
@@ -137,6 +139,7 @@ void ScenePulsar::teardown()
 
     // Re-enable back-face culling
     glEnable(GL_CULL_FACE);
+    glDisable(GL_BLEND);
 
     Scene::teardown();
 }
@@ -158,10 +161,8 @@ void ScenePulsar::update()
         mRotations[i] += mRotationSpeeds[i] * (dt * 60);
     }
 
-    mScale = LibMatrix::vec3(cos(elapsed_time/0.36)*10.0, sin(elapsed_time/0.36)*10.0, 1.0);
-    if (!(mCurrentFrame%100)) {
-        std::cout << elapsed_time << ": " << mScale.x() << ", " << mScale.y() << ", " << mScale.z() << std::endl;
-    }
+    mScale = LibMatrix::vec3(cos(elapsed_time/3.60)*10.0, sin(elapsed_time/3.60)*10.0, 1.0);
+
     mCurrentFrame++;
 }
 
