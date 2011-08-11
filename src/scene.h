@@ -317,12 +317,13 @@ public:
     ~ScenePulsar();
 
 protected:
+    int mNumQuads;
     Program mProgram;
 
     Mesh mPlaneMesh;
     LibMatrix::vec3 mScale;
-    LibMatrix::vec3 mRotation;
-    LibMatrix::vec3 mRotationSpeed;
+    std::vector<LibMatrix::vec3> mRotations;
+    std::vector<LibMatrix::vec3> mRotationSpeeds;
 };
 
 #endif

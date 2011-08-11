@@ -35,6 +35,7 @@
 ScenePulsar::ScenePulsar(Canvas &pCanvas) :
     Scene(pCanvas, "pulsar")
 {
+    mOptions["quads"] = Scene::Option("quads", "5", "Number of quads to render");
 }
 
 ScenePulsar::~ScenePulsar()
@@ -88,8 +89,6 @@ int ScenePulsar::load()
     attrib_locations.push_back(mProgram.getAttribIndex("vertex_color"));
     mPlaneMesh.set_attrib_locations(attrib_locations);
 
-    mRotationSpeed = LibMatrix::vec3(60.0, 70.0, 0.0);
-
     mRunning = false;
 
     return 1;
@@ -110,11 +109,23 @@ void ScenePulsar::setup()
     // Disable back-face culling
     glDisable(GL_CULL_FACE);
 
+    std::stringstream ss;
+    ss << mOptions["quads"].value;
+    ss >> mNumQuads;
+
+    srand((unsigned)time(0));
+    for (int i = 0; i < mNumQuads; i++) {
+        mRotations.push_back(LibMatrix::vec3());
+        mRotationSpeeds.push_back(LibMatrix::vec3(((float)rand()/(float)RAND_MAX)*5.0,
+                                                  ((float)rand()/(float)RAND_MAX)*5.0,
+                                                  0.0));
+    }
+    mScale = LibMatrix::vec3(1.0, 1.0, 1.0);
+
     mProgram.start();
 
     mCurrentFrame = 0;
-    mScale = LibMatrix::vec3(1.0, 1.0, 1.0);
-    mRotation = LibMatrix::vec3();
+
     mRunning = true;
     mStartTime = Scene::get_timestamp_us() / 1000000.0;
     mLastUpdateTime = mStartTime;
@@ -123,6 +134,10 @@ void ScenePulsar::setup()
 void ScenePulsar::teardown()
 {
     mProgram.stop();
+
+    // Re-enable back-face culling
+    glEnable(GL_CULL_FACE);
+
     Scene::teardown();
 }
 
@@ -139,25 +154,33 @@ void ScenePulsar::update()
         mRunning = false;
     }
 
-    mRotation += mRotationSpeed * dt;
-    mScale = LibMatrix::vec3(cos(current_time/0.360)*10.0, sin(current_time/0.360)*10.0, 1.0);
+    for (int i = 0; i<mNumQuads; i++) {
+        mRotations[i] += mRotationSpeeds[i] * (dt * 60);
+    }
+
+    mScale = LibMatrix::vec3(cos(elapsed_time/0.36)*10.0, sin(elapsed_time/0.36)*10.0, 1.0);
+    if (!(mCurrentFrame%100)) {
+        std::cout << elapsed_time << ": " << mScale.x() << ", " << mScale.y() << ", " << mScale.z() << std::endl;
+    }
     mCurrentFrame++;
 }
 
 void ScenePulsar::draw()
 {
-    // Load the ModelViewProjectionMatrix uniform in the shader
-    LibMatrix::Stack4 model_view;
-    LibMatrix::mat4 model_view_proj(mCanvas.projection());
-    model_view.scale(mScale.x(), mScale.y(), mScale.z());
-    model_view.translate(0.0f, 0.0f, -10.0f);
-    model_view.rotate(mRotation.x(), 1.0f, 0.0f, 0.0f);
-    model_view.rotate(mRotation.y(), 0.0f, 1.0f, 0.0f);
-    model_view.rotate(mRotation.z(), 0.0f, 0.0f, 1.0f);
-    model_view_proj *= model_view.getCurrent();
-    mProgram.loadUniformMatrix(model_view_proj, "ModelViewProjectionMatrix");
+    for (int i = 0; i<mNumQuads; i++) {
+        // Load the ModelViewProjectionMatrix uniform in the shader
+        LibMatrix::Stack4 model_view;
+        LibMatrix::mat4 model_view_proj(mCanvas.projection());
+        model_view.scale(mScale.x(), mScale.y(), mScale.z());
+        model_view.translate(0.0f, 0.0f, -10.0f);
+        model_view.rotate(mRotations[i].x(), 1.0f, 0.0f, 0.0f);
+        model_view.rotate(mRotations[i].y(), 0.0f, 1.0f, 0.0f);
+        model_view.rotate(mRotations[i].z(), 0.0f, 0.0f, 1.0f);
+        model_view_proj *= model_view.getCurrent();
+        mProgram.loadUniformMatrix(model_view_proj, "ModelViewProjectionMatrix");
 
-    mPlaneMesh.render_vbo();
+        mPlaneMesh.render_vbo();
+    }
 }
 
 Scene::ValidationResult
