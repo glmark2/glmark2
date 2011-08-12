@@ -68,6 +68,7 @@ public:
     }
     virtual void write_to_file(std::string &filename) { (void)filename; }
     virtual bool should_quit() { return false; }
+    virtual void resize(int width, int height) { (void)width; (void)height; }
 
     static Canvas &dummy()
     {

@@ -30,6 +30,7 @@
 #include "log.h"
 #include "program.h"
 #include "shader-source.h"
+#include "util.h"
 
 
 SceneEffect2D::SceneEffect2D(Canvas &pCanvas) :
@@ -81,6 +82,7 @@ calc_offset(unsigned int i, unsigned int width, unsigned int height)
  * response). This also means that we don't need to perform the (implicit)
  * rotation of the kernel in our convolution implementation.
  *
+ * @param canvas the destination Canvas for this shader
  * @param array the array holding the filter coefficients in row-major
  *              order
  * @param width the width of the filter
@@ -89,7 +91,7 @@ calc_offset(unsigned int i, unsigned int width, unsigned int height)
  * @return a string containing the frament source code
  */
 static std::string
-create_convolution_fragment_shader(std::vector<float> &array,
+create_convolution_fragment_shader(Canvas &canvas, std::vector<float> &array,
                                    unsigned int width, unsigned int height)
 {
     static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/effect-2d-convolution.frag");
@@ -101,8 +103,8 @@ create_convolution_fragment_shader(std::vector<float> &array,
     }
 
     /* Steps are needed to be able to access nearby pixels */
-    source.add_const("TextureStepX", 1.0f/800.0f);
-    source.add_const("TextureStepY", 1.0f/600.0f);
+    source.add_const("TextureStepX", 1.0f/canvas.width());
+    source.add_const("TextureStepY", 1.0f/canvas.height());
 
     std::stringstream ss_def;
     std::stringstream ss_convolution;
@@ -169,23 +171,6 @@ kernel_printout(const std::vector<float> &kernel,
 }
 
 /** 
- * Splits a string using a delimiter
- * 
- * @param s the string to split
- * @param delim the delimitir to use
- * @param elems the string vector to populate
- */
-static void
-split(const std::string &s, char delim, std::vector<std::string> &elems)
-{
-    std::stringstream ss(s);
-
-    std::string item;
-    while(std::getline(ss, item, delim))
-        elems.push_back(item);
-}
-
-/** 
  * Parses a string representation of a matrix and returns it
  * in row-major format.
  *
@@ -207,7 +192,7 @@ parse_matrix(std::string &str, std::vector<float> &matrix,
     std::vector<std::string> rows;
     unsigned int w = UINT_MAX;
 
-    split(str, ';', rows);
+    Util::split(str, ';', rows);
 
     Log::debug("Parsing kernel matrix:\n");
 
@@ -216,7 +201,7 @@ parse_matrix(std::string &str, std::vector<float> &matrix,
          iter++)
     {
         std::vector<std::string> elems;
-        split(*iter, ',', elems);
+        Util::split(*iter, ',', elems);
 
         if (w != UINT_MAX && elems.size() != w) {
             Log::error("Matrix row %u contains %u elements, whereas previous"
@@ -330,7 +315,7 @@ void SceneEffect2D::setup()
     /* Create and load the shaders */
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source;
-    frg_source.append(create_convolution_fragment_shader(kernel,
+    frg_source.append(create_convolution_fragment_shader(mCanvas, kernel,
                                                          kernel_width,
                                                          kernel_height));
 

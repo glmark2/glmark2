@@ -22,7 +22,7 @@
 
 #include "benchmark.h"
 #include "log.h"
-#include <sstream>
+#include "util.h"
 
 using std::string;
 using std::vector;
@@ -30,22 +30,12 @@ using std::map;
 
 std::map<string, Scene *> Benchmark::mSceneMap;
 
-static void
-split(const string &s, char delim, vector<string> &elems)
-{
-    std::stringstream ss(s);
-
-    string item;
-    while(std::getline(ss, item, delim))
-        elems.push_back(item);
-}
-
 static Scene &
 get_scene_from_description(const string &s)
 {
     vector<string> elems;
 
-    split(s, ':', elems);
+    Util::split(s, ':', elems);
 
     const string &name = !elems.empty() ? elems[0] : ""; 
 
@@ -58,7 +48,7 @@ get_options_from_description(const string &s)
     vector<Benchmark::OptionPair> options;
     vector<string> elems;
 
-    split(s, ':', elems);
+    Util::split(s, ':', elems);
 
     for (vector<string>::const_iterator iter = ++elems.begin();
          iter != elems.end();
@@ -66,7 +56,7 @@ get_options_from_description(const string &s)
     {
         vector<string> opt;
 
-        split(*iter, '=', opt);
+        Util::split(*iter, '=', opt);
         if (opt.size() == 2)
             options.push_back(Benchmark::OptionPair(opt[0], opt[1]));
         else

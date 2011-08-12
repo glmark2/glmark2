@@ -23,24 +23,21 @@
  */
 #include "texture.h"
 #include "log.h"
+#include "util.h"
 
 #include <cstdarg>
 #include <png.h>
+#include <memory>
 
 class PNGState
 {
 public:
     PNGState() :
-        fp_(0),
         png_(0),
         info_(0),
         rows_(0) {}
     ~PNGState()
     {
-        if (fp_)
-        {
-           fclose(fp_);
-        }
         if (png_)
         {
             png_destroy_read_struct(&png_, &info_, 0);
@@ -55,8 +52,8 @@ public:
 
         Log::debug("Reading PNG file %s\n", filename.c_str());
 
-        fp_ = fopen(filename.c_str(), "rb");
-        if (!fp_) {
+        const std::auto_ptr<std::istream> is_ptr(Util::get_resource(filename));
+        if (!(*is_ptr)) {
             Log::error("Cannot open file %s!\n", filename.c_str());
             return false;
         }
@@ -81,7 +78,7 @@ public:
         }
 
         /* Read the image information and data */
-        png_init_io(png_, fp_);
+        png_set_read_fn(png_, reinterpret_cast<voidp>(is_ptr.get()), png_read_fn);
 
         png_read_png(png_, info_, png_transforms, 0);
 
@@ -101,7 +98,11 @@ public:
     }
     const unsigned char* row(unsigned int idx) const { return rows_[idx]; }
 private:
-    FILE* fp_;
+    static void png_read_fn(png_structp png_ptr, png_bytep data, png_size_t length)
+    {
+        std::istream *is = reinterpret_cast<std::istream*>(png_get_io_ptr(png_ptr));
+        is->read(reinterpret_cast<char *>(data), length);
+    }
     png_structp png_;
     png_infop info_;
     png_bytepp rows_;
@@ -164,6 +165,8 @@ setup_texture(GLuint *tex, ImageData &image, GLint min_filter, GLint mag_filter)
     glBindTexture(GL_TEXTURE_2D, *tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, format, image.width, image.height, 0,
                  format, GL_UNSIGNED_BYTE, image.pixels);
 

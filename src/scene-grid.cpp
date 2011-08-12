@@ -82,10 +82,6 @@ void SceneGrid::setup()
                     grid_size > 1 ? spacing : 0);
     mMesh.build_vbo();
 
-    std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram.getAttribIndex("position"));
-    mMesh.set_attrib_locations(attrib_locations);
-
     mCurrentFrame = 0;
     mRotation = 0.0f;
 }

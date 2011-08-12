@@ -25,12 +25,16 @@
 #include <cstdlib>
 #include <cstdio>
 #include <getopt.h>
+#include <sstream>
 
 #include "options.h"
+#include "util.h"
+#include "log.h"
 
 std::vector<std::string> Options::benchmarks;
 bool Options::validate = false;
 bool Options::swap_buffers = true;
+std::pair<int,int> Options::size(800, 600);
 bool Options::list_scenes = false;
 bool Options::show_debug = false;
 bool Options::show_help = false;
@@ -39,11 +43,40 @@ static struct option long_options[] = {
     {"benchmark", 1, 0, 0},
     {"validate", 0, 0, 0},
     {"no-swap-buffers", 0, 0, 0},
+    {"size", 1, 0, 0},
     {"list-scenes", 0, 0, 0},
     {"debug", 0, 0, 0},
     {"help", 0, 0, 0},
     {0, 0, 0, 0}
 };
+
+/** 
+ * Parses a size string of the form WxH
+ * 
+ * @param str the string to parse
+ * @param size the parsed size (width, height) 
+ */
+static void
+parse_size(const std::string &str, std::pair<int,int> &size)
+{
+    std::vector<std::string> d;
+    Util::split(str, 'x', d);
+
+    std::stringstream ss(d[0]);
+    ss >> size.first;
+
+    /*
+     * Parse the second element (height). If there is none, use the value
+     * of the first element for the second (width = height)
+     */
+    if (d.size() > 1) {
+        ss.clear();
+        ss.str(d[1]);
+        ss >> size.second;
+    }
+    else 
+        size.second = size.first;
+}
 
 void
 Options::print_help()
@@ -57,6 +90,7 @@ Options::print_help()
            "                         running the benchmarks\n"
            "      --no-swap-buffers  Don't update the canvas by swapping the front and\n"
            "                         back buffer, use glFinish() instead\n"
+           "  -s, --size WxH         Size of the display (default: 800x600)\n"
            "  -l, --list-scenes      Display information about the available scenes\n"
            "                         and their options\n"
            "  -d, --debug            Display debug messages\n"
@@ -71,7 +105,7 @@ Options::parse_args(int argc, char **argv)
         int c;
         const char *optname = "";
 
-        c = getopt_long(argc, argv, "b:ldh",
+        c = getopt_long(argc, argv, "b:s:ldh",
                         long_options, &option_index);
         if (c == -1)
             break;
@@ -87,6 +121,8 @@ Options::parse_args(int argc, char **argv)
             Options::validate = true;
         else if (!strcmp(optname, "no-swap-buffers"))
             Options::swap_buffers = false;
+        else if (c == 's' || !strcmp(optname, "size"))
+            parse_size(optarg, Options::size);
         else if (c == 'l' || !strcmp(optname, "list-scenes"))
             Options::list_scenes = true;
         else if (c == 'd' || !strcmp(optname, "debug"))

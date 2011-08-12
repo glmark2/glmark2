@@ -21,23 +21,32 @@
  *  Jesse Barker <jesse.barker@linaro.org>
  */
 
-#ifndef OPTIONS_H_
-#define OPTIONS_H_
+#include <sstream>
+#include <fstream>
 
-#include <string>
-#include <vector>
+#include "util.h"
 
-struct Options {
-    static bool parse_args(int argc, char **argv);
-    static void print_help();
+/** 
+ * Splits a string using a delimiter
+ * 
+ * @param s the string to split
+ * @param delim the delimitir to use
+ * @param elems the string vector to populate
+ */
+void
+Util::split(const std::string &s, char delim, std::vector<std::string> &elems)
+{
+    std::stringstream ss(s);
 
-    static std::vector<std::string> benchmarks;
-    static bool validate;
-    static bool swap_buffers;
-    static std::pair<int,int> size;
-    static bool list_scenes;
-    static bool show_debug;
-    static bool show_help;
-};
+    std::string item;
+    while(std::getline(ss, item, delim))
+        elems.push_back(item);
+}
 
-#endif /* OPTIONS_H_ */
+std::istream *
+Util::get_resource(const std::string &path)
+{
+    std::ifstream *ifs = new std::ifstream(path.c_str());
+
+    return static_cast<std::istream *>(ifs);
+}

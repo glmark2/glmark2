@@ -21,23 +21,16 @@
  *  Jesse Barker <jesse.barker@linaro.org>
  */
 
-#ifndef OPTIONS_H_
-#define OPTIONS_H_
+#ifndef UTIL_H_
+#define UTIL_H_
 
 #include <string>
 #include <vector>
+#include <istream>
 
-struct Options {
-    static bool parse_args(int argc, char **argv);
-    static void print_help();
-
-    static std::vector<std::string> benchmarks;
-    static bool validate;
-    static bool swap_buffers;
-    static std::pair<int,int> size;
-    static bool list_scenes;
-    static bool show_debug;
-    static bool show_help;
+struct Util {
+    static void split(const std::string &s, char delim, std::vector<std::string> &elems);
+    static std::istream *get_resource(const std::string &path);
 };
 
-#endif /* OPTIONS_H_ */
+#endif /* UTIL_H */
