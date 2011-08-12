@@ -16,9 +16,10 @@ class Glmark2SurfaceView extends GLSurfaceView {
         mActivity = activity;
 
         setEGLContextClientVersion(2);
-
-        this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+        
+        // Uncomment the commands below to get an RGBA8888 surface and config.
+        //this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        //setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 
         setRenderer(new Glmark2Renderer(this));
     }
