@@ -1,7 +1,6 @@
 
 package org.linaro.glmark2;
 
-import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.content.res.AssetManager;
