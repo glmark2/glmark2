@@ -27,7 +27,7 @@ public class Glmark2Activity extends Activity {
     private GLSurfaceView mGLView;
 
     static {
-        System.loadLibrary("glmark2");
+        System.loadLibrary("glmark2-android");
     }
 }
 

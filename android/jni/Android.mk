@@ -22,7 +22,7 @@ include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := glmark2
+LOCAL_MODULE := glmark2-android
 LOCAL_STATIC_LIBRARIES := matrix png
 LOCAL_CPPFLAGS := -DANDROID -DUSE_GLESv2 -DGLMARK_DATA_PATH=""
 LOCAL_LDLIBS := -landroid -llog -lGLESv2 -lEGL -lz -lm
