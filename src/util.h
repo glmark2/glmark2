@@ -28,9 +28,18 @@
 #include <vector>
 #include <istream>
 
+#ifdef ANDROID
+#include <android/asset_manager_jni.h>
+#endif
+
 struct Util {
     static void split(const std::string &s, char delim, std::vector<std::string> &elems);
     static std::istream *get_resource(const std::string &path);
+#ifdef ANDROID
+    static void android_set_asset_manager(AAssetManager *asset_manager);
+private:
+    static AAssetManager *android_asset_manager;
+#endif
 };
 
 #endif /* UTIL_H */

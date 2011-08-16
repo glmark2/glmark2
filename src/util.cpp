@@ -23,7 +23,11 @@
 
 #include <sstream>
 #include <fstream>
+#ifdef ANDROID
+#include <android/asset_manager.h>
+#endif
 
+#include "log.h"
 #include "util.h"
 
 /** 
@@ -43,6 +47,8 @@ Util::split(const std::string &s, char delim, std::vector<std::string> &elems)
         elems.push_back(item);
 }
 
+#ifndef ANDROID
+
 std::istream *
 Util::get_resource(const std::string &path)
 {
@@ -50,3 +56,37 @@ Util::get_resource(const std::string &path)
 
     return static_cast<std::istream *>(ifs);
 }
+
+#else
+
+AAssetManager *Util::android_asset_manager = 0;
+
+void
+Util::android_set_asset_manager(AAssetManager *asset_manager)
+{
+    Util::android_asset_manager = asset_manager;
+}
+
+std::istream *
+Util::get_resource(const std::string &path)
+{
+    std::string path2(path);
+    /* Remove leading '/' */
+    path2.erase(0, 1);
+
+    std::stringstream *ss = new std::stringstream;
+    AAsset *asset = AAssetManager_open(Util::android_asset_manager,
+                                       path2.c_str(), AASSET_MODE_RANDOM);
+    if (asset) {
+        ss->write(reinterpret_cast<const char *>(AAsset_getBuffer(asset)),
+                  AAsset_getLength(asset));
+        Log::debug("Load asset %s\n", path2.c_str());
+        AAsset_close(asset);
+    }
+    else {
+        Log::error("Couldn't load asset %s\n", path2.c_str());
+    }
+
+    return static_cast<std::istream *>(ss);
+}
+#endif

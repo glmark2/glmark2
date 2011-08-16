@@ -34,7 +34,7 @@
 class Canvas
 {
 public:
-    ~Canvas() {}
+    virtual ~Canvas() {}
 
     struct Pixel {
         Pixel():

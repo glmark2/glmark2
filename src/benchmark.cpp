@@ -50,7 +50,7 @@ get_options_from_description(const string &s)
 
     Util::split(s, ':', elems);
 
-    for (vector<string>::const_iterator iter = ++elems.begin();
+    for (vector<string>::const_iterator iter = elems.begin() + 1;
          iter != elems.end();
          iter++)
     {

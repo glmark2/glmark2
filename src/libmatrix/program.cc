@@ -59,7 +59,7 @@ Shader::Shader(unsigned int type, const string& source) :
         message_ = string("Failed to create the new shader.");
         return;
     }
-    const GLchar* shaderSource = source_.c_str();
+    const char* shaderSource = source_.c_str();
     glShaderSource(handle_, 1, &shaderSource, NULL);
     GLint param = 0;
     glGetShaderiv(handle_, GL_SHADER_SOURCE_LENGTH, &param);
@@ -95,7 +95,7 @@ Shader::compile()
     if (param == GL_FALSE)
     {
         glGetShaderiv(handle_, GL_INFO_LOG_LENGTH, &param);
-        GLchar* infoLog = new GLchar[param + 1];
+        char* infoLog = new char[param + 1];
         glGetShaderInfoLog(handle_, param + 1, NULL, infoLog);
         message_ = infoLog;
         delete [] infoLog;
@@ -228,7 +228,7 @@ Program::build()
     if (param == GL_FALSE)
     {
         glGetProgramiv(handle_, GL_INFO_LOG_LENGTH, &param);
-        GLchar* infoLog = new GLchar[param + 1];
+        char* infoLog = new char[param + 1];
         glGetProgramInfoLog(handle_, param + 1, NULL, infoLog);
         message_ = infoLog;
         delete [] infoLog;
