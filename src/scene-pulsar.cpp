@@ -36,6 +36,7 @@ ScenePulsar::ScenePulsar(Canvas &pCanvas) :
     Scene(pCanvas, "pulsar")
 {
     mOptions["quads"] = Scene::Option("quads", "5", "Number of quads to render");
+    mOptions["texture"] = Scene::Option("texture", "false", "Enable texturing");
 }
 
 ScenePulsar::~ScenePulsar()
@@ -45,7 +46,15 @@ ScenePulsar::~ScenePulsar()
 int ScenePulsar::load()
 {
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/pulsar.vert");
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.frag");
+    std::string frg_shader_filename;
+    if (mOptions["texture"].value == "true") {
+        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic-tex.frag";
+        Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &mTexture,
+                      GL_NEAREST, GL_NEAREST, 0);
+
+    } else {
+        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.frag";
+    }
 
     std::vector<int> vertex_format;
     vertex_format.push_back(3);
@@ -136,6 +145,7 @@ void ScenePulsar::setup()
 void ScenePulsar::teardown()
 {
     mProgram.stop();
+    glDeleteTextures(1, &mTexture);
 
     // Re-enable back-face culling
     glEnable(GL_CULL_FACE);
@@ -168,6 +178,11 @@ void ScenePulsar::update()
 
 void ScenePulsar::draw()
 {
+    if (mOptions["texture"].value == "true") {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, mTexture);
+    }
+
     for (int i = 0; i<mNumQuads; i++) {
         // Load the ModelViewProjectionMatrix uniform in the shader
         LibMatrix::Stack4 model_view;

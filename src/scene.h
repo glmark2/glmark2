@@ -324,6 +324,8 @@ protected:
     LibMatrix::vec3 mScale;
     std::vector<LibMatrix::vec3> mRotations;
     std::vector<LibMatrix::vec3> mRotationSpeeds;
+
+    GLuint mTexture;
 };
 
 #endif
