@@ -26,7 +26,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := libglmark2-android
 LOCAL_STATIC_LIBRARIES := libglmark2-matrix libglmark2-png
 LOCAL_CFLAGS := -DUSE_GLESv2 -DGLMARK_DATA_PATH=""
-LOCAL_LDLIBS := -landroid -llog -lGLESv2 -lEGL -lz -lm
+LOCAL_LDLIBS := -landroid -llog -lGLESv2 -lEGL -lz
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/src
 LOCAL_SRC_FILES := $(filter-out src/canvas% src/main.cpp, \
                      $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/*.cpp))) \
