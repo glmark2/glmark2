@@ -71,6 +71,9 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
     g_canvas = new CanvasAndroid(100, 100);
     g_canvas->init();
 
+    Log::info("glmark2\n");
+    g_canvas->print_info();
+
     Benchmark::register_scene(*new SceneDefaultOptions(*g_canvas));
     Benchmark::register_scene(*new SceneBuild(*g_canvas));
     Benchmark::register_scene(*new SceneTexture(*g_canvas));
