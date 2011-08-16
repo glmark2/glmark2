@@ -91,12 +91,17 @@ public:
         return (m_[0] * m_[3]) - (m_[2] * m_[1]);
     }
 
-    tmat2& inverse() throw(std::runtime_error)
+    tmat2& inverse()
+#ifdef USE_EXCEPTIONS
+        throw(std::runtime_error)
+#endif
     {
         T d(determinant());
         if (d == static_cast<T>(0))
         {
+#ifdef USE_EXCEPTIONS
             throw std::runtime_error("Matrix is noninvertible!!!!");
+#endif
         }
         T c0r0(m_[3] / d);
         T c0r1(-m_[1] / d);
@@ -346,12 +351,17 @@ public:
                (m_[6] * minor6.determinant());
     }
 
-    tmat3& inverse() throw(std::runtime_error)
+    tmat3& inverse()
+#ifdef USE_EXCEPTIONS
+        throw(std::runtime_error)
+#endif
     {
         T d(determinant());
         if (d == static_cast<T>(0))
         {
+#ifdef USE_EXCEPTIONS
             throw std::runtime_error("Matrix is noninvertible!!!!");
+#endif
         }
         tmat2<T> minor0(m_[4], m_[5], m_[7], m_[8]);
         tmat2<T> minor1(m_[7], m_[8], m_[1], m_[2]);
@@ -681,12 +691,17 @@ public:
                (m_[12] * minor12.determinant());
     }
 
-    tmat4& inverse() throw(std::runtime_error)
+    tmat4& inverse()
+#ifdef USE_EXCEPTIONS
+        throw(std::runtime_error)
+#endif
     {
         T d(determinant());
         if (d == static_cast<T>(0))
         {
+#ifdef USE_EXCEPTIONS
             throw std::runtime_error("Matrix is noninvertible!!!!");
+#endif
         }
         tmat3<T> minor0(m_[5], m_[6], m_[7], m_[9], m_[10], m_[11], m_[13], m_[14], m_[15]);
         tmat3<T> minor1(m_[1], m_[2], m_[3], m_[13], m_[14], m_[15], m_[9], m_[10], m_[11]);

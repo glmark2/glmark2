@@ -27,6 +27,11 @@
 #include "options.h"
 #include "log.h"
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
+#ifndef ANDROID
 void
 Log::info(const char *fmt, ...)
 {
@@ -62,3 +67,39 @@ Log::flush()
     fflush(stdout);
     fflush(stderr);
 }
+#else
+void
+Log::info(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    __android_log_vprint(ANDROID_LOG_INFO, "glmark2", fmt, ap);
+    va_end(ap);
+}
+
+void
+Log::debug(const char *fmt, ...)
+{
+    if (!Options::show_debug)
+        return;
+    va_list ap;
+    va_start(ap, fmt);
+    __android_log_vprint(ANDROID_LOG_DEBUG, "glmark2", fmt, ap);
+    va_end(ap);
+}
+
+void
+Log::error(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    __android_log_vprint(ANDROID_LOG_ERROR, "glmark2", fmt, ap);
+    va_end(ap);
+}
+
+void
+Log::flush()
+{
+}
+
+#endif

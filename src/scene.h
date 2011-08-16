@@ -42,7 +42,7 @@
 class Scene
 {
 public:
-    ~Scene();
+    virtual ~Scene();
 
     struct Option {
         Option(const std::string &nam, const std::string &val, const std::string &desc) :
