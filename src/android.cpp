@@ -1,5 +1,6 @@
 /*
  * Copyright © 2011 Linaro Limited
+ * Copyright © 2011 0xlab - http://0xlab.org/
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
@@ -18,7 +19,9 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jim Huang (Strict JNI registration using JNI_OnLoad())
  */
+#include <assert.h>
 #include <jni.h>
 #include <vector>
 #include "canvas-android.h"
@@ -60,13 +63,6 @@ add_default_benchmarks(std::vector<Benchmark *> &benchmarks)
     for (const char **s = default_benchmarks; *s != NULL; s++)
         benchmarks.push_back(new Benchmark(*s));
 }
-
-extern "C" {
-    JNIEXPORT void JNICALL Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz, jobject asset_manager);
-    JNIEXPORT void JNICALL Java_org_linaro_glmark2_Glmark2Renderer_nativeResize(JNIEnv* env, jclass clazz, jint w, jint h);
-    JNIEXPORT void JNICALL Java_org_linaro_glmark2_Glmark2Renderer_nativeDone(JNIEnv* env);
-    JNIEXPORT jboolean JNICALL Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv*  env);
-};
 
 void
 Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
@@ -133,4 +129,72 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
     }
 
     return true;
+}
+
+static JNINativeMethod glmark2_native_methods[] = {
+    {"nativeInit",   "(Landroid/content/res/AssetManager;)V",
+                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeInit},
+    {"nativeResize", "(II)V",
+                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeResize},
+    {"nativeDone",   "()V",
+                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeDone},
+    {"nativeRender", "()Z",
+                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeRender}
+};
+
+static int
+register_native_methods(JNIEnv* env, const char* className,
+                        JNINativeMethod* gMethods, int numMethods)
+{
+    jclass clazz;
+
+    clazz = env->FindClass(className);
+    if (clazz == NULL) {
+        Log::error("Native registration unable to find class '%s'\n",
+                   className);
+        return JNI_FALSE;
+    }
+    if (env->RegisterNatives(clazz, gMethods, numMethods) < 0) {
+        Log::error("RegisterNatives failed for '%s'\n", className);
+        return JNI_FALSE;
+    }
+
+    return JNI_TRUE;
+}
+
+static int
+register_natives(JNIEnv *env)
+{
+    const char* const class_path_name = "org/linaro/glmark2/Glmark2Renderer";
+    return register_native_methods(env, class_path_name,
+                                   glmark2_native_methods,
+                                   sizeof(glmark2_native_methods) /
+                                   sizeof(glmark2_native_methods[0]));
+}
+
+/*
+ * Returns the JNI version on success, -1 on failure.
+ */
+extern "C" jint
+JNI_OnLoad(JavaVM* vm, void* reserved)
+{
+    JNIEnv* env = NULL;
+    jint result = -1;
+
+    if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
+        Log::error("JNI_OnLoad: GetEnv failed\n");
+        goto bail;
+    }
+    assert(env != NULL);
+
+    if (!register_natives(env)) {
+        Log::error("JNI_OnLoad: glmark2 native registration failed\n");
+        goto bail;
+    }
+
+    /* success -- return valid version number */
+    result = JNI_VERSION_1_4;
+
+bail:
+    return result;
 }
