@@ -27,7 +27,8 @@
 #include <cmath>
 
 SceneBump::SceneBump(Canvas &pCanvas) :
-    Scene(pCanvas, "bump")
+    Scene(pCanvas, "bump"),
+    mTexture(0), mRotation(0.0f), mRotationSpeed(0.0f)
 {
     mOptions["bump-render"] = Scene::Option("bump-render", "off",
                                             "How to render bumps [off, normals, high-poly]");
@@ -186,6 +187,7 @@ SceneBump::teardown()
     mProgram.release();
 
     glDeleteTextures(1, &mTexture);
+    mTexture = 0;
 
     Scene::teardown();
 }
