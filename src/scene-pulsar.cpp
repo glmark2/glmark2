@@ -33,7 +33,8 @@
 #include <cmath>
 
 ScenePulsar::ScenePulsar(Canvas &pCanvas) :
-    Scene(pCanvas, "pulsar")
+    Scene(pCanvas, "pulsar"),
+    mTexture(0)
 {
     mOptions["quads"] = Scene::Option("quads", "5", "Number of quads to render");
     mOptions["texture"] = Scene::Option("texture", "false", "Enable texturing");
@@ -46,23 +47,10 @@ ScenePulsar::~ScenePulsar()
 
 int ScenePulsar::load()
 {
-    std::string vtx_shader_filename;
-    std::string frg_shader_filename;
-    static const LibMatrix::vec4 lightPosition(-20.0f, 20.0f,-20.0f, 1.0f);
-    if (mOptions["light"].value == "true") {
-        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/pulsar-light.vert";
-    } else {
-        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/pulsar.vert";
-    }
-
-    if (mOptions["texture"].value == "true") {
-        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic-tex.frag";
-        Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &mTexture,
-                      GL_NEAREST, GL_NEAREST, 0);
-
-    } else {
-        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.frag";
-    }
+    // Disable back-face culling
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     std::vector<int> vertex_format;
     vertex_format.push_back(3); // Position
@@ -105,7 +93,58 @@ int ScenePulsar::load()
     mPlaneMesh.set_attrib(3, LibMatrix::vec3(0.0, 0.0, 1.0));
     mPlaneMesh.build_vbo();
 
+    mScale = LibMatrix::vec3(1.0, 1.0, 1.0);
+
+    mRunning = false;
+
+    return 1;
+}
+
+void ScenePulsar::unload()
+{
+    mPlaneMesh.reset();
+
+    // Re-enable back-face culling
+    glEnable(GL_CULL_FACE);
+    glDisable(GL_BLEND);
+}
+
+void ScenePulsar::setup()
+{
+    Scene::setup();
+
+    // Create a rotation for each quad.
+    std::stringstream ss;
+    ss << mOptions["quads"].value;
+    ss >> mNumQuads;
+
+    srand((unsigned)time(0));
+    for (int i = 0; i < mNumQuads; i++) {
+        mRotations.push_back(LibMatrix::vec3());
+        mRotationSpeeds.push_back(LibMatrix::vec3(((float)rand() / (float)RAND_MAX) * 5.0,
+                                                  ((float)rand() / (float)RAND_MAX) * 5.0,
+                                                  0.0));
+    }
+
     // Load shaders
+    std::string vtx_shader_filename;
+    std::string frg_shader_filename;
+    static const LibMatrix::vec4 lightPosition(-20.0f, 20.0f,-20.0f, 1.0f);
+    if (mOptions["light"].value == "true") {
+        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/pulsar-light.vert";
+    } else {
+        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/pulsar.vert";
+    }
+
+    if (mOptions["texture"].value == "true") {
+        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic-tex.frag";
+        Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &mTexture,
+                      GL_NEAREST, GL_NEAREST, 0);
+
+    } else {
+        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.frag";
+    }
+
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source(frg_shader_filename);
     if (mOptions["light"].value == "true") {
@@ -116,7 +155,7 @@ int ScenePulsar::load()
     if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
                                           frg_source.str()))
     {
-        return 0;
+        return;
     }
 
     std::vector<GLint> attrib_locations;
@@ -125,41 +164,6 @@ int ScenePulsar::load()
     attrib_locations.push_back(mProgram.getAttribIndex("texcoord"));
     attrib_locations.push_back(mProgram.getAttribIndex("normal"));
     mPlaneMesh.set_attrib_locations(attrib_locations);
-
-    mRunning = false;
-
-    return 1;
-}
-
-void ScenePulsar::unload()
-{
-	mPlaneMesh.reset();
-
-    mProgram.stop();
-    mProgram.release();
-}
-
-void ScenePulsar::setup()
-{
-    Scene::setup();
-
-    // Disable back-face culling
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    std::stringstream ss;
-    ss << mOptions["quads"].value;
-    ss >> mNumQuads;
-
-    srand((unsigned)time(0));
-    for (int i = 0; i < mNumQuads; i++) {
-        mRotations.push_back(LibMatrix::vec3());
-        mRotationSpeeds.push_back(LibMatrix::vec3(((float)rand()/(float)RAND_MAX)*5.0,
-                                                  ((float)rand()/(float)RAND_MAX)*5.0,
-                                                  0.0));
-    }
-    mScale = LibMatrix::vec3(1.0, 1.0, 1.0);
 
     mProgram.start();
 
@@ -173,11 +177,12 @@ void ScenePulsar::setup()
 void ScenePulsar::teardown()
 {
     mProgram.stop();
-    glDeleteTextures(1, &mTexture);
+    mProgram.release();
 
-    // Re-enable back-face culling
-    glEnable(GL_CULL_FACE);
-    glDisable(GL_BLEND);
+    if (mOptions["texture"].value == "true") {
+        glDeleteTextures(1, &mTexture);
+        mTexture = 0;
+    }
 
     Scene::teardown();
 }
@@ -195,11 +200,11 @@ void ScenePulsar::update()
         mRunning = false;
     }
 
-    for (int i = 0; i<mNumQuads; i++) {
+    for (int i = 0; i < mNumQuads; i++) {
         mRotations[i] += mRotationSpeeds[i] * (dt * 60);
     }
 
-    mScale = LibMatrix::vec3(cos(elapsed_time/3.60)*10.0, sin(elapsed_time/3.60)*10.0, 1.0);
+    mScale = LibMatrix::vec3(cos(elapsed_time / 3.60) * 10.0, sin(elapsed_time / 3.60) * 10.0, 1.0);
 
     mCurrentFrame++;
 }
@@ -211,7 +216,7 @@ void ScenePulsar::draw()
         glBindTexture(GL_TEXTURE_2D, mTexture);
     }
 
-    for (int i = 0; i<mNumQuads; i++) {
+    for (int i = 0; i < mNumQuads; i++) {
         // Load the ModelViewProjectionMatrix uniform in the shader
         LibMatrix::Stack4 model_view;
         LibMatrix::mat4 model_view_proj(mCanvas.projection());
@@ -238,5 +243,5 @@ void ScenePulsar::draw()
 Scene::ValidationResult
 ScenePulsar::validate()
 {
-	return ValidationUnknown;
+    return ValidationUnknown;
 }
