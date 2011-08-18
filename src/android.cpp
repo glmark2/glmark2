@@ -43,6 +43,7 @@ static const char *default_benchmarks[] = {
     "bump:bump-render=normals",
     "effect2d:kernel=0,1,0;1,-4,1;0,1,0;",
     "effect2d:kernel=1,1,1,1,1;1,1,1,1,1;1,1,1,1,1;",
+    "pulsar:quads=5:texture=false:light=false",
     "conditionals:vertex-steps=0:fragment-steps=0",
     "conditionals:vertex-steps=0:fragment-steps=5",
     "conditionals:vertex-steps=5:fragment-steps=0",
@@ -51,7 +52,6 @@ static const char *default_benchmarks[] = {
     "loop:vertex-steps=5:fragment-steps=5:fragment-loop=false",
     "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=false",
     "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=true",
-    "pulsar:quads=5:texture=false:light=false",
     NULL
 };
 
