@@ -326,6 +326,9 @@ protected:
     std::vector<LibMatrix::vec3> mRotationSpeeds;
 
     GLuint mTexture;
+
+private:
+    void create_and_setup_mesh();
 };
 
 #endif

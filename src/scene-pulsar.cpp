@@ -47,47 +47,6 @@ ScenePulsar::~ScenePulsar()
 
 int ScenePulsar::load()
 {
-    std::vector<int> vertex_format;
-    vertex_format.push_back(3); // Position
-    vertex_format.push_back(4); // Color
-    vertex_format.push_back(2); // Texcoord
-    vertex_format.push_back(3); // Normal
-    mPlaneMesh.set_vertex_format(vertex_format);
-
-    // Build the plane mesh
-    mPlaneMesh.next_vertex();
-    mPlaneMesh.set_attrib(0, LibMatrix::vec3(-1.0, -1.0, 0.0));
-    mPlaneMesh.set_attrib(1, LibMatrix::vec4(1.0, 0.0, 0.0, 0.4));
-    mPlaneMesh.set_attrib(2, LibMatrix::vec2(0.0, 0.0));
-    mPlaneMesh.set_attrib(3, LibMatrix::vec3(0.0, 0.0, 1.0));
-    mPlaneMesh.next_vertex();
-    mPlaneMesh.set_attrib(0, LibMatrix::vec3(-1.0, 1.0, 0.0));
-    mPlaneMesh.set_attrib(1, LibMatrix::vec4(0.0, 1.0, 0.0, 0.4));
-    mPlaneMesh.set_attrib(2, LibMatrix::vec2(0.0, 1.0));
-    mPlaneMesh.set_attrib(3, LibMatrix::vec3(0.0, 0.0, 1.0));
-    mPlaneMesh.next_vertex();
-    mPlaneMesh.set_attrib(0, LibMatrix::vec3(1.0, 1.0, 0.0));
-    mPlaneMesh.set_attrib(1, LibMatrix::vec4(0.0, 0.0, 1.0, 0.4));
-    mPlaneMesh.set_attrib(2, LibMatrix::vec2(1.0, 1.0));
-    mPlaneMesh.set_attrib(3, LibMatrix::vec3(0.0, 0.0, 1.0));
-
-    mPlaneMesh.next_vertex();
-    mPlaneMesh.set_attrib(0, LibMatrix::vec3(-1.0, -1.0, 0.0));
-    mPlaneMesh.set_attrib(1, LibMatrix::vec4(1.0, 0.0, 0.0, 0.4));
-    mPlaneMesh.set_attrib(2, LibMatrix::vec2(0.0, 0.0));
-    mPlaneMesh.set_attrib(3, LibMatrix::vec3(0.0, 0.0, 1.0));
-    mPlaneMesh.next_vertex();
-    mPlaneMesh.set_attrib(0, LibMatrix::vec3(1.0, 1.0, 0.0));
-    mPlaneMesh.set_attrib(1, LibMatrix::vec4(0.0, 0.0, 1.0, 0.4));
-    mPlaneMesh.set_attrib(2, LibMatrix::vec2(1.0, 1.0));
-    mPlaneMesh.set_attrib(3, LibMatrix::vec3(0.0, 0.0, 1.0));
-    mPlaneMesh.next_vertex();
-    mPlaneMesh.set_attrib(0, LibMatrix::vec3(1.0, -1.0, 0.0));
-    mPlaneMesh.set_attrib(1, LibMatrix::vec4(1.0, 1.0, 1.0, 1.0));
-    mPlaneMesh.set_attrib(2, LibMatrix::vec2(1.0, 0.0));
-    mPlaneMesh.set_attrib(3, LibMatrix::vec3(0.0, 0.0, 1.0));
-    mPlaneMesh.build_vbo();
-
     mScale = LibMatrix::vec3(1.0, 1.0, 1.0);
 
     mRunning = false;
@@ -97,7 +56,6 @@ int ScenePulsar::load()
 
 void ScenePulsar::unload()
 {
-    mPlaneMesh.reset();
 }
 
 void ScenePulsar::setup()
@@ -155,12 +113,7 @@ void ScenePulsar::setup()
         return;
     }
 
-    std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram.getAttribIndex("position"));
-    attrib_locations.push_back(mProgram.getAttribIndex("vtxcolor"));
-    attrib_locations.push_back(mProgram.getAttribIndex("texcoord"));
-    attrib_locations.push_back(mProgram.getAttribIndex("normal"));
-    mPlaneMesh.set_attrib_locations(attrib_locations);
+    create_and_setup_mesh();
 
     mProgram.start();
 
@@ -185,6 +138,8 @@ void ScenePulsar::teardown()
     glEnable(GL_CULL_FACE);
     // Disable alpha blending
     glDisable(GL_BLEND);
+
+    mPlaneMesh.reset();
 
     Scene::teardown();
 }
@@ -247,3 +202,82 @@ ScenePulsar::validate()
 {
     return ValidationUnknown;
 }
+
+void ScenePulsar::create_and_setup_mesh()
+{
+    bool texture = mOptions["texture"].value == "true";
+    bool light = mOptions["light"].value == "true";
+
+    struct PlaneMeshVertex {
+        LibMatrix::vec3 position;
+        LibMatrix::vec4 color;
+        LibMatrix::vec2 texcoord;
+        LibMatrix::vec3 normal;
+    };
+
+    PlaneMeshVertex plane_vertices[] = {
+        {
+          LibMatrix::vec3(-1.0, -1.0, 0.0),
+          LibMatrix::vec4(1.0, 0.0, 0.0, 0.4),
+          LibMatrix::vec2(0.0, 0.0),
+          LibMatrix::vec3(0.0, 0.0, 1.0)
+        },
+        {
+          LibMatrix::vec3(-1.0, 1.0, 0.0),
+          LibMatrix::vec4(0.0, 1.0, 0.0, 0.4),
+          LibMatrix::vec2(0.0, 1.0),
+          LibMatrix::vec3(0.0, 0.0, 1.0)
+        },
+        {
+          LibMatrix::vec3(1.0, 1.0, 0.0),
+          LibMatrix::vec4(0.0, 0.0, 1.0, 0.4),
+          LibMatrix::vec2(1.0, 1.0),
+          LibMatrix::vec3(0.0, 0.0, 1.0)
+        },
+        {
+          LibMatrix::vec3(1.0, -1.0, 0.0),
+          LibMatrix::vec4(1.0, 1.0, 1.0, 1.0),
+          LibMatrix::vec2(1.0, 0.0),
+          LibMatrix::vec3(0.0, 0.0, 1.0)
+        }
+    };
+
+    unsigned int vertex_index[] = {0, 1, 2, 0, 2, 3};
+
+    // Set vertex format
+    std::vector<int> vertex_format;
+    vertex_format.push_back(3);     // Position
+    vertex_format.push_back(4);     // Color
+    if (texture)
+        vertex_format.push_back(2); // Texcoord
+    if (light)
+        vertex_format.push_back(3); // Normal
+
+    mPlaneMesh.set_vertex_format(vertex_format);
+
+    // Build the plane mesh
+    for (size_t i = 0; i < sizeof(vertex_index) / sizeof(*vertex_index); i++) {
+        PlaneMeshVertex& vertex = plane_vertices[vertex_index[i]];
+
+        mPlaneMesh.next_vertex();
+        mPlaneMesh.set_attrib(0, vertex.position);
+        mPlaneMesh.set_attrib(1, vertex.color);
+        if (texture)
+            mPlaneMesh.set_attrib(2, vertex.texcoord);
+        if (light)
+            mPlaneMesh.set_attrib(2 + ((int)texture), vertex.normal);
+    }
+
+    mPlaneMesh.build_vbo();
+
+    // Set attribute locations
+    std::vector<GLint> attrib_locations;
+    attrib_locations.push_back(mProgram.getAttribIndex("position"));
+    attrib_locations.push_back(mProgram.getAttribIndex("vtxcolor"));
+    if (texture)
+        attrib_locations.push_back(mProgram.getAttribIndex("texcoord"));
+    if (light)
+        attrib_locations.push_back(mProgram.getAttribIndex("normal"));
+    mPlaneMesh.set_attrib_locations(attrib_locations);
+}
+
