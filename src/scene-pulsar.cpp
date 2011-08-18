@@ -39,6 +39,7 @@ ScenePulsar::ScenePulsar(Canvas &pCanvas) :
     mOptions["quads"] = Scene::Option("quads", "5", "Number of quads to render");
     mOptions["texture"] = Scene::Option("texture", "false", "Enable texturing");
     mOptions["light"] = Scene::Option("light", "false", "Enable lighting");
+    mOptions["random"] = Scene::Option("random", "false", "Enable random rotation speeds");
 }
 
 ScenePulsar::~ScenePulsar()
@@ -76,9 +77,19 @@ void ScenePulsar::setup()
     srand((unsigned)time(0));
     for (int i = 0; i < mNumQuads; i++) {
         mRotations.push_back(LibMatrix::vec3());
-        mRotationSpeeds.push_back(LibMatrix::vec3(((float)rand() / (float)RAND_MAX) * 5.0,
-                                                  ((float)rand() / (float)RAND_MAX) * 5.0,
-                                                  0.0));
+        if (mOptions["random"].value == "true") {
+            mRotationSpeeds.push_back(LibMatrix::vec3(((float)rand() / (float)RAND_MAX) * 5.0,
+                                                      ((float)rand() / (float)RAND_MAX) * 5.0,
+                                                      0.0));
+        }
+        else {
+            float integral;
+            float x_rot = std::modf((i + 1) * M_PI, &integral);
+            float y_rot = std::modf((i + 1) * M_E, &integral);
+            mRotationSpeeds.push_back(LibMatrix::vec3(x_rot * 5.0,
+                                                      y_rot * 5.0,
+                                                      0.0));
+        }
     }
 
     // Load shaders
