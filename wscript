@@ -7,7 +7,7 @@ import Scripting
 out = 'build'
 top = '.'
 
-VERSION = '2011.07'
+VERSION = '2011.08'
 APPNAME = 'glmark2'
 
 def options(opt):
