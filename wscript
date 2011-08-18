@@ -3,6 +3,7 @@ import subprocess
 import os
 import Options
 import Scripting
+from waflib import Context
 
 out = 'build'
 top = '.'
@@ -94,5 +95,42 @@ def build(ctx):
     ctx.recurse('data')
     ctx.recurse('doc')
 
-def dist(ctx):
-    ctx.algo = 'tar.gz'
+class Glmark2Dist(Context.Context):
+    """ Custom dist command that preserves symbolic links"""
+
+    cmd = "dist"
+
+    def execute(self):
+        self.recurse([os.path.dirname(Context.g_module.root_path)])
+        self.archive()
+
+    def get_files(self):
+        import fnmatch
+        files = []
+        excludes = ['*.bzr', '*~', './.*waf*', './build*', '*.swp', '*glmark2-*.tar.gz']
+        for (dirpath, dirnames, filenames) in os.walk(top):
+            names_to_remove = []
+            names = dirnames + filenames
+            for n in names:
+                for exclude in excludes:
+                    if fnmatch.fnmatch(os.path.join(dirpath, n), exclude):
+                        names_to_remove.append(n)
+                        break
+
+            for d in names_to_remove:
+                if d in dirnames:
+                    dirnames.remove(d)
+                if d in filenames:
+                    filenames.remove(d)
+
+            files.extend([os.path.join(dirpath, d) for d in dirnames])
+            files.extend([os.path.join(dirpath, f) for f in filenames])
+
+        return files
+
+    def archive(self):
+        import tarfile
+        tar = tarfile.open(APPNAME + '-' + VERSION + '.tar.gz', 'w:gz')
+        for f in self.get_files():
+            tar.add(f, arcname = APPNAME + '-' + VERSION + '/' + f, recursive = False)
+        tar.close()
