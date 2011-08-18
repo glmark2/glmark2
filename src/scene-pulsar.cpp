@@ -47,11 +47,6 @@ ScenePulsar::~ScenePulsar()
 
 int ScenePulsar::load()
 {
-    // Disable back-face culling
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     std::vector<int> vertex_format;
     vertex_format.push_back(3); // Position
     vertex_format.push_back(4); // Color
@@ -103,15 +98,17 @@ int ScenePulsar::load()
 void ScenePulsar::unload()
 {
     mPlaneMesh.reset();
-
-    // Re-enable back-face culling
-    glEnable(GL_CULL_FACE);
-    glDisable(GL_BLEND);
 }
 
 void ScenePulsar::setup()
 {
     Scene::setup();
+
+    // Disable back-face culling
+    glDisable(GL_CULL_FACE);
+    // Enable alpha blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Create a rotation for each quad.
     std::stringstream ss;
@@ -183,6 +180,11 @@ void ScenePulsar::teardown()
         glDeleteTextures(1, &mTexture);
         mTexture = 0;
     }
+
+    // Re-enable back-face culling
+    glEnable(GL_CULL_FACE);
+    // Disable alpha blending
+    glDisable(GL_BLEND);
 
     Scene::teardown();
 }

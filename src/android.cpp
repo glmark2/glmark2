@@ -51,6 +51,7 @@ static const char *default_benchmarks[] = {
     "loop:vertex-steps=5:fragment-steps=5:fragment-loop=false",
     "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=false",
     "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=true",
+    "pulsar:quads=5:texture=false:light=false",
     NULL
 };
 
