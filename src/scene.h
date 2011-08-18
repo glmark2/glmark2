@@ -20,6 +20,7 @@
  * Authors:
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
+ *  Marc Ordinas i Llopis, Collabora Ltd. (pulsar scene)
  */
 #ifndef GLMARK2_SCENE_H_
 #define GLMARK2_SCENE_H_
@@ -300,4 +301,34 @@ protected:
     Mesh mesh_;
     GLuint texture_;
 };
+
+class ScenePulsar : public Scene
+{
+public:
+    ScenePulsar(Canvas &pCanvas);
+    int load();
+    void unload();
+    void setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+
+    ~ScenePulsar();
+
+protected:
+    int mNumQuads;
+    Program mProgram;
+
+    Mesh mPlaneMesh;
+    LibMatrix::vec3 mScale;
+    std::vector<LibMatrix::vec3> mRotations;
+    std::vector<LibMatrix::vec3> mRotationSpeeds;
+
+    GLuint mTexture;
+
+private:
+    void create_and_setup_mesh();
+};
+
 #endif
