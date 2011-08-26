@@ -106,6 +106,8 @@ get_fragment_shader_source(const string& frg_file, unsigned int lights)
     static const string commaString(", ");
     static const string rParenString(");");
     std::stringstream doLightSS;
+    doLightSS << string("    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);");
+    doLightSS << endl;
     float theta(2.0 * M_PI / lights);
     float phi(theta / 2.0);
     float intensity(0.8 / lights);
