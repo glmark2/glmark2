@@ -29,12 +29,36 @@
 #include "shader-source.h"
 
 #include <cmath>
+#include <sstream>
+
+using std::string;
+using std::endl;
+
+template<typename T> T
+fromString(const string& asString)
+{
+    std::stringstream ss(asString);
+    T retVal;
+    ss >> retVal;
+    return retVal;
+}
+
+template<typename T>
+string
+toString(const T t)
+{
+    std::stringstream ss;
+    ss << t;
+    return ss.str();
+}
 
 SceneShading::SceneShading(Canvas &pCanvas) :
     Scene(pCanvas, "shading")
 {
     mOptions["shading"] = Scene::Option("shading", "gouraud",
                                         "[gouraud, blinn-phong-inf, phong]");
+    mOptions["num-lights"] = Scene::Option("num-lights", "1",
+            "The number of lights applied to the scene (phong only)");
 }
 
 SceneShading::~SceneShading()
@@ -71,6 +95,51 @@ void SceneShading::unload()
     mMesh.reset();
 }
 
+static string
+get_fragment_shader_source(const string& frg_file, unsigned int lights)
+{
+    ShaderSource source(frg_file);
+
+    static const string lightPositionName("LightSourcePosition");
+    static const string lightColorName("LightColor");
+    static const string callCompute("    gl_FragColor += compute_color(");
+    static const string commaString(", ");
+    static const string rParenString(");");
+    std::stringstream doLightSS;
+    float theta(2.0 * M_PI / lights);
+    float phi(theta / 2.0);
+    float intensity(0.8 / lights);
+    LibMatrix::vec4 lightCol(intensity, intensity, intensity, 1.0);
+    for (unsigned int l = 0; l < lights; l++)
+    {
+        // Construct constant names for the light position and color and add it
+        // to the list of constants for the shader.
+        string indexString(toString(l));
+        string curLightPosition(lightPositionName + indexString);
+        string curLightColor(lightColorName + indexString);
+        float sin_theta(sin(theta * l));
+        float cos_theta(cos(theta * l));
+        float sin_phi(sin(phi * l));
+        float cos_phi(cos(phi * l));
+        LibMatrix::vec4 lightPos(cos_phi * sin_theta, cos_phi * cos_theta, sin_phi, 1.0);
+        lightPos.print();
+        source.add_const(curLightPosition, lightPos);
+        source.add_const(curLightColor, lightCol);
+
+        // Add the section of source to the substantive...
+        doLightSS << callCompute;
+        doLightSS << curLightPosition;
+        doLightSS << commaString;
+        doLightSS << curLightColor;
+        doLightSS << rParenString;
+        doLightSS << endl;
+    }
+
+    source.replace("$DO_LIGHTS$", doLightSS.str());
+
+    return source.str();
+}
+
 void SceneShading::setup()
 {
     Scene::setup();
@@ -84,33 +153,37 @@ void SceneShading::setup()
     halfVector += LibMatrix::vec3(0.0, 0.0, 1.0);
     halfVector.normalize();
 
+    // Load and add constants to shaders
     std::string vtx_shader_filename;
     std::string frg_shader_filename;
     const std::string &shading = mOptions["shading"].value;
-
+    ShaderSource vtx_source;
+    ShaderSource frg_source;
     if (shading == "gouraud") {
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.vert";
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.frag";
+        frg_source.append_file(frg_shader_filename);
+        vtx_source.append_file(vtx_shader_filename);
+        vtx_source.add_const("LightSourcePosition", lightPosition);
+        vtx_source.add_const("MaterialDiffuse", materialDiffuse);
     }
     else if (shading == "blinn-phong-inf") {
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced.vert";
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced.frag";
+        frg_source.append_file(frg_shader_filename);
+        frg_source.add_const("LightSourcePosition", lightPosition);
+        frg_source.add_const("LightSourceHalfVector", halfVector);
+        vtx_source.append_file(vtx_shader_filename);
     }
     else if (shading == "phong") {
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.vert";
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.frag";
+        unsigned int num_lights = fromString<unsigned int>(mOptions["num-lights"].value);
+        string fragsource = get_fragment_shader_source(frg_shader_filename, num_lights);
+        frg_source.append(fragsource);
+        frg_source.add_const("MaterialDiffuse", materialDiffuse);
+        vtx_source.append_file(vtx_shader_filename);
     }
-
-    // Load shaders
-    ShaderSource vtx_source(vtx_shader_filename);
-    ShaderSource frg_source(frg_shader_filename);
-
-    // Add constants to shaders
-    vtx_source.add_const("LightSourcePosition", lightPosition);
-    vtx_source.add_const("MaterialDiffuse", materialDiffuse);
-
-    frg_source.add_const("LightSourcePosition", lightPosition);
-    frg_source.add_const("LightSourceHalfVector", halfVector);
 
     if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
                                           frg_source.str()))
