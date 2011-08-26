@@ -122,7 +122,6 @@ get_fragment_shader_source(const string& frg_file, unsigned int lights)
         float sin_phi(sin(phi * l));
         float cos_phi(cos(phi * l));
         LibMatrix::vec4 lightPos(cos_phi * sin_theta, cos_phi * cos_theta, sin_phi, 1.0);
-        lightPos.print();
         source.add_const(curLightPosition, lightPos);
         source.add_const(curLightColor, lightCol);
 
