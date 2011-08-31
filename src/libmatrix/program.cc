@@ -170,6 +170,13 @@ Program::release()
     // Clear out the error string to make sure we don't return anything stale.
     message_.clear();
 
+    // Release all of the symbol map resources.
+    for (std::map<string, Symbol*>::iterator symbolIt = symbols_.begin(); symbolIt != symbols_.end(); symbolIt++)
+    {
+        delete (*symbolIt).second;
+    }
+    symbols_.clear();
+
     if (handle_)
     {
         glDeleteProgram(handle_);
@@ -253,101 +260,17 @@ Program::stop()
     glUseProgram(0);
 }
 
-void
-Program::loadUniformMatrix(const mat4& m, const string& name)
+
+int
+Program::getUniformLocation(const string& name)
 {
-    ready_ = false;
     GLint location = glGetUniformLocation(handle_, name.c_str());
     if (location < 0)
     {
         message_ = string("Failed to get uniform location for \"") + name +
             string("\"");
-        return;
     }
-
-    // Our matrix representation is column-major, so transpose is false here.
-    glUniformMatrix4fv(location, 1, GL_FALSE, m);
-    ready_ = true;
-}
-
-void
-Program::loadUniformVector(const vec2& v, const string& name)
-{
-    ready_ = false;
-    GLint location = glGetUniformLocation(handle_, name.c_str());
-    if (location < 0)
-    {
-        message_ = string("Failed to get uniform location for \"") + name +
-            string("\"");
-        return;
-    }
-
-    glUniform2fv(location, 1, v);
-    ready_ = true;
-}
-
-void
-Program::loadUniformVector(const vec3& v, const string& name)
-{
-    ready_ = false;
-    GLint location = glGetUniformLocation(handle_, name.c_str());
-    if (location < 0)
-    {
-        message_ = string("Failed to get uniform location for \"") + name +
-            string("\"");
-        return;
-    }
-
-    glUniform3fv(location, 1, v);
-    ready_ = true;
-}
-
-void
-Program::loadUniformVector(const vec4& v, const string& name)
-{
-    ready_ = false;
-    GLint location = glGetUniformLocation(handle_, name.c_str());
-    if (location < 0)
-    {
-        message_ = string("Failed to get uniform location for \"") + name +
-            string("\"");
-        return;
-    }
-
-    glUniform4fv(location, 1, v);
-    ready_ = true;
-}
-
-void
-Program::loadUniformScalar(const float& f, const string& name)
-{
-    ready_ = false;
-    GLint location = glGetUniformLocation(handle_, name.c_str());
-    if (location < 0)
-    {
-        message_ = string("Failed to get uniform location for \"") + name +
-            string("\"");
-        return;
-    }
-
-    glUniform1f(location, f);
-    ready_ = true;
-}
-
-void
-Program::loadUniformScalar(const int& i, const string& name)
-{
-    ready_ = false;
-    GLint location = glGetUniformLocation(handle_, name.c_str());
-    if (location < 0)
-    {
-        message_ = string("Failed to get uniform location for \"") + name +
-            string("\"");
-        return;
-    }
-
-    glUniform1i(location, i);
-    ready_ = true;
+    return location;
 }
 
 int
@@ -360,4 +283,88 @@ Program::getAttribIndex(const string& name)
             string("\"");
     }
     return index;
+}
+
+Program::Symbol&
+Program::Symbol::operator=(const mat4& m)
+{
+    if (type_ == Uniform)
+    {
+        // Our matrix representation is column-major, so transpose is false here.
+        glUniformMatrix4fv(location_, 1, GL_FALSE, m);
+    }
+    return *this;
+}
+
+Program::Symbol&
+Program::Symbol::operator=(const vec2& v)
+{
+    if (type_ == Uniform)
+    {
+        glUniform2fv(location_, 1, v);
+    }
+    return *this;
+}
+
+Program::Symbol&
+Program::Symbol::operator=(const vec3& v)
+{
+    if (type_ == Uniform)
+    {
+        glUniform3fv(location_, 1, v);
+    }
+    return *this;
+}
+
+Program::Symbol&
+Program::Symbol::operator=(const vec4& v)
+{
+    if (type_ == Uniform)
+    {
+        glUniform4fv(location_, 1, v);
+    }
+    return *this;
+}
+
+Program::Symbol&
+Program::Symbol::operator=(const float& f)
+{
+    if (type_ == Uniform)
+    {
+        glUniform1f(location_, f);
+    }
+    return *this;
+}
+
+Program::Symbol&
+Program::Symbol::operator=(const int& i)
+{
+    if (type_ == Uniform)
+    {
+        glUniform1i(location_, i);
+    }
+    return *this;
+}
+
+Program::Symbol&
+Program::operator[](const std::string& name)
+{
+    std::map<std::string, Symbol*>::iterator mapIt = symbols_.find(name);
+    if (mapIt == symbols_.end())
+    {
+        Program::Symbol::SymbolType type(Program::Symbol::Attribute);
+        int location = getAttribIndex(name);
+        if (location < 0)
+        {
+            // No attribute found by that name.  Let's try a uniform...
+            type = Program::Symbol::Uniform;
+            location = getUniformLocation(name);
+            if (location < 0)
+            {
+                type = Program::Symbol::None;
+            }
+        }
+        mapIt = symbols_.insert(mapIt, std::make_pair(name, new Symbol(name, location, type)));
+    }
+    return *(*mapIt).second;
 }

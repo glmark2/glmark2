@@ -73,9 +73,9 @@ int SceneTexture::load()
     }
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram.getAttribIndex("position"));
-    attrib_locations.push_back(mProgram.getAttribIndex("normal"));
-    attrib_locations.push_back(mProgram.getAttribIndex("texcoord"));
+    attrib_locations.push_back(mProgram["position"].location());
+    attrib_locations.push_back(mProgram["normal"].location());
+    attrib_locations.push_back(mProgram["texcoord"].location());
     mCubeMesh.set_attrib_locations(attrib_locations);
 
     mRotationSpeed = LibMatrix::vec3(36.0f, 36.0f, 36.0f);
@@ -165,13 +165,13 @@ void SceneTexture::draw()
     model_view.rotate(mRotation.z(), 0.0f, 0.0f, 1.0f);
     model_view_proj *= model_view.getCurrent();
 
-    mProgram.loadUniformMatrix(model_view_proj, "ModelViewProjectionMatrix");
+    mProgram["ModelViewProjectionMatrix"] = model_view_proj;
 
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
     LibMatrix::mat4 normal_matrix(model_view.getCurrent());
     normal_matrix.inverse().transpose();
-    mProgram.loadUniformMatrix(normal_matrix, "NormalMatrix");
+    mProgram["NormalMatrix"] = normal_matrix;
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mTexture);

@@ -74,8 +74,8 @@ int SceneBuild::load()
     }
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram.getAttribIndex("position"));
-    attrib_locations.push_back(mProgram.getAttribIndex("normal"));
+    attrib_locations.push_back(mProgram["position"].location());
+    attrib_locations.push_back(mProgram["normal"].location());
     mMesh.set_attrib_locations(attrib_locations);
 
     mRotationSpeed = 36.0f;
@@ -157,13 +157,13 @@ void SceneBuild::draw()
     model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
     model_view_proj *= model_view.getCurrent();
 
-    mProgram.loadUniformMatrix(model_view_proj, "ModelViewProjectionMatrix");
+    mProgram["ModelViewProjectionMatrix"] = model_view_proj;
 
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
     LibMatrix::mat4 normal_matrix(model_view.getCurrent());
     normal_matrix.inverse().transpose();
-    mProgram.loadUniformMatrix(normal_matrix, "NormalMatrix");
+    mProgram["NormalMatrix"] = normal_matrix;
 
     if (mUseVbo) {
         mMesh.render_vbo();

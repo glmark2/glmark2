@@ -14,6 +14,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include "mat.h"
 
 // Simple shader container.  Abstracts all of the OpenGL bits, but leaves
@@ -108,26 +109,38 @@ public:
     // using it).
     void stop();
 
-    // These members cause data to be bound to program variables, so
-    // the program must be bound for use for these to be effective.
-    //
-    // Load a matrix into the named uniform variable in the program.
-    void loadUniformMatrix(const LibMatrix::mat4& m, const std::string& name);
-    // Load a vector into the named uniform variable in the program.
-    void loadUniformVector(const LibMatrix::vec2& v, const std::string& name);
-    // Load a vector into the named uniform variable in the program.
-    void loadUniformVector(const LibMatrix::vec3& v, const std::string& name);
-    // Load a vector into the named uniform variable in the program.
-    void loadUniformVector(const LibMatrix::vec4& v, const std::string& name);
-    // Load a scalar into the named uniform variable in the program.
-    void loadUniformScalar(const float& f, const std::string& name);
-    // Load a scalar into the named uniform variable in the program.
-    void loadUniformScalar(const int& i, const std::string& name);
-
+    class Symbol
+    {
+public:
+        enum SymbolType
+        {
+            None,
+            Attribute,
+            Uniform
+        };
+        Symbol(const std::string& name, int location, SymbolType type) :
+            type_(type),
+            location_(location),
+            name_(name) {}
+        int location() const { return location_; }
+        // These members cause data to be bound to program variables, so
+        // the program must be bound for use for these to be effective.
+        Symbol& operator=(const LibMatrix::mat4& m);
+        Symbol& operator=(const LibMatrix::vec2& v);
+        Symbol& operator=(const LibMatrix::vec3& v);
+        Symbol& operator=(const LibMatrix::vec4& v);
+        Symbol& operator=(const float& f);
+        Symbol& operator=(const int& i);
+private:
+        Symbol();
+        SymbolType type_;
+        GLint location_;
+        std::string name_;
+    };
     // Get the handle to a named program input (the location in OpenGL
     // vernacular).  Typically used in conjunction with various VertexAttrib
-    // interfaces.
-    int getAttribIndex(const std::string& name);
+    // interfaces.  Equality operators are used to load uniform data.
+    Symbol& operator[](const std::string& name);
 
     // If "valid" then the program has successfully been created.
     // If "ready" then the program has successfully been built.
@@ -138,7 +151,10 @@ public:
     const std::string& errorMessage() const { return message_; }
 
 private:
+    int getAttribIndex(const std::string& name);
+    int getUniformLocation(const std::string& name);
     unsigned int handle_;
+    std::map<std::string, Symbol*> symbols_;
     std::vector<Shader> shaders_;
     std::string message_;
     bool ready_;

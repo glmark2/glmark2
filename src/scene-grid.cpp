@@ -123,7 +123,7 @@ void SceneGrid::draw()
     model_view.rotate(mRotation, 0.0f, 0.0f, 1.0f);
     model_view_proj *= model_view.getCurrent();
 
-    mProgram.loadUniformMatrix(model_view_proj, "ModelViewProjectionMatrix");
+    mProgram["ModelViewProjectionMatrix"] = model_view_proj;
 
     mMesh.render_vbo();
 }

@@ -142,11 +142,11 @@ void SceneLoop::setup()
 
     mProgram.start();
 
-    mProgram.loadUniformScalar(vtx_steps, "VertexLoops");
-    mProgram.loadUniformScalar(frg_steps, "FragmentLoops");
+    mProgram["VertexLoops"] = vtx_steps;
+    mProgram["FragmentLoops"] = frg_steps;
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram.getAttribIndex("position"));
+    attrib_locations.push_back(mProgram["position"].location());
     mMesh.set_attrib_locations(attrib_locations);
 
     mRunning = true;

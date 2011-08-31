@@ -336,13 +336,13 @@ void SceneEffect2D::setup()
     mesh_.build_vbo();
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(program_.getAttribIndex("position"));
+    attrib_locations.push_back(program_["position"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
     program_.start();
 
     // Load texture sampler value
-    program_.loadUniformScalar(0, "Texture0");
+    program_["Texture0"] = 0;
 
     mCurrentFrame = 0;
     mRunning = true;

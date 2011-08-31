@@ -117,7 +117,7 @@ void SceneConditionals::setup()
     mProgram.start();
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram.getAttribIndex("position"));
+    attrib_locations.push_back(mProgram["position"].location());
     mMesh.set_attrib_locations(attrib_locations);
 
     mRunning = true;

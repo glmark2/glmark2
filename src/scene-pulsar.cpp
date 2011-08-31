@@ -194,14 +194,14 @@ void ScenePulsar::draw()
         model_view.rotate(mRotations[i].y(), 0.0f, 1.0f, 0.0f);
         model_view.rotate(mRotations[i].z(), 0.0f, 0.0f, 1.0f);
         model_view_proj *= model_view.getCurrent();
-        mProgram.loadUniformMatrix(model_view_proj, "ModelViewProjectionMatrix");
+        mProgram["ModelViewProjectionMatrix"] = model_view_proj;
 
         if (mOptions["light"].value == "true") {
             // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
             // inverse transpose of the model view matrix.
             LibMatrix::mat4 normal_matrix(model_view.getCurrent());
             normal_matrix.inverse().transpose();
-            mProgram.loadUniformMatrix(normal_matrix, "NormalMatrix");
+            mProgram["NormalMatrix"] = normal_matrix;
         }
 
         mPlaneMesh.render_vbo();
@@ -283,12 +283,12 @@ void ScenePulsar::create_and_setup_mesh()
 
     // Set attribute locations
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram.getAttribIndex("position"));
-    attrib_locations.push_back(mProgram.getAttribIndex("vtxcolor"));
+    attrib_locations.push_back(mProgram["position"].location());
+    attrib_locations.push_back(mProgram["vtxcolor"].location());
     if (texture)
-        attrib_locations.push_back(mProgram.getAttribIndex("texcoord"));
+        attrib_locations.push_back(mProgram["texcoord"].location());
     if (light)
-        attrib_locations.push_back(mProgram.getAttribIndex("normal"));
+        attrib_locations.push_back(mProgram["normal"].location());
     mPlaneMesh.set_attrib_locations(attrib_locations);
 }
 
