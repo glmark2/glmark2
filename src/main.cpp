@@ -26,6 +26,7 @@
 #include "benchmark.h"
 #include "options.h"
 #include "log.h"
+#include "util.h"
 
 #include <iostream>
 
@@ -79,6 +80,28 @@ add_custom_benchmarks(vector<Benchmark *> &benchmarks)
          iter++)
     {
         benchmarks.push_back(new Benchmark(*iter));
+    }
+}
+
+void
+add_and_register_scenes(vector<Scene*>& scenes, Canvas& canvas)
+{
+    scenes.push_back(new SceneDefaultOptions(canvas));
+    scenes.push_back(new SceneBuild(canvas));
+    scenes.push_back(new SceneTexture(canvas));
+    scenes.push_back(new SceneShading(canvas));
+    scenes.push_back(new SceneConditionals(canvas));
+    scenes.push_back(new SceneFunction(canvas));
+    scenes.push_back(new SceneLoop(canvas));
+    scenes.push_back(new SceneBump(canvas));
+    scenes.push_back(new SceneEffect2D(canvas));
+    scenes.push_back(new ScenePulsar(canvas));
+
+    for (vector<Scene*>::const_iterator iter = scenes.begin();
+         iter != scenes.end();
+         iter++)
+    {
+        Benchmark::register_scene(**iter);
     }
 }
 
@@ -220,17 +243,10 @@ int main(int argc, char *argv[])
     CanvasX11EGL canvas(Options::size.first, Options::size.second);
 #endif
 
-    // Register the scenes, so they can be looked-up by name
-    Benchmark::register_scene(*new SceneDefaultOptions(canvas));
-    Benchmark::register_scene(*new SceneBuild(canvas));
-    Benchmark::register_scene(*new SceneTexture(canvas));
-    Benchmark::register_scene(*new SceneShading(canvas));
-    Benchmark::register_scene(*new SceneConditionals(canvas));
-    Benchmark::register_scene(*new SceneFunction(canvas));
-    Benchmark::register_scene(*new SceneLoop(canvas));
-    Benchmark::register_scene(*new SceneBump(canvas));
-    Benchmark::register_scene(*new SceneEffect2D(canvas));
-    Benchmark::register_scene(*new ScenePulsar(canvas));
+    vector<Scene*> scenes;
+
+    // Register the scenes, so they can be looked up by name
+    add_and_register_scenes(scenes, canvas);
 
     if (Options::list_scenes) {
         list_scenes();
@@ -262,6 +278,9 @@ int main(int argc, char *argv[])
         do_validation(canvas, benchmarks);
     else
         do_benchmark(canvas, benchmarks);
+
+    Util::dispose_pointer_vector(benchmarks);
+    Util::dispose_pointer_vector(scenes);
 
     return 0;
 }

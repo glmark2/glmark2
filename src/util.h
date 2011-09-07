@@ -35,6 +35,18 @@
 struct Util {
     static void split(const std::string &s, char delim, std::vector<std::string> &elems);
     static std::istream *get_resource(const std::string &path);
+    template <class T> static void dispose_pointer_vector(std::vector<T*> &vec)
+    {
+        for (typename std::vector<T*>::const_iterator iter = vec.begin();
+             iter != vec.end();
+             iter++)
+        {
+            delete *iter;
+        }
+
+        vec.clear();
+    }
+
 #ifdef ANDROID
     static void android_set_asset_manager(AAssetManager *asset_manager);
 private:
