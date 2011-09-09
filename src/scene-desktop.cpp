@@ -312,8 +312,10 @@ private:
 class RenderWindowBlur : public RenderObject
 {
 public:
-    RenderWindowBlur(unsigned int passes, bool draw_contents = true) :
-        RenderObject(), passes_(passes), draw_contents_(draw_contents) {}
+    RenderWindowBlur(unsigned int passes, unsigned int radius,
+                     bool draw_contents = true) :
+        RenderObject(), passes_(passes), radius_(radius),
+        draw_contents_(draw_contents) {}
 
     virtual void init()
     {
@@ -389,7 +391,8 @@ private:
 
             ShaderSource vtx_source(GLMARK_DATA_PATH"/shaders/desktop.vert");
             ShaderSource frg_source(GLMARK_DATA_PATH"/shaders/desktop-blur.frag");
-            //frg_source.add("#define SCOTTY_WE_NEED_MORE_POWER");
+            if (radius_ > 1)
+                frg_source.add("#define SCOTTY_WE_NEED_MORE_POWER");
             frg_source.add_const("TextureStepX", 1.0 / w);
             frg_source.add_const("TextureStepY", 1.0 / h);
             Scene::load_shaders_from_strings(blur_program_, vtx_source.str(),
@@ -402,6 +405,7 @@ private:
     LibMatrix::uvec2 blur_program_dim_;
     Program blur_program_;
     unsigned int passes_;
+    unsigned int radius_;
     bool draw_contents_;
 
     static int use_count;
@@ -446,6 +450,8 @@ SceneDesktop::SceneDesktop(Canvas &canvas) :
                                             "the window size as a percentage of the minimum screen dimension [0.0 - 0.5]");
     mOptions["passes"] = Scene::Option("passes", "3",
                                        "the number of effect passes (effect dependent)");
+    mOptions["blur-radius"] = Scene::Option("blur-radius", "2",
+                                            "the blur effect radius [1,2]");
 }
 
 SceneDesktop::~SceneDesktop()
@@ -476,6 +482,7 @@ SceneDesktop::setup()
     std::stringstream ss;
     unsigned int windows(0);
     unsigned int passes(0);
+    unsigned int blur_radius(0);
     float window_size_factor(0.0);
 
     ss << mOptions["windows"].value;
@@ -486,6 +493,9 @@ SceneDesktop::setup()
     ss.clear();
     ss << mOptions["passes"].value;
     ss >> passes;
+    ss.clear();
+    ss << mOptions["blur-radius"].value;
+    ss >> blur_radius;
 
     /* Ensure we get a transparent clear color for all following operations */
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -506,7 +516,7 @@ SceneDesktop::setup()
     for (unsigned int i = 0; i < windows; i++) {
         LibMatrix::vec2 center(mCanvas.width() * (0.5 + 0.25 * cos(i * angular_step)),
                                mCanvas.height() * (0.5 + 0.25 * sin(i * angular_step)));
-        RenderObject* win(new RenderWindowBlur(passes));
+        RenderObject* win(new RenderWindowBlur(passes, blur_radius));
         (void)angular_step;
 
         win->init();
