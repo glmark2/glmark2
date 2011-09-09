@@ -312,9 +312,9 @@ private:
 class RenderWindowBlur : public RenderObject
 {
 public:
-    RenderWindowBlur(unsigned int passes, unsigned int radius,
+    RenderWindowBlur(unsigned int passes, unsigned int radius, bool separable,
                      bool draw_contents = true) :
-        RenderObject(), passes_(passes), radius_(radius),
+        RenderObject(), passes_(passes), radius_(radius), separable_(separable),
         draw_contents_(draw_contents) {}
 
     virtual void init()
@@ -349,21 +349,32 @@ public:
     virtual void render_to(RenderObject& target, Program& program)
     {
         (void)program;
-        Program& blur_program1 = blur_program(target.size().x(), target.size().y());
 
-        for (unsigned int i = 0; i < passes_; i++) {
-            if (i % 2 == 0)
-                render_from(target, blur_program1);
-            else 
-                RenderObject::render_to(target, blur_program1);
+        if (separable_) {
+            Program& blur_program_h1 = blur_program_h(target.size().x());
+            Program& blur_program_v1 = blur_program_v(target.size().y());
+
+            for (unsigned int i = 0; i < passes_; i++) {
+                render_from(target, blur_program_h1);
+                RenderObject::render_to(target, blur_program_v1);
+            }
+        }
+        else {
+            Program& blur_program1 = blur_program(target.size().x(), target.size().y());
+
+            for (unsigned int i = 0; i < passes_; i++) {
+                if (i % 2 == 0)
+                    render_from(target, blur_program1);
+                else 
+                    RenderObject::render_to(target, blur_program1);
+            }
+
+            if (passes_ % 2 == 1)
+                RenderObject::render_to(target);
         }
 
-        if (passes_ % 2 == 1)
-            RenderObject::render_to(target);
-
         /* 
-         * Blend the window contents with the RenderWindowBlur texture
-         * and blend the resulting texture with the target.
+         * Blend the window contents with the target texture.
          */
         if (draw_contents_) {
             glEnable(GL_BLEND);
@@ -402,10 +413,63 @@ private:
         return blur_program_;
     }
 
+    Program& blur_program_h(unsigned int w)
+    {
+        /* 
+         * If the size of the window has changed we must recreate
+         * the shader to contain the correct texture step values.
+         */
+        if (blur_program_dim_.x() != w ||
+            !blur_program_h_.ready())
+        {
+            blur_program_dim_.x(w);
+
+            blur_program_h_.release();
+
+            ShaderSource vtx_source(GLMARK_DATA_PATH"/shaders/desktop.vert");
+            ShaderSource frg_source(GLMARK_DATA_PATH"/shaders/desktop-blur-h.frag");
+            if (radius_ > 1)
+                frg_source.add("#define SCOTTY_WE_NEED_MORE_POWER");
+            frg_source.add_const("TextureStepX", 1.0 / w);
+            Scene::load_shaders_from_strings(blur_program_h_, vtx_source.str(),
+                                             frg_source.str());
+        }
+
+        return blur_program_h_;
+    }
+
+    Program& blur_program_v(unsigned int h)
+    {
+        /* 
+         * If the size of the window has changed we must recreate
+         * the shader to contain the correct texture step values.
+         */
+        if (blur_program_dim_.y() != h ||
+            !blur_program_v_.ready())
+        {
+            blur_program_dim_.y(h);
+
+            blur_program_v_.release();
+
+            ShaderSource vtx_source(GLMARK_DATA_PATH"/shaders/desktop.vert");
+            ShaderSource frg_source(GLMARK_DATA_PATH"/shaders/desktop-blur-v.frag");
+            if (radius_ > 1)
+                frg_source.add("#define SCOTTY_WE_NEED_MORE_POWER");
+            frg_source.add_const("TextureStepY", 1.0 / h);
+            Scene::load_shaders_from_strings(blur_program_v_, vtx_source.str(),
+                                             frg_source.str());
+        }
+
+        return blur_program_v_;
+    }
+
     LibMatrix::uvec2 blur_program_dim_;
     Program blur_program_;
+    Program blur_program_h_;
+    Program blur_program_v_;
     unsigned int passes_;
     unsigned int radius_;
+    bool separable_;
     bool draw_contents_;
 
     static int use_count;
@@ -452,6 +516,8 @@ SceneDesktop::SceneDesktop(Canvas &canvas) :
                                        "the number of effect passes (effect dependent)");
     mOptions["blur-radius"] = Scene::Option("blur-radius", "2",
                                             "the blur effect radius [1,2]");
+    mOptions["separable"] = Scene::Option("separable", "true",
+                                          "use separable convolution for the blure effect");
 }
 
 SceneDesktop::~SceneDesktop()
@@ -484,6 +550,7 @@ SceneDesktop::setup()
     unsigned int passes(0);
     unsigned int blur_radius(0);
     float window_size_factor(0.0);
+    bool separable(mOptions["separable"].value == "true");
 
     ss << mOptions["windows"].value;
     ss >> windows;
@@ -516,7 +583,7 @@ SceneDesktop::setup()
     for (unsigned int i = 0; i < windows; i++) {
         LibMatrix::vec2 center(mCanvas.width() * (0.5 + 0.25 * cos(i * angular_step)),
                                mCanvas.height() * (0.5 + 0.25 * sin(i * angular_step)));
-        RenderObject* win(new RenderWindowBlur(passes, blur_radius));
+        RenderObject* win(new RenderWindowBlur(passes, blur_radius, separable));
         (void)angular_step;
 
         win->init();
