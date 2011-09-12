@@ -577,12 +577,12 @@ SceneDesktop::SceneDesktop(Canvas &canvas) :
                                         "the number of windows");
     mOptions["window-size"] = Scene::Option("window-size", "0.35",
                                             "the window size as a percentage of the minimum screen dimension [0.0 - 0.5]");
-    mOptions["passes"] = Scene::Option("passes", "3",
+    mOptions["passes"] = Scene::Option("passes", "1",
                                        "the number of effect passes (effect dependent)");
-    mOptions["blur-radius"] = Scene::Option("blur-radius", "2",
-                                            "the blur effect radius [1,2]");
+    mOptions["blur-radius"] = Scene::Option("blur-radius", "5",
+                                            "the blur effect radius (in pixels)");
     mOptions["separable"] = Scene::Option("separable", "true",
-                                          "use separable convolution for the blure effect");
+                                          "use separable convolution for the blur effect");
 }
 
 SceneDesktop::~SceneDesktop()
