@@ -30,6 +30,71 @@
 #include "shader-source.h"
 #include "util.h"
 
+enum BlurDirection {
+    BlurDirectionHorizontal,
+    BlurDirectionVertical,
+    BlurDirectionBoth
+};
+
+static void
+create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
+                    unsigned int radius, float sigma, BlurDirection direction)
+{
+    vtx_source.append_file(GLMARK_DATA_PATH"/shaders/desktop.vert");
+    frg_source.append_file(GLMARK_DATA_PATH"/shaders/desktop-blur.frag");
+
+    /* Don't let the gaussian curve become too narrow */
+    sigma = sigma >= 1.0 ? sigma : 1.0;
+
+    unsigned int side = 2 * radius + 1;
+
+    for (size_t i = 0; i < radius + 1; i++) {
+        float s2 = 2.0 * sigma * sigma;
+        float k = 1.0 / std::sqrt(M_PI * s2) * std::exp( - ((float)i * i) / s2);
+        std::stringstream ss_tmp;
+        ss_tmp << "Kernel" << i;
+        frg_source.add_const(ss_tmp.str(), k);
+    }
+
+    std::stringstream ss;
+    ss << "result = " << std::endl;
+   
+    if (direction == BlurDirectionHorizontal) {
+        for (size_t i = 0; i < side; i++) {
+            int offset = (int)(i - radius);
+            ss << "texture2D(Texture0, TextureCoord + vec2(" <<
+                  offset << ".0 * TextureStepX, 0.0)) * Kernel" <<
+                  std::abs(offset) << " +" << std::endl;
+        }
+        ss << "0.0 ;" << std::endl;
+    }
+    else if (direction == BlurDirectionVertical) {
+        for (size_t i = 0; i < side; i++) {
+            int offset = (int)(i - radius);
+            ss << "texture2D(Texture0, TextureCoord + vec2(0.0, " <<
+                  offset << ".0 * TextureStepY)) * Kernel" <<
+                  std::abs(offset) << " +" << std::endl;
+        }
+        ss << "0.0 ;" << std::endl;
+    }
+    else if (direction == BlurDirectionBoth) {
+        for (size_t i = 0; i < side; i++) {
+            int ioffset = (int)(i - radius);
+            for (size_t j = 0; j < side; j++) {
+                int joffset = (int)(j - radius);
+                ss << "texture2D(Texture0, TextureCoord + vec2(" <<
+                      ioffset << ".0 * TextureStepX, " <<
+                      joffset << ".0 * TextureStepY))" <<
+                      " * Kernel" << std::abs(ioffset) <<
+                      " * Kernel" << std::abs(joffset) << " +" << std::endl;
+            }
+        }
+        ss << " 0.0;" << std::endl;
+    }
+
+    frg_source.replace("$CONVOLUTION$", ss.str());
+}
+
 /** 
  * A RenderObject represents a source and target of rendering
  * operations.
@@ -400,10 +465,10 @@ private:
 
             blur_program_.release();
 
-            ShaderSource vtx_source(GLMARK_DATA_PATH"/shaders/desktop.vert");
-            ShaderSource frg_source(GLMARK_DATA_PATH"/shaders/desktop-blur.frag");
-            if (radius_ > 1)
-                frg_source.add("#define SCOTTY_WE_NEED_MORE_POWER");
+            ShaderSource vtx_source;
+            ShaderSource frg_source;
+            create_blur_shaders(vtx_source, frg_source, radius_,
+                                radius_ / 3.0, BlurDirectionBoth);
             frg_source.add_const("TextureStepX", 1.0 / w);
             frg_source.add_const("TextureStepY", 1.0 / h);
             Scene::load_shaders_from_strings(blur_program_, vtx_source.str(),
@@ -426,10 +491,10 @@ private:
 
             blur_program_h_.release();
 
-            ShaderSource vtx_source(GLMARK_DATA_PATH"/shaders/desktop.vert");
-            ShaderSource frg_source(GLMARK_DATA_PATH"/shaders/desktop-blur-h.frag");
-            if (radius_ > 1)
-                frg_source.add("#define SCOTTY_WE_NEED_MORE_POWER");
+            ShaderSource vtx_source;
+            ShaderSource frg_source;
+            create_blur_shaders(vtx_source, frg_source, radius_,
+                                radius_ / 3.0, BlurDirectionHorizontal);
             frg_source.add_const("TextureStepX", 1.0 / w);
             Scene::load_shaders_from_strings(blur_program_h_, vtx_source.str(),
                                              frg_source.str());
@@ -451,10 +516,10 @@ private:
 
             blur_program_v_.release();
 
-            ShaderSource vtx_source(GLMARK_DATA_PATH"/shaders/desktop.vert");
-            ShaderSource frg_source(GLMARK_DATA_PATH"/shaders/desktop-blur-v.frag");
-            if (radius_ > 1)
-                frg_source.add("#define SCOTTY_WE_NEED_MORE_POWER");
+            ShaderSource vtx_source;
+            ShaderSource frg_source;
+            create_blur_shaders(vtx_source, frg_source, radius_,
+                                radius_ / 3.0, BlurDirectionVertical);
             frg_source.add_const("TextureStepY", 1.0 / h);
             Scene::load_shaders_from_strings(blur_program_v_, vtx_source.str(),
                                              frg_source.str());

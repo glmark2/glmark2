@@ -10,47 +10,7 @@ void main(void)
 {
     vec4 result;
 
-#ifdef SCOTTY_WE_NEED_MORE_POWER
-    const float Kernel0 = 0.04;
-    result =
-        texture2D(Texture0, TextureCoord + vec2(-2.0 * TextureStepX, 2.0 * TextureStepY)) * Kernel0 +
-        texture2D(Texture0, TextureCoord + vec2(-1.0 * TextureStepX, 2.0 * TextureStepY)) * Kernel0 +
-        texture2D(Texture0, TextureCoord + vec2(0.0 * TextureStepX, 2.0 * TextureStepY)) * Kernel0 +
-        texture2D(Texture0, TextureCoord + vec2(1.0 * TextureStepX, 2.0 * TextureStepY)) * Kernel0 +
-        texture2D(Texture0, TextureCoord + vec2(2.0 * TextureStepX, 2.0 * TextureStepY)) * Kernel0 +
-        texture2D(Texture0, TextureCoord + vec2(-2.0 * TextureStepX, 1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(-1.0 * TextureStepX, 1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(0.0 * TextureStepX, 1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(1.0 * TextureStepX, 1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(2.0 * TextureStepX, 1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(-2.0 * TextureStepX, 0.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(-1.0 * TextureStepX, 0.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(0.0 * TextureStepX, 0.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(1.0 * TextureStepX, 0.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(2.0 * TextureStepX, 0.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(-2.0 * TextureStepX, -1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(-1.0 * TextureStepX, -1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(0.0 * TextureStepX, -1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(1.0 * TextureStepX, -1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(2.0 * TextureStepX, -1.0 * TextureStepY)) * Kernel0 +
-        texture2D(Texture0, TextureCoord + vec2(-2.0 * TextureStepX, -2.0 * TextureStepY)) * Kernel0 +
-        texture2D(Texture0, TextureCoord + vec2(-1.0 * TextureStepX, -2.0 * TextureStepY)) * Kernel0 +
-        texture2D(Texture0, TextureCoord + vec2(0.0 * TextureStepX, -2.0 * TextureStepY)) * Kernel0 +
-        texture2D(Texture0, TextureCoord + vec2(1.0 * TextureStepX, -2.0 * TextureStepY)) * Kernel0 +
-        texture2D(Texture0, TextureCoord + vec2(2.0 * TextureStepX, -2.0 * TextureStepY)) * Kernel0;
-#else
-    const float Kernel0 = 0.111111;
-    result =
-        texture2D(Texture0, TextureCoord + vec2(-1.0 * TextureStepX, 1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(0.0 * TextureStepX, 1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(1.0 * TextureStepX, 1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(-1.0 * TextureStepX, 0.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(0.0 * TextureStepX, 0.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(1.0 * TextureStepX, 0.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(-1.0 * TextureStepX, -1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(0.0 * TextureStepX, -1.0 * TextureStepY)) * Kernel0  +
-        texture2D(Texture0, TextureCoord + vec2(1.0 * TextureStepX, -1.0 * TextureStepY)) * Kernel0 ;
-#endif
+    $CONVOLUTION$
 
     gl_FragColor = result;
 }
