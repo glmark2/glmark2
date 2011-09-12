@@ -660,6 +660,11 @@ SceneDesktop::setup()
          */
         win->speed(LibMatrix::vec2(cos(0.1 + i * M_PI / 6.0) * mCanvas.width() / 3,
                                    sin(0.1 + i * M_PI / 6.0) * mCanvas.height() / 3));
+        /* 
+         * Perform a dummy rendering to ensure internal shaders are initialized
+         * now, in order not to affect the benchmarking.
+         */
+        win->render_to(priv_->desktop);
         priv_->windows.push_back(win);
     }
 
