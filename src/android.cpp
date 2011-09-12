@@ -44,6 +44,7 @@ static const char *default_benchmarks[] = {
     "effect2d:kernel=0,1,0;1,-4,1;0,1,0;",
     "effect2d:kernel=1,1,1,1,1;1,1,1,1,1;1,1,1,1,1;",
     "pulsar:quads=5:texture=false:light=false",
+    "desktop:windows=4:effect=blur:blur-radius=5:passes=1:separable=true",
     "conditionals:vertex-steps=0:fragment-steps=0",
     "conditionals:vertex-steps=0:fragment-steps=5",
     "conditionals:vertex-steps=5:fragment-steps=0",
