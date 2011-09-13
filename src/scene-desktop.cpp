@@ -142,6 +142,8 @@ public:
         /* Release resources */
         glDeleteTextures(1, &texture_);
         glDeleteFramebuffers(1, &fbo_);
+        texture_ = 0;
+        fbo_ = 0;
 
         /* 
          * Release the shader program when object of this class
@@ -336,6 +338,8 @@ public:
     virtual void release()
     {
         glDeleteTextures(1, &background_texture_);
+        background_texture_ = 0;
+
         RenderObject::release();
     }
 
