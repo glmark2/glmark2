@@ -44,7 +44,8 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
     frg_source.append_file(GLMARK_DATA_PATH"/shaders/desktop-blur.frag");
 
     /* Don't let the gaussian curve become too narrow */
-    sigma = sigma >= 1.0 ? sigma : 1.0;
+    if (sigma < 1.0)
+        sigma = 1.0;
 
     unsigned int side = 2 * radius + 1;
 
@@ -191,8 +192,7 @@ public:
 
     virtual void render_to(RenderObject& target, Program& program = main_program)
     {
-        LibMatrix::vec2 final_pos(pos_.x() + size_.x(),
-                                   pos_.y() + size_.y());
+        LibMatrix::vec2 final_pos(pos_ + size_);
         LibMatrix::vec2 ll(target.normalize_position(pos_));
         LibMatrix::vec2 ur(target.normalize_position(final_pos));
 
@@ -219,8 +219,7 @@ public:
 
     virtual void render_from(RenderObject& target, Program& program = main_program)
     {
-        LibMatrix::vec2 final_pos(pos_.x() + size_.x(),
-                                  pos_.y() + size_.y());
+        LibMatrix::vec2 final_pos(pos_ + size_);
         LibMatrix::vec2 ll_tex(target.normalize_texcoord(pos_));
         LibMatrix::vec2 ur_tex(target.normalize_texcoord(final_pos));
 
@@ -256,8 +255,8 @@ public:
      */
     LibMatrix::vec2 normalize_texcoord(LibMatrix::vec2& pos)
     {
-        return LibMatrix::vec2(((float)pos.x()) / size_.x(),
-                               ((float)pos.y()) / size_.y());
+        return LibMatrix::vec2(pos.x() / size_.x(),
+                               pos.y() / size_.y());
     }
 
 
