@@ -10,7 +10,7 @@ compute_color(vec4 light_position, vec4 diffuse_light_color)
 {
     const vec4 lightAmbient = vec4(0.1, 0.1, 0.1, 1.0);
     const vec4 lightSpecular = vec4(0.8, 0.8, 0.8, 1.0);
-    const vec4 matAmbient = vec4(1.0, 1.0, 1.0, 1.0);
+    const vec4 matAmbient = vec4(0.2, 0.2, 0.2, 1.0);
     const vec4 matSpecular = vec4(1.0, 1.0, 1.0, 1.0);
     const float matShininess = 100.0;
     vec3 eye_direction = normalize(-vertex_position.xyz);
