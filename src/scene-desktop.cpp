@@ -141,10 +141,16 @@ public:
     virtual void release()
     {
         /* Release resources */
-        glDeleteTextures(1, &texture_);
-        glDeleteFramebuffers(1, &fbo_);
-        texture_ = 0;
-        fbo_ = 0;
+        if (texture_ != 0)
+        {
+            glDeleteTextures(1, &texture_);
+            texture_ = 0;
+        }
+        if (fbo_ != 0)
+        {
+            glDeleteFramebuffers(1, &fbo_);
+            fbo_ = 0;
+        }
 
         /* 
          * Release the shader program when object of this class
