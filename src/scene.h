@@ -331,4 +331,23 @@ private:
     void create_and_setup_mesh();
 };
 
+struct SceneDesktopPrivate;
+
+class SceneDesktop : public Scene
+{
+public:
+    SceneDesktop(Canvas &canvas);
+    int load();
+    void unload();
+    void setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+
+    ~SceneDesktop();
+
+private:
+    SceneDesktopPrivate *priv_;
+};
 #endif

@@ -35,8 +35,6 @@ CanvasAndroid::init()
     if (!eglSwapInterval(eglGetCurrentDisplay(), 0))
         Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
-    glClearDepthf(1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_CULL_FACE);
@@ -56,6 +54,8 @@ CanvasAndroid::visible(bool visible)
 void
 CanvasAndroid::clear()
 {
+    glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+    glClearDepthf(1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

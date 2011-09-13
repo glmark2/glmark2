@@ -84,12 +84,6 @@ CanvasX11::init()
     if (!make_current())
         return false;
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
-#if USE_GL
-    glClearDepth(1.0f);
-#elif USE_GLESv2
-    glClearDepthf(1.0f);
-#endif
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_CULL_FACE);
@@ -110,6 +104,12 @@ CanvasX11::visible(bool visible)
 void
 CanvasX11::clear()
 {
+    glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+#if USE_GL
+    glClearDepth(1.0f);
+#elif USE_GLESv2
+    glClearDepthf(1.0f);
+#endif
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
