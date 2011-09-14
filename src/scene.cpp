@@ -23,6 +23,7 @@
  */
 #include "scene.h"
 #include "log.h"
+#include "shader-source.h"
 #include <sstream>
 #include <cmath>
 #include <sys/time.h>
@@ -38,6 +39,12 @@ Scene::Scene(Canvas &pCanvas, const string &name) :
 {
     mOptions["duration"] = Scene::Option("duration", "10.0",
                                          "The duration of each benchmark in seconds");
+    mOptions["vertex-precision"] = Scene::Option("vertex-precision",
+                                                 "default,default,default,default",
+                                                 "The precision values for the vertex shader (\"int,float,sampler2d,samplercube\")");
+    mOptions["fragment-precision"] = Scene::Option("fragment-precision",
+                                                   "default,default,default,default",
+                                                   "The precision values for the fragment shader (\"int,float,sampler2d,samplercube\")");
 }
 
 Scene::~Scene()
@@ -57,6 +64,15 @@ void Scene::setup()
 {
     stringstream ss(mOptions["duration"].value);
     ss >> mDuration;
+
+    ShaderSource::default_vertex_precision(
+            ShaderSource::Precision(mOptions["vertex-precision"].value)
+            );
+
+    ShaderSource::default_fragment_precision(
+            ShaderSource::Precision(mOptions["fragment-precision"].value)
+            );
+
 }
 
 void Scene::teardown()
