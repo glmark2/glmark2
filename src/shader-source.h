@@ -32,8 +32,9 @@
 class ShaderSource
 {
 public:
-    ShaderSource() {}
-    ShaderSource(const std::string &filename) { append_file(filename); }
+    ShaderSource() : precision_has_been_set_(false) {}
+    ShaderSource(const std::string &filename) :
+        precision_has_been_set_(false) { append_file(filename); }
 
     void append(const std::string &str);
     void append_file(const std::string &filename);
@@ -58,7 +59,35 @@ public:
                    const std::string &init_function,
                    const std::string &decl_function = "");
 
-    std::string str() { return source_.str(); }
+    std::string str();
+
+    enum PrecisionValue {
+        PrecisionValueLow,
+        PrecisionValueMedium,
+        PrecisionValueHigh,
+        PrecisionValueDefault,
+    };
+
+    struct Precision {
+        Precision();
+        Precision(PrecisionValue int_p, PrecisionValue float_p,
+                  PrecisionValue sampler2d_p, PrecisionValue samplercube_p);
+        Precision(const std::string& list);
+
+        PrecisionValue int_precision;
+        PrecisionValue float_precision;
+        PrecisionValue sampler2d_precision;
+        PrecisionValue samplercube_precision;
+    };
+
+    void precision(const Precision& precision);
+    const Precision& precision();
+
+    static void default_vertex_precision(const Precision& precision);
+    static const Precision& default_vertex_precision();
+
+    static void default_fragment_precision(const Precision& precision);
+    static const Precision& default_fragment_precision();
 
 private:
     void add_global(const std::string &str);
@@ -66,4 +95,9 @@ private:
     bool load_file(const std::string& filename, std::string& str);
 
     std::stringstream source_;
+    Precision precision_;
+    bool precision_has_been_set_;
+
+    static Precision default_vertex_precision_;
+    static Precision default_fragment_precision_;
 };
