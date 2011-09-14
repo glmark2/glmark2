@@ -596,16 +596,12 @@ SceneDesktop::~SceneDesktop()
 int
 SceneDesktop::load()
 {
-    priv_->screen.init();
-    priv_->desktop.init();
     return 1;
 }
 
 void
 SceneDesktop::unload()
 {
-    priv_->desktop.release();
-    priv_->screen.release();
 }
 
 void
@@ -638,6 +634,8 @@ SceneDesktop::setup()
     glDepthMask(GL_FALSE);
 
     /* Set up the screen and desktop RenderObjects */
+    priv_->screen.init();
+    priv_->desktop.init();
     priv_->screen.size(LibMatrix::vec2(mCanvas.width(), mCanvas.height()));
     priv_->desktop.size(LibMatrix::vec2(mCanvas.width(), mCanvas.height()));
 
@@ -691,6 +689,9 @@ SceneDesktop::teardown()
 
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
+
+    priv_->desktop.release();
+    priv_->screen.release();
 
     Scene::teardown();
 }
