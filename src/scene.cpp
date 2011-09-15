@@ -65,12 +65,14 @@ void Scene::setup()
     stringstream ss(mOptions["duration"].value);
     ss >> mDuration;
 
-    ShaderSource::default_vertex_precision(
-            ShaderSource::Precision(mOptions["vertex-precision"].value)
+    ShaderSource::default_precision(
+            ShaderSource::Precision(mOptions["vertex-precision"].value),
+            ShaderSource::ShaderTypeVertex
             );
 
-    ShaderSource::default_fragment_precision(
-            ShaderSource::Precision(mOptions["fragment-precision"].value)
+    ShaderSource::default_precision(
+            ShaderSource::Precision(mOptions["fragment-precision"].value),
+            ShaderSource::ShaderTypeFragment
             );
 
 }

@@ -28,8 +28,12 @@
 #include "vec.h"
 #include "util.h"
 
-ShaderSource::Precision ShaderSource::default_vertex_precision_;
-ShaderSource::Precision ShaderSource::default_fragment_precision_;
+/** 
+ * Holds default precision values for all shader types
+ * (even the unknown type, which is hardwired to default precision values)
+ */
+std::vector<ShaderSource::Precision>
+ShaderSource::default_precision_(ShaderSource::ShaderTypeUnknown + 1);
 
 /** 
  * Loads the contents of a file into a string.
@@ -356,28 +360,53 @@ ShaderSource::add_array(const std::string &name, std::vector<float> &array,
 }
 
 /** 
- * Helper function that emits a precision stastement.
+ * Gets the ShaderType for this ShaderSource.
+ *
+ * If the ShaderType is unknown, an attempt is made to infer
+ * the type from the shader source contents.
+ * 
+ * @return the ShaderType
+ */
+ShaderSource::ShaderType
+ShaderSource::type()
+{
+    /* Try to infer the type from the source contents */
+    if (type_ == ShaderSource::ShaderTypeUnknown) {
+        std::string source(source_.str());
+
+        if (source.find("gl_FragColor") != std::string::npos)
+            type_ = ShaderSource::ShaderTypeFragment;
+        else if (source.find("gl_Position") != std::string::npos)
+            type_ = ShaderSource::ShaderTypeVertex;
+        else
+            Log::debug("Cannot infer shader type from contents. Leaving it Unknown.\n");
+    }
+
+    return type_;
+}
+
+/** 
+ * Helper function that emits a precision statement.
  * 
  * @param ss the stringstream to add the statement to
  * @param val the precision value
  * @param type_str the variable type to apply the precision value to
- * @param is_fragment whether this is targeted for a fragment shader
  */
-static void
-emit_precision(std::stringstream& ss, ShaderSource::PrecisionValue val,
-               const std::string& type_str, bool is_fragment)
+void
+ShaderSource::emit_precision(std::stringstream& ss, ShaderSource::PrecisionValue val,
+                             const std::string& type_str)
 {
     static const char *precision_map[] = {
         "lowp", "mediump", "highp", NULL
     };
 
     if (val == ShaderSource::PrecisionValueHigh) {
-        if (is_fragment)
+        if (type_ == ShaderSource::ShaderTypeFragment)
             ss << "#ifdef GL_FRAGMENT_PRECISION_HIGH" << std::endl;
 
         ss << "precision highp " << type_str << ";" << std::endl;
 
-        if (is_fragment) {
+        if (type_ == ShaderSource::ShaderTypeFragment) {
             ss << "#else" << std::endl;
             ss << "precision mediump " << type_str << ";" << std::endl;
             ss << "#endif" << std::endl;
@@ -390,7 +419,7 @@ emit_precision(std::stringstream& ss, ShaderSource::PrecisionValue val,
 
     /* There is no default precision in the fragment shader, so set it to mediump */
     if (val == ShaderSource::PrecisionValueDefault
-        && type_str == "float" && is_fragment)
+        && type_str == "float" && type_ == ShaderSource::ShaderTypeFragment)
     {
         ss << "precision mediump float;" << std::endl;
     }
@@ -406,31 +435,21 @@ emit_precision(std::stringstream& ss, ShaderSource::PrecisionValue val,
 std::string
 ShaderSource::str()
 {
-    std::string source(source_.str());
-
-    /* Find out if this is a vertex or fragment shader */
-    bool is_fragment = false;
-
-    if (source.find("gl_FragColor") != std::string::npos)
-        is_fragment = true;
-
     /* Decide which precision values to use */
     ShaderSource::Precision precision;
 
     if (precision_has_been_set_)
         precision = precision_;
-    else if (is_fragment)
-        precision = default_fragment_precision_;
     else
-        precision = default_vertex_precision_;
+        precision = default_precision(type());
 
     /* Create the precision statements */
     std::stringstream ss;
     
-    emit_precision(ss, precision.int_precision, "int", is_fragment);
-    emit_precision(ss, precision.float_precision, "float", is_fragment);
-    emit_precision(ss, precision.sampler2d_precision, "sampler2D", is_fragment);
-    emit_precision(ss, precision.samplercube_precision, "samplerCube", is_fragment);
+    emit_precision(ss, precision.int_precision, "int");
+    emit_precision(ss, precision.float_precision, "float");
+    emit_precision(ss, precision.sampler2d_precision, "sampler2D");
+    emit_precision(ss, precision.samplercube_precision, "samplerCube");
 
     std::string precision_str(ss.str());
     if (!precision_str.empty()) {
@@ -438,7 +457,7 @@ ShaderSource::str()
         precision_str.insert(precision_str.size(), "#endif\n");
     }
 
-    return precision_str + source;
+    return precision_str + source_.str();
 }
 
 /** 
@@ -467,51 +486,49 @@ ShaderSource::precision()
 }
 
 /** 
- * Sets the default precision that will be used for vertex shaders.
+ * Sets the default precision that will be used for a shaders type.
+ *
+ * If type is ShaderTypeUnknown the supplied precision is used for all
+ * shader types.
  *
  * This can be overriden per ShaderSource object by using ::precision().
  * 
  * @param precision the default precision to set
+ * @param type the ShaderType to use the precision for
  */
 void
-ShaderSource::default_vertex_precision(const ShaderSource::Precision& precision)
+ShaderSource::default_precision(const ShaderSource::Precision& precision,
+                                ShaderSource::ShaderType type)
 {
-    default_vertex_precision_ = precision;
+    if (type < 0 || type > ShaderSource::ShaderTypeUnknown)
+        type = ShaderSource::ShaderTypeUnknown;
+
+    if (type == ShaderSource::ShaderTypeUnknown) {
+        for (size_t i = 0; i < ShaderSource::ShaderTypeUnknown; i++)
+            default_precision_[i] = precision;
+    }
+    else {
+        default_precision_[type] = precision;
+    }
 }
 
 /** 
- * Gets the default precision that will be used for vertex shaders.
- * 
- * @return the precision
- */
-const ShaderSource::Precision&
-ShaderSource::default_vertex_precision()
-{
-    return default_vertex_precision_;
-}
-
-/** 
- * Gets the default precision that will be used for fragment shaders.
+ * Gets the default precision that will be used for a shader type.
  *
- * This can be overriden per ShaderSource object by using ::precision().
- * 
- * @param precision the default precision to set
- */
-void
-ShaderSource::default_fragment_precision(const ShaderSource::Precision& precision)
-{
-    default_fragment_precision_ = precision;
-}
-
-/** 
- * Gets the default precision that will be used for fragment shaders.
+ * It is valid to use a type of ShaderTypeUnknown. This will always
+ * return a Precision with default values.
+ *
+ * @param type the ShaderType to get the precision of
  * 
  * @return the precision
  */
 const ShaderSource::Precision&
-ShaderSource::default_fragment_precision()
+ShaderSource::default_precision(ShaderSource::ShaderType type)
 {
-    return default_fragment_precision_;
+    if (type < 0 || type > ShaderSource::ShaderTypeUnknown)
+        type = ShaderSource::ShaderTypeUnknown;
+
+    return default_precision_[type];
 }
 
 /****************************************
