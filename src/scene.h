@@ -154,7 +154,9 @@ public:
 
 protected:
     Program mProgram;
-
+    LibMatrix::mat4 mPerspective;
+    LibMatrix::vec3 mCenterVec;
+    float mRadius;
     Mesh mMesh;
     float mRotation;
     float mRotationSpeed;

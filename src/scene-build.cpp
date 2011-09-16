@@ -43,6 +43,7 @@ SceneBuild::~SceneBuild()
 
 int SceneBuild::load()
 {
+    using LibMatrix::vec3;
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
     static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.frag");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
@@ -60,6 +61,20 @@ int SceneBuild::load()
     attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
 
     model.convert_to_mesh(mMesh, attribs);
+
+    vec3 maxVec = model.maxVec();
+    vec3 minVec = model.minVec();
+    vec3 diffVec = maxVec - minVec;
+    mCenterVec = maxVec + minVec;
+    mCenterVec /= 2.0;
+    float diameter = diffVec.length();
+    mRadius = diameter / 2;
+    float fovy = 2.0 * atanf(mRadius / (2.0 + mRadius));
+    fovy /= M_PI;
+    fovy *= 180.0;
+    float aspect(static_cast<float>(mCanvas.width())/static_cast<float>(mCanvas.height()));
+    mPerspective.setIdentity();
+    mPerspective *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter); 
 
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source(frg_shader_filename);
@@ -151,9 +166,8 @@ void SceneBuild::draw()
     LibMatrix::Stack4 model_view;
 
     // Load the ModelViewProjectionMatrix uniform in the shader
-    LibMatrix::mat4 model_view_proj(mCanvas.projection());
-
-    model_view.translate(0.0f, 0.0f, -2.5f);
+    LibMatrix::mat4 model_view_proj(mPerspective);
+    model_view.translate(-mCenterVec.x(), -mCenterVec.y(), -(mCenterVec.z() + 2.0 + mRadius));
     model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
     model_view_proj *= model_view.getCurrent();
 
