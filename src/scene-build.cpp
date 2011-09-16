@@ -35,6 +35,8 @@ SceneBuild::SceneBuild(Canvas &pCanvas) :
                                         "Whether to use VBOs for rendering [true,false]");
     mOptions["interleave"] = Scene::Option("interleave", "false",
                                            "Whether to interleave vertex attribute data [true,false]");
+    mOptions["model"] = Scene::Option("model", "horse",
+                                      "Which model to use [horse, angel, buddha, bunny, dragon, armadillo]");
 }
 
 SceneBuild::~SceneBuild()
@@ -80,8 +82,22 @@ void SceneBuild::setup()
     Scene::setup();
 
     Model model;
+    bool modelLoaded(false);
+    const std::string& whichModel(mOptions["model"].value);
 
-    if(!model.load_3ds(GLMARK_DATA_PATH"/models/horse.3ds"))
+    if (whichModel == "bunny")
+    {
+        // Bunny rotates around the Y axis
+        modelLoaded = model.load_obj(GLMARK_DATA_PATH"/models/bunny.obj");
+    }
+    else
+    {
+        // Default is "horse", so we don't need to look further
+        // Horse rotates around the Y axis
+        modelLoaded = model.load_3ds(GLMARK_DATA_PATH"/models/horse.3ds");
+    }
+
+    if(!modelLoaded)
         return;
 
     model.calculate_normals();
