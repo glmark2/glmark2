@@ -26,9 +26,17 @@
 #include "log.h"
 #include "options.h"
 #include "util.h"
+#include "float.h"
 
+#include <fstream>
 #include <sstream>
 #include <memory>
+
+using std::string;
+using std::vector;
+using LibMatrix::vec3;
+using LibMatrix::vec2;
+using LibMatrix::uvec3;
 
 #define read_or_fail(file, dst, size) do { \
     file.read(reinterpret_cast<char *>((dst)), (size)); \
@@ -39,6 +47,47 @@
         return false; \
     } \
 } while(0);
+
+void
+Model::compute_bounding_box(const Object& object)
+{
+    float minX(FLT_MAX);
+    float maxX(FLT_MIN);
+    float minY(FLT_MAX);
+    float maxY(FLT_MIN);
+    float minZ(FLT_MAX);
+    float maxZ(FLT_MIN);
+    for (vector<Vertex>::const_iterator vIt = object.vertices.begin(); vIt != object.vertices.end(); vIt++)
+    {
+        const vec3& curVtx = vIt->v;
+        if (curVtx.x() < minX)
+        {
+            minX = curVtx.x();
+        }
+        if (curVtx.x() > maxX)
+        {
+            maxX = curVtx.x();
+        }
+        if (curVtx.y() < minY)
+        {
+            minY = curVtx.y();
+        }
+        if (curVtx.y() > maxY)
+        {
+            maxY = curVtx.y();
+        }
+        if (curVtx.z() < minZ)
+        {
+            minZ = curVtx.z();
+        }
+        if (curVtx.z() > maxZ)
+        {
+            maxZ = curVtx.z();
+        }
+    }
+    maxVec_ = vec3(maxX, maxY, maxZ);
+    minVec_ = vec3(minX, minY, minZ);
+}
 
 void
 Model::append_object_to_mesh(const Object &object, Mesh &mesh,
@@ -312,6 +361,9 @@ Model::load_3ds(const std::string &filename)
         }
     }
 
+    // Compute bounding box for perspective projection
+    compute_bounding_box(*object);
+
     if (Options::show_debug) {
         for (std::vector<Object>::const_iterator iter = objects_.begin();
              iter != objects_.end();
@@ -322,5 +374,229 @@ Model::load_3ds(const std::string &filename)
         }
     }
 
+    return true;
+}
+
+template<typename T> T
+fromString(const string& asString)
+{
+    std::stringstream ss(asString);
+    T retVal;
+    ss >> retVal;
+    return retVal;
+}
+
+void
+get_values(const string& source, vec3& v)
+{
+    // Skip the definition type...
+    string::size_type endPos = source.find(" ");
+    string::size_type startPos(0);
+    if (endPos == string::npos)
+    {
+        Log::error("Bad element '%s'\n", source.c_str());
+        return;
+    }
+    // Find the first value...
+    startPos = endPos + 1;
+    endPos = source.find(" ", startPos);
+    if (endPos == string::npos)
+    {
+        Log::error("Bad element '%s'\n", source.c_str());
+        return;
+    }
+    string::size_type numChars(endPos - startPos);
+    string xs(source, startPos, numChars);
+    float x = fromString<float>(xs);
+    // Then the second value...
+    startPos = endPos + 1;
+    endPos = source.find(" ", startPos);
+    if (endPos == string::npos)
+    {
+        Log::error("Bad element '%s'\n", source.c_str());
+        return;
+    }
+    numChars = endPos - startPos;
+    string ys(source, startPos, numChars);
+    float y = fromString<float>(ys);
+    // And the third value (there might be a fourth, but we don't care)...
+    startPos = endPos + 1;
+    endPos = source.find(" ", startPos);
+    if (endPos == string::npos)
+    {
+        numChars = endPos;
+    }
+    else
+    {
+        numChars = endPos - startPos;
+    }
+    string zs(source, startPos, endPos - startPos);
+    float z = fromString<float>(zs);
+    v.x(x);
+    v.y(y);
+    v.z(z);    
+}
+
+void
+get_values(const string& source, vec2& v)
+{
+    // Skip the definition type...
+    string::size_type endPos = source.find(" ");
+    string::size_type startPos(0);
+    if (endPos == string::npos)
+    {
+        Log::error("Bad element '%s'\n", source.c_str());
+        return;
+    }
+    // Find the first value...
+    startPos = endPos + 1;
+    endPos = source.find(" ", startPos);
+    if (endPos == string::npos)
+    {
+        Log::error("Bad element '%s'\n", source.c_str());
+        return;
+    }
+    string::size_type numChars(endPos - startPos);
+    string xs(source, startPos, numChars);
+    float x = fromString<float>(xs);
+    // Then the second value (there might be a third, but we don't care)...
+    startPos = endPos + 1;
+    endPos = source.find(" ", startPos);
+    if (endPos == string::npos)
+    {
+        numChars = endPos;
+    }
+    else
+    {
+        numChars = endPos - startPos;
+    }
+    string ys(source, startPos, numChars);
+    float y = fromString<float>(ys);
+    v.x(x);
+    v.y(y);
+}
+
+void
+get_values(const string& source, uvec3& v)
+{
+    // Skip the definition type...
+    string::size_type endPos = source.find(" ");
+    string::size_type startPos(0);
+    if (endPos == string::npos)
+    {
+        Log::error("Bad element '%s'\n", source.c_str());
+        return;
+    }
+    // Find the first value...
+    startPos = endPos + 1;
+    endPos = source.find(" ", startPos);
+    if (endPos == string::npos)
+    {
+        Log::error("Bad element '%s'\n", source.c_str());
+        return;
+    }
+    string::size_type numChars(endPos - startPos);
+    string xs(source, startPos, numChars);
+    unsigned int x = fromString<unsigned int>(xs);
+    // Then the second value...
+    startPos = endPos+1;
+    endPos = source.find(" ", startPos);
+    if (endPos == string::npos)
+    {
+        Log::error("Bad element '%s'\n", source.c_str());
+        return;
+    }
+    numChars = endPos - startPos;
+    string ys(source, startPos, numChars);
+    unsigned int y = fromString<unsigned int>(ys);
+    // And the third value (there might be a fourth, but we don't care)...
+    startPos = endPos + 1;
+    endPos = source.find(" ", startPos);
+    if (endPos == string::npos)
+    {
+        numChars = endPos;
+    }
+    else
+    {
+        numChars = endPos - startPos;
+    }
+    string zs(source, startPos, numChars);
+    unsigned int z = fromString<unsigned int>(zs);
+    v.x(x);
+    v.y(y);
+    v.z(z);    
+}
+
+bool
+Model::load_obj(const std::string &filename)
+{
+    std::ifstream inputFile(filename.c_str());
+    if (!inputFile)
+    {
+        Log::error("Failed to open '%s'\n", filename.c_str());
+        return false;
+    }
+
+    vector<string> sourceVec;
+    string curLine;
+    while (getline(inputFile, curLine))
+    {
+        sourceVec.push_back(curLine);
+    }
+
+    // Give ourselves an object to populate.
+    objects_.push_back(Object(filename));
+    Object& object(objects_.back());
+
+    static const string vertex_definition("v");
+    static const string normal_definition("vn");
+    static const string texcoord_definition("vt");
+    static const string face_definition("f");
+    for (vector<string>::const_iterator lineIt = sourceVec.begin();
+         lineIt != sourceVec.end();
+         lineIt++)
+    {
+        const string& curSrc = *lineIt;
+        // Is it a vertex attribute, a face description, comment or other?
+        // We only care about the first two, we ignore comments, object names,
+        // group names, smoothing groups, etc.
+        string::size_type startPos(0);
+        string::size_type spacePos = curSrc.find(" ", startPos);
+        string definitionType(curSrc, startPos, spacePos - startPos);
+        if (definitionType == vertex_definition)
+        {
+            Vertex v;
+            get_values(curSrc, v.v);
+            object.vertices.push_back(v);
+        }
+        else if (definitionType == normal_definition)
+        {
+            // If we encounter an OBJ model with normals, we can update this
+            // to update object.vertices.n directly
+            Log::debug("We got a normal...\n");
+        }
+        else if (definitionType == texcoord_definition)
+        {
+            // If we encounter an OBJ model with normals, we can update this
+            // to update object.vertices.t directly
+            Log::debug("We got a texcoord...\n");
+        }
+        else if (definitionType == face_definition)
+        {
+            uvec3 v;
+            get_values(curSrc, v);
+            Face f;
+            // OBJ models index from '1'.
+            f.a = v.x() - 1;
+            f.b = v.y() - 1;
+            f.c = v.z() - 1;
+            object.faces.push_back(f);
+        }
+    }
+    // Compute bounding box for perspective projection
+    compute_bounding_box(object);
+
+    Log::debug("Object populated with %u vertices and %u faces.\n",
+        object.vertices.size(), object.faces.size());
     return true;
 }

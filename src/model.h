@@ -48,13 +48,16 @@ public:
     ~Model() {}
 
     bool load_3ds(const std::string &filename);
+    bool load_obj(const std::string &filename);
     void calculate_normals();
     void convert_to_mesh(Mesh &mesh);
     void convert_to_mesh(Mesh &mesh, 
                          const std::vector<std::pair<AttribType, int> > &attribs);
+    const LibMatrix::vec3& minVec() const { return minVec_; }
+    const LibMatrix::vec3& maxVec() const { return maxVec_; }
 private:
     struct Face {
-        uint16_t a, b, c;
+        uint32_t a, b, c;
         uint16_t face_flags;
     };
 
@@ -74,6 +77,10 @@ private:
     void append_object_to_mesh(const Object &object, Mesh &mesh,
                                int p_pos, int n_pos, int t_pos);
 
+    // For vertices of the bounding box for this model.
+    void compute_bounding_box(const Object& object);
+    LibMatrix::vec3 minVec_;
+    LibMatrix::vec3 maxVec_;
     std::vector<Object> objects_;
 };
 
