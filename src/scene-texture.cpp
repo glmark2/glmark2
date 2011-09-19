@@ -44,11 +44,6 @@ SceneTexture::~SceneTexture()
 
 int SceneTexture::load()
 {
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic-tex.frag");
-    static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
-    static const LibMatrix::vec4 materialDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
-
     Model model;
 
     if(!model.load_3ds(GLMARK_DATA_PATH"/models/cube.3ds"))
@@ -57,26 +52,6 @@ int SceneTexture::load()
     model.calculate_normals();
     model.convert_to_mesh(mCubeMesh);
     mCubeMesh.build_vbo();
-
-    // Load shaders
-    ShaderSource vtx_source(vtx_shader_filename);
-    ShaderSource frg_source(frg_shader_filename);
-
-    // Add constants to shaders
-    vtx_source.add_const("LightSourcePosition", lightPosition);
-    vtx_source.add_const("MaterialDiffuse", materialDiffuse);
-
-    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
-                                          frg_source.str()))
-    {
-        return 0;
-    }
-
-    std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram["position"].location());
-    attrib_locations.push_back(mProgram["normal"].location());
-    attrib_locations.push_back(mProgram["texcoord"].location());
-    mCubeMesh.set_attrib_locations(attrib_locations);
 
     mRotationSpeed = LibMatrix::vec3(36.0f, 36.0f, 36.0f);
 
@@ -88,14 +63,35 @@ int SceneTexture::load()
 void SceneTexture::unload()
 {
     mCubeMesh.reset();
-
-    mProgram.stop();
-    mProgram.release();
 }
 
 void SceneTexture::setup()
 {
     Scene::setup();
+
+    // Load shaders
+    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
+    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic-tex.frag");
+    static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
+    static const LibMatrix::vec4 materialDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
+    ShaderSource vtx_source(vtx_shader_filename);
+    ShaderSource frg_source(frg_shader_filename);
+
+    // Add constants to shaders
+    vtx_source.add_const("LightSourcePosition", lightPosition);
+    vtx_source.add_const("MaterialDiffuse", materialDiffuse);
+
+    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
+                                          frg_source.str()))
+    {
+        return;
+    }
+
+    std::vector<GLint> attrib_locations;
+    attrib_locations.push_back(mProgram["position"].location());
+    attrib_locations.push_back(mProgram["normal"].location());
+    attrib_locations.push_back(mProgram["texcoord"].location());
+    mCubeMesh.set_attrib_locations(attrib_locations);
 
     // Create texture according to selected filtering
     GLint min_filter = GL_NONE;
@@ -130,6 +126,8 @@ void SceneTexture::setup()
 void SceneTexture::teardown()
 {
     mProgram.stop();
+    mProgram.release();
+
     glDeleteTextures(1, &mTexture);
 
     Scene::teardown();

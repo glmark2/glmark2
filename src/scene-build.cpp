@@ -45,6 +45,26 @@ SceneBuild::~SceneBuild()
 
 int SceneBuild::load()
 {
+    mRotationSpeed = 36.0f;
+
+    mRunning = false;
+
+    return 1;
+}
+
+void SceneBuild::unload()
+{
+    mMesh.reset();
+
+}
+
+void SceneBuild::setup()
+{
+    using LibMatrix::vec3;
+
+    Scene::setup();
+
+    /* Set up shaders */
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
     static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.frag");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
@@ -59,27 +79,8 @@ int SceneBuild::load()
     if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
                                           frg_source.str()))
     {
-        return 0;
+        return;
     }
-
-    mRotationSpeed = 36.0f;
-
-    mRunning = false;
-
-    return 1;
-}
-
-void SceneBuild::unload()
-{
-    mProgram.stop();
-    mProgram.release();
-}
-
-void SceneBuild::setup()
-{
-    using LibMatrix::vec3;
-
-    Scene::setup();
 
     Model model;
     bool modelLoaded(false);
@@ -150,6 +151,7 @@ void
 SceneBuild::teardown()
 {
     mProgram.stop();
+    mProgram.release();
 
     mMesh.reset();
 

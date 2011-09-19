@@ -32,8 +32,16 @@
 class ShaderSource
 {
 public:
-    ShaderSource() {}
-    ShaderSource(const std::string &filename) { append_file(filename); }
+    enum ShaderType {
+        ShaderTypeVertex,
+        ShaderTypeFragment,
+        ShaderTypeUnknown
+    };
+
+    ShaderSource(ShaderType type = ShaderTypeUnknown) :
+        precision_has_been_set_(false), type_(type) {}
+    ShaderSource(const std::string &filename, ShaderType type = ShaderTypeUnknown) :
+        precision_has_been_set_(false), type_(type) { append_file(filename); }
 
     void append(const std::string &str);
     void append_file(const std::string &filename);
@@ -58,12 +66,46 @@ public:
                    const std::string &init_function,
                    const std::string &decl_function = "");
 
-    std::string str() { return source_.str(); }
+    ShaderType type();
+    std::string str();
+
+    enum PrecisionValue {
+        PrecisionValueLow,
+        PrecisionValueMedium,
+        PrecisionValueHigh,
+        PrecisionValueDefault,
+    };
+
+    struct Precision {
+        Precision();
+        Precision(PrecisionValue int_p, PrecisionValue float_p,
+                  PrecisionValue sampler2d_p, PrecisionValue samplercube_p);
+        Precision(const std::string& list);
+
+        PrecisionValue int_precision;
+        PrecisionValue float_precision;
+        PrecisionValue sampler2d_precision;
+        PrecisionValue samplercube_precision;
+    };
+
+    void precision(const Precision& precision);
+    const Precision& precision();
+
+    static void default_precision(const Precision& precision,
+                                  ShaderType type = ShaderTypeUnknown);
+    static const Precision& default_precision(ShaderType type);
 
 private:
     void add_global(const std::string &str);
     void add_local(const std::string &str, const std::string &function);
     bool load_file(const std::string& filename, std::string& str);
+    void emit_precision(std::stringstream& ss, ShaderSource::PrecisionValue val,
+                        const std::string& type_str);
 
     std::stringstream source_;
+    Precision precision_;
+    bool precision_has_been_set_;
+    ShaderType type_;
+
+    static std::vector<Precision> default_precision_;
 };

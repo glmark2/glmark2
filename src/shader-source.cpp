@@ -29,6 +29,13 @@
 #include "util.h"
 
 /** 
+ * Holds default precision values for all shader types
+ * (even the unknown type, which is hardwired to default precision values)
+ */
+std::vector<ShaderSource::Precision>
+ShaderSource::default_precision_(ShaderSource::ShaderTypeUnknown + 1);
+
+/** 
  * Loads the contents of a file into a string.
  * 
  * @param filename the name of the file
@@ -350,4 +357,247 @@ ShaderSource::add_array(const std::string &name, std::vector<float> &array,
     add(ss.str(), init_function);
 
     add(decl, decl_function);
+}
+
+/** 
+ * Gets the ShaderType for this ShaderSource.
+ *
+ * If the ShaderType is unknown, an attempt is made to infer
+ * the type from the shader source contents.
+ * 
+ * @return the ShaderType
+ */
+ShaderSource::ShaderType
+ShaderSource::type()
+{
+    /* Try to infer the type from the source contents */
+    if (type_ == ShaderSource::ShaderTypeUnknown) {
+        std::string source(source_.str());
+
+        if (source.find("gl_FragColor") != std::string::npos)
+            type_ = ShaderSource::ShaderTypeFragment;
+        else if (source.find("gl_Position") != std::string::npos)
+            type_ = ShaderSource::ShaderTypeVertex;
+        else
+            Log::debug("Cannot infer shader type from contents. Leaving it Unknown.\n");
+    }
+
+    return type_;
+}
+
+/** 
+ * Helper function that emits a precision statement.
+ * 
+ * @param ss the stringstream to add the statement to
+ * @param val the precision value
+ * @param type_str the variable type to apply the precision value to
+ */
+void
+ShaderSource::emit_precision(std::stringstream& ss, ShaderSource::PrecisionValue val,
+                             const std::string& type_str)
+{
+    static const char *precision_map[] = {
+        "lowp", "mediump", "highp", NULL
+    };
+
+    if (val == ShaderSource::PrecisionValueHigh) {
+        if (type_ == ShaderSource::ShaderTypeFragment)
+            ss << "#ifdef GL_FRAGMENT_PRECISION_HIGH" << std::endl;
+
+        ss << "precision highp " << type_str << ";" << std::endl;
+
+        if (type_ == ShaderSource::ShaderTypeFragment) {
+            ss << "#else" << std::endl;
+            ss << "precision mediump " << type_str << ";" << std::endl;
+            ss << "#endif" << std::endl;
+        }
+    }
+    else if (val >= 0 && val < ShaderSource::PrecisionValueDefault) {
+        ss << "precision " << precision_map[val] << " ";
+        ss << type_str << ";" << std::endl;
+    }
+
+    /* There is no default precision in the fragment shader, so set it to mediump */
+    if (val == ShaderSource::PrecisionValueDefault
+        && type_str == "float" && type_ == ShaderSource::ShaderTypeFragment)
+    {
+        ss << "precision mediump float;" << std::endl;
+    }
+}
+
+/** 
+ * Gets a string containing the complete shader source.
+ *
+ * Precision statements are applied at this point.
+ * 
+ * @return the shader source
+ */
+std::string
+ShaderSource::str()
+{
+    /* Decide which precision values to use */
+    ShaderSource::Precision precision;
+
+    if (precision_has_been_set_)
+        precision = precision_;
+    else
+        precision = default_precision(type());
+
+    /* Create the precision statements */
+    std::stringstream ss;
+    
+    emit_precision(ss, precision.int_precision, "int");
+    emit_precision(ss, precision.float_precision, "float");
+    emit_precision(ss, precision.sampler2d_precision, "sampler2D");
+    emit_precision(ss, precision.samplercube_precision, "samplerCube");
+
+    std::string precision_str(ss.str());
+    if (!precision_str.empty()) {
+        precision_str.insert(0, "#ifdef GL_ES\n");
+        precision_str.insert(precision_str.size(), "#endif\n");
+    }
+
+    return precision_str + source_.str();
+}
+
+/** 
+ * Sets the precision that will be used for this shader.
+ *
+ * This overrides any default values set with ShaderSource::default_*_precision().
+ * 
+ * @param precision the precision to set
+ */
+void
+ShaderSource::precision(const ShaderSource::Precision& precision)
+{
+    precision_ = precision;
+    precision_has_been_set_ = true;
+}
+
+/** 
+ * Gets the precision that will be used for this shader.
+ * 
+ * @return the precision
+ */
+const ShaderSource::Precision&
+ShaderSource::precision()
+{
+    return precision_;
+}
+
+/** 
+ * Sets the default precision that will be used for a shaders type.
+ *
+ * If type is ShaderTypeUnknown the supplied precision is used for all
+ * shader types.
+ *
+ * This can be overriden per ShaderSource object by using ::precision().
+ * 
+ * @param precision the default precision to set
+ * @param type the ShaderType to use the precision for
+ */
+void
+ShaderSource::default_precision(const ShaderSource::Precision& precision,
+                                ShaderSource::ShaderType type)
+{
+    if (type < 0 || type > ShaderSource::ShaderTypeUnknown)
+        type = ShaderSource::ShaderTypeUnknown;
+
+    if (type == ShaderSource::ShaderTypeUnknown) {
+        for (size_t i = 0; i < ShaderSource::ShaderTypeUnknown; i++)
+            default_precision_[i] = precision;
+    }
+    else {
+        default_precision_[type] = precision;
+    }
+}
+
+/** 
+ * Gets the default precision that will be used for a shader type.
+ *
+ * It is valid to use a type of ShaderTypeUnknown. This will always
+ * return a Precision with default values.
+ *
+ * @param type the ShaderType to get the precision of
+ * 
+ * @return the precision
+ */
+const ShaderSource::Precision&
+ShaderSource::default_precision(ShaderSource::ShaderType type)
+{
+    if (type < 0 || type > ShaderSource::ShaderTypeUnknown)
+        type = ShaderSource::ShaderTypeUnknown;
+
+    return default_precision_[type];
+}
+
+/****************************************
+ * ShaderSource::Precision constructors *
+ ****************************************/
+
+/** 
+ * Creates a ShaderSource::Precision with default precision values.
+ */
+ShaderSource::Precision::Precision() :
+    int_precision(ShaderSource::PrecisionValueDefault),
+    float_precision(ShaderSource::PrecisionValueDefault),
+    sampler2d_precision(ShaderSource::PrecisionValueDefault),
+    samplercube_precision(ShaderSource::PrecisionValueDefault)
+{
+}
+
+/** 
+ * Creates a ShaderSource::Precision using the supplied precision values.
+ */
+ShaderSource::Precision::Precision(ShaderSource::PrecisionValue int_p,
+                                   ShaderSource::PrecisionValue float_p,
+                                   ShaderSource::PrecisionValue sampler2d_p,
+                                   ShaderSource::PrecisionValue samplercube_p) :
+    int_precision(int_p), float_precision(float_p),
+    sampler2d_precision(sampler2d_p), samplercube_precision(samplercube_p)
+{
+}
+
+/** 
+ * Creates a ShaderSource::Precision from a string representation of
+ * precision values.
+ *
+ * The string format is:
+ * "<int>,<float>,<sampler2d>,<samplercube>"
+ *
+ * Each precision value is one of "high", "medium", "low" or "default".
+ * 
+ * @param precision_values the string representation of the precision values
+ */
+ShaderSource::Precision::Precision(const std::string& precision_values) :
+    int_precision(ShaderSource::PrecisionValueDefault),
+    float_precision(ShaderSource::PrecisionValueDefault),
+    sampler2d_precision(ShaderSource::PrecisionValueDefault),
+    samplercube_precision(ShaderSource::PrecisionValueDefault)
+{
+    std::vector<std::string> elems;
+
+    Util::split(precision_values, ',', elems);
+
+    for (size_t i = 0; i < elems.size() && i < 4; i++) {
+        const std::string& pstr(elems[i]);
+        ShaderSource::PrecisionValue pval;
+
+        if (pstr == "high")
+            pval = ShaderSource::PrecisionValueHigh;
+        else if (pstr == "medium")
+            pval = ShaderSource::PrecisionValueMedium;
+        else if (pstr == "low")
+            pval = ShaderSource::PrecisionValueLow;
+        else
+            pval = ShaderSource::PrecisionValueDefault;
+
+        switch(i) {
+            case 0: int_precision = pval; break;
+            case 1: float_precision = pval; break;
+            case 2: sampler2d_precision = pval; break;
+            case 3: samplercube_precision = pval; break;
+            default: break;
+        }
+    }
 }
