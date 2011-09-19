@@ -252,8 +252,7 @@ public:
      */
     LibMatrix::vec2 normalize_position(LibMatrix::vec2& pos)
     {
-        return LibMatrix::vec2(2.0 * pos.x() / size_.x() - 1.0,
-                               2.0 * pos.y() / size_.y() - 1.0);
+        return pos * 2.0 / size_ - 1.0;
     }
 
     /** 
@@ -261,8 +260,7 @@ public:
      */
     LibMatrix::vec2 normalize_texcoord(LibMatrix::vec2& pos)
     {
-        return LibMatrix::vec2(pos.x() / size_.x(),
-                               pos.y() / size_.y());
+        return pos / size_;
     }
 
 
