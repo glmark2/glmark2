@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010 Linaro Limited
+// Copyright (c) 2010-2011 Linaro Limited
 //
 // All rights reserved. This program and the accompanying materials
 // are made available under the terms of the MIT License which accompanies
@@ -64,7 +64,19 @@ public:
         return *this;
     }
 
-    const tvec2 operator/(const T& rhs)
+    const tvec2 operator/(const T& rhs) const
+    {
+        return tvec2(*this) /= rhs;
+    }
+
+    tvec2& operator/=(const tvec2& rhs)
+    {
+        x_ /= rhs.x_;
+        y_ /= rhs.y_;
+        return *this;
+    }
+
+    const tvec2 operator/(const tvec2& rhs) const
     {
         return tvec2(*this) /= rhs;
     }
@@ -76,7 +88,19 @@ public:
         return *this;
     }
 
-    const tvec2 operator*(const T& rhs)
+    const tvec2 operator*(const T& rhs) const
+    {
+        return tvec2(*this) *= rhs;
+    }
+
+    tvec2& operator*=(const tvec2& rhs)
+    {
+        x_ *= rhs.x_;
+        y_ *= rhs.y_;
+        return *this;
+    }
+
+    const tvec2 operator*(const tvec2& rhs) const
     {
         return tvec2(*this) *= rhs;
     }
@@ -88,7 +112,7 @@ public:
         return *this;
     }
     
-    const tvec2 operator+(const T& rhs)
+    const tvec2 operator+(const T& rhs) const
     {
         return tvec2(*this) += rhs;
     }
@@ -100,7 +124,7 @@ public:
         return *this;
     }
 
-    const tvec2 operator+(const tvec2& rhs)
+    const tvec2 operator+(const tvec2& rhs) const
     {
         return tvec2(*this) += rhs;
     }
@@ -112,7 +136,7 @@ public:
         return *this;
     }
     
-    const tvec2 operator-(const T& rhs)
+    const tvec2 operator-(const T& rhs) const
     {
         return tvec2(*this) -= rhs;
     }
@@ -124,7 +148,7 @@ public:
         return *this;
     }
 
-    const tvec2 operator-(const tvec2& rhs)
+    const tvec2 operator-(const tvec2& rhs) const
     {
         return tvec2(*this) -= rhs;
     }
@@ -206,7 +230,20 @@ public:
         return *this;
     }
 
-    const tvec3 operator/(const T& rhs)
+    const tvec3 operator/(const T& rhs) const
+    {
+        return tvec3(*this) /= rhs;
+    }
+
+    tvec3& operator/=(const tvec3& rhs)
+    {
+        x_ /= rhs.x_;
+        y_ /= rhs.y_;
+        z_ /= rhs.z_;
+        return *this;
+    }
+
+    const tvec3 operator/(const tvec3& rhs) const
     {
         return tvec3(*this) /= rhs;
     }
@@ -219,7 +256,20 @@ public:
         return *this;
     }
 
-    const tvec3 operator*(const T& rhs)
+    const tvec3 operator*(const T& rhs) const
+    {
+        return tvec3(*this) *= rhs;
+    }
+
+    tvec3& operator*=(const tvec3& rhs)
+    {
+        x_ *= rhs.x_;
+        y_ *= rhs.y_;
+        z_ *= rhs.z_;
+        return *this;
+    }
+
+    const tvec3 operator*(const tvec3& rhs) const
     {
         return tvec3(*this) *= rhs;
     }
@@ -232,7 +282,7 @@ public:
         return *this;
     }
 
-    const tvec3 operator+(const T& rhs)
+    const tvec3 operator+(const T& rhs) const
     {
         return tvec3(*this) += rhs;
     }
@@ -245,7 +295,7 @@ public:
         return *this;
     }
 
-    const tvec3 operator+(const tvec3& rhs)
+    const tvec3 operator+(const tvec3& rhs) const
     {
         return tvec3(*this) += rhs;
     }
@@ -258,7 +308,7 @@ public:
         return *this;
     }
 
-    const tvec3 operator-(const T& rhs)
+    const tvec3 operator-(const T& rhs) const
     {
         return tvec3(*this) -= rhs;
     }
@@ -271,7 +321,7 @@ public:
         return *this;
     }
 
-    const tvec3 operator-(const tvec3& rhs)
+    const tvec3 operator-(const tvec3& rhs) const
     {
         return tvec3(*this) -= rhs;
     }
@@ -370,7 +420,21 @@ public:
         return *this;
     }
 
-    const tvec4 operator/(const T& rhs)
+    const tvec4 operator/(const T& rhs) const
+    {
+        return tvec4(*this) /= rhs;
+    }
+
+    tvec4& operator/=(const tvec4& rhs)
+    {
+        x_ /= rhs.x_;
+        y_ /= rhs.y_;
+        z_ /= rhs.z_;
+        w_ /= rhs.w_;
+        return *this;
+    }
+
+    const tvec4 operator/(const tvec4& rhs) const
     {
         return tvec4(*this) /= rhs;
     }
@@ -384,7 +448,21 @@ public:
         return *this;
     }
 
-    const tvec4 operator*(const T& rhs)
+    const tvec4 operator*(const T& rhs) const
+    {
+        return tvec4(*this) *= rhs;
+    }
+
+    tvec4& operator*=(const tvec4& rhs)
+    {
+        x_ *= rhs.x_;
+        y_ *= rhs.y_;
+        z_ *= rhs.z_;
+        w_ *= rhs.w_;
+        return *this;
+    }
+
+    const tvec4 operator*(const tvec4& rhs) const
     {
         return tvec4(*this) *= rhs;
     }
@@ -398,7 +476,7 @@ public:
         return *this;
     }
 
-    const tvec4 operator+(const T& rhs)
+    const tvec4 operator+(const T& rhs) const
     {
         return tvec4(*this) += rhs;
     }
@@ -412,7 +490,7 @@ public:
         return *this;
     }
 
-    const tvec4 operator+(const tvec4& rhs)
+    const tvec4 operator+(const tvec4& rhs) const
     {
         return tvec4(*this) += rhs;
     }
@@ -426,7 +504,7 @@ public:
         return *this;
     }
 
-    const tvec4 operator-(const T& rhs)
+    const tvec4 operator-(const T& rhs) const
     {
         return tvec4(*this) -= rhs;
     }
@@ -440,7 +518,7 @@ public:
         return *this;
     }
 
-    const tvec4 operator-(const tvec4& rhs)
+    const tvec4 operator-(const tvec4& rhs) const
     {
         return tvec4(*this) -= rhs;
     }

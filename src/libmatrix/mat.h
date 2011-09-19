@@ -299,8 +299,8 @@ public:
         m_[8] = m.m_[8];
     }
     tmat3(const T& c0r0, const T& c0r1, const T& c0r2,
-           const T& c1r0, const T& c1r1, const T& c1r2,
-           const T& c2r0, const T& c2r1, const T& c2r2)
+          const T& c1r0, const T& c1r1, const T& c1r2,
+          const T& c2r0, const T& c2r1, const T& c2r2)
     {
         m_[0] = c0r0;
         m_[1] = c0r1;
