@@ -35,6 +35,8 @@ SceneBuild::SceneBuild(Canvas &pCanvas) :
                                         "Whether to use VBOs for rendering [true,false]");
     mOptions["interleave"] = Scene::Option("interleave", "false",
                                            "Whether to interleave vertex attribute data [true,false]");
+    mOptions["model"] = Scene::Option("model", "horse",
+                                      "Which model to use [horse, angel, buddha, bunny, dragon, armadillo]");
 }
 
 SceneBuild::~SceneBuild()
@@ -47,19 +49,6 @@ int SceneBuild::load()
     static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.frag");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     static const LibMatrix::vec4 materialDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
-    Model model;
-
-    if(!model.load_3ds(GLMARK_DATA_PATH"/models/horse.3ds"))
-        return 0;
-
-    model.calculate_normals();
-
-    /* Tell the converter that we only care about position and normal attributes */
-    std::vector<std::pair<Model::AttribType, int> > attribs;
-    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
-    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
-
-    model.convert_to_mesh(mMesh, attribs);
 
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source(frg_shader_filename);
@@ -73,11 +62,6 @@ int SceneBuild::load()
         return 0;
     }
 
-    std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram["position"].location());
-    attrib_locations.push_back(mProgram["normal"].location());
-    mMesh.set_attrib_locations(attrib_locations);
-
     mRotationSpeed = 36.0f;
 
     mRunning = false;
@@ -87,16 +71,48 @@ int SceneBuild::load()
 
 void SceneBuild::unload()
 {
-    mMesh.reset();
-
     mProgram.stop();
     mProgram.release();
 }
 
 void SceneBuild::setup()
 {
+    using LibMatrix::vec3;
+
     Scene::setup();
 
+    Model model;
+    bool modelLoaded(false);
+    const std::string& whichModel(mOptions["model"].value);
+
+    if (whichModel == "bunny")
+    {
+        // Bunny rotates around the Y axis
+        modelLoaded = model.load_obj(GLMARK_DATA_PATH"/models/bunny.obj");
+    }
+    else
+    {
+        // Default is "horse", so we don't need to look further
+        // Horse rotates around the Y axis
+        modelLoaded = model.load_3ds(GLMARK_DATA_PATH"/models/horse.3ds");
+    }
+
+    if(!modelLoaded)
+        return;
+
+    model.calculate_normals();
+
+    /* Tell the converter that we only care about position and normal attributes */
+    std::vector<std::pair<Model::AttribType, int> > attribs;
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
+
+    model.convert_to_mesh(mMesh, attribs);
+
+    std::vector<GLint> attrib_locations;
+    attrib_locations.push_back(mProgram["position"].location());
+    attrib_locations.push_back(mProgram["normal"].location());
+    mMesh.set_attrib_locations(attrib_locations);
 
     mUseVbo = (mOptions["use-vbo"].value == "true");
     bool interleave = (mOptions["interleave"].value == "true");
@@ -105,6 +121,21 @@ void SceneBuild::setup()
         mMesh.build_vbo(interleave);
     else
         mMesh.build_array(interleave);
+
+    /* Calculate a projection matrix that is a good fit for the model */
+    vec3 maxVec = model.maxVec();
+    vec3 minVec = model.minVec();
+    vec3 diffVec = maxVec - minVec;
+    mCenterVec = maxVec + minVec;
+    mCenterVec /= 2.0;
+    float diameter = diffVec.length();
+    mRadius = diameter / 2;
+    float fovy = 2.0 * atanf(mRadius / (2.0 + mRadius));
+    fovy /= M_PI;
+    fovy *= 180.0;
+    float aspect(static_cast<float>(mCanvas.width())/static_cast<float>(mCanvas.height()));
+    mPerspective.setIdentity();
+    mPerspective *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter); 
 
     mProgram.start();
 
@@ -120,10 +151,7 @@ SceneBuild::teardown()
 {
     mProgram.stop();
 
-    if (mUseVbo)
-        mMesh.delete_vbo();
-    else
-        mMesh.delete_array();
+    mMesh.reset();
 
     Scene::teardown();
 }
@@ -151,9 +179,8 @@ void SceneBuild::draw()
     LibMatrix::Stack4 model_view;
 
     // Load the ModelViewProjectionMatrix uniform in the shader
-    LibMatrix::mat4 model_view_proj(mCanvas.projection());
-
-    model_view.translate(0.0f, 0.0f, -2.5f);
+    LibMatrix::mat4 model_view_proj(mPerspective);
+    model_view.translate(-mCenterVec.x(), -mCenterVec.y(), -(mCenterVec.z() + 2.0 + mRadius));
     model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
     model_view_proj *= model_view.getCurrent();
 
