@@ -24,6 +24,7 @@
 #include "scene.h"
 #include "log.h"
 #include "shader-source.h"
+#include "options.h"
 #include <sstream>
 #include <cmath>
 #include <sys/time.h>
@@ -119,6 +120,7 @@ Scene::set_option(const string &opt, const string &val)
         return false;
 
     iter->second.value = val;
+    iter->second.set = true;
 
     return true;
 }
@@ -133,6 +135,7 @@ Scene::reset_options()
         Option &opt = iter->second;
 
         opt.value = opt.default_value;
+        opt.set = false;
     }
 }
 
@@ -160,8 +163,14 @@ Scene::construct_title(const string &title)
              iter != mOptions.end();
              iter++)
         {
-            ss << iter->first << "=" << iter->second.value << ":";
+            if (Options::show_all_options || iter->second.set)
+            {
+                ss << iter->first << "=" << iter->second.value << ":";
+            }
         }
+
+        if (ss.str().empty())
+            ss << "<default>:";
     }
     else
         ss << title;

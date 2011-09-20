@@ -46,12 +46,13 @@ public:
 
     struct Option {
         Option(const std::string &nam, const std::string &val, const std::string &desc) :
-            name(nam), value(val), default_value(val), description(desc) {}
+            name(nam), value(val), default_value(val), description(desc), set(false) {}
         Option() {}
         std::string name;
         std::string value;
         std::string default_value;
         std::string description;
+        bool set;
     };
 
     enum ValidationResult {

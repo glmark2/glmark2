@@ -36,6 +36,7 @@ struct Options {
     static bool swap_buffers;
     static std::pair<int,int> size;
     static bool list_scenes;
+    static bool show_all_options;
     static bool show_debug;
     static bool show_help;
 };

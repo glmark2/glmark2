@@ -36,6 +36,7 @@ bool Options::validate = false;
 bool Options::swap_buffers = true;
 std::pair<int,int> Options::size(800, 600);
 bool Options::list_scenes = false;
+bool Options::show_all_options = false;
 bool Options::show_debug = false;
 bool Options::show_help = false;
 
@@ -45,6 +46,7 @@ static struct option long_options[] = {
     {"no-swap-buffers", 0, 0, 0},
     {"size", 1, 0, 0},
     {"list-scenes", 0, 0, 0},
+    {"show-all-options", 0, 0, 0},
     {"debug", 0, 0, 0},
     {"help", 0, 0, 0},
     {0, 0, 0, 0}
@@ -93,6 +95,8 @@ Options::print_help()
            "  -s, --size WxH         Size of the display (default: 800x600)\n"
            "  -l, --list-scenes      Display information about the available scenes\n"
            "                         and their options\n"
+           "      --show-all-options Show all scene option values used for benchmarks\n"
+           "                         (only explicitly set options are shown by default)\n"
            "  -d, --debug            Display debug messages\n"
            "  -h, --help             Display help\n");
 }
@@ -125,6 +129,8 @@ Options::parse_args(int argc, char **argv)
             parse_size(optarg, Options::size);
         else if (c == 'l' || !strcmp(optname, "list-scenes"))
             Options::list_scenes = true;
+        else if (!strcmp(optname, "show-all-options"))
+            Options::show_all_options = true;
         else if (c == 'd' || !strcmp(optname, "debug"))
             Options::show_debug = true;
         else if (c == 'h' || !strcmp(optname, "help"))
