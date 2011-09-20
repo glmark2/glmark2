@@ -32,6 +32,7 @@ struct Options {
     static void print_help();
 
     static std::vector<std::string> benchmarks;
+    static std::vector<std::string> benchmark_files;
     static bool validate;
     static bool swap_buffers;
     static std::pair<int,int> size;

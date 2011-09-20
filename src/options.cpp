@@ -32,6 +32,7 @@
 #include "log.h"
 
 std::vector<std::string> Options::benchmarks;
+std::vector<std::string> Options::benchmark_files;
 bool Options::validate = false;
 bool Options::swap_buffers = true;
 std::pair<int,int> Options::size(800, 600);
@@ -42,6 +43,7 @@ bool Options::show_help = false;
 
 static struct option long_options[] = {
     {"benchmark", 1, 0, 0},
+    {"benchmark-file", 1, 0, 0},
     {"validate", 0, 0, 0},
     {"no-swap-buffers", 0, 0, 0},
     {"size", 1, 0, 0},
@@ -88,6 +90,8 @@ Options::print_help()
            "Options:\n"
            "  -b, --benchmark BENCH  A benchmark to run: 'scene(:opt1=val1)*'\n"
            "                         (the option can be used multiple times)\n"
+           "  -f, --benchmark-file F Load benchmarks to run from a file containing a\n"
+           "                         list of benchmark descriptions (one per line)"
            "      --validate         Run a quick output validation test instead of \n"
            "                         running the benchmarks\n"
            "      --no-swap-buffers  Don't update the canvas by swapping the front and\n"
@@ -109,7 +113,7 @@ Options::parse_args(int argc, char **argv)
         int c;
         const char *optname = "";
 
-        c = getopt_long(argc, argv, "b:s:ldh",
+        c = getopt_long(argc, argv, "b:f:s:ldh",
                         long_options, &option_index);
         if (c == -1)
             break;
@@ -121,6 +125,8 @@ Options::parse_args(int argc, char **argv)
 
         if (c == 'b' || !strcmp(optname, "benchmark"))
             Options::benchmarks.push_back(optarg);
+        else if (c == 'f' || !strcmp(optname, "benchmark-file"))
+            Options::benchmark_files.push_back(optarg);
         else if (!strcmp(optname, "validate"))
             Options::validate = true;
         else if (!strcmp(optname, "no-swap-buffers"))

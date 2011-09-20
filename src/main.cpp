@@ -29,6 +29,7 @@
 #include "util.h"
 
 #include <iostream>
+#include <fstream>
 
 #if USE_GL
 #include "canvas-x11-glx.h"
@@ -81,6 +82,31 @@ add_custom_benchmarks(vector<Benchmark *> &benchmarks)
          iter++)
     {
         benchmarks.push_back(new Benchmark(*iter));
+    }
+}
+
+void
+add_custom_benchmarks_from_files(vector<Benchmark *> &benchmarks)
+{
+    for (vector<string>::const_iterator iter = Options::benchmark_files.begin();
+         iter != Options::benchmark_files.end();
+         iter++)
+    {
+        std::ifstream ifs(iter->c_str());
+
+        if (!ifs.fail()) {
+            std::string line;
+
+            while (getline(ifs, line)) {
+                if (!line.empty())
+                    benchmarks.push_back(new Benchmark(line));
+            }
+        }
+        else {
+            Log::error("Cannot open benchmark file %s\n",
+                       iter->c_str());
+        }
+
     }
 }
 
@@ -263,10 +289,12 @@ int main(int argc, char *argv[])
     // Add the benchmarks to run
     vector<Benchmark *> benchmarks;
 
-    if (Options::benchmarks.empty())
-        add_default_benchmarks(benchmarks);
-    else
+    if (!Options::benchmarks.empty())
         add_custom_benchmarks(benchmarks);
+    else if (!Options::benchmark_files.empty())
+        add_custom_benchmarks_from_files(benchmarks);
+    else
+        add_default_benchmarks(benchmarks);
 
     Log::info("=======================================================\n");
     Log::info("    glmark2 %s\n", GLMARK_VERSION);
