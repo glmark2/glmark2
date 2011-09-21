@@ -36,7 +36,7 @@ SceneBuild::SceneBuild(Canvas &pCanvas) :
     mOptions["interleave"] = Scene::Option("interleave", "false",
                                            "Whether to interleave vertex attribute data [true,false]");
     mOptions["model"] = Scene::Option("model", "horse",
-                                      "Which model to use [horse, angel, buddha, bunny, dragon, armadillo]");
+                                      "Which model to use [horse, bunny]");
 }
 
 SceneBuild::~SceneBuild()
