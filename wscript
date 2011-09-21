@@ -8,7 +8,7 @@ from waflib import Context
 out = 'build'
 top = '.'
 
-VERSION = '2011.08'
+VERSION = '2011.09'
 APPNAME = 'glmark2'
 
 def options(opt):
