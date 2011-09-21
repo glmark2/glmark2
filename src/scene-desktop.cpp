@@ -20,6 +20,7 @@
  *  Alexandros Frantzis (glmark2)
  */
 #include <cmath>
+#include <cstdlib>
 
 #include "scene.h"
 #include "mat.h"
