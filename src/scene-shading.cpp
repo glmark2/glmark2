@@ -275,8 +275,8 @@ SceneShading::validate()
         ref = Canvas::Pixel(0x00, 0x00, 0x2d, 0xff);
     else if (filter == "blinn-phong-inf")
         ref = Canvas::Pixel(0x1a, 0x1a, 0x3e, 0xff);
-    else if (filter == "phong")
-        ref = Canvas::Pixel(0x1a, 0x1a, 0x53, 0xff);
+    else if (filter == "phong" && mOptions["num-lights"].value == "1")
+        ref = Canvas::Pixel(0x05, 0x05, 0xad, 0xff);
     else
         return Scene::ValidationUnknown;
 
