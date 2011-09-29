@@ -22,6 +22,7 @@
 #include "canvas-x11.h"
 #include "log.h"
 #include "options.h"
+#include "util.h"
 
 #include <X11/keysym.h>
 #include <fstream>
@@ -83,6 +84,13 @@ CanvasX11::init()
 
     if (!make_current())
         return false;
+
+    if (!supports_gl2()) {
+        Log::error("Glmark2 needs OpenGL(ES) version >= 2.0 to run"
+                   " (but version string is: '%s')!\n",
+                   glGetString(GL_VERSION));
+        return false;
+    }
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -211,4 +219,29 @@ CanvasX11::resize(int width, int height)
     glViewport(0, 0, mWidth, mHeight);
     mProjection = LibMatrix::Mat4::perspective(60.0, mWidth / (float)mHeight,
                                                1.0, 1024.0);
+}
+
+bool
+CanvasX11::supports_gl2()
+{ 
+    std::string gl_version_str(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+    int gl_major(0);
+
+    size_t point_pos(gl_version_str.find('.'));
+
+    if (point_pos != std::string::npos) {
+        point_pos--;
+
+        size_t start_pos(gl_version_str.rfind(' ', point_pos));
+        if (start_pos == std::string::npos)
+            start_pos = 0;
+        else
+            start_pos++;
+
+        std::stringstream ss;
+        ss << gl_version_str.substr(start_pos, point_pos - start_pos + 1);
+        ss >> gl_major;
+    }
+
+    return gl_major >= 2;
 }

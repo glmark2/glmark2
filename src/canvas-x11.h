@@ -48,6 +48,7 @@ protected:
     virtual XVisualInfo *get_xvisualinfo() = 0;
     virtual bool make_current() = 0;
     virtual void swap_buffers() = 0;
+    bool supports_gl2();
 
     Window xwin_;
     Display *xdpy_;
