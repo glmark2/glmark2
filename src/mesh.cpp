@@ -26,7 +26,7 @@
 
 
 Mesh::Mesh() :
-    vertex_size_(0)
+    vertex_size_(0), interleave_(false)
 {
 }
 
@@ -165,6 +165,24 @@ Mesh::next_vertex()
     vertices_.push_back(std::vector<float>(vertex_size_));
 }
 
+/** 
+ * Sets the vertex attribute interleaving mode.
+ *
+ * If true the vertex attributes are going to be interleaved in a single
+ * buffer. Otherwise they will be separated into different buffers (one
+ * per attribute).
+ *
+ * Interleaving mode takes effect in the next call to ::build_array() or
+ * ::build_vbo().
+ * 
+ * @param interleave whether to interleave
+ */
+void
+Mesh::interleave(bool interleave)
+{
+    interleave_ = interleave;
+}
+
 void
 Mesh::reset()
 {
@@ -180,11 +198,11 @@ Mesh::reset()
 }
 
 void
-Mesh::build_array(bool interleaved)
+Mesh::build_array()
 {
     int nvertices = vertices_.size();
 
-    if (!interleaved) {
+    if (!interleave_) {
         /* Create an array for each attribute */
         for (std::vector<std::pair<int, int> >::const_iterator ai = vertex_format_.begin();
              ai != vertex_format_.end();
@@ -229,16 +247,16 @@ Mesh::build_array(bool interleaved)
 }
 
 void
-Mesh::build_vbo(bool interleave)
+Mesh::build_vbo()
 {
     delete_array();
-    build_array(interleave);
+    build_array();
 
     int nvertices = vertices_.size();
 
     attrib_data_ptr_.clear();
 
-    if (!interleave) {
+    if (!interleave_) {
         /* Create a vbo for each attribute */
         for (std::vector<std::pair<int, int> >::const_iterator ai = vertex_format_.begin();
              ai != vertex_format_.end();

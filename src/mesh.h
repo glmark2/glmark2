@@ -45,9 +45,11 @@ public:
     void set_attrib(int pos, const LibMatrix::vec4 &v, std::vector<float> *vertex = 0);
     void next_vertex();
 
+    void interleave(bool interleave);
+
     void reset();
-    void build_array(bool interleaved = false);
-    void build_vbo(bool interleaved = false);
+    void build_array();
+    void build_vbo();
     void delete_array();
     void delete_vbo();
 
@@ -77,6 +79,7 @@ private:
     std::vector<GLuint> vbos_;
     std::vector<float *> attrib_data_ptr_;
     int vertex_stride_;
+    bool interleave_;
 };
 
 #endif

@@ -118,10 +118,12 @@ void SceneBuild::setup()
     mUseVbo = (mOptions["use-vbo"].value == "true");
     bool interleave = (mOptions["interleave"].value == "true");
 
+    mMesh.interleave(interleave);
+
     if (mUseVbo)
-        mMesh.build_vbo(interleave);
+        mMesh.build_vbo();
     else
-        mMesh.build_array(interleave);
+        mMesh.build_array();
 
     /* Calculate a projection matrix that is a good fit for the model */
     vec3 maxVec = model.maxVec();
