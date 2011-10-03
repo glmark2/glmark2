@@ -44,6 +44,7 @@ public:
     void set_attrib(int pos, const LibMatrix::vec3 &v, std::vector<float> *vertex = 0);
     void set_attrib(int pos, const LibMatrix::vec4 &v, std::vector<float> *vertex = 0);
     void next_vertex();
+    std::vector<std::vector<float> >& vertices();
 
     enum VBOUpdateMethod {
         VBOUpdateMethodMap,

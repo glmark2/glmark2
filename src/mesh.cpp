@@ -166,6 +166,21 @@ Mesh::next_vertex()
 }
 
 /**
+ * Gets the mesh vertices.
+ *
+ * You should use the ::set_attrib() method to manipulate
+ * the vertex data.
+ *
+ * You shouldn't resize the vector (change the number of vertices)
+ * manually. Use ::next_vertex() instead.
+ */
+std::vector<std::vector<float> >&
+Mesh::vertices()
+{
+    return vertices_;
+}
+
+/**
  * Sets the VBO update method.
  *
  * The default value is VBOUpdateMethodMap.
