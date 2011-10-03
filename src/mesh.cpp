@@ -26,7 +26,7 @@
 
 
 Mesh::Mesh() :
-    vertex_size_(0), interleave_(false)
+    vertex_size_(0), interleave_(false), vbo_update_method_(VBOUpdateMethodMap)
 {
 }
 
@@ -165,6 +165,17 @@ Mesh::next_vertex()
     vertices_.push_back(std::vector<float>(vertex_size_));
 }
 
+/**
+ * Sets the VBO update method.
+ *
+ * The default value is VBOUpdateMethodMap.
+ */
+void
+Mesh::vbo_update_method(Mesh::VBOUpdateMethod method)
+{
+    vbo_update_method_ = method;
+}
+
 /** 
  * Sets the vertex attribute interleaving mode.
  *
@@ -296,6 +307,137 @@ Mesh::build_vbo()
 
     delete_array();
 }
+
+/**
+ * Updates ranges of a single vertex array.
+ *
+ * @param ranges the ranges of vertices to update
+ * @param n the index of the vertex array to update
+ * @param nfloats how many floats to update for each vertex
+ * @param offset the offset (in floats) in the vertex data to start reading from
+ */
+void
+Mesh::update_single_array(const std::vector<std::pair<size_t, size_t> >& ranges,
+                          size_t n, size_t nfloats, size_t offset)
+{
+    float *array(vertex_arrays_[n]);
+
+    /* Update supplied ranges */
+    for (std::vector<std::pair<size_t, size_t> >::const_iterator ri = ranges.begin();
+         ri != ranges.end();
+         ri++)
+    {
+        /* Update the current range from the vertex data */
+        float *dest(array + nfloats * ri->first);
+        for (size_t n = ri->first; n <= ri->second; n++) {
+            for (size_t i = 0; i < nfloats; i++)
+                *dest++ = vertices_[n][offset + i];
+        }
+
+    }
+}
+
+/**
+ * Updates ranges of the vertex arrays.
+ *
+ * @param ranges the ranges of vertices to update
+ */
+void
+Mesh::update_array(const std::vector<std::pair<size_t, size_t> >& ranges)
+{
+    /* If we don't have arrays to update, create them */
+    if (vertex_arrays_.empty()) {
+        build_array();
+        return;
+    }
+
+    if (!interleave_) {
+        for (size_t i = 0; i < vertex_arrays_.size(); i++) {
+            update_single_array(ranges, i, vertex_format_[i].first,
+                                vertex_format_[i].second);
+        }
+    }
+    else {
+        update_single_array(ranges, 0, vertex_size_, 0);
+    }
+
+}
+
+
+/**
+ * Updates ranges of a single VBO.
+ *
+ * This method use either glMapBuffer or glBufferSubData to perform
+ * the update. The used method can be set with ::vbo_update_method().
+ *
+ * @param ranges the ranges of vertices to update
+ * @param n the index of the vbo to update
+ * @param nfloats how many floats to update for each vertex
+ */
+void
+Mesh::update_single_vbo(const std::vector<std::pair<size_t, size_t> >& ranges,
+                        size_t n, size_t nfloats)
+{
+    float *src_start(vertex_arrays_[n]);
+    float *dest_start(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbos_[n]);
+
+    if (vbo_update_method_ == VBOUpdateMethodMap) {
+        dest_start = reinterpret_cast<float *>(
+                glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY)
+                );
+    }
+
+    /* Update supplied ranges */
+    for (std::vector<std::pair<size_t, size_t> >::const_iterator iter = ranges.begin();
+         iter != ranges.end();
+         iter++)
+    {
+        float *src(src_start + nfloats * iter->first);
+        float *src_end(src_start + nfloats * (iter->second + 1));
+
+        if (vbo_update_method_ == VBOUpdateMethodMap) {
+            float *dest(dest_start + nfloats * iter->first);
+            std::copy(src, src_end, dest);
+        }
+        else if (vbo_update_method_ == VBOUpdateMethodSubData) {
+            glBufferSubData(GL_ARRAY_BUFFER, nfloats * iter->first * sizeof(float),
+                            (src_end - src) * sizeof(float), src);
+        }
+    }
+
+    if (vbo_update_method_ == VBOUpdateMethodMap)
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
+/**
+ * Updates ranges of the VBOs.
+ *
+ * @param ranges the ranges of vertices to update
+ */
+void
+Mesh::update_vbo(const std::vector<std::pair<size_t, size_t> >& ranges)
+{
+    /* If we don't have VBOs to update, create them */
+    if (vbos_.empty()) {
+        build_vbo();
+        return;
+    }
+
+    update_array(ranges);
+
+    if (!interleave_) {
+        for (size_t i = 0; i < vbos_.size(); i++)
+            update_single_vbo(ranges, i, vertex_format_[i].first);
+    }
+    else {
+        update_single_vbo(ranges, 0, vertex_size_);
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 
 void
 Mesh::delete_array()

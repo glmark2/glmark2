@@ -22,13 +22,17 @@
 #ifndef GLMARK2_GL_HEADERS_H_
 #define GLMARK2_GL_HEADERS_H_
 
-#if USE_GL
 #define GL_GLEXT_PROTOTYPES
+
+#if USE_GL
 #include <GL/gl.h>
 #include <GL/glext.h>
 #elif USE_GLESv2
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#define glMapBuffer glMapBufferOES
+#define glUnmapBuffer glUnmapBufferOES
+#define GL_WRITE_ONLY GL_WRITE_ONLY_OES
 #endif
 
 #endif

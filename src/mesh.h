@@ -45,11 +45,19 @@ public:
     void set_attrib(int pos, const LibMatrix::vec4 &v, std::vector<float> *vertex = 0);
     void next_vertex();
 
+    enum VBOUpdateMethod {
+        VBOUpdateMethodMap,
+        VBOUpdateMethodSubData,
+    };
+
+    void vbo_update_method(VBOUpdateMethod method);
     void interleave(bool interleave);
 
     void reset();
     void build_array();
     void build_vbo();
+    void update_array(const std::vector<std::pair<size_t, size_t> >& ranges);
+    void update_vbo(const std::vector<std::pair<size_t, size_t> >& ranges);
     void delete_array();
     void delete_vbo();
 
@@ -68,6 +76,10 @@ public:
 private:
     bool check_attrib(int pos, int size);
     std::vector<float> &ensure_vertex();
+    void update_single_array(const std::vector<std::pair<size_t, size_t> >& ranges,
+                             size_t n, size_t nfloats, size_t offset);
+    void update_single_vbo(const std::vector<std::pair<size_t, size_t> >& ranges,
+                           size_t n, size_t nfloats);
 
     std::vector<std::pair<int, int> > vertex_format_;
     std::vector<int> attrib_locations_;
@@ -80,6 +92,7 @@ private:
     std::vector<float *> attrib_data_ptr_;
     int vertex_stride_;
     bool interleave_;
+    VBOUpdateMethod vbo_update_method_;
 };
 
 #endif
