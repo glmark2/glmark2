@@ -124,6 +124,7 @@ add_and_register_scenes(vector<Scene*>& scenes, Canvas& canvas)
     scenes.push_back(new SceneEffect2D(canvas));
     scenes.push_back(new ScenePulsar(canvas));
     scenes.push_back(new SceneDesktop(canvas));
+    scenes.push_back(new SceneBuffer(canvas));
 
     for (vector<Scene*>::const_iterator iter = scenes.begin();
          iter != scenes.end();
