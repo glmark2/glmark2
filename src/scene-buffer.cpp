@@ -45,12 +45,14 @@ public:
     {
         mesh_range_.first = mesh.vertices().size();
 
-        for (std::vector<int>::const_iterator iter = vertex_index_.begin();
-             iter != vertex_index_.end();
-             iter++)
-        {
+        for (size_t i = 0; i < vertex_index_.size(); i++) {
+            size_t n = (i / 3) * 3;
+
             mesh.next_vertex();
-            mesh.set_attrib(0, current_state_data_[*iter]);
+            mesh.set_attrib(0, current_state_data_[vertex_index_[i]]);
+            mesh.set_attrib(1, current_state_data_[vertex_index_[n]]);
+            mesh.set_attrib(2, current_state_data_[vertex_index_[n + 1]]);
+            mesh.set_attrib(3, current_state_data_[vertex_index_[n + 2]]);
         }
 
         mesh_range_.second = mesh.vertices().size() - 1;
@@ -61,13 +63,19 @@ public:
      */
     std::pair<size_t,size_t>& update_mesh(Mesh& mesh)
     {
-        for (std::vector<int>::const_iterator iter = vertex_index_.begin();
-             iter != vertex_index_.end();
-             iter++)
-        {
-            size_t i = iter - vertex_index_.begin();
-            mesh.set_attrib(0, current_state_data_[*iter], 
-                            &mesh.vertices()[i + mesh_range_.first]);
+        for (size_t i = 0; i < vertex_index_.size(); i++) {
+            size_t n = (i / 3) * 3;
+
+            std::vector<float> *vertex( &mesh.vertices()[i + mesh_range_.first]);
+
+            mesh.set_attrib(0, current_state_data_[vertex_index_[i]],
+                            vertex);
+            mesh.set_attrib(1, current_state_data_[vertex_index_[n]],
+                            vertex);
+            mesh.set_attrib(2, current_state_data_[vertex_index_[n + 1]],
+                            vertex);
+            mesh.set_attrib(3, current_state_data_[vertex_index_[n + 2]],
+                            vertex);
         }
 
         return mesh_range_;
@@ -113,6 +121,7 @@ public:
             for (size_t i = 0; i < min_size; i++) {
                 (*this)[i] = a[i] + (b[i] - a[i]) * factor;
             }
+
             return *this;
         }
     };
@@ -223,8 +232,8 @@ void SceneBuffer::setup()
         update_method = Mesh::VBOUpdateMethodMap;
 
     /* Set up shaders */
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/buffer.vert");
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/buffer.frag");
+    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/buffer-wireframe.vert");
+    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/buffer-wireframe.frag");
 
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source(frg_shader_filename);
@@ -235,12 +244,22 @@ void SceneBuffer::setup()
         return;
     }
 
+    /* 
+     * We need to pass the positions of all vertex of the triangle
+     * in order to draw the wireframe.
+     */
     std::vector<int> vertex_format;
-    vertex_format.push_back(3);     // Position
+    vertex_format.push_back(3);     // Position of vertex
+    vertex_format.push_back(3);     // Position of triangle vertex 0
+    vertex_format.push_back(3);     // Position of triangle vertex 1
+    vertex_format.push_back(3);     // Position of triangle vertex 2
     mMesh.set_vertex_format(vertex_format);
 
     std::vector<GLint> attrib_locations;
     attrib_locations.push_back(mProgram["position"].location());
+    attrib_locations.push_back(mProgram["tvertex0"].location());
+    attrib_locations.push_back(mProgram["tvertex1"].location());
+    attrib_locations.push_back(mProgram["tvertex2"].location());
     mMesh.set_attrib_locations(attrib_locations);
 
     /* Add objects */
@@ -261,6 +280,7 @@ void SceneBuffer::setup()
     mMesh.build_vbo();
 
     mProgram.start();
+    mProgram["Viewport"] = LibMatrix::vec2(mCanvas.width(), mCanvas.height());
 
     mCurrentFrame = 0;
     mRunning = true;
