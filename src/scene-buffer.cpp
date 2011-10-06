@@ -142,36 +142,65 @@ protected:
 };
 
 /** 
- * An object that changes between a triangle and a box.
+ * An object that changes between a tetrahedron and a cube.
  */
-class TransformableBox : public TransformableObject
+class TransformableCube : public TransformableObject
 {
 public:
-    TransformableBox()
+    TransformableCube(const LibMatrix::mat4& transform = LibMatrix::mat4())
     {
-        VertexVector *vertices;
-
         nstates_ = 2;
         state_data_.resize(nstates_);
+        period_ = 2.5;
+
+        static const LibMatrix::vec4 vertices[] = {
+            LibMatrix::vec4(-1.0, -1.0,  1.0, 1.0),
+            LibMatrix::vec4( 1.0, -1.0,  1.0, 1.0),
+            LibMatrix::vec4(-1.0,  1.0,  1.0, 1.0),
+            LibMatrix::vec4( 1.0,  1.0,  1.0, 1.0),
+            LibMatrix::vec4(-1.0, -1.0, -1.0, 1.0),
+            LibMatrix::vec4( 1.0, -1.0, -1.0, 1.0),
+            LibMatrix::vec4(-1.0,  1.0, -1.0, 1.0),
+            LibMatrix::vec4( 1.0,  1.0, -1.0, 1.0)
+        };
         
-        vertices = &state_data_[0];
-        vertices->push_back(LibMatrix::vec3(-1.0, -1.0, 0.0));
-        vertices->push_back(LibMatrix::vec3( 1.0, -1.0, 0.0));
-        vertices->push_back(LibMatrix::vec3( 0.0,  0.0, 0.0));
-        vertices->push_back(LibMatrix::vec3( 1.0,  1.0, 0.0));
+        /* Fill in the initial state (possibly transformed) */
+        size_t nvertices = sizeof(vertices) / sizeof(*vertices);
+        for (size_t i = 0; i < nvertices; i++) {
+            const LibMatrix::vec4& tvertex4(transform * vertices[i]);
+            LibMatrix::vec3 tvertex3(tvertex4.x(), tvertex4.y(), tvertex4.z());
+            state_data_[0].push_back(tvertex3);
+        }
 
-        vertices = &state_data_[1];
-        vertices->push_back(LibMatrix::vec3(-1.0, -1.0, 0.0));
-        vertices->push_back(LibMatrix::vec3( 1.0, -1.0, 0.0));
-        vertices->push_back(LibMatrix::vec3(-1.0,  1.0, 0.0));
-        vertices->push_back(LibMatrix::vec3( 1.0,  1.0, 0.0));
+        /* Fill in the second state */
+        state_data_[1].push_back((state_data_[0][1] +
+                                  state_data_[0][2] +
+                                  state_data_[0][4]) / 3.0);
+        state_data_[1].push_back(state_data_[0][1]);
+        state_data_[1].push_back(state_data_[0][2]);
+        state_data_[1].push_back((state_data_[0][1] +
+                                  state_data_[0][2] +
+                                  state_data_[0][7]) / 3.0);
 
-        vertex_index_.push_back(0);
-        vertex_index_.push_back(1);
-        vertex_index_.push_back(2);
-        vertex_index_.push_back(2);
-        vertex_index_.push_back(1);
-        vertex_index_.push_back(3);
+        state_data_[1].push_back(state_data_[0][4]);
+        state_data_[1].push_back((state_data_[0][1] +
+                                  state_data_[0][4] +
+                                  state_data_[0][7]) / 3.0);
+        state_data_[1].push_back((state_data_[0][2] +
+                                  state_data_[0][4] +
+                                  state_data_[0][7]) / 3.0);
+        state_data_[1].push_back(state_data_[0][7]);
+
+        static const int indices[] = {
+            0, 1, 2, 2, 1, 3, /* front */
+            5, 4, 7, 7, 4, 6, /* back */
+            3, 1, 7, 7, 1, 5, /* right */
+            6, 4, 2, 2, 4, 0, /* left */
+            6, 2, 7, 7, 2, 3, /* top */
+            0, 4, 1, 1, 4, 5, /* bottom */
+        };
+
+        vertex_index_.assign(indices, indices + sizeof(indices) / sizeof(*indices));
 
         current_state_data_ = state_data_[start_state_];
     }
@@ -263,7 +292,7 @@ void SceneBuffer::setup()
     mMesh.set_attrib_locations(attrib_locations);
 
     /* Add objects */
-    priv_->objects.push_back(new TransformableBox());
+    priv_->objects.push_back(new TransformableCube());
 
     for (std::vector<TransformableObject*>::iterator si = priv_->objects.begin();
          si != priv_->objects.end();
