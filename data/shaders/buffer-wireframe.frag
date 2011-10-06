@@ -1,5 +1,8 @@
 varying vec4 dist;
 
+const vec4 LINE_COLOR = vec4(1.0);
+const vec4 TRIANGLE_COLOR = vec4(0.0, 0.5, 0.8, 0.8);
+
 void main(void)
 {
     // Get the minimum distance of this fragment from a triangle edge.
@@ -10,5 +13,5 @@ void main(void)
     // Get the intensity of the wireframe line
     float I = exp2(-1.0 * d * d);
 
-    gl_FragColor = mix(vec4(0.0), vec4(1.0), I);
+    gl_FragColor = mix(TRIANGLE_COLOR, LINE_COLOR, I);
 }

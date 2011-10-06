@@ -311,6 +311,10 @@ void SceneBuffer::setup()
     mProgram.start();
     mProgram["Viewport"] = LibMatrix::vec2(mCanvas.width(), mCanvas.height());
 
+    /* Enable alpha blending */
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     mCurrentFrame = 0;
     mRunning = true;
     mStartTime = Scene::get_timestamp_us() / 1000000.0;
@@ -325,6 +329,10 @@ SceneBuffer::teardown()
     mProgram.release();
 
     mMesh.reset();
+
+    /* Reset default values */
+    glDisable(GL_BLEND);
+    glCullFace(GL_BACK);
 
     Scene::teardown();
 }
@@ -368,6 +376,15 @@ void SceneBuffer::draw()
 
     mProgram["ModelViewProjectionMatrix"] = model_view_proj;
 
+    /* 
+     * Render the back faces first and then the front faces to produce
+     * a correct translucency effect (this works because our objects
+     * are convex).
+     */
+    glCullFace(GL_FRONT);
+    mMesh.render_vbo();
+
+    glCullFace(GL_BACK);
     mMesh.render_vbo();
 }
 
