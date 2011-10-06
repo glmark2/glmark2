@@ -25,6 +25,8 @@ def options(opt):
                    default = True, help='disable compiler optimizations')
     opt.add_option('--data-path', action='store', dest = 'data_path',
                    help='the path to install the data to')
+    opt.add_option('--extras-path', action='store', dest = 'extras_path',
+                   help='path to additional data (models, shaders, textures)')
 
 def configure(ctx):
     if not Options.options.gl and not Options.options.glesv2:
@@ -75,6 +77,13 @@ def configure(ctx):
     if Options.options.data_path is None:
         Options.options.data_path = os.path.join(ctx.env.PREFIX, 'share/glmark2')
 
+    ctx.env.HAVE_EXTRAS = False
+    if Options.options.extras_path is not None:
+        ctx.env.HAVE_EXTRAS = True
+        # bld.root wants a relpath, so let's give it one.
+        Options.options.extras_path = os.path.relpath(Options.options.extras_path, '/')
+        ctx.env.append_unique('GLMARK_EXTRAS_PATH', Options.options.extras_path)
+
     ctx.env.append_unique('GLMARK_DATA_PATH', Options.options.data_path)
     ctx.env.append_unique('DEFINES', 'GLMARK_DATA_PATH="%s"' % Options.options.data_path)
     ctx.env.append_unique('DEFINES', 'GLMARK_VERSION="%s"' % VERSION)
@@ -85,6 +94,10 @@ def configure(ctx):
 
     ctx.msg("Prefix", ctx.env.PREFIX, color = 'PINK')
     ctx.msg("Data path", Options.options.data_path, color = 'PINK')
+    ctx.msg("Including extras", "Yes" if ctx.env.HAVE_EXTRAS else "No",
+            color = 'PINK');
+    if ctx.env.HAVE_EXTRAS:
+        ctx.msg("Extras path", Options.options.extras_path, color = 'PINK')
     ctx.msg("Building GL2 version", "Yes" if ctx.env.USE_GL else "No",
             color = 'PINK')
     ctx.msg("Building GLESv2 version", "Yes" if ctx.env.USE_GLESv2 else "No",
