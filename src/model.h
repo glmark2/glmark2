@@ -30,9 +30,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <map>
 
+enum ModelFormat
+{
+    MODEL_INVALID,
+    MODEL_3DS,
+    MODEL_OBJ
+};
 
-// A model as loaded from a 3ds file
+class ModelDescriptor
+{
+    std::string name_;
+    std::string pathname_;
+    ModelFormat format_;
+    ModelDescriptor();
+public:
+    ModelDescriptor(const std::string& name, ModelFormat format, 
+                    const std::string& pathname) :
+        name_(name),
+        pathname_(pathname),
+        format_(format) {}
+    ~ModelDescriptor() {}
+    const std::string& pathname() const { return pathname_; }
+    ModelFormat format() const { return format_; }
+};
+
+typedef std::map<std::string, ModelDescriptor*> ModelMap;
+
+// A model as loaded from a 3D object data file
 class Model
 {
 public:
@@ -49,12 +75,14 @@ public:
 
     bool load_3ds(const std::string &filename);
     bool load_obj(const std::string &filename);
+    bool load(const std::string& name);
     void calculate_normals();
     void convert_to_mesh(Mesh &mesh);
     void convert_to_mesh(Mesh &mesh, 
                          const std::vector<std::pair<AttribType, int> > &attribs);
     const LibMatrix::vec3& minVec() const { return minVec_; }
     const LibMatrix::vec3& maxVec() const { return maxVec_; }
+    static const ModelMap& find_models();
 private:
     struct Face {
         uint32_t a, b, c;
