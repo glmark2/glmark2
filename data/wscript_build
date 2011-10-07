@@ -1,9 +1,3 @@
-if bld.env.HAVE_EXTRAS:
-    EXTRAS_PATH = ''.join(bld.env.GLMARK_EXTRAS_PATH)
-    MODELS_PATH = EXTRAS_PATH + '/models/*'
-    bld.install_files('${GLMARK_DATA_PATH}/models',
-                      bld.root.ant_glob(MODELS_PATH))
-
 bld.install_files('${GLMARK_DATA_PATH}/models',
                   bld.path.ant_glob('models/*'))
 
