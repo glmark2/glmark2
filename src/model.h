@@ -73,8 +73,6 @@ public:
     Model() {}
     ~Model() {}
 
-    bool load_3ds(const std::string &filename);
-    bool load_obj(const std::string &filename);
     bool load(const std::string& name);
     void calculate_normals();
     void convert_to_mesh(Mesh &mesh);
@@ -104,6 +102,8 @@ private:
 
     void append_object_to_mesh(const Object &object, Mesh &mesh,
                                int p_pos, int n_pos, int t_pos);
+    bool load_3ds(const std::string &filename);
+    bool load_obj(const std::string &filename);
 
     // For vertices of the bounding box for this model.
     void compute_bounding_box(const Object& object);
