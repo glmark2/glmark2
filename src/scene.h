@@ -159,6 +159,9 @@ protected:
     LibMatrix::vec3 mCenterVec;
     float mRadius;
     Mesh mMesh;
+    bool mOrientModel;
+    float mOrientationAngle;
+    LibMatrix::vec3 mOrientationVec;
     float mRotation;
     float mRotationSpeed;
     bool mUseVbo;

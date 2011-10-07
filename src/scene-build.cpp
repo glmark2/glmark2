@@ -29,14 +29,31 @@
 #include <cmath>
 
 SceneBuild::SceneBuild(Canvas &pCanvas) :
-    Scene(pCanvas, "build")
+    Scene(pCanvas, "build"),
+    mOrientModel(false)
 {
+    const ModelMap& modelMap = Model::find_models();
+    std::string optionDesc("Which model to use [");
+    for (ModelMap::const_iterator modelIt = modelMap.begin();
+         modelIt != modelMap.end();
+         modelIt++)
+    {
+        static bool doSeparator(false);
+        if (doSeparator)
+        {
+            optionDesc += ", ";
+        }
+        const std::string& curName = modelIt->first;
+        optionDesc += curName;
+        doSeparator = true;
+    }
+    optionDesc += "]";
     mOptions["use-vbo"] = Scene::Option("use-vbo", "true",
                                         "Whether to use VBOs for rendering [true,false]");
     mOptions["interleave"] = Scene::Option("interleave", "false",
                                            "Whether to interleave vertex attribute data [true,false]");
     mOptions["model"] = Scene::Option("model", "horse",
-                                      "Which model to use [horse, bunny]");
+                                      optionDesc);
 }
 
 SceneBuild::~SceneBuild()
@@ -83,23 +100,33 @@ void SceneBuild::setup()
     }
 
     Model model;
-    bool modelLoaded(false);
     const std::string& whichModel(mOptions["model"].value);
-
-    if (whichModel == "bunny")
-    {
-        // Bunny rotates around the Y axis
-        modelLoaded = model.load_obj(GLMARK_DATA_PATH"/models/bunny.obj");
-    }
-    else
-    {
-        // Default is "horse", so we don't need to look further
-        // Horse rotates around the Y axis
-        modelLoaded = model.load_3ds(GLMARK_DATA_PATH"/models/horse.3ds");
-    }
+    bool modelLoaded = model.load(whichModel);
 
     if(!modelLoaded)
         return;
+
+    // Now that we're successfully loaded, there are a few quirks about
+    // some of the known models that we need to account for.  The draw
+    // logic for the scene wants to rotate the model around the Y axis.
+    // Most of our models are described this way.  Some need adjustment
+    // (an additional rotation that gets the model into the correct
+    // orientation).
+    //
+    // Here's a summary:
+    //
+    // Angel rotates around the Y axis
+    // Armadillo rotates around the Y axis
+    // Buddha rotates around the X axis
+    // Bunny rotates around the Y axis
+    // Dragon rotates around the X axis
+    // Horse rotates around the Y axis
+    if (whichModel == "buddha" || whichModel == "dragon")
+    {
+        mOrientModel = true;
+        mOrientationAngle = -90.0;
+        mOrientationVec = vec3(1.0, 0.0, 0.0);
+    }
 
     model.calculate_normals();
 
@@ -184,6 +211,10 @@ void SceneBuild::draw()
     LibMatrix::mat4 model_view_proj(mPerspective);
     model_view.translate(-mCenterVec.x(), -mCenterVec.y(), -(mCenterVec.z() + 2.0 + mRadius));
     model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
+    if (mOrientModel)
+    {
+        model_view.rotate(mOrientationAngle, mOrientationVec.x(), mOrientationVec.y(), mOrientationVec.z());
+    }
     model_view_proj *= model_view.getCurrent();
 
     mProgram["ModelViewProjectionMatrix"] = model_view_proj;
