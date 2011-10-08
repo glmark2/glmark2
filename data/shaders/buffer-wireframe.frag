@@ -11,7 +11,7 @@ void main(void)
     float d = min(dist.x * dist.w, min(dist.y * dist.w, dist.z * dist.w));
 
     // Get the intensity of the wireframe line
-    float I = exp2(-1.0 * d * d);
+    float I = exp2(-2.0 * d * d);
 
     gl_FragColor = mix(TRIANGLE_COLOR, LINE_COLOR, I);
 }
