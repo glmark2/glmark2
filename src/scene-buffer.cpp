@@ -27,182 +27,255 @@
 #include "util.h"
 #include <cmath>
 
-/**************************************
- * TransformableObject implementation *
- **************************************/
+/***********************
+ * Wave implementation *
+ ***********************/
 
 /** 
- * An object that changes its shape as a function of elapsed time,
- * moving between a series of states using linear interpolation.
+ * A callback used to set up the grid by the Wave class.
+ * It is called for each "quad" of the grid.
  */
-class TransformableObject
+static void
+wave_grid_conf(Mesh &mesh, int x, int y, int n_x, int n_y,
+               LibMatrix::vec3 &ul,
+               LibMatrix::vec3 &ll,
+               LibMatrix::vec3 &ur,
+               LibMatrix::vec3 &lr)
+{
+    (void)x; (void)y; (void)n_x; (void)n_y;
+
+    /* 
+     * Order matters here, so that Wave::vertex_length_index() can work.
+     * Vertices of the triangles at index i that belong to length index i
+     * are even, those that belong to i + 1 are odd.
+     */
+    const LibMatrix::vec3* t[] = {
+        &ll, &ur, &ul, &ur, &ll, &lr
+    };
+
+    for (int i = 0; i < 6; i++) {
+        mesh.next_vertex();
+        /* 
+         * Set the vertex position and the three vertex positions
+         * of the triangle this vertex belongs to.
+         */
+        mesh.set_attrib(0, *t[i]);
+        mesh.set_attrib(1, *t[3 * (i / 3)]);
+        mesh.set_attrib(2, *t[3 * (i / 3) + 1]);
+        mesh.set_attrib(3, *t[3 * (i / 3) + 2]);
+    }
+}
+
+/** 
+ * Renders a grid mesh modulated by a sine wave
+ */
+class WaveMesh
 {
 public:
     /** 
-     * Attach a Transformable object to a mesh.
+     * Creates a wave mesh.
+     * 
+     * @param length the total length of the grid (in model coordinates)
+     * @param width the total width of the grid (in model coordinates)
+     * @param nlength the number of length-wise grid subdivisions
+     * @param nwidth the number of width-wise grid subdivisions
+     * @param wavelength the wave length as a proportion of the length
+     * @param duty_cycle the duty cycle ()
      */
-    void attach_to_mesh(Mesh& mesh)
+    WaveMesh(double length, double width, size_t nlength, size_t nwidth,
+             double wavelength, double duty_cycle) :
+        length_(length), width_(width), nlength_(nlength), nwidth_(nwidth),
+        wave_k_(2 * M_PI / (wavelength * length)),
+        wave_period_(2.0 * M_PI / wave_k_),
+        wave_full_period_(wave_period_ / duty_cycle),
+        wave_velocity_(0.1 * length), displacement_(nlength)
     {
-        mesh_range_.first = mesh.vertices().size();
-
-        for (size_t i = 0; i < vertex_index_.size(); i++) {
-            size_t n = (i / 3) * 3;
-
-            mesh.next_vertex();
-            mesh.set_attrib(0, current_state_data_[vertex_index_[i]]);
-            mesh.set_attrib(1, current_state_data_[vertex_index_[n]]);
-            mesh.set_attrib(2, current_state_data_[vertex_index_[n + 1]]);
-            mesh.set_attrib(3, current_state_data_[vertex_index_[n + 2]]);
-        }
-
-        mesh_range_.second = mesh.vertices().size() - 1;
+        create_program();
+        create_mesh();
     }
 
-    /** 
-     * Updates the mesh data with the current object state.
-     */
-    std::pair<size_t,size_t>& update_mesh(Mesh& mesh)
-    {
-        for (size_t i = 0; i < vertex_index_.size(); i++) {
-            size_t n = (i / 3) * 3;
 
-            std::vector<float> *vertex( &mesh.vertices()[i + mesh_range_.first]);
-
-            mesh.set_attrib(0, current_state_data_[vertex_index_[i]],
-                            vertex);
-            mesh.set_attrib(1, current_state_data_[vertex_index_[n]],
-                            vertex);
-            mesh.set_attrib(2, current_state_data_[vertex_index_[n + 1]],
-                            vertex);
-            mesh.set_attrib(3, current_state_data_[vertex_index_[n + 2]],
-                            vertex);
-        }
-
-        return mesh_range_;
-    }
+    ~WaveMesh() { reset(); }
 
     /** 
-     * Updates the object state.
-     *
-     * @param elapsed the elapsed time since the start of the
-     *        transformation process
+     * Updates the state of a wave mesh.
+     * 
+     * @param elapsed the time elapsed since the beginning of the rendering
      */
     void update(double elapsed)
     {
-        double transition_time(period_ / (nstates_ - 1));
-        int state_changes(static_cast<int>(elapsed / transition_time));
-        int state((start_state_ + state_changes) % nstates_);
-        int state_next((state + 1) % nstates_);
-        double factor(std::fmod(elapsed, transition_time) / transition_time);
+        std::vector<std::vector<float> >& vertices(mesh_.vertices());
 
-        current_state_data_.assign_lerp(state_data_[state],
-                                        state_data_[state_next],
-                                        factor);
-    }
+        /* Figure out which length index ranges need update */
+        std::vector<std::pair<size_t, size_t> > ranges;
 
-    /** 
-     * The time it should take to perform a full transformation sequence.
-     */
-    void period(double t) { period_ = t; }
+        for (size_t n = 0; n < nlength_; n++) {
+            double d(displacement(n, elapsed));
 
-    /** 
-     * A vector containing vertices (just vec3 for now), with additional
-     * support for linear interpolation.
-     */
-    class VertexVector : public std::vector<LibMatrix::vec3>
-    {
-    public:
-        VertexVector() {}
-
-        VertexVector& assign_lerp(const VertexVector& a, const VertexVector& b,
-                                  double factor)
-        {
-            size_t min_size = std::min(std::min(a.size(), b.size()), size());
-            for (size_t i = 0; i < min_size; i++) {
-                (*this)[i] = a[i] + (b[i] - a[i]) * factor;
+            if (d != displacement_[n]) {
+                if (ranges.size() > 0 && ranges.back().second == n - 1) {
+                    ranges.back().second = n;
+                }
+                else {
+                    ranges.push_back(
+                            std::pair<size_t, size_t>(n > 0 ? n - 1 : 0, n)
+                            );
+                }
             }
 
-            return *this;
+            displacement_[n] = d;
         }
-    };
 
-protected:
-    TransformableObject() :
-        period_(10.0), start_state_(0), nstates_(0)
-    {
+        /* Update the vertex data of the changed ranges */
+        for (std::vector<std::pair<size_t, size_t> >::iterator iter = ranges.begin();
+             iter != ranges.end();
+             iter++)
+        {
+            size_t vstart(iter->first * nwidth_ * 6 + (iter->first % 2));
+            size_t vend((iter->second + 1) * nwidth_ * 6);
+
+            for (size_t v = vstart; v < vend; v++) {
+                size_t vt = 3 * (v / 3);
+                vertices[v][0 * 3 + 2] = displacement_[vertex_length_index(v)];
+                vertices[v][1 * 3 + 2] = displacement_[vertex_length_index(vt)];
+                vertices[v][2 * 3 + 2] = displacement_[vertex_length_index(vt + 1)];
+                vertices[v][3 * 3 + 2] = displacement_[vertex_length_index(vt + 2)];
+            }
+
+            /* Update pair with actual vertex range */
+            iter->first = vstart;
+            iter->second = vend - 1;
+        }
+
+        mesh_.update_vbo(ranges);
     }
 
-    double period_;
-    size_t start_state_;
-    size_t nstates_;
-    VertexVector current_state_data_;
-    std::vector<VertexVector> state_data_;
-    std::vector<int> vertex_index_;
-    std::pair<size_t,size_t> mesh_range_;
-};
+    Mesh& mesh() { return mesh_; }
+    Program& program() { return program_; }
 
-/** 
- * An object that changes between a tetrahedron and a cube.
- */
-class TransformableCube : public TransformableObject
-{
-public:
-    TransformableCube(const LibMatrix::mat4& transform = LibMatrix::mat4())
+    void reset()
     {
-        nstates_ = 2;
-        state_data_.resize(nstates_);
-        period_ = 2.5;
+        program_.stop();
+        program_.release();
+        mesh_.reset();
+    }
 
-        static const LibMatrix::vec4 vertices[] = {
-            LibMatrix::vec4(-1.0, -1.0,  1.0, 1.0),
-            LibMatrix::vec4( 1.0, -1.0,  1.0, 1.0),
-            LibMatrix::vec4(-1.0,  1.0,  1.0, 1.0),
-            LibMatrix::vec4( 1.0,  1.0,  1.0, 1.0),
-            LibMatrix::vec4(-1.0, -1.0, -1.0, 1.0),
-            LibMatrix::vec4( 1.0, -1.0, -1.0, 1.0),
-            LibMatrix::vec4(-1.0,  1.0, -1.0, 1.0),
-            LibMatrix::vec4( 1.0,  1.0, -1.0, 1.0)
-        };
-        
-        /* Fill in the initial state (possibly transformed) */
-        size_t nvertices = sizeof(vertices) / sizeof(*vertices);
-        for (size_t i = 0; i < nvertices; i++) {
-            const LibMatrix::vec4& tvertex4(transform * vertices[i]);
-            LibMatrix::vec3 tvertex3(tvertex4.x(), tvertex4.y(), tvertex4.z());
-            state_data_[0].push_back(tvertex3);
+private:
+    Mesh mesh_;
+    Program program_;
+    double length_;
+    double width_;
+    size_t nlength_;
+    size_t nwidth_;
+    /* Wave parameters */
+    double wave_k_;
+    double wave_period_;
+    double wave_full_period_;
+    double wave_fill_;
+    double wave_velocity_;
+
+    std::vector<double> displacement_;
+
+    /** 
+     * Calculates the length index of a vertex.
+     */
+    size_t vertex_length_index(size_t v)
+    {
+        return v / (6 * nwidth_) + (v % 2);
+    }
+
+    /** 
+     * The sine wave function with duty-cycle.
+     *
+     * @param x the space coordinate
+     * 
+     * @return the operation error code
+     */
+    double wave_func(double x)
+    {
+        double r(fmod(x, wave_full_period_));
+        if (r < 0)
+            r += wave_full_period_;
+
+        /* 
+         * Return either the sine value or 0.0, depending on the
+         * wave duty cycle.
+         */ 
+        if (r > wave_period_)
+        {
+            return 0;
         }
+        else
+        {
+            return 0.2 * std::sin(wave_k_ * r);
+        }
+    }
 
-        /* Fill in the second state */
-        state_data_[1].push_back((state_data_[0][1] +
-                                  state_data_[0][2] +
-                                  state_data_[0][4]) / 3.0);
-        state_data_[1].push_back(state_data_[0][1]);
-        state_data_[1].push_back(state_data_[0][2]);
-        state_data_[1].push_back((state_data_[0][1] +
-                                  state_data_[0][2] +
-                                  state_data_[0][7]) / 3.0);
+    /** 
+     * Calculates the displacement of the wave.
+     * 
+     * @param n the length index
+     * @param elapsed the time elapsed since the beginning of the rendering
+     * 
+     * @return the displacement at point n at time elapsed
+     */
+    double displacement(size_t n, double elapsed)
+    {
+        double x(n * length_ / nlength_);
 
-        state_data_[1].push_back(state_data_[0][4]);
-        state_data_[1].push_back((state_data_[0][1] +
-                                  state_data_[0][4] +
-                                  state_data_[0][7]) / 3.0);
-        state_data_[1].push_back((state_data_[0][2] +
-                                  state_data_[0][4] +
-                                  state_data_[0][7]) / 3.0);
-        state_data_[1].push_back(state_data_[0][7]);
+        return wave_func(x - wave_velocity_ * elapsed);
+    }
 
-        static const int indices[] = {
-            0, 1, 2, 2, 1, 3, /* front */
-            5, 4, 7, 7, 4, 6, /* back */
-            3, 1, 7, 7, 1, 5, /* right */
-            6, 4, 2, 2, 4, 0, /* left */
-            6, 2, 7, 7, 2, 3, /* top */
-            0, 4, 1, 1, 4, 5, /* bottom */
-        };
+    /** 
+     * Creates the GL shader program.
+     */
+    void create_program()
+    {
+        /* Set up shaders */
+        static const std::string vtx_shader_filename(
+                GLMARK_DATA_PATH"/shaders/buffer-wireframe.vert");
+        static const std::string frg_shader_filename(
+                GLMARK_DATA_PATH"/shaders/buffer-wireframe.frag");
 
-        vertex_index_.assign(indices, indices + sizeof(indices) / sizeof(*indices));
+        ShaderSource vtx_source(vtx_shader_filename);
+        ShaderSource frg_source(frg_shader_filename);
 
-        current_state_data_ = state_data_[start_state_];
+        if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
+                                              frg_source.str()))
+        {
+            return;
+        }
+    }
+
+    /** 
+     * Creates the grid mesh.
+     */
+    void create_mesh()
+    {
+        /* 
+         * We need to pass the positions of all vertex of the triangle
+         * in order to draw the wireframe.
+         */
+        std::vector<int> vertex_format;
+        vertex_format.push_back(3);     // Position of vertex
+        vertex_format.push_back(3);     // Position of triangle vertex 0
+        vertex_format.push_back(3);     // Position of triangle vertex 1
+        vertex_format.push_back(3);     // Position of triangle vertex 2
+        mesh_.set_vertex_format(vertex_format);
+
+        std::vector<GLint> attrib_locations;
+        attrib_locations.push_back(program_["position"].location());
+        attrib_locations.push_back(program_["tvertex0"].location());
+        attrib_locations.push_back(program_["tvertex1"].location());
+        attrib_locations.push_back(program_["tvertex2"].location());
+        mesh_.set_attrib_locations(attrib_locations);
+
+        mesh_.make_grid(nlength_, nwidth_, length_, width_,
+                        0.0, wave_grid_conf);
+
+        mesh_.build_vbo();
+
+
     }
 
 };
@@ -212,8 +285,8 @@ public:
  ******************************/
 
 struct SceneBufferPrivate {
-    std::vector<TransformableObject *> objects;
-    ~SceneBufferPrivate() { Util::dispose_pointer_vector(objects); }
+    WaveMesh *wave;
+    ~SceneBufferPrivate() { delete wave; }
 };
 
 SceneBuffer::SceneBuffer(Canvas &pCanvas) :
@@ -224,6 +297,14 @@ SceneBuffer::SceneBuffer(Canvas &pCanvas) :
                                            "Whether to interleave vertex attribute data [true,false]");
     mOptions["update-method"] = Scene::Option("update-method", "map",
                                               "[map,subdata]");
+    mOptions["update-fraction"] = Scene::Option("update-fraction", "1.0",
+                                                "The fraction of the mesh length that is updated at every iteration (0.0-1.0)");
+    mOptions["update-dispersion"] = Scene::Option("update-dispersion", "0.0",
+                                                  "How dispersed the updates are [0.0 - 1.0]");
+    mOptions["columns"] = Scene::Option("columns", "100",
+                                       "The number of mesh subdivisions length-wise");
+    mOptions["rows"] = Scene::Option("rows", "20",
+                                      "The number of mesh subdisivisions width-wise");
 }
 
 SceneBuffer::~SceneBuffer()
@@ -231,20 +312,21 @@ SceneBuffer::~SceneBuffer()
     delete priv_;
 }
 
-int SceneBuffer::load()
+int
+SceneBuffer::load()
 {
     mRunning = false;
 
     return 1;
 }
 
-void SceneBuffer::unload()
+void
+SceneBuffer::unload()
 {
-    mMesh.reset();
-
 }
 
-void SceneBuffer::setup()
+void
+SceneBuffer::setup()
 {
     using LibMatrix::vec3;
 
@@ -252,6 +334,10 @@ void SceneBuffer::setup()
 
     bool interleave = (mOptions["interleave"].value == "true");
     Mesh::VBOUpdateMethod update_method;
+    double update_fraction;
+    double update_dispersion;
+    size_t nlength;
+    size_t nwidth;
 
     if (mOptions["update-method"].value == "map")
         update_method = Mesh::VBOUpdateMethodMap;
@@ -260,60 +346,30 @@ void SceneBuffer::setup()
     else
         update_method = Mesh::VBOUpdateMethodMap;
 
-    /* Set up shaders */
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/buffer-wireframe.vert");
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/buffer-wireframe.frag");
+    std::stringstream ss;
+    ss << mOptions["update-fraction"].value;
+    ss >> update_fraction;
+    ss.clear();
+    ss << mOptions["update-dispersion"].value;
+    ss >> update_dispersion;
+    ss.clear();
+    ss << mOptions["columns"].value;
+    ss >> nlength;
+    ss.clear();
+    ss << mOptions["rows"].value;
+    ss >> nwidth;
 
-    ShaderSource vtx_source(vtx_shader_filename);
-    ShaderSource frg_source(frg_shader_filename);
+    priv_->wave = new WaveMesh(5.0, 2.0, nlength, nwidth,
+                               update_fraction * (1.0 - update_dispersion + 0.0001),
+                               update_fraction);
 
-    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
-                                          frg_source.str()))
-    {
-        return;
-    }
+    priv_->wave->mesh().interleave(interleave);
+    priv_->wave->mesh().vbo_update_method(update_method);
 
-    /* 
-     * We need to pass the positions of all vertex of the triangle
-     * in order to draw the wireframe.
-     */
-    std::vector<int> vertex_format;
-    vertex_format.push_back(3);     // Position of vertex
-    vertex_format.push_back(3);     // Position of triangle vertex 0
-    vertex_format.push_back(3);     // Position of triangle vertex 1
-    vertex_format.push_back(3);     // Position of triangle vertex 2
-    mMesh.set_vertex_format(vertex_format);
+    priv_->wave->program().start();
+    priv_->wave->program()["Viewport"] = LibMatrix::vec2(mCanvas.width(), mCanvas.height());
 
-    std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram["position"].location());
-    attrib_locations.push_back(mProgram["tvertex0"].location());
-    attrib_locations.push_back(mProgram["tvertex1"].location());
-    attrib_locations.push_back(mProgram["tvertex2"].location());
-    mMesh.set_attrib_locations(attrib_locations);
-
-    /* Add objects */
-    priv_->objects.push_back(new TransformableCube());
-
-    for (std::vector<TransformableObject*>::iterator si = priv_->objects.begin();
-         si != priv_->objects.end();
-         si++)
-    {
-        TransformableObject *object(*si);
-
-        object->attach_to_mesh(mMesh);
-    }
-
-    mMesh.vbo_update_method(update_method);
-    mMesh.interleave(interleave);
-
-    mMesh.build_vbo();
-
-    mProgram.start();
-    mProgram["Viewport"] = LibMatrix::vec2(mCanvas.width(), mCanvas.height());
-
-    /* Enable alpha blending */
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);
 
     mCurrentFrame = 0;
     mRunning = true;
@@ -324,20 +380,15 @@ void SceneBuffer::setup()
 void
 SceneBuffer::teardown()
 {
-    Util::dispose_pointer_vector(priv_->objects);
-    mProgram.stop();
-    mProgram.release();
+    priv_->wave->reset();
 
-    mMesh.reset();
-
-    /* Reset default values */
-    glDisable(GL_BLEND);
-    glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
 
     Scene::teardown();
 }
 
-void SceneBuffer::update()
+void
+SceneBuffer::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
     double elapsed_time = current_time - mStartTime;
@@ -349,43 +400,31 @@ void SceneBuffer::update()
         mRunning = false;
     }
 
-    std::vector<std::pair<size_t,size_t> > ranges;
-    for (std::vector<TransformableObject*>::iterator si = priv_->objects.begin();
-         si != priv_->objects.end();
-         si++)
-    {
-        TransformableObject *object(*si);
-
-        object->update(elapsed_time);
-        ranges.push_back(object->update_mesh(mMesh));
-    }
-
-    mMesh.update_vbo(ranges);
+    priv_->wave->update(elapsed_time);
 
     mCurrentFrame++;
 }
 
-void SceneBuffer::draw()
+void
+SceneBuffer::draw()
 {
     LibMatrix::Stack4 model_view;
 
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::mat4 model_view_proj(mCanvas.projection());
-    model_view.translate(0.0f, 0.0f, -5.0f);
+    model_view.translate(0.0, 0.0, -4.0);
+    model_view.rotate(45.0, -1.0, -0.0, -0.0);
     model_view_proj *= model_view.getCurrent();
 
-    mProgram["ModelViewProjectionMatrix"] = model_view_proj;
+    priv_->wave->program()["ModelViewProjectionMatrix"] = model_view_proj;
 
-    /* 
-     * Render the back faces first and then the front faces to produce
-     * a correct translucency effect (this works because our objects
-     * are convex).
-     */
-    glCullFace(GL_FRONT);
-    mMesh.render_vbo();
+    // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
+    // inverse transpose of the model view matrix.
+    LibMatrix::mat4 normal_matrix(model_view.getCurrent());
+    normal_matrix.inverse().transpose();
+    priv_->wave->program()["NormalMatrix"] = normal_matrix;
 
-    glCullFace(GL_BACK);
-    mMesh.render_vbo();
+    priv_->wave->mesh().render_vbo();
 }
 
 Scene::ValidationResult

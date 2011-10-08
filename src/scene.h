@@ -372,7 +372,5 @@ public:
 
 private:
     SceneBufferPrivate *priv_;
-    Program mProgram;
-    Mesh mMesh;
 };
 #endif
