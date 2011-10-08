@@ -66,10 +66,10 @@ public:
     void render_vbo();
 
     typedef void (*grid_configuration_func)(Mesh &mesh, int x, int y, int n_x, int n_y,
-                                            std::vector<float> &upper_left,
-                                            std::vector<float> &upper_right,
-                                            std::vector<float> &lower_right,
-                                            std::vector<float> &lower_left);
+                                            LibMatrix::vec3 &ul,
+                                            LibMatrix::vec3 &ll,
+                                            LibMatrix::vec3 &ur,
+                                            LibMatrix::vec3 &lr);
 
     void make_grid(int n_x, int n_y, double width, double height,
                    double spacing, grid_configuration_func conf_func = 0);

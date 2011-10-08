@@ -526,25 +526,27 @@ Mesh::make_grid(int n_x, int n_y, double width, double height,
             LibMatrix::vec3 c(a.x() + side_width, a.y(), 0);
             LibMatrix::vec3 d(a.x() + side_width, a.y() - side_height, 0);
 
-            std::vector<float> ul(vertex_size_);
-            std::vector<float> ur(vertex_size_);
-            std::vector<float> ll(vertex_size_);
-            std::vector<float> lr(vertex_size_);
+            if (!conf_func) {
+                std::vector<float> ul(vertex_size_);
+                std::vector<float> ur(vertex_size_);
+                std::vector<float> ll(vertex_size_);
+                std::vector<float> lr(vertex_size_);
 
-            set_attrib(0, a, &ul);
-            set_attrib(0, c, &ur);
-            set_attrib(0, b, &ll);
-            set_attrib(0, d, &lr);
+                set_attrib(0, a, &ul);
+                set_attrib(0, c, &ur);
+                set_attrib(0, b, &ll);
+                set_attrib(0, d, &lr);
 
-            if (conf_func != 0)
-                conf_func(*this, i, j, n_x, n_y, ul, ur, lr, ll);
-
-            next_vertex(); vertices_.back() = ul;
-            next_vertex(); vertices_.back() = ll;
-            next_vertex(); vertices_.back() = ur;
-            next_vertex(); vertices_.back() = ll;
-            next_vertex(); vertices_.back() = lr;
-            next_vertex(); vertices_.back() = ur;
+                next_vertex(); vertices_.back() = ul;
+                next_vertex(); vertices_.back() = ll;
+                next_vertex(); vertices_.back() = ur;
+                next_vertex(); vertices_.back() = ll;
+                next_vertex(); vertices_.back() = lr;
+                next_vertex(); vertices_.back() = ur;
+            }
+            else {
+                conf_func(*this, i, j, n_x, n_y, a, b, c, d);
+            }
         }
     }
 }
