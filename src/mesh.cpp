@@ -298,12 +298,12 @@ Mesh::build_vbo()
     attrib_data_ptr_.clear();
 
     GLenum buffer_usage;
-    if (vbo_usage_ == Mesh::VBOUsageStatic)
-        buffer_usage = GL_STATIC_DRAW;
-    else if (vbo_usage_ == Mesh::VBOUsageStream)
+    if (vbo_usage_ == Mesh::VBOUsageStream)
         buffer_usage = GL_STREAM_DRAW;
-    else if (vbo_usage_ == Mesh::VBOUsageDynamic)
+    if (vbo_usage_ == Mesh::VBOUsageDynamic)
         buffer_usage = GL_DYNAMIC_DRAW;
+    else /* if (vbo_usage_ == Mesh::VBOUsageStatic) */
+        buffer_usage = GL_STATIC_DRAW;
 
     if (!interleave_) {
         /* Create a vbo for each attribute */
