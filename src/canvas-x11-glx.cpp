@@ -187,6 +187,13 @@ CanvasX11GLX::ensure_glx_fbconfig()
     return true;
 }
 
+void
+CanvasX11GLX::init_gl_extensions()
+{
+    GLExtensions::MapBuffer = glMapBuffer;
+    GLExtensions::UnmapBuffer = glUnmapBuffer;
+}
+
 bool
 CanvasX11GLX::ensure_glx_context()
 {
@@ -202,6 +209,8 @@ CanvasX11GLX::ensure_glx_context()
         Log::error("Error: glXCreateNewContext failed\n");
         return false;
     }
+
+    init_gl_extensions();
 
     return true;
 }

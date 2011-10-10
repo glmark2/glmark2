@@ -23,6 +23,7 @@
  */
 #include "mesh.h"
 #include "log.h"
+#include "gl-headers.h"
 
 
 Mesh::Mesh() :
@@ -400,7 +401,7 @@ Mesh::update_single_vbo(const std::vector<std::pair<size_t, size_t> >& ranges,
 
     if (vbo_update_method_ == VBOUpdateMethodMap) {
         dest_start = reinterpret_cast<float *>(
-                glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY)
+                GLExtensions::MapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY)
                 );
     }
 
@@ -423,7 +424,7 @@ Mesh::update_single_vbo(const std::vector<std::pair<size_t, size_t> >& ranges,
     }
 
     if (vbo_update_method_ == VBOUpdateMethodMap)
-        glUnmapBuffer(GL_ARRAY_BUFFER);
+        GLExtensions::UnmapBuffer(GL_ARRAY_BUFFER);
 }
 
 /**

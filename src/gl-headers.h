@@ -30,9 +30,18 @@
 #elif USE_GLESv2
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#define glMapBuffer glMapBufferOES
-#define glUnmapBuffer glUnmapBufferOES
+#ifndef GL_WRITE_ONLY
 #define GL_WRITE_ONLY GL_WRITE_ONLY_OES
 #endif
+#endif
+
+/** 
+ * Struct that holds pointers to functions that belong to extensions
+ * in either GL2.0 or GLES2.0.
+ */
+struct GLExtensions {
+    static void* (*MapBuffer) (GLenum target, GLenum access);
+    static GLboolean (*UnmapBuffer) (GLenum target);
+};
 
 #endif

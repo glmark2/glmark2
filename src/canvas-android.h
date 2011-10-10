@@ -40,6 +40,9 @@ public:
     void write_to_file(std::string &filename);
     bool should_quit();
     void resize(int width, int height);
+
+private:
+    void init_gl_extensions();
 };
 
 #endif

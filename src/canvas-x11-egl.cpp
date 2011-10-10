@@ -194,6 +194,33 @@ CanvasX11EGL::ensure_egl_surface()
     return true;
 }
 
+void
+CanvasX11EGL::init_gl_extensions()
+{
+#if USE_GLESv2
+    /*
+     * Parse the extensions we care about from the extension string.
+     * Don't even bother to get function pointers until we know the
+     * extension is present.
+     */
+    std::string extString;
+    const char* exts = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+    if (exts) {
+        extString = exts;
+    }
+
+    if (extString.find("GL_OES_mapbuffer") != std::string::npos) {
+        GLExtensions::MapBuffer = 
+            reinterpret_cast<PFNGLMAPBUFFEROESPROC>(eglGetProcAddress("glMapBufferOES"));
+        GLExtensions::UnmapBuffer = 
+            reinterpret_cast<PFNGLUNMAPBUFFEROESPROC>(eglGetProcAddress("glUnmapBufferOES"));
+    }
+#elif USE_GL
+    GLExtensions::MapBuffer = glMapBuffer;
+    GLExtensions::UnmapBuffer = glUnmapBuffer;
+#endif
+}
+
 bool
 CanvasX11EGL::make_current()
 {
@@ -210,6 +237,8 @@ CanvasX11EGL::make_current()
 
     if (!eglSwapInterval(egl_display_, 0))
         Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
+
+    init_gl_extensions();
 
     return true;
 }
