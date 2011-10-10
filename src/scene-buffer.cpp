@@ -89,7 +89,7 @@ public:
         wave_k_(2 * M_PI / (wavelength * length)),
         wave_period_(2.0 * M_PI / wave_k_),
         wave_full_period_(wave_period_ / duty_cycle),
-        wave_velocity_(0.1 * length), displacement_(nlength)
+        wave_velocity_(0.1 * length), displacement_(nlength + 1)
     {
         create_program();
         create_mesh();
@@ -110,7 +110,7 @@ public:
         /* Figure out which length index ranges need update */
         std::vector<std::pair<size_t, size_t> > ranges;
 
-        for (size_t n = 0; n < nlength_; n++) {
+        for (size_t n = 0; n <= nlength_; n++) {
             double d(displacement(n, elapsed));
 
             if (d != displacement_[n]) {
@@ -132,8 +132,13 @@ public:
              iter != ranges.end();
              iter++)
         {
+            /* First vertex of length index range */
             size_t vstart(iter->first * nwidth_ * 6 + (iter->first % 2));
-            size_t vend((iter->second + 1) * nwidth_ * 6);
+            /* 
+             * First vertex not included in the range. We should also update all
+             * vertices of triangles touching index i.
+             */
+            size_t vend((iter->second + (iter->second < nlength_)) * nwidth_ * 6);
 
             for (size_t v = vstart; v < vend; v++) {
                 size_t vt = 3 * (v / 3);
