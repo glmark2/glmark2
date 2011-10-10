@@ -25,6 +25,7 @@
 #include "stack.h"
 #include "shader-source.h"
 #include "util.h"
+#include "gl-headers.h"
 #include <cmath>
 
 /***********************
@@ -358,6 +359,14 @@ SceneBuffer::setup()
     ss.clear();
     ss << mOptions["rows"].value;
     ss >> nwidth;
+
+    if (update_method == Mesh::VBOUpdateMethodMap &&
+        (GLExtensions::MapBuffer == 0 || GLExtensions::UnmapBuffer == 0))
+    {
+        Log::error("Requested MapBuffer VBO update method but GL_OES_mapbuffer"
+                   "is not supported!");
+        return;
+    }
 
     priv_->wave = new WaveMesh(5.0, 2.0, nlength, nwidth,
                                update_fraction * (1.0 - update_dispersion + 0.0001),
