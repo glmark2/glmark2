@@ -273,10 +273,6 @@ private:
 
         mesh_.make_grid(nlength_, nwidth_, length_, width_,
                         0.0, wave_grid_conf);
-
-        mesh_.build_vbo();
-
-
     }
 
 };
@@ -385,6 +381,7 @@ SceneBuffer::setup()
     priv_->wave->mesh().interleave(interleave);
     priv_->wave->mesh().vbo_update_method(update_method);
     priv_->wave->mesh().vbo_usage(usage);
+    priv_->wave->mesh().build_vbo();
 
     priv_->wave->program().start();
     priv_->wave->program()["Viewport"] = LibMatrix::vec2(mCanvas.width(), mCanvas.height());
