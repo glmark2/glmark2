@@ -402,7 +402,8 @@ SceneBuffer::setup()
 void
 SceneBuffer::teardown()
 {
-    priv_->wave->reset();
+    delete priv_->wave;
+    priv_->wave = 0;
 
     glEnable(GL_CULL_FACE);
 
