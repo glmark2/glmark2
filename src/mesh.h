@@ -50,8 +50,14 @@ public:
         VBOUpdateMethodMap,
         VBOUpdateMethodSubData,
     };
+    enum VBOUsage {
+        VBOUsageStatic,
+        VBOUsageStream,
+        VBOUsageDynamic,
+    };
 
     void vbo_update_method(VBOUpdateMethod method);
+    void vbo_usage(VBOUsage usage);
     void interleave(bool interleave);
 
     void reset();
@@ -94,6 +100,7 @@ private:
     int vertex_stride_;
     bool interleave_;
     VBOUpdateMethod vbo_update_method_;
+    VBOUsage vbo_usage_;
 };
 
 #endif

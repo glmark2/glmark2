@@ -27,7 +27,8 @@
 
 
 Mesh::Mesh() :
-    vertex_size_(0), interleave_(false), vbo_update_method_(VBOUpdateMethodMap)
+    vertex_size_(0), interleave_(false), vbo_update_method_(VBOUpdateMethodMap),
+    vbo_usage_(VBOUsageStatic)
 {
 }
 
@@ -192,6 +193,19 @@ Mesh::vbo_update_method(Mesh::VBOUpdateMethod method)
     vbo_update_method_ = method;
 }
 
+/**
+ * Sets the VBO usage hint.
+ *
+ * The usage hint takes effect in the next call to ::build_vbo().
+ *
+ * The default value is VBOUsageStatic.
+ */
+void
+Mesh::vbo_usage(Mesh::VBOUsage usage)
+{
+    vbo_usage_ = usage;
+}
+
 /** 
  * Sets the vertex attribute interleaving mode.
  *
@@ -283,6 +297,14 @@ Mesh::build_vbo()
 
     attrib_data_ptr_.clear();
 
+    GLenum buffer_usage;
+    if (vbo_usage_ == Mesh::VBOUsageStatic)
+        buffer_usage = GL_STATIC_DRAW;
+    else if (vbo_usage_ == Mesh::VBOUsageStream)
+        buffer_usage = GL_STREAM_DRAW;
+    else if (vbo_usage_ == Mesh::VBOUsageDynamic)
+        buffer_usage = GL_DYNAMIC_DRAW;
+
     if (!interleave_) {
         /* Create a vbo for each attribute */
         for (std::vector<std::pair<int, int> >::const_iterator ai = vertex_format_.begin();
@@ -295,7 +317,7 @@ Mesh::build_vbo()
             glGenBuffers(1, &vbo);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
             glBufferData(GL_ARRAY_BUFFER, nvertices * ai->first * sizeof(float),
-                         data, GL_STATIC_DRAW);
+                         data, buffer_usage);
 
             vbos_.push_back(vbo);
             attrib_data_ptr_.push_back(0);
