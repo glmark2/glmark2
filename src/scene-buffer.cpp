@@ -306,6 +306,8 @@ SceneBuffer::SceneBuffer(Canvas &pCanvas) :
                                        "The number of mesh subdivisions length-wise");
     mOptions["rows"] = Scene::Option("rows", "20",
                                       "The number of mesh subdisivisions width-wise");
+    mOptions["buffer-usage"] = Scene::Option("buffer-usage", "static",
+                                      "How the buffer will be used [static,stream,dynamic]");
 }
 
 SceneBuffer::~SceneBuffer()
@@ -335,6 +337,7 @@ SceneBuffer::setup()
 
     bool interleave = (mOptions["interleave"].value == "true");
     Mesh::VBOUpdateMethod update_method;
+    Mesh::VBOUsage usage;
     double update_fraction;
     double update_dispersion;
     size_t nlength;
@@ -346,6 +349,13 @@ SceneBuffer::setup()
         update_method = Mesh::VBOUpdateMethodSubData;
     else
         update_method = Mesh::VBOUpdateMethodMap;
+
+    if (mOptions["buffer-usage"].value == "static")
+        usage = Mesh::VBOUsageStatic;
+    else if (mOptions["buffer-usage"].value == "stream")
+        usage = Mesh::VBOUsageStream;
+    else
+        usage = Mesh::VBOUsageDynamic;
 
     std::stringstream ss;
     ss << mOptions["update-fraction"].value;
@@ -374,6 +384,7 @@ SceneBuffer::setup()
 
     priv_->wave->mesh().interleave(interleave);
     priv_->wave->mesh().vbo_update_method(update_method);
+    priv_->wave->mesh().vbo_usage(usage);
 
     priv_->wave->program().start();
     priv_->wave->program()["Viewport"] = LibMatrix::vec2(mCanvas.width(), mCanvas.height());
