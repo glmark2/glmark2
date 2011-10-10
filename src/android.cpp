@@ -87,6 +87,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
     Benchmark::register_scene(*new SceneEffect2D(*g_canvas));
     Benchmark::register_scene(*new ScenePulsar(*g_canvas));
     Benchmark::register_scene(*new SceneDesktop(*g_canvas));
+    Benchmark::register_scene(*new SceneBuffer(*g_canvas));
 
     add_default_benchmarks(g_benchmarks);
 
