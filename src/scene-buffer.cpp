@@ -441,12 +441,6 @@ SceneBuffer::draw()
 
     priv_->wave->program()["ModelViewProjectionMatrix"] = model_view_proj;
 
-    // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
-    // inverse transpose of the model view matrix.
-    LibMatrix::mat4 normal_matrix(model_view.getCurrent());
-    normal_matrix.inverse().transpose();
-    priv_->wave->program()["NormalMatrix"] = normal_matrix;
-
     priv_->wave->mesh().render_vbo();
 }
 
