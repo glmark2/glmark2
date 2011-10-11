@@ -56,8 +56,8 @@ SceneBump::setup_model_plain(const std::string &type)
 {
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-poly.vert");
     static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/bump-poly.frag");
-    static const std::string low_poly_filename(GLMARK_DATA_PATH"/models/asteroid-low.3ds");
-    static const std::string high_poly_filename(GLMARK_DATA_PATH"/models/asteroid-high.3ds");
+    static const std::string low_poly_filename("asteroid-low");
+    static const std::string high_poly_filename("asteroid-high");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     Model model;
 
@@ -70,7 +70,7 @@ SceneBump::setup_model_plain(const std::string &type)
     std::string poly_filename = type == "high-poly" ?
                                 high_poly_filename : low_poly_filename;
 
-    if(!model.load_3ds(poly_filename))
+    if(!model.load(poly_filename))
         return;
 
     model.calculate_normals();
@@ -110,7 +110,7 @@ SceneBump::setup_model_normals()
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     Model model;
 
-    if(!model.load_3ds(GLMARK_DATA_PATH"/models/asteroid-low.3ds"))
+    if(!model.load("asteroid-low"))
         return;
 
     /* Calculate the half vector */
@@ -158,6 +158,7 @@ void SceneBump::setup()
 
     const std::string &bump_render = mOptions["bump-render"].value;
 
+    Model::find_models();
     if (bump_render == "normals")
         setup_model_normals();
     else if (bump_render == "off" || bump_render == "high-poly")

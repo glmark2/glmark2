@@ -44,9 +44,10 @@ SceneTexture::~SceneTexture()
 
 int SceneTexture::load()
 {
+    Model::find_models();
     Model model;
 
-    if(!model.load_3ds(GLMARK_DATA_PATH"/models/cube.3ds"))
+    if(!model.load("cube"))
         return 0;
 
     model.calculate_normals();

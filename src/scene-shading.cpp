@@ -67,9 +67,10 @@ SceneShading::~SceneShading()
 
 int SceneShading::load()
 {
+    Model::find_models();
     Model model;
 
-    if(!model.load_3ds(GLMARK_DATA_PATH"/models/cat.3ds"))
+    if(!model.load("cat"))
         return 0;
 
     model.calculate_normals();

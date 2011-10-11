@@ -27,7 +27,7 @@
 #include "options.h"
 #include "util.h"
 #include "float.h"
-
+#include <dirent.h>
 #include <fstream>
 #include <sstream>
 #include <memory>
@@ -599,4 +599,120 @@ Model::load_obj(const std::string &filename)
     Log::debug("Object populated with %u vertices and %u faces.\n",
         object.vertices.size(), object.faces.size());
     return true;
+}
+
+namespace ModelPrivate
+{
+
+void
+list_files(const string& dirName, vector<string>& fileVec)
+{
+    DIR* dir = opendir(dirName.c_str());
+    if (!dir)
+    {
+        Log::error("Failed to open models directory '%s'\n", dirName.c_str());
+        return;
+    }
+
+    struct dirent* entry = readdir(dir);
+    while (entry)
+    {
+        string pathname(dirName + "/");
+        pathname += string(entry->d_name);
+        // Skip '.' and '..'
+        if (entry->d_name[0] != '.')
+        {
+            fileVec.push_back(pathname);
+        }
+        entry = readdir(dir);
+    }
+    closedir(dir);
+}
+
+ModelMap modelMap;
+
+}
+
+const ModelMap&
+Model::find_models()
+{
+    if (!ModelPrivate::modelMap.empty())
+    {
+        return ModelPrivate::modelMap;
+    }
+    vector<string> pathVec;
+    string dataDir(GLMARK_DATA_PATH"/models");
+    ModelPrivate::list_files(dataDir, pathVec);
+#ifdef GLMARK_EXTRAS_PATH
+    string extrasDir(GLMARK_EXTRAS_PATH"/models");
+    ModelPrivate::list_files(extrasDir, pathVec);
+#endif
+
+    // Now that we have a list of all of the model files available to us,
+    // let's go through and pull out the names and what format they're in
+    // so the scene can decide which ones to use.
+    for(vector<string>::const_iterator pathIt = pathVec.begin();
+        pathIt != pathVec.end();
+        pathIt++)
+    {
+        const string& curPath = *pathIt;
+        string::size_type namePos(0);
+        string::size_type slashPos = curPath.rfind("/");
+        if (slashPos != string::npos)
+        {
+            // Advance to the first character after the last slash
+            namePos = slashPos + 1;
+        }
+
+        ModelFormat format(MODEL_INVALID);
+        string::size_type extPos = curPath.rfind(".3ds");
+        if (extPos == string::npos)
+        {
+            // It's not a 3ds model
+            extPos = curPath.rfind(".obj");
+            if (extPos == string::npos)
+            {
+                // It's not an obj model either, so skip it.
+                continue;
+            }
+            format = MODEL_OBJ;
+        }
+        else
+        {
+            // It's a 3ds model
+            format = MODEL_3DS;
+        }
+
+        string name(curPath, namePos, extPos - namePos);
+        ModelDescriptor* desc = new ModelDescriptor(name, format, curPath);
+        ModelPrivate::modelMap.insert(std::make_pair(name, desc));
+    }
+
+    return ModelPrivate::modelMap;
+}
+
+bool
+Model::load(const string& modelName)
+{
+    bool retVal(false);
+    ModelMap::const_iterator modelIt = ModelPrivate::modelMap.find(modelName);
+    if (modelIt == ModelPrivate::modelMap.end())
+    {
+        return retVal;
+    }
+
+    ModelDescriptor* desc = modelIt->second;
+    switch (desc->format())
+    {
+        case MODEL_INVALID:
+            break;
+        case MODEL_3DS:
+            retVal = load_3ds(desc->pathname());
+            break;
+        case MODEL_OBJ:
+            retVal = load_obj(desc->pathname());
+            break;
+    }
+
+    return retVal;
 }
