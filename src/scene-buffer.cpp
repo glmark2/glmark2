@@ -436,7 +436,7 @@ SceneBuffer::draw()
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::mat4 model_view_proj(mCanvas.projection());
     model_view.translate(0.0, 0.0, -4.0);
-    model_view.rotate(45.0, -1.0, -0.0, -0.0);
+    model_view.rotate(45.0, -1.0, 0.0, 0.0);
     model_view_proj *= model_view.getCurrent();
 
     priv_->wave->program()["ModelViewProjectionMatrix"] = model_view_proj;
