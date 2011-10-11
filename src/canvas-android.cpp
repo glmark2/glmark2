@@ -22,6 +22,7 @@
 #include "canvas-android.h"
 #include "log.h"
 #include "options.h"
+#include "gl-headers.h"
 #include <EGL/egl.h>
 
 #include <fstream>
@@ -34,6 +35,8 @@ CanvasAndroid::init()
 
     if (!eglSwapInterval(eglGetCurrentDisplay(), 0))
         Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
+
+    init_gl_extensions();
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -120,3 +123,24 @@ CanvasAndroid::resize(int width, int height)
                                                1.0, 1024.0);
 }
 
+void
+CanvasAndroid::init_gl_extensions()
+{
+    /*
+     * Parse the extensions we care about from the extension string.
+     * Don't even bother to get function pointers until we know the
+     * extension is present.
+     */
+    std::string extString;
+    const char* exts = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+    if (exts) {
+        extString = exts;
+    }
+
+    if (extString.find("GL_OES_mapbuffer") != std::string::npos) {
+        GLExtensions::MapBuffer = 
+            reinterpret_cast<PFNGLMAPBUFFEROESPROC>(eglGetProcAddress("glMapBufferOES"));
+        GLExtensions::UnmapBuffer = 
+            reinterpret_cast<PFNGLUNMAPBUFFEROESPROC>(eglGetProcAddress("glUnmapBufferOES"));
+    }
+}

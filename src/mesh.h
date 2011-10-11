@@ -44,10 +44,27 @@ public:
     void set_attrib(int pos, const LibMatrix::vec3 &v, std::vector<float> *vertex = 0);
     void set_attrib(int pos, const LibMatrix::vec4 &v, std::vector<float> *vertex = 0);
     void next_vertex();
+    std::vector<std::vector<float> >& vertices();
+
+    enum VBOUpdateMethod {
+        VBOUpdateMethodMap,
+        VBOUpdateMethodSubData,
+    };
+    enum VBOUsage {
+        VBOUsageStatic,
+        VBOUsageStream,
+        VBOUsageDynamic,
+    };
+
+    void vbo_update_method(VBOUpdateMethod method);
+    void vbo_usage(VBOUsage usage);
+    void interleave(bool interleave);
 
     void reset();
-    void build_array(bool interleaved = false);
-    void build_vbo(bool interleaved = false);
+    void build_array();
+    void build_vbo();
+    void update_array(const std::vector<std::pair<size_t, size_t> >& ranges);
+    void update_vbo(const std::vector<std::pair<size_t, size_t> >& ranges);
     void delete_array();
     void delete_vbo();
 
@@ -55,10 +72,10 @@ public:
     void render_vbo();
 
     typedef void (*grid_configuration_func)(Mesh &mesh, int x, int y, int n_x, int n_y,
-                                            std::vector<float> &upper_left,
-                                            std::vector<float> &upper_right,
-                                            std::vector<float> &lower_right,
-                                            std::vector<float> &lower_left);
+                                            LibMatrix::vec3 &ul,
+                                            LibMatrix::vec3 &ll,
+                                            LibMatrix::vec3 &ur,
+                                            LibMatrix::vec3 &lr);
 
     void make_grid(int n_x, int n_y, double width, double height,
                    double spacing, grid_configuration_func conf_func = 0);
@@ -66,6 +83,10 @@ public:
 private:
     bool check_attrib(int pos, int size);
     std::vector<float> &ensure_vertex();
+    void update_single_array(const std::vector<std::pair<size_t, size_t> >& ranges,
+                             size_t n, size_t nfloats, size_t offset);
+    void update_single_vbo(const std::vector<std::pair<size_t, size_t> >& ranges,
+                           size_t n, size_t nfloats);
 
     std::vector<std::pair<int, int> > vertex_format_;
     std::vector<int> attrib_locations_;
@@ -77,6 +98,9 @@ private:
     std::vector<GLuint> vbos_;
     std::vector<float *> attrib_data_ptr_;
     int vertex_stride_;
+    bool interleave_;
+    VBOUpdateMethod vbo_update_method_;
+    VBOUsage vbo_usage_;
 };
 
 #endif

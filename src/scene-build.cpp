@@ -118,10 +118,13 @@ void SceneBuild::setup()
     mUseVbo = (mOptions["use-vbo"].value == "true");
     bool interleave = (mOptions["interleave"].value == "true");
 
+    mMesh.vbo_update_method(Mesh::VBOUpdateMethodMap);
+    mMesh.interleave(interleave);
+
     if (mUseVbo)
-        mMesh.build_vbo(interleave);
+        mMesh.build_vbo();
     else
-        mMesh.build_array(interleave);
+        mMesh.build_array();
 
     /* Calculate a projection matrix that is a good fit for the model */
     vec3 maxVec = model.maxVec();
@@ -194,10 +197,16 @@ void SceneBuild::draw()
     normal_matrix.inverse().transpose();
     mProgram["NormalMatrix"] = normal_matrix;
 
+    std::vector<std::pair<size_t,size_t> > ranges;
+    ranges.push_back(std::pair<size_t,size_t>(2,
+                                              0 * mMesh.vertices().size()/3 + 3));
+
     if (mUseVbo) {
+        mMesh.update_vbo(ranges);
         mMesh.render_vbo();
     }
     else {
+        mMesh.update_array(ranges);
         mMesh.render_array();
     }
 }

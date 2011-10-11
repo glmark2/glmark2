@@ -45,6 +45,9 @@ static const char *default_benchmarks[] = {
     "effect2d:kernel=1,1,1,1,1;1,1,1,1,1;1,1,1,1,1;",
     "pulsar:quads=5:texture=false:light=false",
     "desktop:windows=4:effect=blur:blur-radius=5:passes=1:separable=true",
+    "buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=map:interleave=false",
+    "buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=subdata:interleave=false",
+    "buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=map:interleave=true",
     "conditionals:vertex-steps=0:fragment-steps=0",
     "conditionals:vertex-steps=0:fragment-steps=5",
     "conditionals:vertex-steps=5:fragment-steps=0",
@@ -87,6 +90,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
     Benchmark::register_scene(*new SceneEffect2D(*g_canvas));
     Benchmark::register_scene(*new ScenePulsar(*g_canvas));
     Benchmark::register_scene(*new SceneDesktop(*g_canvas));
+    Benchmark::register_scene(*new SceneBuffer(*g_canvas));
 
     add_default_benchmarks(g_benchmarks);
 

@@ -19,38 +19,8 @@
  * Authors:
  *  Alexandros Frantzis (glmark2)
  */
-#ifndef GLMARK2_CANVAS_X11_GLX_H_
-#define GLMARK2_CANVAS_X11_GLX_H_
+#include "gl-headers.h"
 
-#include "canvas-x11.h"
-
-#define GLX_GLXEXT_PROTOTYPES
-#include <GL/glx.h>
-#include <GL/glxext.h>
-
-class CanvasX11GLX : public CanvasX11
-{
-public:
-    CanvasX11GLX(int width, int height) :
-        CanvasX11(width, height), glx_fbconfig_(0), glx_context_(0) {}
-    ~CanvasX11GLX() {}
-
-protected:
-    XVisualInfo *get_xvisualinfo();
-    bool make_current();
-    void swap_buffers() { glXSwapBuffers(xdpy_, xwin_); }
-
-private:
-    bool check_glx_version();
-    void init_extensions();
-    bool ensure_glx_fbconfig();
-    bool ensure_glx_context();
-    void init_gl_extensions();
-
-    GLXFBConfig glx_fbconfig_;
-    GLXContext glx_context_;
-
-};
-
-#endif
+void* (*GLExtensions::MapBuffer) (GLenum target, GLenum access) = 0;
+GLboolean (*GLExtensions::UnmapBuffer) (GLenum target) = 0;
 

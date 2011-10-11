@@ -353,4 +353,24 @@ public:
 private:
     SceneDesktopPrivate *priv_;
 };
+
+struct SceneBufferPrivate;
+
+class SceneBuffer : public Scene
+{
+public:
+    SceneBuffer(Canvas &canvas);
+    int load();
+    void unload();
+    void setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+
+    ~SceneBuffer();
+
+private:
+    SceneBufferPrivate *priv_;
+};
 #endif

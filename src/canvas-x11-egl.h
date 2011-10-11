@@ -44,6 +44,7 @@ private:
     bool ensure_egl_display();
     bool ensure_egl_config();
     bool ensure_egl_surface();
+    void init_gl_extensions();
 
     EGLDisplay egl_display_;
     EGLSurface egl_surface_;

@@ -23,10 +23,12 @@
  */
 #include "mesh.h"
 #include "log.h"
+#include "gl-headers.h"
 
 
 Mesh::Mesh() :
-    vertex_size_(0)
+    vertex_size_(0), interleave_(false), vbo_update_method_(VBOUpdateMethodMap),
+    vbo_usage_(VBOUsageStatic)
 {
 }
 
@@ -165,6 +167,63 @@ Mesh::next_vertex()
     vertices_.push_back(std::vector<float>(vertex_size_));
 }
 
+/**
+ * Gets the mesh vertices.
+ *
+ * You should use the ::set_attrib() method to manipulate
+ * the vertex data.
+ *
+ * You shouldn't resize the vector (change the number of vertices)
+ * manually. Use ::next_vertex() instead.
+ */
+std::vector<std::vector<float> >&
+Mesh::vertices()
+{
+    return vertices_;
+}
+
+/**
+ * Sets the VBO update method.
+ *
+ * The default value is VBOUpdateMethodMap.
+ */
+void
+Mesh::vbo_update_method(Mesh::VBOUpdateMethod method)
+{
+    vbo_update_method_ = method;
+}
+
+/**
+ * Sets the VBO usage hint.
+ *
+ * The usage hint takes effect in the next call to ::build_vbo().
+ *
+ * The default value is VBOUsageStatic.
+ */
+void
+Mesh::vbo_usage(Mesh::VBOUsage usage)
+{
+    vbo_usage_ = usage;
+}
+
+/** 
+ * Sets the vertex attribute interleaving mode.
+ *
+ * If true the vertex attributes are going to be interleaved in a single
+ * buffer. Otherwise they will be separated into different buffers (one
+ * per attribute).
+ *
+ * Interleaving mode takes effect in the next call to ::build_array() or
+ * ::build_vbo().
+ * 
+ * @param interleave whether to interleave
+ */
+void
+Mesh::interleave(bool interleave)
+{
+    interleave_ = interleave;
+}
+
 void
 Mesh::reset()
 {
@@ -180,11 +239,11 @@ Mesh::reset()
 }
 
 void
-Mesh::build_array(bool interleaved)
+Mesh::build_array()
 {
     int nvertices = vertices_.size();
 
-    if (!interleaved) {
+    if (!interleave_) {
         /* Create an array for each attribute */
         for (std::vector<std::pair<int, int> >::const_iterator ai = vertex_format_.begin();
              ai != vertex_format_.end();
@@ -229,16 +288,24 @@ Mesh::build_array(bool interleaved)
 }
 
 void
-Mesh::build_vbo(bool interleave)
+Mesh::build_vbo()
 {
     delete_array();
-    build_array(interleave);
+    build_array();
 
     int nvertices = vertices_.size();
 
     attrib_data_ptr_.clear();
 
-    if (!interleave) {
+    GLenum buffer_usage;
+    if (vbo_usage_ == Mesh::VBOUsageStream)
+        buffer_usage = GL_STREAM_DRAW;
+    if (vbo_usage_ == Mesh::VBOUsageDynamic)
+        buffer_usage = GL_DYNAMIC_DRAW;
+    else /* if (vbo_usage_ == Mesh::VBOUsageStatic) */
+        buffer_usage = GL_STATIC_DRAW;
+
+    if (!interleave_) {
         /* Create a vbo for each attribute */
         for (std::vector<std::pair<int, int> >::const_iterator ai = vertex_format_.begin();
              ai != vertex_format_.end();
@@ -250,7 +317,7 @@ Mesh::build_vbo(bool interleave)
             glGenBuffers(1, &vbo);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
             glBufferData(GL_ARRAY_BUFFER, nvertices * ai->first * sizeof(float),
-                         data, GL_STATIC_DRAW);
+                         data, buffer_usage);
 
             vbos_.push_back(vbo);
             attrib_data_ptr_.push_back(0);
@@ -278,6 +345,137 @@ Mesh::build_vbo(bool interleave)
 
     delete_array();
 }
+
+/**
+ * Updates ranges of a single vertex array.
+ *
+ * @param ranges the ranges of vertices to update
+ * @param n the index of the vertex array to update
+ * @param nfloats how many floats to update for each vertex
+ * @param offset the offset (in floats) in the vertex data to start reading from
+ */
+void
+Mesh::update_single_array(const std::vector<std::pair<size_t, size_t> >& ranges,
+                          size_t n, size_t nfloats, size_t offset)
+{
+    float *array(vertex_arrays_[n]);
+
+    /* Update supplied ranges */
+    for (std::vector<std::pair<size_t, size_t> >::const_iterator ri = ranges.begin();
+         ri != ranges.end();
+         ri++)
+    {
+        /* Update the current range from the vertex data */
+        float *dest(array + nfloats * ri->first);
+        for (size_t n = ri->first; n <= ri->second; n++) {
+            for (size_t i = 0; i < nfloats; i++)
+                *dest++ = vertices_[n][offset + i];
+        }
+
+    }
+}
+
+/**
+ * Updates ranges of the vertex arrays.
+ *
+ * @param ranges the ranges of vertices to update
+ */
+void
+Mesh::update_array(const std::vector<std::pair<size_t, size_t> >& ranges)
+{
+    /* If we don't have arrays to update, create them */
+    if (vertex_arrays_.empty()) {
+        build_array();
+        return;
+    }
+
+    if (!interleave_) {
+        for (size_t i = 0; i < vertex_arrays_.size(); i++) {
+            update_single_array(ranges, i, vertex_format_[i].first,
+                                vertex_format_[i].second);
+        }
+    }
+    else {
+        update_single_array(ranges, 0, vertex_size_, 0);
+    }
+
+}
+
+
+/**
+ * Updates ranges of a single VBO.
+ *
+ * This method use either glMapBuffer or glBufferSubData to perform
+ * the update. The used method can be set with ::vbo_update_method().
+ *
+ * @param ranges the ranges of vertices to update
+ * @param n the index of the vbo to update
+ * @param nfloats how many floats to update for each vertex
+ */
+void
+Mesh::update_single_vbo(const std::vector<std::pair<size_t, size_t> >& ranges,
+                        size_t n, size_t nfloats)
+{
+    float *src_start(vertex_arrays_[n]);
+    float *dest_start(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbos_[n]);
+
+    if (vbo_update_method_ == VBOUpdateMethodMap) {
+        dest_start = reinterpret_cast<float *>(
+                GLExtensions::MapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY)
+                );
+    }
+
+    /* Update supplied ranges */
+    for (std::vector<std::pair<size_t, size_t> >::const_iterator iter = ranges.begin();
+         iter != ranges.end();
+         iter++)
+    {
+        float *src(src_start + nfloats * iter->first);
+        float *src_end(src_start + nfloats * (iter->second + 1));
+
+        if (vbo_update_method_ == VBOUpdateMethodMap) {
+            float *dest(dest_start + nfloats * iter->first);
+            std::copy(src, src_end, dest);
+        }
+        else if (vbo_update_method_ == VBOUpdateMethodSubData) {
+            glBufferSubData(GL_ARRAY_BUFFER, nfloats * iter->first * sizeof(float),
+                            (src_end - src) * sizeof(float), src);
+        }
+    }
+
+    if (vbo_update_method_ == VBOUpdateMethodMap)
+        GLExtensions::UnmapBuffer(GL_ARRAY_BUFFER);
+}
+
+/**
+ * Updates ranges of the VBOs.
+ *
+ * @param ranges the ranges of vertices to update
+ */
+void
+Mesh::update_vbo(const std::vector<std::pair<size_t, size_t> >& ranges)
+{
+    /* If we don't have VBOs to update, create them */
+    if (vbos_.empty()) {
+        build_vbo();
+        return;
+    }
+
+    update_array(ranges);
+
+    if (!interleave_) {
+        for (size_t i = 0; i < vbos_.size(); i++)
+            update_single_vbo(ranges, i, vertex_format_[i].first);
+    }
+    else {
+        update_single_vbo(ranges, 0, vertex_size_);
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 
 void
 Mesh::delete_array()
@@ -351,25 +549,27 @@ Mesh::make_grid(int n_x, int n_y, double width, double height,
             LibMatrix::vec3 c(a.x() + side_width, a.y(), 0);
             LibMatrix::vec3 d(a.x() + side_width, a.y() - side_height, 0);
 
-            std::vector<float> ul(vertex_size_);
-            std::vector<float> ur(vertex_size_);
-            std::vector<float> ll(vertex_size_);
-            std::vector<float> lr(vertex_size_);
+            if (!conf_func) {
+                std::vector<float> ul(vertex_size_);
+                std::vector<float> ur(vertex_size_);
+                std::vector<float> ll(vertex_size_);
+                std::vector<float> lr(vertex_size_);
 
-            set_attrib(0, a, &ul);
-            set_attrib(0, c, &ur);
-            set_attrib(0, b, &ll);
-            set_attrib(0, d, &lr);
+                set_attrib(0, a, &ul);
+                set_attrib(0, c, &ur);
+                set_attrib(0, b, &ll);
+                set_attrib(0, d, &lr);
 
-            if (conf_func != 0)
-                conf_func(*this, i, j, n_x, n_y, ul, ur, lr, ll);
-
-            next_vertex(); vertices_.back() = ul;
-            next_vertex(); vertices_.back() = ll;
-            next_vertex(); vertices_.back() = ur;
-            next_vertex(); vertices_.back() = ll;
-            next_vertex(); vertices_.back() = lr;
-            next_vertex(); vertices_.back() = ur;
+                next_vertex(); vertices_.back() = ul;
+                next_vertex(); vertices_.back() = ll;
+                next_vertex(); vertices_.back() = ur;
+                next_vertex(); vertices_.back() = ll;
+                next_vertex(); vertices_.back() = lr;
+                next_vertex(); vertices_.back() = ur;
+            }
+            else {
+                conf_func(*this, i, j, n_x, n_y, a, b, c, d);
+            }
         }
     }
 }
