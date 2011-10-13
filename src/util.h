@@ -49,6 +49,7 @@ struct Util {
 
 #ifdef ANDROID
     static void android_set_asset_manager(AAssetManager *asset_manager);
+    static AAssetManager *android_get_asset_manager(void);
 private:
     static AAssetManager *android_asset_manager;
 #endif

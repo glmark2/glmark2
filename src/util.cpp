@@ -67,6 +67,12 @@ Util::android_set_asset_manager(AAssetManager *asset_manager)
     Util::android_asset_manager = asset_manager;
 }
 
+AAssetManager *
+Util::android_get_asset_manager()
+{
+    return Util::android_asset_manager;
+}
+
 std::istream *
 Util::get_resource(const std::string &path)
 {
