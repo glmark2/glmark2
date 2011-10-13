@@ -6,13 +6,29 @@ import android.opengl.GLSurfaceView;
 import android.app.Dialog;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Context;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 
 public class Glmark2Activity extends Activity {
     public static final int DIALOG_EGLCONFIG_FAIL_ID = 0;
+    public static final String TAG = "GLMark2";
+    private WakeLock mWakeLock;
+
+    @Override
+    protected void onDestroy() {
+        super.onPause();
+        mWakeLock.release();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, TAG);
+        mWakeLock.acquire();
+
         mGLView = new Glmark2SurfaceView(this);
         setContentView(mGLView);
     }
