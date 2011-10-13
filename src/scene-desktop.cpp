@@ -577,8 +577,138 @@ private:
 
 };
 
+/** 
+ * A RenderObject that draws a drop shadow around the window.
+ */
+class RenderWindowShadow : public RenderObject
+{
+public:
+    using RenderObject::size;
+
+    RenderWindowShadow(unsigned int shadow_size, bool draw_contents = true) :
+        RenderObject(), shadow_size_(shadow_size), draw_contents_(draw_contents) {}
+
+    virtual void init()
+    {
+        RenderObject::init();
+
+        /* 
+         * Only have one instance of the resources.
+         * This works only if all windows have the same size, which
+         * is currently the case for this scene. If this condition
+         * ceases to be true we will need to create the resources per
+         * object.
+         */
+        if (RenderWindowShadow::use_count == 0) {
+            shadow_h_.init();
+            shadow_v_.init();
+            shadow_corner_.init();
+            if (draw_contents_)
+                window_contents_.init();
+        }
+
+        RenderWindowShadow::use_count++; 
+    }
+
+    virtual void release()
+    {
+        RenderWindowShadow::use_count--;
+
+        /* Only have one instance of the data */
+        if (RenderWindowShadow::use_count == 0) {
+            shadow_h_.release();
+            shadow_v_.release();
+            shadow_corner_.release();
+            if (draw_contents_)
+            if (draw_contents_)
+                window_contents_.release();
+        }
+
+        RenderObject::release();
+    }
+
+    virtual void size(const LibMatrix::vec2& size)
+    {
+        RenderObject::size(size);
+        shadow_h_.size(LibMatrix::vec2(size.x() - shadow_size_,
+                                       static_cast<double>(shadow_size_)));
+        shadow_v_.size(LibMatrix::vec2(size.y() - shadow_size_,
+                                       static_cast<double>(shadow_size_)));
+        shadow_corner_.size(LibMatrix::vec2(static_cast<double>(shadow_size_),
+                                            static_cast<double>(shadow_size_)));
+        if (draw_contents_)
+            window_contents_.size(size);
+    }
+
+    virtual void render_to(RenderObject& target, Program& program)
+    {
+        (void)program;
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        /* Bottom shadow */
+        shadow_h_.rotation(0.0);
+        shadow_h_.position(position() +
+                           LibMatrix::vec2(shadow_size_,
+                                           -shadow_h_.size().y()));
+        shadow_h_.render_to(target);
+
+        /* Right shadow */
+        shadow_v_.rotation(90.0);
+        shadow_v_.position(position() +
+                           LibMatrix::vec2(size().x() + shadow_v_.size().y(), 0.0));
+        shadow_v_.render_to(target);
+        
+        /* Bottom right shadow */
+        shadow_corner_.rotation(0.0);
+        shadow_corner_.position(position() +
+                                LibMatrix::vec2(size().x(),
+                                                -shadow_corner_.size().y()));
+        shadow_corner_.render_to(target);
+
+        /* Top right shadow */
+        shadow_corner_.rotation(90.0);
+        shadow_corner_.position(position() + size() + 
+                                LibMatrix::vec2(shadow_corner_.size().x(),
+                                                -shadow_corner_.size().y()));
+        shadow_corner_.render_to(target);
+
+        /* Bottom left shadow */
+        shadow_corner_.rotation(-90.0);
+        shadow_corner_.position(position());
+        shadow_corner_.render_to(target);
+
+        /* 
+         * Blend the window contents with the target texture.
+         */
+        if (draw_contents_) {
+            window_contents_.position(position());
+            window_contents_.render_to(target);
+        }
+
+        glDisable(GL_BLEND);
+    }
+
+private:
+    unsigned int shadow_size_;
+    bool draw_contents_;
+
+    static int use_count;
+    static RenderClearImage window_contents_;
+    static RenderClearImage shadow_h_;
+    static RenderClearImage shadow_v_;
+    static RenderClearImage shadow_corner_;
+
+};
+
 int RenderWindowBlur::use_count = 0;
 RenderClearImage RenderWindowBlur::window_contents_(GLMARK_DATA_PATH"/textures/desktop-window.png");
+int RenderWindowShadow::use_count = 0;
+RenderClearImage RenderWindowShadow::window_contents_(GLMARK_DATA_PATH"/textures/desktop-window.png");
+RenderClearImage RenderWindowShadow::shadow_h_(GLMARK_DATA_PATH"/textures/desktop-shadow.png");
+RenderClearImage RenderWindowShadow::shadow_v_(GLMARK_DATA_PATH"/textures/desktop-shadow.png");
+RenderClearImage RenderWindowShadow::shadow_corner_(GLMARK_DATA_PATH"/textures/desktop-shadow-corner.png");
 
 /*******************************
  * SceneDesktop implementation * 
@@ -618,6 +748,8 @@ SceneDesktop::SceneDesktop(Canvas &canvas) :
                                             "the blur effect radius (in pixels)");
     mOptions["separable"] = Scene::Option("separable", "true",
                                           "use separable convolution for the blur effect");
+    mOptions["shadow-size"] = Scene::Option("shadow-size", "20",
+                                            "the size of the shadow (in pixels)");
 }
 
 SceneDesktop::~SceneDesktop()
@@ -646,6 +778,7 @@ SceneDesktop::setup()
     unsigned int passes(0);
     unsigned int blur_radius(0);
     float window_size_factor(0.0);
+    unsigned int shadow_size(0);
     bool separable(mOptions["separable"].value == "true");
 
     ss << mOptions["windows"].value;
@@ -659,6 +792,9 @@ SceneDesktop::setup()
     ss.clear();
     ss << mOptions["blur-radius"].value;
     ss >> blur_radius;
+    ss.clear();
+    ss << mOptions["shadow-size"].value;
+    ss >> shadow_size;
 
     /* Ensure we get a transparent clear color for all following operations */
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -681,7 +817,11 @@ SceneDesktop::setup()
     for (unsigned int i = 0; i < windows; i++) {
         LibMatrix::vec2 center(mCanvas.width() * (0.5 + 0.25 * cos(i * angular_step)),
                                mCanvas.height() * (0.5 + 0.25 * sin(i * angular_step)));
-        RenderObject* win(new RenderWindowBlur(passes, blur_radius, separable));
+        RenderObject* win;
+        if (mOptions["effect"].value == "shadow")
+            win = new RenderWindowShadow(shadow_size);
+        else
+            win = new RenderWindowBlur(passes, blur_radius, separable);
         (void)angular_step;
 
         win->init();
