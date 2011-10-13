@@ -77,8 +77,9 @@ std::istream *
 Util::get_resource(const std::string &path)
 {
     std::string path2(path);
-    /* Remove leading '/' */
-    path2.erase(0, 1);
+    /* Remove leading '/' from path name, it confuses the AssetManager */
+    if (path2.size() > 0 && path2[0] == '/')
+        path2.erase(0, 1);
 
     std::stringstream *ss = new std::stringstream;
     AAsset *asset = AAssetManager_open(Util::android_asset_manager,
