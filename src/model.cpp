@@ -27,7 +27,6 @@
 #include "options.h"
 #include "util.h"
 #include "float.h"
-#include <dirent.h>
 #include <fstream>
 #include <sstream>
 #include <memory>
@@ -603,34 +602,7 @@ Model::load_obj(const std::string &filename)
 
 namespace ModelPrivate
 {
-
-void
-list_files(const string& dirName, vector<string>& fileVec)
-{
-    DIR* dir = opendir(dirName.c_str());
-    if (!dir)
-    {
-        Log::error("Failed to open models directory '%s'\n", dirName.c_str());
-        return;
-    }
-
-    struct dirent* entry = readdir(dir);
-    while (entry)
-    {
-        string pathname(dirName + "/");
-        pathname += string(entry->d_name);
-        // Skip '.' and '..'
-        if (entry->d_name[0] != '.')
-        {
-            fileVec.push_back(pathname);
-        }
-        entry = readdir(dir);
-    }
-    closedir(dir);
-}
-
 ModelMap modelMap;
-
 }
 
 const ModelMap&
@@ -642,10 +614,10 @@ Model::find_models()
     }
     vector<string> pathVec;
     string dataDir(GLMARK_DATA_PATH"/models");
-    ModelPrivate::list_files(dataDir, pathVec);
+    Util::list_files(dataDir, pathVec);
 #ifdef GLMARK_EXTRAS_PATH
     string extrasDir(GLMARK_EXTRAS_PATH"/models");
-    ModelPrivate::list_files(extrasDir, pathVec);
+    Util::list_files(extrasDir, pathVec);
 #endif
 
     // Now that we have a list of all of the model files available to us,

@@ -73,6 +73,8 @@ void
 Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
                                                    jobject asset_manager)
 {
+    Util::android_set_asset_manager(AAssetManager_fromJava(env, asset_manager));
+
     g_canvas = new CanvasAndroid(100, 100);
     g_canvas->init();
 
@@ -93,8 +95,6 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
     Benchmark::register_scene(*new SceneBuffer(*g_canvas));
 
     add_default_benchmarks(g_benchmarks);
-
-    Util::android_set_asset_manager(AAssetManager_fromJava(env, asset_manager));
 }
 
 void
