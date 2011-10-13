@@ -104,7 +104,7 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
 class RenderObject
 {
 public:
-    RenderObject() : texture_(0), fbo_(0) { }
+    RenderObject() : texture_(0), fbo_(0), rotation_rad_(0) { }
 
     virtual ~RenderObject() { release(); }
 
@@ -199,16 +199,28 @@ public:
 
     virtual void render_to(RenderObject& target, Program& program = main_program)
     {
-        LibMatrix::vec2 final_pos(pos_ + size_);
-        LibMatrix::vec2 ll(target.normalize_position(pos_));
-        LibMatrix::vec2 ur(target.normalize_position(final_pos));
+        LibMatrix::vec2 anchor(pos_);
+        LibMatrix::vec2 ll(pos_ - anchor);
+        LibMatrix::vec2 ur(pos_ + size_ - anchor);
 
+        /* Calculate new position according to rotation value */
         GLfloat position[2 * 4] = {
-            ll.x(), ll.y(),
-            ur.x(), ll.y(),
-            ll.x(), ur.y(),
-            ur.x(), ur.y(),
+            rotate_x(ll.x(), ll.y()) + anchor.x(), rotate_y(ll.x(), ll.y()) + anchor.y(),
+            rotate_x(ur.x(), ll.y()) + anchor.x(), rotate_y(ur.x(), ll.y()) + anchor.y(),
+            rotate_x(ll.x(), ur.y()) + anchor.x(), rotate_y(ll.x(), ur.y()) + anchor.y(),
+            rotate_x(ur.x(), ur.y()) + anchor.x(), rotate_y(ur.x(), ur.y()) + anchor.y(),
         };
+
+        /* Normalize position and write back to array */
+        for (int i = 0; i < 4; i++) {
+            const LibMatrix::vec2& v2(
+                    target.normalize_position(
+                        LibMatrix::vec2(position[2 * i], position[2 * i + 1])
+                        )
+                    );
+            position[2 * i] = v2.x();
+            position[2 * i + 1] = v2.y();
+        }
 
         static const GLfloat texcoord[2 * 4] = {
             0.0, 0.0,
@@ -251,7 +263,7 @@ public:
     /** 
      * Normalizes a position from [0, size] to [-1.0, 1.0]
      */
-    LibMatrix::vec2 normalize_position(LibMatrix::vec2& pos)
+    LibMatrix::vec2 normalize_position(const LibMatrix::vec2& pos)
     {
         return pos * 2.0 / size_ - 1.0;
     }
@@ -259,11 +271,15 @@ public:
     /** 
      * Normalizes a position from [0, size] to [0.0, 1.0]
      */
-    LibMatrix::vec2 normalize_texcoord(LibMatrix::vec2& pos)
+    LibMatrix::vec2 normalize_texcoord(const LibMatrix::vec2& pos)
     {
         return pos / size_;
     }
 
+    void rotation(float degrees)
+    {
+        rotation_rad_ = (M_PI * degrees / 180.0);
+    }
 
 protected:
     void draw_quad_with_program(const GLfloat *position, const GLfloat *texcoord,
@@ -298,6 +314,17 @@ protected:
     GLuint fbo_;
 
 private:
+    float rotate_x(float x, float y)
+    {
+        return x * cos(rotation_rad_) - y * sin(rotation_rad_);
+    }
+
+    float rotate_y(float x, float y)
+    {
+        return x * sin(rotation_rad_) + y * cos(rotation_rad_);
+    }
+
+    float rotation_rad_;
     static int use_count;
 
 };
