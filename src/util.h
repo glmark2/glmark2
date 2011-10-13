@@ -35,6 +35,7 @@
 struct Util {
     static void split(const std::string &s, char delim, std::vector<std::string> &elems);
     static std::istream *get_resource(const std::string &path);
+    static void list_files(const std::string& dirName, std::vector<std::string>& fileVec);
     template <class T> static void dispose_pointer_vector(std::vector<T*> &vec)
     {
         for (typename std::vector<T*>::const_iterator iter = vec.begin();

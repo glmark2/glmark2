@@ -25,6 +25,8 @@
 #include <fstream>
 #ifdef ANDROID
 #include <android/asset_manager.h>
+#else
+#include <dirent.h>
 #endif
 
 #include "log.h"
@@ -55,6 +57,31 @@ Util::get_resource(const std::string &path)
     std::ifstream *ifs = new std::ifstream(path.c_str());
 
     return static_cast<std::istream *>(ifs);
+}
+
+void
+Util::list_files(const std::string& dirName, std::vector<std::string>& fileVec)
+{
+    DIR* dir = opendir(dirName.c_str());
+    if (!dir)
+    {
+        Log::error("Failed to open models directory '%s'\n", dirName.c_str());
+        return;
+    }
+
+    struct dirent* entry = readdir(dir);
+    while (entry)
+    {
+        std::string pathname(dirName + "/");
+        pathname += std::string(entry->d_name);
+        // Skip '.' and '..'
+        if (entry->d_name[0] != '.')
+        {
+            fileVec.push_back(pathname);
+        }
+        entry = readdir(dir);
+    }
+    closedir(dir);
 }
 
 #else
@@ -95,5 +122,32 @@ Util::get_resource(const std::string &path)
     }
 
     return static_cast<std::istream *>(ss);
+}
+
+void
+Util::list_files(const std::string& dirName, std::vector<std::string>& fileVec)
+{
+    AAssetManager *mgr(Util::android_get_asset_manager());
+    std::string dir_name(dirName);
+
+    /* Remove leading '/' from path, it confuses the AssetManager */
+    if (dir_name.size() > 0 && dir_name[0] == '/')
+        dir_name.erase(0, 1);
+
+    AAssetDir* dir = AAssetManager_openDir(mgr, dir_name.c_str());
+    if (!dir)
+    {
+        Log::error("Failed to open models directory '%s'\n", dir_name.c_str());
+        return;
+    }
+
+    const char *filename(0);
+    while ((filename = AAssetDir_getNextFileName(dir)) != 0)
+    {
+        std::string pathname(dir_name + "/");
+        pathname += std::string(filename);
+        fileVec.push_back(pathname);
+    }
+    AAssetDir_close(dir);
 }
 #endif
