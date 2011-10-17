@@ -31,6 +31,7 @@
 #include <cmath>
 #include <sstream>
 
+using LibMatrix::vec3;
 using std::string;
 using std::endl;
 
@@ -53,12 +54,31 @@ toString(const T t)
 }
 
 SceneShading::SceneShading(Canvas &pCanvas) :
-    Scene(pCanvas, "shading")
+    Scene(pCanvas, "shading"),
+    mOrientModel(false)
 {
+    const ModelMap& modelMap = Model::find_models();
+    std::string optionDesc("Which model to use [");
+    for (ModelMap::const_iterator modelIt = modelMap.begin();
+         modelIt != modelMap.end();
+         modelIt++)
+    {
+        static bool doSeparator(false);
+        if (doSeparator)
+        {
+            optionDesc += ", ";
+        }
+        const std::string& curName = modelIt->first;
+        optionDesc += curName;
+        doSeparator = true;
+    }
+    optionDesc += "]";
     mOptions["shading"] = Scene::Option("shading", "gouraud",
                                         "[gouraud, blinn-phong-inf, phong]");
     mOptions["num-lights"] = Scene::Option("num-lights", "1",
             "The number of lights applied to the scene (phong only)");
+    mOptions["model"] = Scene::Option("model", "cat",
+                                      optionDesc);
 }
 
 SceneShading::~SceneShading()
@@ -67,23 +87,6 @@ SceneShading::~SceneShading()
 
 int SceneShading::load()
 {
-    Model::find_models();
-    Model model;
-
-    if(!model.load("cat"))
-        return 0;
-
-    model.calculate_normals();
-
-    /* Tell the converter that we only care about position and normal attributes */
-    std::vector<std::pair<Model::AttribType, int> > attribs;
-    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
-    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
-
-    model.convert_to_mesh(mMesh, attribs);
-
-    mMesh.build_vbo();
-
     mRotationSpeed = 36.0f;
 
     mRunning = false;
@@ -193,6 +196,61 @@ void SceneShading::setup()
         return;
     }
 
+    Model model;
+    const std::string& whichModel(mOptions["model"].value);
+    bool modelLoaded = model.load(whichModel);
+
+    if(!modelLoaded)
+        return;
+
+    // Now that we're successfully loaded, there are a few quirks about
+    // some of the known models that we need to account for.  The draw
+    // logic for the scene wants to rotate the model around the Y axis.
+    // Most of our models are described this way.  Some need adjustment
+    // (an additional rotation that gets the model into the correct
+    // orientation).
+    //
+    // Here's a summary:
+    //
+    // Angel rotates around the Y axis
+    // Armadillo rotates around the Y axis
+    // Buddha rotates around the X axis
+    // Bunny rotates around the Y axis
+    // Dragon rotates around the X axis
+    // Horse rotates around the Y axis
+    if (whichModel == "buddha" || whichModel == "dragon")
+    {
+        mOrientModel = true;
+        mOrientationAngle = -90.0;
+        mOrientationVec = vec3(1.0, 0.0, 0.0);
+    }
+
+    model.calculate_normals();
+
+    /* Tell the converter that we only care about position and normal attributes */
+    std::vector<std::pair<Model::AttribType, int> > attribs;
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
+
+    model.convert_to_mesh(mMesh, attribs);
+
+    mMesh.build_vbo();
+
+    /* Calculate a projection matrix that is a good fit for the model */
+    vec3 maxVec = model.maxVec();
+    vec3 minVec = model.minVec();
+    vec3 diffVec = maxVec - minVec;
+    mCenterVec = maxVec + minVec;
+    mCenterVec /= 2.0;
+    float diameter = diffVec.length();
+    mRadius = diameter / 2;
+    float fovy = 2.0 * atanf(mRadius / (2.0 + mRadius));
+    fovy /= M_PI;
+    fovy *= 180.0;
+    float aspect(static_cast<float>(mCanvas.width())/static_cast<float>(mCanvas.height()));
+    mPerspective.setIdentity();
+    mPerspective *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter); 
+
     mProgram.start();
 
     std::vector<GLint> attrib_locations;
@@ -237,10 +295,13 @@ void SceneShading::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;
-    LibMatrix::mat4 model_view_proj(mCanvas.projection());
-
-    model_view.translate(0.0f, 0.0f, -5.0f);
+    model_view.translate(-mCenterVec.x(), -mCenterVec.y(), -(mCenterVec.z() + 2.0 + mRadius));
     model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
+    if (mOrientModel)
+    {
+        model_view.rotate(mOrientationAngle, mOrientationVec.x(), mOrientationVec.y(), mOrientationVec.z());
+    }
+    LibMatrix::mat4 model_view_proj(mPerspective);
     model_view_proj *= model_view.getCurrent();
 
     mProgram["ModelViewProjectionMatrix"] = model_view_proj;

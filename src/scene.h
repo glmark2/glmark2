@@ -206,7 +206,12 @@ public:
 
 protected:
     Program mProgram;
-
+    float mRadius;
+    bool mOrientModel;
+    float mOrientationAngle;
+    LibMatrix::vec3 mOrientationVec;
+    LibMatrix::vec3 mCenterVec;
+    LibMatrix::mat4 mPerspective;
     Mesh mMesh;
     float mRotation;
     float mRotationSpeed;
