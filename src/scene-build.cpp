@@ -228,16 +228,10 @@ void SceneBuild::draw()
     normal_matrix.inverse().transpose();
     mProgram["NormalMatrix"] = normal_matrix;
 
-    std::vector<std::pair<size_t,size_t> > ranges;
-    ranges.push_back(std::pair<size_t,size_t>(2,
-                                              0 * mMesh.vertices().size()/3 + 3));
-
     if (mUseVbo) {
-        mMesh.update_vbo(ranges);
         mMesh.render_vbo();
     }
     else {
-        mMesh.update_array(ranges);
         mMesh.render_array();
     }
 }
