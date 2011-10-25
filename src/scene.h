@@ -205,16 +205,16 @@ public:
     ~SceneShading();
 
 protected:
-    Program mProgram;
-    float mRadius;
-    bool mOrientModel;
-    float mOrientationAngle;
-    LibMatrix::vec3 mOrientationVec;
-    LibMatrix::vec3 mCenterVec;
-    LibMatrix::mat4 mPerspective;
-    Mesh mMesh;
-    float mRotation;
-    float mRotationSpeed;
+    Program program_;
+    float radius_;
+    bool orientModel_;
+    float orientationAngle_;
+    LibMatrix::vec3 orientationVec_;
+    LibMatrix::vec3 centerVec_;
+    LibMatrix::mat4 perspective_;
+    Mesh mesh_;
+    float rotation_;
+    float rotationSpeed_;
 };
 
 class SceneGrid : public Scene
