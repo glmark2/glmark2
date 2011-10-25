@@ -136,7 +136,7 @@ public:
     void setup();
 
 private:
-    std::list<std::pair<std::string, std::string> > mDefaultOptions;
+    std::list<std::pair<std::string, std::string> > defaultOptions_;
 };
 
 class SceneBuild : public Scene

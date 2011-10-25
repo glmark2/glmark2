@@ -26,8 +26,8 @@ void SceneDefaultOptions::setup()
 {
     const std::map<std::string, Scene *> &scenes = Benchmark::scenes();
 
-    for (std::list<std::pair<std::string, std::string> >::const_iterator iter = mDefaultOptions.begin();
-         iter != mDefaultOptions.end();
+    for (std::list<std::pair<std::string, std::string> >::const_iterator iter = defaultOptions_.begin();
+         iter != defaultOptions_.end();
          iter++)
     {
         for (std::map<std::string, Scene *>::const_iterator scene_iter = scenes.begin();
@@ -42,6 +42,6 @@ void SceneDefaultOptions::setup()
 bool
 SceneDefaultOptions::set_option(const std::string &opt, const std::string &val)
 {
-    mDefaultOptions.push_back(std::pair<std::string, std::string>(opt, val));
+    defaultOptions_.push_back(std::pair<std::string, std::string>(opt, val));
     return true;
 }
