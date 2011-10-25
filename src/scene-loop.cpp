@@ -38,17 +38,17 @@ static const std::string step_loop_file(shader_file_base + "-step-loop.all");
 SceneLoop::SceneLoop(Canvas &pCanvas) :
     SceneGrid(pCanvas, "loop")
 {
-    mOptions["fragment-steps"] = Scene::Option("fragment-steps", "1",
+    options_["fragment-steps"] = Scene::Option("fragment-steps", "1",
             "The number of computational steps in the fragment shader");
-    mOptions["fragment-loop"] = Scene::Option("fragment-function", "true",
+    options_["fragment-loop"] = Scene::Option("fragment-function", "true",
             "Whether to execute the steps in the vertex shader using a for loop");
-    mOptions["vertex-steps"] = Scene::Option("vertex-steps", "1",
+    options_["vertex-steps"] = Scene::Option("vertex-steps", "1",
             "The number of computational steps in the vertex shader");
-    mOptions["vertex-loop"] = Scene::Option("vertex-function", "true",
+    options_["vertex-loop"] = Scene::Option("vertex-function", "true",
             "Whether to execute the steps in the vertex shader using a for loop");
-    mOptions["vertex-uniform"] = Scene::Option("vertex-uniform", "true",
+    options_["vertex-uniform"] = Scene::Option("vertex-uniform", "true",
             "Whether to use a uniform in the vertex shader for the number of loop iterations to perform (i.e. vertex-steps)");
-    mOptions["fragment-uniform"] = Scene::Option("fragment-uniform", "true",
+    options_["fragment-uniform"] = Scene::Option("fragment-uniform", "true",
             "Whether to use a uniform in the fragment shader for the number of loop iterations to perform (i.e. fragment-steps)");
 }
 
@@ -116,19 +116,19 @@ void SceneLoop::setup()
     SceneGrid::setup();
 
     /* Parse options */
-    bool vtx_loop = mOptions["vertex-loop"].value == "true";
-    bool frg_loop = mOptions["fragment-loop"].value == "true";
-    bool vtx_uniform = mOptions["vertex-uniform"].value == "true";
-    bool frg_uniform = mOptions["fragment-uniform"].value == "true";
+    bool vtx_loop = options_["vertex-loop"].value == "true";
+    bool frg_loop = options_["fragment-loop"].value == "true";
+    bool vtx_uniform = options_["vertex-uniform"].value == "true";
+    bool frg_uniform = options_["fragment-uniform"].value == "true";
     int vtx_steps = 0;
     int frg_steps = 0;
 
     std::stringstream ss;
 
-    ss << mOptions["vertex-steps"].value;
+    ss << options_["vertex-steps"].value;
     ss >> vtx_steps;
     ss.clear();
-    ss << mOptions["fragment-steps"].value;
+    ss << options_["fragment-steps"].value;
     ss >> frg_steps;
 
     /* Load shaders */
@@ -149,7 +149,7 @@ void SceneLoop::setup()
     attrib_locations.push_back(program_["position"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }

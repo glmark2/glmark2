@@ -34,7 +34,7 @@
 SceneTexture::SceneTexture(Canvas &pCanvas) :
     Scene(pCanvas, "texture")
 {
-    mOptions["texture-filter"] = Scene::Option("texture-filter", "nearest",
+    options_["texture-filter"] = Scene::Option("texture-filter", "nearest",
                                                "[nearest, linear, mipmap]");
 }
 
@@ -56,7 +56,7 @@ int SceneTexture::load()
 
     rotationSpeed_ = LibMatrix::vec3(36.0f, 36.0f, 36.0f);
 
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
@@ -97,7 +97,7 @@ void SceneTexture::setup()
     // Create texture according to selected filtering
     GLint min_filter = GL_NONE;
     GLint mag_filter = GL_NONE;
-    const std::string &filter = mOptions["texture-filter"].value;
+    const std::string &filter = options_["texture-filter"].value;
 
     if (filter == "nearest") {
         min_filter = GL_NEAREST;
@@ -117,11 +117,11 @@ void SceneTexture::setup()
 
     program_.start();
 
-    mCurrentFrame = 0;
+    currentFrame_ = 0;
     rotation_ = LibMatrix::vec3();
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void SceneTexture::teardown()
@@ -137,26 +137,26 @@ void SceneTexture::teardown()
 void SceneTexture::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double dt = current_time - mLastUpdateTime;
-    double elapsed_time = current_time - mStartTime;
+    double dt = current_time - lastUpdateTime_;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
     rotation_ += rotationSpeed_ * dt;
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
 void SceneTexture::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;
-    LibMatrix::mat4 model_view_proj(mCanvas.projection());
+    LibMatrix::mat4 model_view_proj(canvas_.projection());
 
     model_view.translate(0.0f, 0.0f, -5.0f);
     model_view.rotate(rotation_.x(), 1.0f, 0.0f, 0.0f);
@@ -188,10 +188,10 @@ SceneTexture::validate()
 
     Canvas::Pixel ref;
 
-    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 2 + 3,
-                                             mCanvas.height() / 2 + 3);
+    Canvas::Pixel pixel = canvas_.read_pixel(canvas_.width() / 2 + 3,
+                                             canvas_.height() / 2 + 3);
 
-    const std::string &filter = mOptions["texture-filter"].value;
+    const std::string &filter = options_["texture-filter"].value;
 
     if (filter == "nearest")
         ref = Canvas::Pixel(0x3b, 0x3a, 0x39, 0xff);

@@ -36,10 +36,10 @@
 SceneEffect2D::SceneEffect2D(Canvas &pCanvas) :
     Scene(pCanvas, "effect2d")
 {
-    mOptions["kernel"] = Scene::Option("kernel",
+    options_["kernel"] = Scene::Option("kernel",
         "0,0,0;0,1,0;0,0,0",
         "The convolution kernel matrix to use [format: \"a,b,c...;d,e,f...\"");;
-    mOptions["normalize"] = Scene::Option("normalize", "true",
+    options_["normalize"] = Scene::Option("normalize", "true",
         "Whether to normalize the supplied convolution kernel matrix [true,false]");
 }
 
@@ -278,7 +278,7 @@ int SceneEffect2D::load()
 {
     Texture::load(GLMARK_DATA_PATH"/textures/effect-2d.png", &texture_,
                   GL_NEAREST, GL_NEAREST, 0);
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
@@ -299,14 +299,14 @@ void SceneEffect2D::setup()
     unsigned int kernel_height = 0;
 
     /* Parse the kernel matrix from the options */
-    if (!parse_matrix(mOptions["kernel"].value, kernel,
+    if (!parse_matrix(options_["kernel"].value, kernel,
                       kernel_width, kernel_height))
     {
         return;
     }
 
     /* Normalize the kernel matrix if needed */
-    if (mOptions["normalize"].value == "true") {
+    if (options_["normalize"].value == "true") {
         normalize(kernel);
         Log::debug("Normalized kernel matrix:\n%s",
                    kernel_printout(kernel, kernel_width).c_str());
@@ -315,7 +315,7 @@ void SceneEffect2D::setup()
     /* Create and load the shaders */
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source;
-    frg_source.append(create_convolution_fragment_shader(mCanvas, kernel,
+    frg_source.append(create_convolution_fragment_shader(canvas_, kernel,
                                                          kernel_width,
                                                          kernel_height));
 
@@ -344,10 +344,10 @@ void SceneEffect2D::setup()
     // Load texture sampler value
     program_["Texture0"] = 0;
 
-    mCurrentFrame = 0;
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    currentFrame_ = 0;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void SceneEffect2D::teardown()
@@ -363,16 +363,16 @@ void SceneEffect2D::teardown()
 void SceneEffect2D::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double elapsed_time = current_time - mStartTime;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
 void SceneEffect2D::draw()

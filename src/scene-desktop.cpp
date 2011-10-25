@@ -736,19 +736,19 @@ SceneDesktop::SceneDesktop(Canvas &canvas) :
     Scene(canvas, "desktop")
 {
     priv_ = new SceneDesktopPrivate();
-    mOptions["effect"] = Scene::Option("effect", "blur",
+    options_["effect"] = Scene::Option("effect", "blur",
                                        "the effect to use [blur]");
-    mOptions["windows"] = Scene::Option("windows", "4",
+    options_["windows"] = Scene::Option("windows", "4",
                                         "the number of windows");
-    mOptions["window-size"] = Scene::Option("window-size", "0.35",
+    options_["window-size"] = Scene::Option("window-size", "0.35",
                                             "the window size as a percentage of the minimum screen dimension [0.0 - 0.5]");
-    mOptions["passes"] = Scene::Option("passes", "1",
+    options_["passes"] = Scene::Option("passes", "1",
                                        "the number of effect passes (effect dependent)");
-    mOptions["blur-radius"] = Scene::Option("blur-radius", "5",
+    options_["blur-radius"] = Scene::Option("blur-radius", "5",
                                             "the blur effect radius (in pixels)");
-    mOptions["separable"] = Scene::Option("separable", "true",
+    options_["separable"] = Scene::Option("separable", "true",
                                           "use separable convolution for the blur effect");
-    mOptions["shadow-size"] = Scene::Option("shadow-size", "20",
+    options_["shadow-size"] = Scene::Option("shadow-size", "20",
                                             "the size of the shadow (in pixels)");
 }
 
@@ -779,21 +779,21 @@ SceneDesktop::setup()
     unsigned int blur_radius(0);
     float window_size_factor(0.0);
     unsigned int shadow_size(0);
-    bool separable(mOptions["separable"].value == "true");
+    bool separable(options_["separable"].value == "true");
 
-    ss << mOptions["windows"].value;
+    ss << options_["windows"].value;
     ss >> windows;
     ss.clear();
-    ss << mOptions["window-size"].value;
+    ss << options_["window-size"].value;
     ss >> window_size_factor;
     ss.clear();
-    ss << mOptions["passes"].value;
+    ss << options_["passes"].value;
     ss >> passes;
     ss.clear();
-    ss << mOptions["blur-radius"].value;
+    ss << options_["blur-radius"].value;
     ss >> blur_radius;
     ss.clear();
-    ss << mOptions["shadow-size"].value;
+    ss << options_["shadow-size"].value;
     ss >> shadow_size;
 
     /* Ensure we get a transparent clear color for all following operations */
@@ -804,21 +804,21 @@ SceneDesktop::setup()
     /* Set up the screen and desktop RenderObjects */
     priv_->screen.init();
     priv_->desktop.init();
-    priv_->screen.size(LibMatrix::vec2(mCanvas.width(), mCanvas.height()));
-    priv_->desktop.size(LibMatrix::vec2(mCanvas.width(), mCanvas.height()));
+    priv_->screen.size(LibMatrix::vec2(canvas_.width(), canvas_.height()));
+    priv_->desktop.size(LibMatrix::vec2(canvas_.width(), canvas_.height()));
 
     /* Create the windows */
     float angular_step(2.0 * M_PI / windows);
-    unsigned int min_dimension = std::min(mCanvas.width(), mCanvas.height());
+    unsigned int min_dimension = std::min(canvas_.width(), canvas_.height());
     float window_size(min_dimension * window_size_factor);
     static const LibMatrix::vec2 corner_offset(window_size / 2.0,
                                                window_size / 2.0);
 
     for (unsigned int i = 0; i < windows; i++) {
-        LibMatrix::vec2 center(mCanvas.width() * (0.5 + 0.25 * cos(i * angular_step)),
-                               mCanvas.height() * (0.5 + 0.25 * sin(i * angular_step)));
+        LibMatrix::vec2 center(canvas_.width() * (0.5 + 0.25 * cos(i * angular_step)),
+                               canvas_.height() * (0.5 + 0.25 * sin(i * angular_step)));
         RenderObject* win;
-        if (mOptions["effect"].value == "shadow")
+        if (options_["effect"].value == "shadow")
             win = new RenderWindowShadow(shadow_size);
         else
             win = new RenderWindowBlur(passes, blur_radius, separable);
@@ -831,8 +831,8 @@ SceneDesktop::setup()
          * Set the speed in increments of about 30 degrees (but not exactly,
          * so we don't get windows moving just on the X axis or Y axis).
          */
-        win->speed(LibMatrix::vec2(cos(0.1 + i * M_PI / 6.0) * mCanvas.width() / 3,
-                                   sin(0.1 + i * M_PI / 6.0) * mCanvas.height() / 3));
+        win->speed(LibMatrix::vec2(cos(0.1 + i * M_PI / 6.0) * canvas_.width() / 3,
+                                   sin(0.1 + i * M_PI / 6.0) * canvas_.height() / 3));
         /* 
          * Perform a dummy rendering to ensure internal shaders are initialized
          * now, in order not to affect the benchmarking.
@@ -847,10 +847,10 @@ SceneDesktop::setup()
      */
     priv_->screen.make_current();
 
-    mCurrentFrame = 0;
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    currentFrame_ = 0;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void
@@ -872,10 +872,10 @@ void
 SceneDesktop::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double dt = current_time - mLastUpdateTime;
-    double elapsed_time = current_time - mStartTime;
+    double dt = current_time - lastUpdateTime_;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
     std::vector<RenderObject *>& windows(priv_->windows);
 
@@ -894,14 +894,14 @@ SceneDesktop::update()
                 win->position().y() + win->speed().y() * dt);
 
         if (new_pos.x() < 0.0 ||
-            new_pos.x() + win->size().x() > ((float)mCanvas.width()))
+            new_pos.x() + win->size().x() > static_cast<float>(canvas_.width()))
         {
             win->speed(LibMatrix::vec2(-win->speed().x(), win->speed().y()));
             should_update = false;
         }
 
         if (new_pos.y() < 0.0 ||
-            new_pos.y() + win->size().y() > ((float)mCanvas.height()))
+            new_pos.y() + win->size().y() > static_cast<float>(canvas_.height()))
         {
             win->speed(LibMatrix::vec2(win->speed().x(), -win->speed().y()));
             should_update = false;
@@ -911,12 +911,12 @@ SceneDesktop::update()
             win->position(new_pos);
     }
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
 void

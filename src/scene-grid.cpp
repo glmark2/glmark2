@@ -30,9 +30,9 @@
 SceneGrid::SceneGrid(Canvas &pCanvas, const std::string &name) :
     Scene(pCanvas, name)
 {
-    mOptions["grid-size"] = Scene::Option("grid-size", "32",
+    options_["grid-size"] = Scene::Option("grid-size", "32",
             "The number of squares per side of the grid (controls the number of vertices)");
-    mOptions["grid-length"] = Scene::Option("grid-length", "5.0",
+    options_["grid-length"] = Scene::Option("grid-length", "5.0",
             "The length of each side of the grid (normalized) (controls the area drawn to)");
 }
 
@@ -43,7 +43,7 @@ SceneGrid::~SceneGrid()
 int SceneGrid::load()
 {
     rotationSpeed_ = 36.0f;
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
@@ -61,10 +61,10 @@ void SceneGrid::setup()
 
     std::stringstream ss;
 
-    ss << mOptions["grid-size"].value;
+    ss << options_["grid-size"].value;
     ss >> grid_size;
     ss.clear();
-    ss << mOptions["grid-length"].value;
+    ss << options_["grid-length"].value;
     ss >> grid_length;
 
     /* Create and configure the grid mesh */
@@ -82,7 +82,7 @@ void SceneGrid::setup()
                     grid_size > 1 ? spacing : 0);
     mesh_.build_vbo();
 
-    mCurrentFrame = 0;
+    currentFrame_ = 0;
     rotation_ = 0.0f;
 }
 
@@ -98,26 +98,26 @@ void SceneGrid::teardown()
 void SceneGrid::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double dt = current_time - mLastUpdateTime;
-    double elapsed_time = current_time - mStartTime;
+    double dt = current_time - lastUpdateTime_;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
     rotation_ += rotationSpeed_ * dt;
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
 void SceneGrid::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;
-    LibMatrix::mat4 model_view_proj(mCanvas.projection());
+    LibMatrix::mat4 model_view_proj(canvas_.projection());
 
     model_view.translate(0.0f, 0.0f, -5.0f);
     model_view.rotate(rotation_, 0.0f, 0.0f, 1.0f);

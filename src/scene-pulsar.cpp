@@ -37,10 +37,10 @@ ScenePulsar::ScenePulsar(Canvas &pCanvas) :
     numQuads_(0),
     texture_(0)
 {
-    mOptions["quads"] = Scene::Option("quads", "5", "Number of quads to render");
-    mOptions["texture"] = Scene::Option("texture", "false", "Enable texturing");
-    mOptions["light"] = Scene::Option("light", "false", "Enable lighting");
-    mOptions["random"] = Scene::Option("random", "false", "Enable random rotation speeds");
+    options_["quads"] = Scene::Option("quads", "5", "Number of quads to render");
+    options_["texture"] = Scene::Option("texture", "false", "Enable texturing");
+    options_["light"] = Scene::Option("light", "false", "Enable lighting");
+    options_["random"] = Scene::Option("random", "false", "Enable random rotation speeds");
 }
 
 ScenePulsar::~ScenePulsar()
@@ -51,7 +51,7 @@ int ScenePulsar::load()
 {
     scale_ = LibMatrix::vec3(1.0, 1.0, 1.0);
 
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
@@ -72,13 +72,13 @@ void ScenePulsar::setup()
 
     // Create a rotation for each quad.
     std::stringstream ss;
-    ss << mOptions["quads"].value;
+    ss << options_["quads"].value;
     ss >> numQuads_;
 
     srand((unsigned)time(0));
     for (int i = 0; i < numQuads_; i++) {
         rotations_.push_back(LibMatrix::vec3());
-        if (mOptions["random"].value == "true") {
+        if (options_["random"].value == "true") {
             rotationSpeeds_.push_back(LibMatrix::vec3(((float)rand() / (float)RAND_MAX) * 5.0,
                                                       ((float)rand() / (float)RAND_MAX) * 5.0,
                                                       0.0));
@@ -97,13 +97,13 @@ void ScenePulsar::setup()
     std::string vtx_shader_filename;
     std::string frg_shader_filename;
     static const LibMatrix::vec4 lightPosition(-20.0f, 20.0f,-20.0f, 1.0f);
-    if (mOptions["light"].value == "true") {
+    if (options_["light"].value == "true") {
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/pulsar-light.vert";
     } else {
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/pulsar.vert";
     }
 
-    if (mOptions["texture"].value == "true") {
+    if (options_["texture"].value == "true") {
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic-tex.frag";
         Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &texture_,
                       GL_NEAREST, GL_NEAREST, 0);
@@ -114,7 +114,7 @@ void ScenePulsar::setup()
 
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source(frg_shader_filename);
-    if (mOptions["light"].value == "true") {
+    if (options_["light"].value == "true") {
         // Load the light position constant
         vtx_source.add_const("LightSourcePosition", lightPosition);
     }
@@ -129,11 +129,11 @@ void ScenePulsar::setup()
 
     program_.start();
 
-    mCurrentFrame = 0;
+    currentFrame_ = 0;
 
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void ScenePulsar::teardown()
@@ -141,7 +141,7 @@ void ScenePulsar::teardown()
     program_.stop();
     program_.release();
 
-    if (mOptions["texture"].value == "true") {
+    if (options_["texture"].value == "true") {
         glDeleteTextures(1, &texture_);
         texture_ = 0;
     }
@@ -159,14 +159,14 @@ void ScenePulsar::teardown()
 void ScenePulsar::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double dt = current_time - mLastUpdateTime;
-    double elapsed_time = current_time - mStartTime;
+    double dt = current_time - lastUpdateTime_;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
     for (int i = 0; i < numQuads_; i++) {
@@ -175,12 +175,12 @@ void ScenePulsar::update()
 
     scale_ = LibMatrix::vec3(cos(elapsed_time / 3.60) * 10.0, sin(elapsed_time / 3.60) * 10.0, 1.0);
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
 void ScenePulsar::draw()
 {
-    if (mOptions["texture"].value == "true") {
+    if (options_["texture"].value == "true") {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture_);
     }
@@ -188,7 +188,7 @@ void ScenePulsar::draw()
     for (int i = 0; i < numQuads_; i++) {
         // Load the ModelViewProjectionMatrix uniform in the shader
         LibMatrix::Stack4 model_view;
-        LibMatrix::mat4 model_view_proj(mCanvas.projection());
+        LibMatrix::mat4 model_view_proj(canvas_.projection());
         model_view.scale(scale_.x(), scale_.y(), scale_.z());
         model_view.translate(0.0f, 0.0f, -10.0f);
         model_view.rotate(rotations_[i].x(), 1.0f, 0.0f, 0.0f);
@@ -197,7 +197,7 @@ void ScenePulsar::draw()
         model_view_proj *= model_view.getCurrent();
         program_["ModelViewProjectionMatrix"] = model_view_proj;
 
-        if (mOptions["light"].value == "true") {
+        if (options_["light"].value == "true") {
             // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
             // inverse transpose of the model view matrix.
             LibMatrix::mat4 normal_matrix(model_view.getCurrent());
@@ -217,8 +217,8 @@ ScenePulsar::validate()
 
 void ScenePulsar::create_and_setup_mesh()
 {
-    bool texture = mOptions["texture"].value == "true";
-    bool light = mOptions["light"].value == "true";
+    bool texture = options_["texture"].value == "true";
+    bool light = options_["light"].value == "true";
 
     struct PlaneMeshVertex {
         LibMatrix::vec3 position;

@@ -30,7 +30,7 @@ SceneBump::SceneBump(Canvas &pCanvas) :
     Scene(pCanvas, "bump"),
     texture_(0), rotation_(0.0f), rotationSpeed_(0.0f)
 {
-    mOptions["bump-render"] = Scene::Option("bump-render", "off",
+    options_["bump-render"] = Scene::Option("bump-render", "off",
                                             "How to render bumps [off, normals, high-poly]");
 }
 
@@ -42,7 +42,7 @@ int SceneBump::load()
 {
     rotationSpeed_ = 36.0f;
 
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
@@ -156,7 +156,7 @@ void SceneBump::setup()
 {
     Scene::setup();
 
-    const std::string &bump_render = mOptions["bump-render"].value;
+    const std::string &bump_render = options_["bump-render"].value;
 
     Model::find_models();
     if (bump_render == "normals")
@@ -172,11 +172,11 @@ void SceneBump::setup()
     // Load texture sampler value
     program_["NormalMap"] = 0;
 
-    mCurrentFrame = 0;
+    currentFrame_ = 0;
     rotation_ = 0.0;
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void
@@ -196,19 +196,19 @@ SceneBump::teardown()
 void SceneBump::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double dt = current_time - mLastUpdateTime;
-    double elapsed_time = current_time - mStartTime;
+    double dt = current_time - lastUpdateTime_;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
     rotation_ += rotationSpeed_ * dt;
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
 void SceneBump::draw()
@@ -216,7 +216,7 @@ void SceneBump::draw()
     LibMatrix::Stack4 model_view;
 
     // Load the ModelViewProjectionMatrix uniform in the shader
-    LibMatrix::mat4 model_view_proj(mCanvas.projection());
+    LibMatrix::mat4 model_view_proj(canvas_.projection());
 
     model_view.translate(0.0f, 0.0f, -3.5f);
     model_view.rotate(rotation_, 0.0f, 1.0f, 0.0f);
@@ -243,10 +243,10 @@ SceneBump::validate()
 
     Canvas::Pixel ref;
 
-    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 2,
-                                             mCanvas.height() / 2);
+    Canvas::Pixel pixel = canvas_.read_pixel(canvas_.width() / 2,
+                                             canvas_.height() / 2);
 
-    const std::string &bump_render = mOptions["bump-render"].value;
+    const std::string &bump_render = options_["bump-render"].value;
 
     if (bump_render == "off")
         ref = Canvas::Pixel(0x81, 0x81, 0x81, 0xff);

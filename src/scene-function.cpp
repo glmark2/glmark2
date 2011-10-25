@@ -39,17 +39,17 @@ static const std::string step_medium_file(shader_file_base + "-step-medium.all")
 SceneFunction::SceneFunction(Canvas &pCanvas) :
     SceneGrid(pCanvas, "function")
 {
-    mOptions["fragment-steps"] = Scene::Option("fragment-steps", "1",
+    options_["fragment-steps"] = Scene::Option("fragment-steps", "1",
             "The number of computational steps in the fragment shader");
-    mOptions["fragment-function"] = Scene::Option("fragment-function", "true",
+    options_["fragment-function"] = Scene::Option("fragment-function", "true",
             "Whether each computational step includes a function call");
-    mOptions["vertex-steps"] = Scene::Option("vertex-steps", "1",
+    options_["vertex-steps"] = Scene::Option("vertex-steps", "1",
             "The number of computational steps in the vertex shader");
-    mOptions["vertex-function"] = Scene::Option("vertex-function", "true",
+    options_["vertex-function"] = Scene::Option("vertex-function", "true",
             "Whether each computational step includes an if-else clause");
-    mOptions["vertex-complexity"] = Scene::Option("vertex-complexity", "low",
+    options_["vertex-complexity"] = Scene::Option("vertex-complexity", "low",
             "The complexity of each computational step in the vertex shader");
-    mOptions["fragment-complexity"] = Scene::Option("fragment-complexity", "low",
+    options_["fragment-complexity"] = Scene::Option("fragment-complexity", "low",
             "The complexity of each computational step in the fragment shader");
 }
 
@@ -120,19 +120,19 @@ void SceneFunction::setup()
     SceneGrid::setup();
 
     /* Parse options */
-    bool vtx_function = mOptions["vertex-function"].value == "true";
-    bool frg_function = mOptions["fragment-function"].value == "true";
-    std::string vtx_complexity = mOptions["vertex-complexity"].value;
-    std::string frg_complexity = mOptions["fragment-complexity"].value;
+    bool vtx_function = options_["vertex-function"].value == "true";
+    bool frg_function = options_["fragment-function"].value == "true";
+    std::string vtx_complexity = options_["vertex-complexity"].value;
+    std::string frg_complexity = options_["fragment-complexity"].value;
     int vtx_steps = 0;
     int frg_steps = 0;
 
     std::stringstream ss;
 
-    ss << mOptions["vertex-steps"].value;
+    ss << options_["vertex-steps"].value;
     ss >> vtx_steps;
     ss.clear();
-    ss << mOptions["fragment-steps"].value;
+    ss << options_["fragment-steps"].value;
     ss >> frg_steps;
 
     /* Load shaders */
@@ -150,7 +150,7 @@ void SceneFunction::setup()
     attrib_locations.push_back(program_["position"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }

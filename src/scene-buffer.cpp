@@ -295,19 +295,19 @@ SceneBuffer::SceneBuffer(Canvas &pCanvas) :
     Scene(pCanvas, "buffer")
 {
     priv_ = new SceneBufferPrivate();
-    mOptions["interleave"] = Scene::Option("interleave", "false",
+    options_["interleave"] = Scene::Option("interleave", "false",
                                            "Whether to interleave vertex attribute data [true,false]");
-    mOptions["update-method"] = Scene::Option("update-method", "map",
+    options_["update-method"] = Scene::Option("update-method", "map",
                                               "[map,subdata]");
-    mOptions["update-fraction"] = Scene::Option("update-fraction", "1.0",
+    options_["update-fraction"] = Scene::Option("update-fraction", "1.0",
                                                 "The fraction of the mesh length that is updated at every iteration (0.0-1.0)");
-    mOptions["update-dispersion"] = Scene::Option("update-dispersion", "0.0",
+    options_["update-dispersion"] = Scene::Option("update-dispersion", "0.0",
                                                   "How dispersed the updates are [0.0 - 1.0]");
-    mOptions["columns"] = Scene::Option("columns", "100",
+    options_["columns"] = Scene::Option("columns", "100",
                                        "The number of mesh subdivisions length-wise");
-    mOptions["rows"] = Scene::Option("rows", "20",
+    options_["rows"] = Scene::Option("rows", "20",
                                       "The number of mesh subdisivisions width-wise");
-    mOptions["buffer-usage"] = Scene::Option("buffer-usage", "static",
+    options_["buffer-usage"] = Scene::Option("buffer-usage", "static",
                                       "How the buffer will be used [static,stream,dynamic]");
 }
 
@@ -319,7 +319,7 @@ SceneBuffer::~SceneBuffer()
 int
 SceneBuffer::load()
 {
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
@@ -336,7 +336,7 @@ SceneBuffer::setup()
 
     Scene::setup();
 
-    bool interleave = (mOptions["interleave"].value == "true");
+    bool interleave = (options_["interleave"].value == "true");
     Mesh::VBOUpdateMethod update_method;
     Mesh::VBOUsage usage;
     double update_fraction;
@@ -344,31 +344,31 @@ SceneBuffer::setup()
     size_t nlength;
     size_t nwidth;
 
-    if (mOptions["update-method"].value == "map")
+    if (options_["update-method"].value == "map")
         update_method = Mesh::VBOUpdateMethodMap;
-    else if (mOptions["update-method"].value == "subdata")
+    else if (options_["update-method"].value == "subdata")
         update_method = Mesh::VBOUpdateMethodSubData;
     else
         update_method = Mesh::VBOUpdateMethodMap;
 
-    if (mOptions["buffer-usage"].value == "static")
+    if (options_["buffer-usage"].value == "static")
         usage = Mesh::VBOUsageStatic;
-    else if (mOptions["buffer-usage"].value == "stream")
+    else if (options_["buffer-usage"].value == "stream")
         usage = Mesh::VBOUsageStream;
     else
         usage = Mesh::VBOUsageDynamic;
 
     std::stringstream ss;
-    ss << mOptions["update-fraction"].value;
+    ss << options_["update-fraction"].value;
     ss >> update_fraction;
     ss.clear();
-    ss << mOptions["update-dispersion"].value;
+    ss << options_["update-dispersion"].value;
     ss >> update_dispersion;
     ss.clear();
-    ss << mOptions["columns"].value;
+    ss << options_["columns"].value;
     ss >> nlength;
     ss.clear();
-    ss << mOptions["rows"].value;
+    ss << options_["rows"].value;
     ss >> nwidth;
 
     if (update_method == Mesh::VBOUpdateMethodMap &&
@@ -389,14 +389,14 @@ SceneBuffer::setup()
     priv_->wave->mesh().build_vbo();
 
     priv_->wave->program().start();
-    priv_->wave->program()["Viewport"] = LibMatrix::vec2(mCanvas.width(), mCanvas.height());
+    priv_->wave->program()["Viewport"] = LibMatrix::vec2(canvas_.width(), canvas_.height());
 
     glDisable(GL_CULL_FACE);
 
-    mCurrentFrame = 0;
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    currentFrame_ = 0;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void
@@ -414,18 +414,18 @@ void
 SceneBuffer::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double elapsed_time = current_time - mStartTime;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
     priv_->wave->update(elapsed_time);
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
 void
@@ -434,7 +434,7 @@ SceneBuffer::draw()
     LibMatrix::Stack4 model_view;
 
     // Load the ModelViewProjectionMatrix uniform in the shader
-    LibMatrix::mat4 model_view_proj(mCanvas.projection());
+    LibMatrix::mat4 model_view_proj(canvas_.projection());
     model_view.translate(0.0, 0.0, -4.0);
     model_view.rotate(45.0, -1.0, 0.0, 0.0);
     model_view_proj *= model_view.getCurrent();

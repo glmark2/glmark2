@@ -73,11 +73,11 @@ SceneShading::SceneShading(Canvas &pCanvas) :
         doSeparator = true;
     }
     optionDesc += "]";
-    mOptions["shading"] = Scene::Option("shading", "gouraud",
+    options_["shading"] = Scene::Option("shading", "gouraud",
                                         "[gouraud, blinn-phong-inf, phong]");
-    mOptions["num-lights"] = Scene::Option("num-lights", "1",
+    options_["num-lights"] = Scene::Option("num-lights", "1",
             "The number of lights applied to the scene (phong only)");
-    mOptions["model"] = Scene::Option("model", "cat",
+    options_["model"] = Scene::Option("model", "cat",
                                       optionDesc);
 }
 
@@ -89,7 +89,7 @@ int SceneShading::load()
 {
     rotationSpeed_ = 36.0f;
 
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
@@ -161,7 +161,7 @@ void SceneShading::setup()
     // Load and add constants to shaders
     std::string vtx_shader_filename;
     std::string frg_shader_filename;
-    const std::string &shading = mOptions["shading"].value;
+    const std::string &shading = options_["shading"].value;
     ShaderSource vtx_source;
     ShaderSource frg_source;
     if (shading == "gouraud") {
@@ -183,7 +183,7 @@ void SceneShading::setup()
     else if (shading == "phong") {
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.vert";
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.frag";
-        unsigned int num_lights = fromString<unsigned int>(mOptions["num-lights"].value);
+        unsigned int num_lights = fromString<unsigned int>(options_["num-lights"].value);
         string fragsource = get_fragment_shader_source(frg_shader_filename, num_lights);
         frg_source.append(fragsource);
         frg_source.add_const("MaterialDiffuse", materialDiffuse);
@@ -197,7 +197,7 @@ void SceneShading::setup()
     }
 
     Model model;
-    const std::string& whichModel(mOptions["model"].value);
+    const std::string& whichModel(options_["model"].value);
     bool modelLoaded = model.load(whichModel);
 
     if(!modelLoaded)
@@ -247,7 +247,7 @@ void SceneShading::setup()
     float fovy = 2.0 * atanf(radius_ / (2.0 + radius_));
     fovy /= M_PI;
     fovy *= 180.0;
-    float aspect(static_cast<float>(mCanvas.width())/static_cast<float>(mCanvas.height()));
+    float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
     perspective_.setIdentity();
     perspective_ *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter); 
 
@@ -258,11 +258,11 @@ void SceneShading::setup()
     attrib_locations.push_back(program_["normal"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    mCurrentFrame = 0;
+    currentFrame_ = 0;
     rotation_ = 0.0f;
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void SceneShading::teardown()
@@ -276,19 +276,19 @@ void SceneShading::teardown()
 void SceneShading::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double dt = current_time - mLastUpdateTime;
-    double elapsed_time = current_time - mStartTime;
+    double dt = current_time - lastUpdateTime_;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
     rotation_ += rotationSpeed_ * dt;
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
 void SceneShading::draw()
@@ -328,16 +328,16 @@ SceneShading::validate()
 
     Canvas::Pixel ref;
 
-    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 3,
-                                             mCanvas.height() / 3);
+    Canvas::Pixel pixel = canvas_.read_pixel(canvas_.width() / 3,
+                                             canvas_.height() / 3);
 
-    const std::string &filter = mOptions["shading"].value;
+    const std::string &filter = options_["shading"].value;
 
     if (filter == "gouraud")
         ref = Canvas::Pixel(0x00, 0x00, 0x2d, 0xff);
     else if (filter == "blinn-phong-inf")
         ref = Canvas::Pixel(0x1a, 0x1a, 0x3e, 0xff);
-    else if (filter == "phong" && mOptions["num-lights"].value == "1")
+    else if (filter == "phong" && options_["num-lights"].value == "1")
         ref = Canvas::Pixel(0x05, 0x05, 0xad, 0xff);
     else
         return Scene::ValidationUnknown;

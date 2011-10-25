@@ -48,11 +48,11 @@ SceneBuild::SceneBuild(Canvas &pCanvas) :
         doSeparator = true;
     }
     optionDesc += "]";
-    mOptions["use-vbo"] = Scene::Option("use-vbo", "true",
+    options_["use-vbo"] = Scene::Option("use-vbo", "true",
                                         "Whether to use VBOs for rendering [true,false]");
-    mOptions["interleave"] = Scene::Option("interleave", "false",
+    options_["interleave"] = Scene::Option("interleave", "false",
                                            "Whether to interleave vertex attribute data [true,false]");
-    mOptions["model"] = Scene::Option("model", "horse",
+    options_["model"] = Scene::Option("model", "horse",
                                       optionDesc);
 }
 
@@ -64,7 +64,7 @@ int SceneBuild::load()
 {
     rotationSpeed_ = 36.0f;
 
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
@@ -99,7 +99,7 @@ void SceneBuild::setup()
     }
 
     Model model;
-    const std::string& whichModel(mOptions["model"].value);
+    const std::string& whichModel(options_["model"].value);
     bool modelLoaded = model.load(whichModel);
 
     if(!modelLoaded)
@@ -141,8 +141,8 @@ void SceneBuild::setup()
     attrib_locations.push_back(program_["normal"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    useVbo_ = (mOptions["use-vbo"].value == "true");
-    bool interleave = (mOptions["interleave"].value == "true");
+    useVbo_ = (options_["use-vbo"].value == "true");
+    bool interleave = (options_["interleave"].value == "true");
 
     mesh_.vbo_update_method(Mesh::VBOUpdateMethodMap);
     mesh_.interleave(interleave);
@@ -163,17 +163,17 @@ void SceneBuild::setup()
     float fovy = 2.0 * atanf(radius_ / (2.0 + radius_));
     fovy /= M_PI;
     fovy *= 180.0;
-    float aspect(static_cast<float>(mCanvas.width())/static_cast<float>(mCanvas.height()));
+    float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
     perspective_.setIdentity();
     perspective_ *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter); 
 
     program_.start();
 
-    mCurrentFrame = 0;
+    currentFrame_ = 0;
     rotation_ = 0.0;
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void
@@ -190,19 +190,19 @@ SceneBuild::teardown()
 void SceneBuild::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double dt = current_time - mLastUpdateTime;
-    double elapsed_time = current_time - mStartTime;
+    double dt = current_time - lastUpdateTime_;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
     rotation_ += rotationSpeed_ * dt;
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
 void SceneBuild::draw()
@@ -244,8 +244,8 @@ SceneBuild::validate()
         return Scene::ValidationUnknown;
 
     Canvas::Pixel ref(0xa7, 0xa7, 0xa7, 0xff);
-    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 2,
-                                             mCanvas.height() / 2);
+    Canvas::Pixel pixel = canvas_.read_pixel(canvas_.width() / 2,
+                                             canvas_.height() / 2);
 
     double dist = pixel_value_distance(pixel, ref);
     if (dist < radius_3d + 0.01) {

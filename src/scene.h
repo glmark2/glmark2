@@ -81,11 +81,11 @@ public:
     unsigned average_fps();
     bool is_running();
 
-    const std::string &name() { return mName; }
+    const std::string &name() { return name_; }
     virtual bool set_option(const std::string &opt, const std::string &val);
     void reset_options();
     bool set_option_default(const std::string &opt, const std::string &val);
-    const std::map<std::string, Option> &options() { return mOptions; }
+    const std::map<std::string, Option> &options() { return options_; }
 
     static Scene &dummy()
     {
@@ -112,17 +112,15 @@ protected:
     double pixel_value_distance(Canvas::Pixel p1, Canvas::Pixel p2,
                                 bool use_alpha=false);
 
-    Canvas &mCanvas;
-    std::string mName;
-    std::map<std::string, Option> mOptions;
-
-    double mStartTime;
-    double mLastUpdateTime;
-    unsigned mCurrentFrame;
-    unsigned mAverageFPS;      // Average FPS of run
-
-    bool mRunning;
-    double mDuration;      // Duration of run in seconds
+    Canvas &canvas_;
+    std::string name_;
+    std::map<std::string, Option> options_;
+    double startTime_;
+    double lastUpdateTime_;
+    unsigned currentFrame_;
+    unsigned averageFPS_;      // Average FPS of run
+    bool running_;
+    double duration_;      // Duration of run in seconds
 };
 
 /*
