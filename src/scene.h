@@ -154,17 +154,17 @@ public:
     ~SceneBuild();
 
 protected:
-    Program mProgram;
-    LibMatrix::mat4 mPerspective;
-    LibMatrix::vec3 mCenterVec;
-    float mRadius;
-    Mesh mMesh;
-    bool mOrientModel;
-    float mOrientationAngle;
-    LibMatrix::vec3 mOrientationVec;
-    float mRotation;
-    float mRotationSpeed;
-    bool mUseVbo;
+    Program program_;
+    LibMatrix::mat4 perspective_;
+    LibMatrix::vec3 centerVec_;
+    float radius_;
+    Mesh mesh_;
+    bool orientModel_;
+    float orientationAngle_;
+    LibMatrix::vec3 orientationVec_;
+    float rotation_;
+    float rotationSpeed_;
+    bool useVbo_;
 };
 
 class SceneTexture : public Scene
