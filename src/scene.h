@@ -182,12 +182,11 @@ public:
     ~SceneTexture();
 
 protected:
-    Program mProgram;
-
-    Mesh mCubeMesh;
-    GLuint mTexture;
-    LibMatrix::vec3 mRotation;
-    LibMatrix::vec3 mRotationSpeed;
+    Program program_;
+    Mesh mesh_;
+    GLuint texture_;
+    LibMatrix::vec3 rotation_;
+    LibMatrix::vec3 rotationSpeed_;
 };
 
 class SceneShading : public Scene

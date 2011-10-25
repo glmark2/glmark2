@@ -51,10 +51,10 @@ int SceneTexture::load()
         return 0;
 
     model.calculate_normals();
-    model.convert_to_mesh(mCubeMesh);
-    mCubeMesh.build_vbo();
+    model.convert_to_mesh(mesh_);
+    mesh_.build_vbo();
 
-    mRotationSpeed = LibMatrix::vec3(36.0f, 36.0f, 36.0f);
+    rotationSpeed_ = LibMatrix::vec3(36.0f, 36.0f, 36.0f);
 
     mRunning = false;
 
@@ -63,7 +63,7 @@ int SceneTexture::load()
 
 void SceneTexture::unload()
 {
-    mCubeMesh.reset();
+    mesh_.reset();
 }
 
 void SceneTexture::setup()
@@ -82,17 +82,17 @@ void SceneTexture::setup()
     vtx_source.add_const("LightSourcePosition", lightPosition);
     vtx_source.add_const("MaterialDiffuse", materialDiffuse);
 
-    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
+    if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
         return;
     }
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram["position"].location());
-    attrib_locations.push_back(mProgram["normal"].location());
-    attrib_locations.push_back(mProgram["texcoord"].location());
-    mCubeMesh.set_attrib_locations(attrib_locations);
+    attrib_locations.push_back(program_["position"].location());
+    attrib_locations.push_back(program_["normal"].location());
+    attrib_locations.push_back(program_["texcoord"].location());
+    mesh_.set_attrib_locations(attrib_locations);
 
     // Create texture according to selected filtering
     GLint min_filter = GL_NONE;
@@ -112,13 +112,13 @@ void SceneTexture::setup()
         mag_filter = GL_LINEAR;
     }
 
-    Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &mTexture,
+    Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &texture_,
                   min_filter, mag_filter, 0);
 
-    mProgram.start();
+    program_.start();
 
     mCurrentFrame = 0;
-    mRotation = LibMatrix::vec3();
+    rotation_ = LibMatrix::vec3();
     mRunning = true;
     mStartTime = Scene::get_timestamp_us() / 1000000.0;
     mLastUpdateTime = mStartTime;
@@ -126,10 +126,10 @@ void SceneTexture::setup()
 
 void SceneTexture::teardown()
 {
-    mProgram.stop();
-    mProgram.release();
+    program_.stop();
+    program_.release();
 
-    glDeleteTextures(1, &mTexture);
+    glDeleteTextures(1, &texture_);
 
     Scene::teardown();
 }
@@ -147,7 +147,7 @@ void SceneTexture::update()
         mRunning = false;
     }
 
-    mRotation += mRotationSpeed * dt;
+    rotation_ += rotationSpeed_ * dt;
 
     mCurrentFrame++;
 }
@@ -159,23 +159,23 @@ void SceneTexture::draw()
     LibMatrix::mat4 model_view_proj(mCanvas.projection());
 
     model_view.translate(0.0f, 0.0f, -5.0f);
-    model_view.rotate(mRotation.x(), 1.0f, 0.0f, 0.0f);
-    model_view.rotate(mRotation.y(), 0.0f, 1.0f, 0.0f);
-    model_view.rotate(mRotation.z(), 0.0f, 0.0f, 1.0f);
+    model_view.rotate(rotation_.x(), 1.0f, 0.0f, 0.0f);
+    model_view.rotate(rotation_.y(), 0.0f, 1.0f, 0.0f);
+    model_view.rotate(rotation_.z(), 0.0f, 0.0f, 1.0f);
     model_view_proj *= model_view.getCurrent();
 
-    mProgram["ModelViewProjectionMatrix"] = model_view_proj;
+    program_["ModelViewProjectionMatrix"] = model_view_proj;
 
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
     LibMatrix::mat4 normal_matrix(model_view.getCurrent());
     normal_matrix.inverse().transpose();
-    mProgram["NormalMatrix"] = normal_matrix;
+    program_["NormalMatrix"] = normal_matrix;
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, mTexture);
+    glBindTexture(GL_TEXTURE_2D, texture_);
 
-    mCubeMesh.render_vbo();
+    mesh_.render_vbo();
 }
 
 Scene::ValidationResult
@@ -183,7 +183,7 @@ SceneTexture::validate()
 {
     static const double radius_3d(std::sqrt(3.0));
 
-    if (mRotation.x() != 0 || mRotation.y() != 0 || mRotation.z() != 0)
+    if (rotation_.x() != 0 || rotation_.y() != 0 || rotation_.z() != 0)
         return Scene::ValidationUnknown;
 
     Canvas::Pixel ref;
