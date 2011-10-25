@@ -141,14 +141,14 @@ void SceneFunction::setup()
     std::string frg_shader(get_fragment_shader_source(frg_steps, frg_function,
                                                       frg_complexity));
 
-    if (!Scene::load_shaders_from_strings(mProgram, vtx_shader, frg_shader))
+    if (!Scene::load_shaders_from_strings(program_, vtx_shader, frg_shader))
         return;
 
-    mProgram.start();
+    program_.start();
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram["position"].location());
-    mMesh.set_attrib_locations(attrib_locations);
+    attrib_locations.push_back(program_["position"].location());
+    mesh_.set_attrib_locations(attrib_locations);
 
     mRunning = true;
     mStartTime = Scene::get_timestamp_us() / 1000000.0;

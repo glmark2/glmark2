@@ -42,7 +42,7 @@ SceneGrid::~SceneGrid()
 
 int SceneGrid::load()
 {
-    mRotationSpeed = 36.0f;
+    rotationSpeed_ = 36.0f;
     mRunning = false;
 
     return 1;
@@ -70,7 +70,7 @@ void SceneGrid::setup()
     /* Create and configure the grid mesh */
     std::vector<int> vertex_format;
     vertex_format.push_back(3);
-    mMesh.set_vertex_format(vertex_format);
+    mesh_.set_vertex_format(vertex_format);
 
     /* 
      * The spacing needed in order for the area of the requested grid
@@ -78,19 +78,19 @@ void SceneGrid::setup()
      */
     double spacing = grid_length * (1 - 4.38 / 5.0) / (grid_size - 1.0);
 
-    mMesh.make_grid(grid_size, grid_size, grid_length, grid_length,
+    mesh_.make_grid(grid_size, grid_size, grid_length, grid_length,
                     grid_size > 1 ? spacing : 0);
-    mMesh.build_vbo();
+    mesh_.build_vbo();
 
     mCurrentFrame = 0;
-    mRotation = 0.0f;
+    rotation_ = 0.0f;
 }
 
 void SceneGrid::teardown()
 {
-    mProgram.stop();
-    mProgram.release();
-    mMesh.reset();
+    program_.stop();
+    program_.release();
+    mesh_.reset();
 
     Scene::teardown();
 }
@@ -108,7 +108,7 @@ void SceneGrid::update()
         mRunning = false;
     }
 
-    mRotation += mRotationSpeed * dt;
+    rotation_ += rotationSpeed_ * dt;
 
     mCurrentFrame++;
 }
@@ -120,12 +120,12 @@ void SceneGrid::draw()
     LibMatrix::mat4 model_view_proj(mCanvas.projection());
 
     model_view.translate(0.0f, 0.0f, -5.0f);
-    model_view.rotate(mRotation, 0.0f, 0.0f, 1.0f);
+    model_view.rotate(rotation_, 0.0f, 0.0f, 1.0f);
     model_view_proj *= model_view.getCurrent();
 
-    mProgram["ModelViewProjectionMatrix"] = model_view_proj;
+    program_["ModelViewProjectionMatrix"] = model_view_proj;
 
-    mMesh.render_vbo();
+    mesh_.render_vbo();
 }
 
 Scene::ValidationResult

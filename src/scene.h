@@ -232,11 +232,10 @@ public:
     ~SceneGrid();
 
 protected:
-    Program mProgram;
-
-    Mesh mMesh;
-    float mRotation;
-    float mRotationSpeed;
+    Program program_;
+    Mesh mesh_;
+    float rotation_;
+    float rotationSpeed_;
 };
 
 class SceneConditionals : public SceneGrid

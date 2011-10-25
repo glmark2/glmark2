@@ -137,17 +137,17 @@ void SceneLoop::setup()
     std::string frg_shader(get_fragment_shader_source(frg_steps, frg_loop,
                                                       frg_uniform));
 
-    if (!Scene::load_shaders_from_strings(mProgram, vtx_shader, frg_shader))
+    if (!Scene::load_shaders_from_strings(program_, vtx_shader, frg_shader))
         return;
 
-    mProgram.start();
+    program_.start();
 
-    mProgram["VertexLoops"] = vtx_steps;
-    mProgram["FragmentLoops"] = frg_steps;
+    program_["VertexLoops"] = vtx_steps;
+    program_["FragmentLoops"] = frg_steps;
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram["position"].location());
-    mMesh.set_attrib_locations(attrib_locations);
+    attrib_locations.push_back(program_["position"].location());
+    mesh_.set_attrib_locations(attrib_locations);
 
     mRunning = true;
     mStartTime = Scene::get_timestamp_us() / 1000000.0;
