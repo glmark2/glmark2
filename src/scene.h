@@ -325,15 +325,13 @@ public:
     ~ScenePulsar();
 
 protected:
-    int mNumQuads;
-    Program mProgram;
-
-    Mesh mPlaneMesh;
-    LibMatrix::vec3 mScale;
-    std::vector<LibMatrix::vec3> mRotations;
-    std::vector<LibMatrix::vec3> mRotationSpeeds;
-
-    GLuint mTexture;
+    int numQuads_;
+    Program program_;
+    Mesh mesh_;
+    LibMatrix::vec3 scale_;
+    std::vector<LibMatrix::vec3> rotations_;
+    std::vector<LibMatrix::vec3> rotationSpeeds_;
+    GLuint texture_;
 
 private:
     void create_and_setup_mesh();
