@@ -32,6 +32,12 @@
 
 #include <cmath>
 
+using LibMatrix::vec2;
+using LibMatrix::vec3;
+using LibMatrix::vec4;
+using LibMatrix::mat4;
+using LibMatrix::Stack4;
+
 ScenePulsar::ScenePulsar(Canvas &pCanvas) :
     Scene(pCanvas, "pulsar"),
     numQuads_(0),
@@ -49,7 +55,7 @@ ScenePulsar::~ScenePulsar()
 
 int ScenePulsar::load()
 {
-    scale_ = LibMatrix::vec3(1.0, 1.0, 1.0);
+    scale_ = vec3(1.0, 1.0, 1.0);
 
     running_ = false;
 
@@ -77,9 +83,9 @@ void ScenePulsar::setup()
 
     srand((unsigned)time(0));
     for (int i = 0; i < numQuads_; i++) {
-        rotations_.push_back(LibMatrix::vec3());
+        rotations_.push_back(vec3());
         if (options_["random"].value == "true") {
-            rotationSpeeds_.push_back(LibMatrix::vec3(((float)rand() / (float)RAND_MAX) * 5.0,
+            rotationSpeeds_.push_back(vec3(((float)rand() / (float)RAND_MAX) * 5.0,
                                                       ((float)rand() / (float)RAND_MAX) * 5.0,
                                                       0.0));
         }
@@ -87,7 +93,7 @@ void ScenePulsar::setup()
             float integral;
             float x_rot = std::modf((i + 1) * M_PI, &integral);
             float y_rot = std::modf((i + 1) * M_E, &integral);
-            rotationSpeeds_.push_back(LibMatrix::vec3(x_rot * 5.0,
+            rotationSpeeds_.push_back(vec3(x_rot * 5.0,
                                                       y_rot * 5.0,
                                                       0.0));
         }
@@ -96,7 +102,7 @@ void ScenePulsar::setup()
     // Load shaders
     std::string vtx_shader_filename;
     std::string frg_shader_filename;
-    static const LibMatrix::vec4 lightPosition(-20.0f, 20.0f,-20.0f, 1.0f);
+    static const vec4 lightPosition(-20.0f, 20.0f,-20.0f, 1.0f);
     if (options_["light"].value == "true") {
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/pulsar-light.vert";
     } else {
@@ -173,7 +179,7 @@ void ScenePulsar::update()
         rotations_[i] += rotationSpeeds_[i] * (dt * 60);
     }
 
-    scale_ = LibMatrix::vec3(cos(elapsed_time / 3.60) * 10.0, sin(elapsed_time / 3.60) * 10.0, 1.0);
+    scale_ = vec3(cos(elapsed_time / 3.60) * 10.0, sin(elapsed_time / 3.60) * 10.0, 1.0);
 
     currentFrame_++;
 }
@@ -187,8 +193,8 @@ void ScenePulsar::draw()
 
     for (int i = 0; i < numQuads_; i++) {
         // Load the ModelViewProjectionMatrix uniform in the shader
-        LibMatrix::Stack4 model_view;
-        LibMatrix::mat4 model_view_proj(canvas_.projection());
+        Stack4 model_view;
+        mat4 model_view_proj(canvas_.projection());
         model_view.scale(scale_.x(), scale_.y(), scale_.z());
         model_view.translate(0.0f, 0.0f, -10.0f);
         model_view.rotate(rotations_[i].x(), 1.0f, 0.0f, 0.0f);
@@ -200,7 +206,7 @@ void ScenePulsar::draw()
         if (options_["light"].value == "true") {
             // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
             // inverse transpose of the model view matrix.
-            LibMatrix::mat4 normal_matrix(model_view.getCurrent());
+            mat4 normal_matrix(model_view.getCurrent());
             normal_matrix.inverse().transpose();
             program_["NormalMatrix"] = normal_matrix;
         }
@@ -221,36 +227,36 @@ void ScenePulsar::create_and_setup_mesh()
     bool light = options_["light"].value == "true";
 
     struct PlaneMeshVertex {
-        LibMatrix::vec3 position;
-        LibMatrix::vec4 color;
-        LibMatrix::vec2 texcoord;
-        LibMatrix::vec3 normal;
+        vec3 position;
+        vec4 color;
+        vec2 texcoord;
+        vec3 normal;
     };
 
     PlaneMeshVertex plane_vertices[] = {
         {
-          LibMatrix::vec3(-1.0, -1.0, 0.0),
-          LibMatrix::vec4(1.0, 0.0, 0.0, 0.4),
-          LibMatrix::vec2(0.0, 0.0),
-          LibMatrix::vec3(0.0, 0.0, 1.0)
+          vec3(-1.0, -1.0, 0.0),
+          vec4(1.0, 0.0, 0.0, 0.4),
+          vec2(0.0, 0.0),
+          vec3(0.0, 0.0, 1.0)
         },
         {
-          LibMatrix::vec3(-1.0, 1.0, 0.0),
-          LibMatrix::vec4(0.0, 1.0, 0.0, 0.4),
-          LibMatrix::vec2(0.0, 1.0),
-          LibMatrix::vec3(0.0, 0.0, 1.0)
+          vec3(-1.0, 1.0, 0.0),
+          vec4(0.0, 1.0, 0.0, 0.4),
+          vec2(0.0, 1.0),
+          vec3(0.0, 0.0, 1.0)
         },
         {
-          LibMatrix::vec3(1.0, 1.0, 0.0),
-          LibMatrix::vec4(0.0, 0.0, 1.0, 0.4),
-          LibMatrix::vec2(1.0, 1.0),
-          LibMatrix::vec3(0.0, 0.0, 1.0)
+          vec3(1.0, 1.0, 0.0),
+          vec4(0.0, 0.0, 1.0, 0.4),
+          vec2(1.0, 1.0),
+          vec3(0.0, 0.0, 1.0)
         },
         {
-          LibMatrix::vec3(1.0, -1.0, 0.0),
-          LibMatrix::vec4(1.0, 1.0, 1.0, 1.0),
-          LibMatrix::vec2(1.0, 0.0),
-          LibMatrix::vec3(0.0, 0.0, 1.0)
+          vec3(1.0, -1.0, 0.0),
+          vec4(1.0, 1.0, 1.0, 1.0),
+          vec2(1.0, 0.0),
+          vec3(0.0, 0.0, 1.0)
         }
     };
 
