@@ -279,12 +279,11 @@ public:
     ~SceneBump();
 
 protected:
-    Program mProgram;
-
-    Mesh mMesh;
-    GLuint mTexture;
-    float mRotation;
-    float mRotationSpeed;
+    Program program_;
+    Mesh mesh_;
+    GLuint texture_;
+    float rotation_;
+    float rotationSpeed_;
 private:
     void setup_model_plain(const std::string &type);
     void setup_model_normals();

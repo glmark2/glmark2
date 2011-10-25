@@ -28,7 +28,7 @@
 
 SceneBump::SceneBump(Canvas &pCanvas) :
     Scene(pCanvas, "bump"),
-    mTexture(0), mRotation(0.0f), mRotationSpeed(0.0f)
+    texture_(0), rotation_(0.0f), rotationSpeed_(0.0f)
 {
     mOptions["bump-render"] = Scene::Option("bump-render", "off",
                                             "How to render bumps [off, normals, high-poly]");
@@ -40,7 +40,7 @@ SceneBump::~SceneBump()
 
 int SceneBump::load()
 {
-    mRotationSpeed = 36.0f;
+    rotationSpeed_ = 36.0f;
 
     mRunning = false;
 
@@ -80,7 +80,7 @@ SceneBump::setup_model_plain(const std::string &type)
     attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
     attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
 
-    model.convert_to_mesh(mMesh, attribs);
+    model.convert_to_mesh(mesh_, attribs);
 
     /* Load shaders */
     ShaderSource vtx_source(vtx_shader_filename);
@@ -90,16 +90,16 @@ SceneBump::setup_model_plain(const std::string &type)
     frg_source.add_const("LightSourcePosition", lightPosition);
     frg_source.add_const("LightSourceHalfVector", halfVector);
 
-    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
+    if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
         return;
     }
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram["position"].location());
-    attrib_locations.push_back(mProgram["normal"].location());
-    mMesh.set_attrib_locations(attrib_locations);
+    attrib_locations.push_back(program_["position"].location());
+    attrib_locations.push_back(program_["normal"].location());
+    mesh_.set_attrib_locations(attrib_locations);
 }
 
 void
@@ -127,7 +127,7 @@ SceneBump::setup_model_normals()
     attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
     attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeTexcoord, 2));
 
-    model.convert_to_mesh(mMesh, attribs);
+    model.convert_to_mesh(mesh_, attribs);
 
     /* Load shaders */
     ShaderSource vtx_source(vtx_shader_filename);
@@ -137,18 +137,18 @@ SceneBump::setup_model_normals()
     frg_source.add_const("LightSourcePosition", lightPosition);
     frg_source.add_const("LightSourceHalfVector", halfVector);
 
-    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
+    if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
         return;
     }
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram["position"].location());
-    attrib_locations.push_back(mProgram["texcoord"].location());
-    mMesh.set_attrib_locations(attrib_locations);
+    attrib_locations.push_back(program_["position"].location());
+    attrib_locations.push_back(program_["texcoord"].location());
+    mesh_.set_attrib_locations(attrib_locations);
 
-    Texture::load(GLMARK_DATA_PATH"/textures/asteroid-normal-map.png", &mTexture,
+    Texture::load(GLMARK_DATA_PATH"/textures/asteroid-normal-map.png", &texture_,
                   GL_NEAREST, GL_NEAREST, 0);
 }
 
@@ -165,15 +165,15 @@ void SceneBump::setup()
         setup_model_plain(bump_render);
 
 
-    mMesh.build_vbo();
+    mesh_.build_vbo();
 
-    mProgram.start();
+    program_.start();
 
     // Load texture sampler value
-    mProgram["NormalMap"] = 0;
+    program_["NormalMap"] = 0;
 
     mCurrentFrame = 0;
-    mRotation = 0.0;
+    rotation_ = 0.0;
     mRunning = true;
     mStartTime = Scene::get_timestamp_us() / 1000000.0;
     mLastUpdateTime = mStartTime;
@@ -182,13 +182,13 @@ void SceneBump::setup()
 void
 SceneBump::teardown()
 {
-    mMesh.reset();
+    mesh_.reset();
 
-    mProgram.stop();
-    mProgram.release();
+    program_.stop();
+    program_.release();
 
-    glDeleteTextures(1, &mTexture);
-    mTexture = 0;
+    glDeleteTextures(1, &texture_);
+    texture_ = 0;
 
     Scene::teardown();
 }
@@ -206,7 +206,7 @@ void SceneBump::update()
         mRunning = false;
     }
 
-    mRotation += mRotationSpeed * dt;
+    rotation_ += rotationSpeed_ * dt;
 
     mCurrentFrame++;
 }
@@ -219,18 +219,18 @@ void SceneBump::draw()
     LibMatrix::mat4 model_view_proj(mCanvas.projection());
 
     model_view.translate(0.0f, 0.0f, -3.5f);
-    model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
+    model_view.rotate(rotation_, 0.0f, 1.0f, 0.0f);
     model_view_proj *= model_view.getCurrent();
 
-    mProgram["ModelViewProjectionMatrix"] = model_view_proj;
+    program_["ModelViewProjectionMatrix"] = model_view_proj;
 
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
     LibMatrix::mat4 normal_matrix(model_view.getCurrent());
     normal_matrix.inverse().transpose();
-    mProgram["NormalMatrix"] = normal_matrix;
+    program_["NormalMatrix"] = normal_matrix;
 
-    mMesh.render_vbo();
+    mesh_.render_vbo();
 }
 
 Scene::ValidationResult
@@ -238,7 +238,7 @@ SceneBump::validate()
 {
     static const double radius_3d(std::sqrt(3.0));
 
-    if (mRotation != 0) 
+    if (rotation_ != 0) 
         return Scene::ValidationUnknown;
 
     Canvas::Pixel ref;
