@@ -173,7 +173,7 @@ CanvasX11::write_to_file(std::string &filename)
 
 bool
 CanvasX11::should_quit()
-{ 
+{
     XEvent event;
 
     if (!XPending(xdpy_))
@@ -223,7 +223,7 @@ CanvasX11::resize(int width, int height)
 
 bool
 CanvasX11::supports_gl2()
-{ 
+{
     std::string gl_version_str(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
     int gl_major(0);
 

@@ -18,7 +18,7 @@ class Glmark2SurfaceView extends GLSurfaceView {
         mActivity = activity;
 
         setEGLContextClientVersion(2);
-        
+
         // Uncomment the commands below to get an RGBA8888 surface and config.
         //this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         //setEGLConfigChooser(new Glmark2ConfigChooser(8, 8, 8, 8, 16, 0));
@@ -96,7 +96,7 @@ class Glmark2SurfaceView extends GLSurfaceView {
                 throw new IllegalArgumentException("eglChooseConfig#2 failed");
             }
 
-            /* 
+            /*
              * Try to find a config that matches exactly the RGBA size
              * specified by the user and is >= for depth and stencil.
              */

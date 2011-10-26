@@ -37,7 +37,7 @@ get_scene_from_description(const string &s)
 
     Util::split(s, ':', elems);
 
-    const string &name = !elems.empty() ? elems[0] : ""; 
+    const string &name = !elems.empty() ? elems[0] : "";
 
     return Benchmark::get_scene_by_name(name);
 }

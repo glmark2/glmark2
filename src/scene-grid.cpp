@@ -72,7 +72,7 @@ void SceneGrid::setup()
     vertex_format.push_back(3);
     mesh_.set_vertex_format(vertex_format);
 
-    /* 
+    /*
      * The spacing needed in order for the area of the requested grid
      * to be the same as the area of a grid with size 32 and spacing 0.02.
      */

@@ -206,7 +206,7 @@ Mesh::vbo_usage(Mesh::VBOUsage usage)
     vbo_usage_ = usage;
 }
 
-/** 
+/**
  * Sets the vertex attribute interleaving mode.
  *
  * If true the vertex attributes are going to be interleaved in a single
@@ -215,7 +215,7 @@ Mesh::vbo_usage(Mesh::VBOUsage usage)
  *
  * Interleaving mode takes effect in the next call to ::build_array() or
  * ::build_vbo().
- * 
+ *
  * @param interleave whether to interleave
  */
 void

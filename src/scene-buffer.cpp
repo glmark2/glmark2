@@ -32,7 +32,7 @@
  * Wave implementation *
  ***********************/
 
-/** 
+/**
  * A callback used to set up the grid by the Wave class.
  * It is called for each "quad" of the grid.
  */
@@ -45,7 +45,7 @@ wave_grid_conf(Mesh &mesh, int x, int y, int n_x, int n_y,
 {
     (void)x; (void)y; (void)n_x; (void)n_y;
 
-    /* 
+    /*
      * Order matters here, so that Wave::vertex_length_index() can work.
      * Vertices of the triangles at index i that belong to length index i
      * are even, those that belong to i + 1 are odd.
@@ -56,7 +56,7 @@ wave_grid_conf(Mesh &mesh, int x, int y, int n_x, int n_y,
 
     for (int i = 0; i < 6; i++) {
         mesh.next_vertex();
-        /* 
+        /*
          * Set the vertex position and the three vertex positions
          * of the triangle this vertex belongs to.
          */
@@ -67,15 +67,15 @@ wave_grid_conf(Mesh &mesh, int x, int y, int n_x, int n_y,
     }
 }
 
-/** 
+/**
  * Renders a grid mesh modulated by a sine wave
  */
 class WaveMesh
 {
 public:
-    /** 
+    /**
      * Creates a wave mesh.
-     * 
+     *
      * @param length the total length of the grid (in model coordinates)
      * @param width the total width of the grid (in model coordinates)
      * @param nlength the number of length-wise grid subdivisions
@@ -98,9 +98,9 @@ public:
 
     ~WaveMesh() { reset(); }
 
-    /** 
+    /**
      * Updates the state of a wave mesh.
-     * 
+     *
      * @param elapsed the time elapsed since the beginning of the rendering
      */
     void update(double elapsed)
@@ -134,7 +134,7 @@ public:
         {
             /* First vertex of length index range */
             size_t vstart(iter->first * nwidth_ * 6 + (iter->first % 2));
-            /* 
+            /*
              * First vertex not included in the range. We should also update all
              * vertices of triangles touching index i.
              */
@@ -182,7 +182,7 @@ private:
 
     std::vector<double> displacement_;
 
-    /** 
+    /**
      * Calculates the length index of a vertex.
      */
     size_t vertex_length_index(size_t v)
@@ -190,11 +190,11 @@ private:
         return v / (6 * nwidth_) + (v % 2);
     }
 
-    /** 
+    /**
      * The sine wave function with duty-cycle.
      *
      * @param x the space coordinate
-     * 
+     *
      * @return the operation error code
      */
     double wave_func(double x)
@@ -203,10 +203,10 @@ private:
         if (r < 0)
             r += wave_full_period_;
 
-        /* 
+        /*
          * Return either the sine value or 0.0, depending on the
          * wave duty cycle.
-         */ 
+         */
         if (r > wave_period_)
         {
             return 0;
@@ -217,12 +217,12 @@ private:
         }
     }
 
-    /** 
+    /**
      * Calculates the displacement of the wave.
-     * 
+     *
      * @param n the length index
      * @param elapsed the time elapsed since the beginning of the rendering
-     * 
+     *
      * @return the displacement at point n at time elapsed
      */
     double displacement(size_t n, double elapsed)
@@ -232,7 +232,7 @@ private:
         return wave_func(x - wave_velocity_ * elapsed);
     }
 
-    /** 
+    /**
      * Creates the GL shader program.
      */
     void create_program()
@@ -253,12 +253,12 @@ private:
         }
     }
 
-    /** 
+    /**
      * Creates the grid mesh.
      */
     void create_mesh()
     {
-        /* 
+        /*
          * We need to pass the positions of all vertex of the triangle
          * in order to draw the wireframe.
          */

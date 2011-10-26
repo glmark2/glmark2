@@ -113,7 +113,7 @@ create_convolution_fragment_shader(Canvas &canvas, std::vector<float> &array,
     ss_def << std::fixed;
     ss_convolution.precision(1);
     ss_convolution << std::fixed;
-    
+
     ss_convolution << "result = ";
 
     for(std::vector<float>::const_iterator iter = array.begin();
@@ -143,12 +143,12 @@ create_convolution_fragment_shader(Canvas &canvas, std::vector<float> &array,
     return source.str();
 }
 
-/** 
+/**
  * Creates a string containing a printout of a kernel matrix.
- * 
+ *
  * @param filter the vector containing the filter coefficients
  * @param width the width of the filter
- * 
+ *
  * @return the printout
  */
 static std::string
@@ -170,19 +170,19 @@ kernel_printout(const std::vector<float> &kernel,
     return ss.str();
 }
 
-/** 
+/**
  * Parses a string representation of a matrix and returns it
  * in row-major format.
  *
  * In the string representation, elements are delimited using
  * commas (',') and rows are delimited using semi-colons (';').
  * eg 0,0,0;0,1.0,0;0,0,0
- * 
+ *
  * @param str the matrix string representation to parse
  * @param matrix the float vector to populate
  * @param[out] width the width of the matrix
- * @param[out] height the height of the matrix 
- * 
+ * @param[out] height the height of the matrix
+ *
  * @return whether parsing succeeded
  */
 static bool
@@ -205,13 +205,13 @@ parse_matrix(std::string &str, std::vector<float> &matrix,
 
         if (w != UINT_MAX && elems.size() != w) {
             Log::error("Matrix row %u contains %u elements, whereas previous"
-                       " rows had %u\n", 
+                       " rows had %u\n",
                        iter - rows.begin(), elems.size(), w);
             return false;
         }
 
         w = elems.size();
-        
+
         for (std::vector<std::string>::const_iterator iter_el = elems.begin();
              iter_el != elems.end();
              iter_el++)
@@ -229,13 +229,13 @@ parse_matrix(std::string &str, std::vector<float> &matrix,
 
     width = w;
     height = rows.size();
-    
+
     return true;
 }
 
-/** 
+/**
  * Normalizes a convolution kernel matrix.
- * 
+ *
  * @param filter the filter to normalize
  */
 static void
@@ -243,7 +243,7 @@ normalize(std::vector<float> &kernel)
 {
     float sum = std::accumulate(kernel.begin(), kernel.end(), 0.0);
 
-    /* 
+    /*
      * If sum is essentially zero, perform a zero-sum normalization.
      * This normalizes positive and negative values separately,
      */
@@ -258,18 +258,18 @@ normalize(std::vector<float> &kernel)
         }
     }
 
-    /* 
+    /*
      * We can simply compare with 0.0f here, because we just care about
      * avoiding division-by-zero.
      */
     if (sum == 0.0)
         return;
-        
+
     for (std::vector<float>::iterator iter = kernel.begin();
          iter != kernel.end();
          iter++)
     {
-        *iter /= sum; 
+        *iter /= sum;
     }
 
 }

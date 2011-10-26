@@ -138,9 +138,9 @@ CanvasAndroid::init_gl_extensions()
     }
 
     if (extString.find("GL_OES_mapbuffer") != std::string::npos) {
-        GLExtensions::MapBuffer = 
+        GLExtensions::MapBuffer =
             reinterpret_cast<PFNGLMAPBUFFEROESPROC>(eglGetProcAddress("glMapBufferOES"));
-        GLExtensions::UnmapBuffer = 
+        GLExtensions::UnmapBuffer =
             reinterpret_cast<PFNGLUNMAPBUFFEROESPROC>(eglGetProcAddress("glUnmapBufferOES"));
     }
 }

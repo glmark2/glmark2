@@ -26,7 +26,7 @@
 #include "vec.h"
 #include "mat.h"
 
-/** 
+/**
  * Helper class for loading and manipulating shader sources.
  */
 class ShaderSource

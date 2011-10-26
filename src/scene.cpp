@@ -35,7 +35,7 @@ using std::map;
 
 Scene::Scene(Canvas &pCanvas, const string &name) :
     canvas_(pCanvas), name_(name),
-    startTime_(0), lastUpdateTime_(0), currentFrame_(0), averageFPS_(0), 
+    startTime_(0), lastUpdateTime_(0), currentFrame_(0), averageFPS_(0),
     running_(0), duration_(0)
 {
     options_["duration"] = Scene::Option("duration", "10.0",
@@ -113,7 +113,7 @@ bool Scene::is_running()
 
 bool
 Scene::set_option(const string &opt, const string &val)
-{ 
+{
     map<string, Option>::iterator iter = options_.find(opt);
 
     if (iter == options_.end())
@@ -141,7 +141,7 @@ Scene::reset_options()
 
 bool
 Scene::set_option_default(const string &opt, const string &val)
-{ 
+{
     map<string, Option>::iterator iter = options_.find(opt);
 
     if (iter == options_.end())

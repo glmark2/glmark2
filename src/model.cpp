@@ -433,7 +433,7 @@ get_values(const string& source, vec3& v)
     float z = fromString<float>(zs);
     v.x(x);
     v.y(y);
-    v.z(z);    
+    v.z(z);
 }
 
 void
@@ -523,7 +523,7 @@ get_values(const string& source, uvec3& v)
     unsigned int z = fromString<unsigned int>(zs);
     v.x(x);
     v.y(y);
-    v.z(z);    
+    v.z(z);
 }
 
 bool

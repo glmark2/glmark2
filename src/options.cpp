@@ -54,11 +54,11 @@ static struct option long_options[] = {
     {0, 0, 0, 0}
 };
 
-/** 
+/**
  * Parses a size string of the form WxH
- * 
+ *
  * @param str the string to parse
- * @param size the parsed size (width, height) 
+ * @param size the parsed size (width, height)
  */
 static void
 parse_size(const std::string &str, std::pair<int,int> &size)
@@ -78,7 +78,7 @@ parse_size(const std::string &str, std::pair<int,int> &size)
         ss.str(d[1]);
         ss >> size.second;
     }
-    else 
+    else
         size.second = size.first;
 }
 

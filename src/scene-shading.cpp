@@ -249,7 +249,7 @@ void SceneShading::setup()
     fovy *= 180.0;
     float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
     perspective_.setIdentity();
-    perspective_ *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter); 
+    perspective_ *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter);
 
     program_.start();
 
@@ -323,7 +323,7 @@ SceneShading::validate()
 {
     static const double radius_3d(std::sqrt(3.0));
 
-    if (rotation_ != 0) 
+    if (rotation_ != 0)
         return Scene::ValidationUnknown;
 
     Canvas::Pixel ref;

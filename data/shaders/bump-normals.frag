@@ -17,7 +17,7 @@ void main(void)
     vec3 normal_raw = texture2D(NormalMap, TextureCoord).xyz;
     // Map "color" range [0, 1.0] to normal range [-1.0, 1.0]
     vec3 normal_scaled = normal_raw * 2.0 - 1.0;
-                                
+
     // Convert the normal to eye coordinates. Note that the normal map
     // we are using is using object coordinates (not tangent!) for the
     // normals, so we can multiply by the NormalMatrix as usual.

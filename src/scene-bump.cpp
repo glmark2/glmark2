@@ -119,7 +119,7 @@ SceneBump::setup_model_normals()
     halfVector += LibMatrix::vec3(0.0, 0.0, 1.0);
     halfVector.normalize();
 
-    /* 
+    /*
      * We don't care about the vertex normals. We are using a per-fragment
      * normal map (in object space coordinates).
      */
@@ -238,7 +238,7 @@ SceneBump::validate()
 {
     static const double radius_3d(std::sqrt(3.0));
 
-    if (rotation_ != 0) 
+    if (rotation_ != 0)
         return Scene::ValidationUnknown;
 
     Canvas::Pixel ref;
