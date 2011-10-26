@@ -22,7 +22,8 @@
 #include "scene.h"
 #include "benchmark.h"
 
-void SceneDefaultOptions::setup()
+void
+SceneDefaultOptions::setup()
 {
     const std::map<std::string, Scene *> &scenes = Benchmark::scenes();
 

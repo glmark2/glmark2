@@ -38,7 +38,8 @@ SceneBump::~SceneBump()
 {
 }
 
-int SceneBump::load()
+int
+SceneBump::load()
 {
     rotationSpeed_ = 36.0f;
 
@@ -47,7 +48,8 @@ int SceneBump::load()
     return 1;
 }
 
-void SceneBump::unload()
+void
+SceneBump::unload()
 {
 }
 
@@ -152,7 +154,8 @@ SceneBump::setup_model_normals()
                   GL_NEAREST, GL_NEAREST, 0);
 }
 
-void SceneBump::setup()
+void
+SceneBump::setup()
 {
     Scene::setup();
 
@@ -193,7 +196,8 @@ SceneBump::teardown()
     Scene::teardown();
 }
 
-void SceneBump::update()
+void
+SceneBump::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
     double dt = current_time - lastUpdateTime_;
@@ -211,7 +215,8 @@ void SceneBump::update()
     currentFrame_++;
 }
 
-void SceneBump::draw()
+void
+SceneBump::draw()
 {
     LibMatrix::Stack4 model_view;
 

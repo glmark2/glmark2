@@ -115,7 +115,8 @@ get_fragment_shader_source(int steps, bool function, std::string &complexity)
     return source.str();
 }
 
-void SceneFunction::setup()
+void
+SceneFunction::setup()
 {
     SceneGrid::setup();
 

@@ -60,7 +60,8 @@ SceneBuild::~SceneBuild()
 {
 }
 
-int SceneBuild::load()
+int
+SceneBuild::load()
 {
     rotationSpeed_ = 36.0f;
 
@@ -69,12 +70,14 @@ int SceneBuild::load()
     return 1;
 }
 
-void SceneBuild::unload()
+void
+SceneBuild::unload()
 {
     mesh_.reset();
 }
 
-void SceneBuild::setup()
+void
+SceneBuild::setup()
 {
     using LibMatrix::vec3;
 
@@ -187,7 +190,8 @@ SceneBuild::teardown()
     Scene::teardown();
 }
 
-void SceneBuild::update()
+void
+SceneBuild::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
     double dt = current_time - lastUpdateTime_;
@@ -205,7 +209,8 @@ void SceneBuild::update()
     currentFrame_++;
 }
 
-void SceneBuild::draw()
+void
+SceneBuild::draw()
 {
     LibMatrix::Stack4 model_view;
 

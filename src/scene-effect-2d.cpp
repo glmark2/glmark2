@@ -274,7 +274,8 @@ normalize(std::vector<float> &kernel)
 
 }
 
-int SceneEffect2D::load()
+int
+SceneEffect2D::load()
 {
     Texture::load(GLMARK_DATA_PATH"/textures/effect-2d.png", &texture_,
                   GL_NEAREST, GL_NEAREST, 0);
@@ -283,12 +284,14 @@ int SceneEffect2D::load()
     return 1;
 }
 
-void SceneEffect2D::unload()
+void
+SceneEffect2D::unload()
 {
     glDeleteTextures(1, &texture_);
 }
 
-void SceneEffect2D::setup()
+void
+SceneEffect2D::setup()
 {
     Scene::setup();
 
@@ -350,7 +353,8 @@ void SceneEffect2D::setup()
     lastUpdateTime_ = startTime_;
 }
 
-void SceneEffect2D::teardown()
+void
+SceneEffect2D::teardown()
 {
     mesh_.reset();
 
@@ -360,7 +364,8 @@ void SceneEffect2D::teardown()
     Scene::teardown();
 }
 
-void SceneEffect2D::update()
+void
+SceneEffect2D::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
     double elapsed_time = current_time - startTime_;
@@ -375,7 +380,8 @@ void SceneEffect2D::update()
     currentFrame_++;
 }
 
-void SceneEffect2D::draw()
+void
+SceneEffect2D::draw()
 {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture_);

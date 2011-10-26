@@ -85,7 +85,8 @@ SceneShading::~SceneShading()
 {
 }
 
-int SceneShading::load()
+int
+SceneShading::load()
 {
     rotationSpeed_ = 36.0f;
 
@@ -94,7 +95,8 @@ int SceneShading::load()
     return 1;
 }
 
-void SceneShading::unload()
+void
+SceneShading::unload()
 {
     mesh_.reset();
 }
@@ -145,7 +147,8 @@ get_fragment_shader_source(const string& frg_file, unsigned int lights)
     return source.str();
 }
 
-void SceneShading::setup()
+void
+SceneShading::setup()
 {
     Scene::setup();
 
@@ -265,7 +268,8 @@ void SceneShading::setup()
     lastUpdateTime_ = startTime_;
 }
 
-void SceneShading::teardown()
+void
+SceneShading::teardown()
 {
     program_.stop();
     program_.release();
@@ -273,7 +277,8 @@ void SceneShading::teardown()
     Scene::teardown();
 }
 
-void SceneShading::update()
+void
+SceneShading::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
     double dt = current_time - lastUpdateTime_;
@@ -291,7 +296,8 @@ void SceneShading::update()
     currentFrame_++;
 }
 
-void SceneShading::draw()
+void
+SceneShading::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;

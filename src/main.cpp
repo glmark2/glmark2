@@ -258,7 +258,8 @@ do_validation(Canvas &canvas, vector<Benchmark *> &benchmarks)
     }
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
 
     if (!Options::parse_args(argc, argv))

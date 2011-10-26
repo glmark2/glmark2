@@ -42,7 +42,8 @@ SceneTexture::~SceneTexture()
 {
 }
 
-int SceneTexture::load()
+int
+SceneTexture::load()
 {
     Model::find_models();
     Model model;
@@ -61,12 +62,14 @@ int SceneTexture::load()
     return 1;
 }
 
-void SceneTexture::unload()
+void
+SceneTexture::unload()
 {
     mesh_.reset();
 }
 
-void SceneTexture::setup()
+void
+SceneTexture::setup()
 {
     Scene::setup();
 
@@ -124,7 +127,8 @@ void SceneTexture::setup()
     lastUpdateTime_ = startTime_;
 }
 
-void SceneTexture::teardown()
+void
+SceneTexture::teardown()
 {
     program_.stop();
     program_.release();
@@ -134,7 +138,8 @@ void SceneTexture::teardown()
     Scene::teardown();
 }
 
-void SceneTexture::update()
+void
+SceneTexture::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
     double dt = current_time - lastUpdateTime_;
@@ -152,7 +157,8 @@ void SceneTexture::update()
     currentFrame_++;
 }
 
-void SceneTexture::draw()
+void
+SceneTexture::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;

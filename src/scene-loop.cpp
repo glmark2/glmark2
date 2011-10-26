@@ -111,7 +111,8 @@ get_vertex_shader_source(int steps, bool loop, bool uniform)
 }
 
 
-void SceneLoop::setup()
+void
+SceneLoop::setup()
 {
     SceneGrid::setup();
 

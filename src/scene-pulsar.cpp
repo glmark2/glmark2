@@ -53,7 +53,8 @@ ScenePulsar::~ScenePulsar()
 {
 }
 
-int ScenePulsar::load()
+int
+ScenePulsar::load()
 {
     scale_ = vec3(1.0, 1.0, 1.0);
 
@@ -62,11 +63,13 @@ int ScenePulsar::load()
     return 1;
 }
 
-void ScenePulsar::unload()
+void
+ScenePulsar::unload()
 {
 }
 
-void ScenePulsar::setup()
+void
+ScenePulsar::setup()
 {
     Scene::setup();
 
@@ -142,7 +145,8 @@ void ScenePulsar::setup()
     lastUpdateTime_ = startTime_;
 }
 
-void ScenePulsar::teardown()
+void
+ScenePulsar::teardown()
 {
     program_.stop();
     program_.release();
@@ -162,7 +166,8 @@ void ScenePulsar::teardown()
     Scene::teardown();
 }
 
-void ScenePulsar::update()
+void
+ScenePulsar::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
     double dt = current_time - lastUpdateTime_;
@@ -184,7 +189,8 @@ void ScenePulsar::update()
     currentFrame_++;
 }
 
-void ScenePulsar::draw()
+void
+ScenePulsar::draw()
 {
     if (options_["texture"].value == "true") {
         glActiveTexture(GL_TEXTURE0);
@@ -221,7 +227,8 @@ ScenePulsar::validate()
     return ValidationUnknown;
 }
 
-void ScenePulsar::create_and_setup_mesh()
+void
+ScenePulsar::create_and_setup_mesh()
 {
     bool texture = options_["texture"].value == "true";
     bool light = options_["light"].value == "true";

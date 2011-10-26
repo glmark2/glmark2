@@ -52,16 +52,19 @@ Scene::~Scene()
 {
 }
 
-int Scene::load()
+int
+Scene::load()
 {
     return 1;
 }
 
-void Scene::unload()
+void
+Scene::unload()
 {
 }
 
-void Scene::setup()
+void
+Scene::setup()
 {
     stringstream ss(options_["duration"].value);
     ss >> duration_;
@@ -78,15 +81,18 @@ void Scene::setup()
 
 }
 
-void Scene::teardown()
+void
+Scene::teardown()
 {
 }
 
-void Scene::update()
+void
+Scene::update()
 {
 }
 
-void Scene::draw()
+void
+Scene::draw()
 {
 }
 
@@ -100,13 +106,15 @@ Scene::info_string(const string &title)
     return ss.str();
 }
 
-unsigned Scene::average_fps()
+unsigned
+Scene::average_fps()
 {
     return averageFPS_;
 }
 
 
-bool Scene::is_running()
+bool
+Scene::is_running()
 {
     return running_;
 }

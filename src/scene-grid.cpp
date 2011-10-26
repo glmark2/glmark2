@@ -40,7 +40,8 @@ SceneGrid::~SceneGrid()
 {
 }
 
-int SceneGrid::load()
+int
+SceneGrid::load()
 {
     rotationSpeed_ = 36.0f;
     running_ = false;
@@ -48,11 +49,13 @@ int SceneGrid::load()
     return 1;
 }
 
-void SceneGrid::unload()
+void
+SceneGrid::unload()
 {
 }
 
-void SceneGrid::setup()
+void
+SceneGrid::setup()
 {
     Scene::setup();
 
@@ -86,7 +89,8 @@ void SceneGrid::setup()
     rotation_ = 0.0f;
 }
 
-void SceneGrid::teardown()
+void
+SceneGrid::teardown()
 {
     program_.stop();
     program_.release();
@@ -95,7 +99,8 @@ void SceneGrid::teardown()
     Scene::teardown();
 }
 
-void SceneGrid::update()
+void
+SceneGrid::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
     double dt = current_time - lastUpdateTime_;
@@ -113,7 +118,8 @@ void SceneGrid::update()
     currentFrame_++;
 }
 
-void SceneGrid::draw()
+void
+SceneGrid::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;

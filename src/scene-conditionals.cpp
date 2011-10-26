@@ -89,7 +89,8 @@ get_fragment_shader_source(int steps, bool conditionals)
     return source.str();
 }
 
-void SceneConditionals::setup()
+void
+SceneConditionals::setup()
 {
     SceneGrid::setup();
 
