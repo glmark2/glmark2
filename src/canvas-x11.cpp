@@ -77,7 +77,7 @@ CanvasX11::init()
     if (!xdpy_)
         return false;
 
-    resize(mWidth, mHeight);
+    resize(width_, height_);
 
     if (!xwin_)
         return false;
@@ -158,15 +158,15 @@ CanvasX11::read_pixel(int x, int y)
 void
 CanvasX11::write_to_file(std::string &filename)
 {
-    char *pixels = new char[mWidth * mHeight * 4];
+    char *pixels = new char[width_ * height_ * 4];
 
-    for (int i = 0; i < mHeight; i++) {
-        glReadPixels(0, i, mWidth, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-                     &pixels[(mHeight - i - 1) * mWidth * 4]);
+    for (int i = 0; i < height_; i++) {
+        glReadPixels(0, i, width_, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                     &pixels[(height_ - i - 1) * width_ * 4]);
     }
 
     std::ofstream output (filename.c_str(), std::ios::out | std::ios::binary);
-    output.write(pixels, 4 * mWidth * mHeight);
+    output.write(pixels, 4 * width_ * height_);
 
     delete [] pixels;
 }
@@ -198,7 +198,7 @@ CanvasX11::resize(int width, int height)
 {
     /* Recreate an existing window only if it has actually been resized */
     if (xwin_) {
-        if (mWidth != width || mHeight != height) {
+        if (width_ != width || height_ != height) {
             XDestroyWindow(xdpy_, xwin_);
             xwin_ = 0;
         }
@@ -207,17 +207,17 @@ CanvasX11::resize(int width, int height)
         }
     }
 
-    mWidth = width;
-    mHeight = height;
+    width_ = width;
+    height_ = height;
 
     XVisualInfo *visinfo = get_xvisualinfo();
 
-    xwin_ = create_canvas_x_window(xdpy_, "glmark2 "GLMARK_VERSION, mWidth, mHeight, visinfo);
+    xwin_ = create_canvas_x_window(xdpy_, "glmark2 "GLMARK_VERSION, width_, height_, visinfo);
 
     XFree(visinfo);
 
-    glViewport(0, 0, mWidth, mHeight);
-    mProjection = LibMatrix::Mat4::perspective(60.0, mWidth / (float)mHeight,
+    glViewport(0, 0, width_, height_);
+    projection_ = LibMatrix::Mat4::perspective(60.0, width_ / (float)height_,
                                                1.0, 1024.0);
 }
 

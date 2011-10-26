@@ -76,16 +76,16 @@ public:
         return dummy_canvas;
     }
 
-    int width() { return mWidth; }
-    int height() { return mHeight; }
-    const LibMatrix::mat4 &projection() { return mProjection; }
+    int width() { return width_; }
+    int height() { return height_; }
+    const LibMatrix::mat4 &projection() { return projection_; }
 
 protected:
-    Canvas(int width, int height) : mWidth(width), mHeight(height) {}
+    Canvas(int width, int height) : width_(width), height_(height) {}
 
-    int mWidth;
-    int mHeight;
-    LibMatrix::mat4 mProjection;
+    int width_;
+    int height_;
+    LibMatrix::mat4 projection_;
 };
 
 #endif
