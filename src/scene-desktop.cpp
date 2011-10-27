@@ -50,9 +50,9 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
 
     unsigned int side = 2 * radius + 1;
 
-    for (size_t i = 0; i < radius + 1; i++) {
+    for (unsigned int i = 0; i < radius + 1; i++) {
         float s2 = 2.0 * sigma * sigma;
-        float k = 1.0 / std::sqrt(M_PI * s2) * std::exp( - ((float)i * i) / s2);
+        float k = 1.0 / std::sqrt(M_PI * s2) * std::exp( - (static_cast<float>(i) * i) / s2);
         std::stringstream ss_tmp;
         ss_tmp << "Kernel" << i;
         frg_source.add_const(ss_tmp.str(), k);
@@ -62,8 +62,8 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
     ss << "result = " << std::endl;
 
     if (direction == BlurDirectionHorizontal) {
-        for (size_t i = 0; i < side; i++) {
-            int offset = (int)(i - radius);
+        for (unsigned int i = 0; i < side; i++) {
+            int offset = static_cast<int>(i - radius);
             ss << "texture2D(Texture0, TextureCoord + vec2(" <<
                   offset << ".0 * TextureStepX, 0.0)) * Kernel" <<
                   std::abs(offset) << " +" << std::endl;
@@ -71,8 +71,8 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
         ss << "0.0 ;" << std::endl;
     }
     else if (direction == BlurDirectionVertical) {
-        for (size_t i = 0; i < side; i++) {
-            int offset = (int)(i - radius);
+        for (unsigned int i = 0; i < side; i++) {
+            int offset = static_cast<int>(i - radius);
             ss << "texture2D(Texture0, TextureCoord + vec2(0.0, " <<
                   offset << ".0 * TextureStepY)) * Kernel" <<
                   std::abs(offset) << " +" << std::endl;
@@ -80,10 +80,10 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
         ss << "0.0 ;" << std::endl;
     }
     else if (direction == BlurDirectionBoth) {
-        for (size_t i = 0; i < side; i++) {
-            int ioffset = (int)(i - radius);
-            for (size_t j = 0; j < side; j++) {
-                int joffset = (int)(j - radius);
+        for (unsigned int i = 0; i < side; i++) {
+            int ioffset = static_cast<int>(i - radius);
+            for (unsigned int j = 0; j < side; j++) {
+                int joffset = static_cast<int>(j - radius);
                 ss << "texture2D(Texture0, TextureCoord + vec2(" <<
                       ioffset << ".0 * TextureStepX, " <<
                       joffset << ".0 * TextureStepY))" <<
@@ -197,7 +197,12 @@ public:
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    virtual void render_to(RenderObject& target, Program& program = main_program)
+    virtual void render_to(RenderObject& target)
+    {
+        render_to(target, main_program);
+    }
+
+    virtual void render_to(RenderObject& target, Program& program)
     {
         LibMatrix::vec2 anchor(pos_);
         LibMatrix::vec2 ll(pos_ - anchor);
@@ -446,10 +451,8 @@ public:
             window_contents_.size(size);
     }
 
-    virtual void render_to(RenderObject& target, Program& program)
+    virtual void render_to(RenderObject& target)
     {
-        (void)program;
-
         if (separable_) {
             Program& blur_program_h1 = blur_program_h(target.size().x());
             Program& blur_program_v1 = blur_program_v(target.size().y());
@@ -640,10 +643,8 @@ public:
             window_contents_.size(size);
     }
 
-    virtual void render_to(RenderObject& target, Program& program)
+    virtual void render_to(RenderObject& target)
     {
-        (void)program;
-
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -808,7 +809,7 @@ SceneDesktop::setup()
     priv_->desktop.size(LibMatrix::vec2(canvas_.width(), canvas_.height()));
 
     /* Create the windows */
-    float angular_step(2.0 * M_PI / windows);
+    const float angular_step(2.0 * M_PI / windows);
     unsigned int min_dimension = std::min(canvas_.width(), canvas_.height());
     float window_size(min_dimension * window_size_factor);
     static const LibMatrix::vec2 corner_offset(window_size / 2.0,
@@ -822,7 +823,6 @@ SceneDesktop::setup()
             win = new RenderWindowShadow(shadow_size);
         else
             win = new RenderWindowBlur(passes, blur_radius, separable);
-        (void)angular_step;
 
         win->init();
         win->position(center - corner_offset);
