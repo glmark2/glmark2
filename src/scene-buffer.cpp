@@ -18,6 +18,7 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker
  */
 #include "scene.h"
 #include "log.h"
@@ -43,7 +44,12 @@ wave_grid_conf(Mesh &mesh, int x, int y, int n_x, int n_y,
                LibMatrix::vec3 &ur,
                LibMatrix::vec3 &lr)
 {
-    (void)x; (void)y; (void)n_x; (void)n_y;
+    // These parameters are unused in this instance of a virtual callback
+    // function.
+    static_cast<void>(x);
+    static_cast<void>(y);
+    static_cast<void>(n_x);
+    static_cast<void>(n_y);
 
     /*
      * Order matters here, so that Wave::vertex_length_index() can work.

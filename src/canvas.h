@@ -20,6 +20,7 @@
  * Authors:
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker
  */
 #ifndef GLMARK2_CANVAS_H_
 #define GLMARK2_CANVAS_H_
@@ -56,19 +57,19 @@ public:
     };
 
     virtual bool init() { return false; }
-    virtual void visible(bool visible) { (void)visible; }
+    virtual void visible(bool visible) { static_cast<void>(visible); }
     virtual void clear() {}
     virtual void update() {}
     virtual void print_info() {}
     virtual Pixel read_pixel(int x, int y)
     {
-        (void)x;
-        (void)y;
+        static_cast<void>(x);
+        static_cast<void>(y);
         return Pixel();
     }
-    virtual void write_to_file(std::string &filename) { (void)filename; }
+    virtual void write_to_file(std::string &filename) { static_cast<void>(filename); }
     virtual bool should_quit() { return false; }
-    virtual void resize(int width, int height) { (void)width; (void)height; }
+    virtual void resize(int width, int height) { static_cast<void>(width); static_cast<void>(height); }
 
     static Canvas &dummy()
     {

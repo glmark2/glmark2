@@ -18,6 +18,7 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker
  */
 #include "canvas-android.h"
 #include "log.h"
@@ -51,7 +52,7 @@ CanvasAndroid::init()
 void
 CanvasAndroid::visible(bool visible)
 {
-    (void)visible;
+    static_cast<void>(visible);
 }
 
 void
@@ -119,7 +120,7 @@ CanvasAndroid::resize(int width, int height)
     height_ = height;
 
     glViewport(0, 0, width_, height_);
-    projection_ = LibMatrix::Mat4::perspective(60.0, width_ / (float)height_,
+    projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
                                                1.0, 1024.0);
 }
 

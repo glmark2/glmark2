@@ -18,6 +18,7 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker
  */
 #include "canvas-x11.h"
 #include "log.h"
@@ -38,7 +39,7 @@ create_canvas_x_window(Display *xdpy, const char *name, int width, int height,
     Window root = RootWindow(xdpy, DefaultScreen(xdpy));
 
     Log::debug("Creating XWindow W: %d H: %d VisualID: 0x%x\n",
-               width, height, (int)vis_info->visualid);
+               width, height, vis_info->visualid);
     /* window attributes */
     attr.background_pixel = 0;
     attr.border_pixel = 0;
@@ -217,7 +218,7 @@ CanvasX11::resize(int width, int height)
     XFree(visinfo);
 
     glViewport(0, 0, width_, height_);
-    projection_ = LibMatrix::Mat4::perspective(60.0, width_ / (float)height_,
+    projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
                                                1.0, 1024.0);
 }
 

@@ -21,6 +21,7 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  *  Marc Ordinas i Llopis, Collabora Ltd. (pulsar scene)
+ *  Jesse Barker
  */
 #include "scene.h"
 #include "mat.h"
@@ -88,9 +89,9 @@ ScenePulsar::setup()
     for (int i = 0; i < numQuads_; i++) {
         rotations_.push_back(vec3());
         if (options_["random"].value == "true") {
-            rotationSpeeds_.push_back(vec3(((float)rand() / (float)RAND_MAX) * 5.0,
-                                                      ((float)rand() / (float)RAND_MAX) * 5.0,
-                                                      0.0));
+            rotationSpeeds_.push_back(vec3((static_cast<float>(rand()) / static_cast<float>(RAND_MAX)) * 5.0,
+                                            (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)) * 5.0,
+                                             0.0));
         }
         else {
             float integral;
@@ -290,7 +291,7 @@ ScenePulsar::create_and_setup_mesh()
         if (texture)
             mesh_.set_attrib(2, vertex.texcoord);
         if (light)
-            mesh_.set_attrib(2 + ((int)texture), vertex.normal);
+            mesh_.set_attrib(2 + static_cast<int>(texture), vertex.normal);
     }
 
     mesh_.build_vbo();
