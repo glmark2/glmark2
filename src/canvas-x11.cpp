@@ -29,6 +29,10 @@
 #include <fstream>
 #include <sstream>
 
+/******************
+ * Public methods *
+ ******************/
+
 bool
 CanvasX11::init()
 {

@@ -29,6 +29,10 @@
 #include <fstream>
 #include <sstream>
 
+/******************
+ * Public methods *
+ ******************/
+
 bool
 CanvasAndroid::init()
 {
@@ -123,6 +127,10 @@ CanvasAndroid::resize(int width, int height)
     projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
                                                1.0, 1024.0);
 }
+
+/*******************
+ * Private methods *
+ *******************/
 
 void
 CanvasAndroid::init_gl_extensions()
