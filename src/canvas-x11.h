@@ -89,6 +89,9 @@ protected:
     Window xwin_;
     /** The X display associated with this canvas. */
     Display *xdpy_;
+
+private:
+    bool ensure_x_window();
 };
 
 #endif
