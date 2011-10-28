@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
     }
 
     if (!canvas.init()) {
-        Log::error("Error: %s: Could not initialize canvas\n", __FUNCTION__);
+        Log::error("%s: Could not initialize canvas\n", __FUNCTION__);
         return 1;
     }
 

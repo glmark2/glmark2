@@ -44,7 +44,7 @@ CanvasX11EGL::get_xvisualinfo()
     if (!eglGetConfigAttrib(egl_display_, egl_config_,
                             EGL_NATIVE_VISUAL_ID, &vid))
     {
-        Log::error("Error: eglGetConfigAttrib() failed with error: %d\n",
+        Log::error("eglGetConfigAttrib() failed with error: %d\n",
                    eglGetError());
         return 0;
     }
@@ -54,7 +54,7 @@ CanvasX11EGL::get_xvisualinfo()
     vis_info = XGetVisualInfo(xdpy_, VisualIDMask, &vis_tmpl,
                              &num_visuals);
     if (!vis_info) {
-        Log::error("Error: couldn't get X visual\n");
+        Log::error("couldn't get X visual\n");
         return 0;
     }
 
@@ -73,12 +73,12 @@ CanvasX11EGL::ensure_egl_display()
 
     egl_display_ = eglGetDisplay((EGLNativeDisplayType) xdpy_);
     if (!egl_display_) {
-        Log::error("Error: eglGetDisplay() failed with error: %d\n",
+        Log::error("eglGetDisplay() failed with error: %d\n",
                    eglGetError());
         return false;
     }
     if (!eglInitialize(egl_display_, NULL, NULL)) {
-        Log::error("Error: eglInitialize() failed with error: %d\n",
+        Log::error("eglInitialize() failed with error: %d\n",
                    eglGetError());
         return false;
         egl_display_ = 0;
@@ -115,7 +115,7 @@ CanvasX11EGL::ensure_egl_config()
     if (!eglChooseConfig(egl_display_, attribs, &egl_config_,
                          1, &num_configs))
     {
-        Log::error("Error: eglChooseConfig() failed with error: %d\n",
+        Log::error("eglChooseConfig() failed with error: %d\n",
                      eglGetError());
         return false;
     }
@@ -123,7 +123,7 @@ CanvasX11EGL::ensure_egl_config()
     if (!eglGetConfigAttrib(egl_display_, egl_config_,
                             EGL_NATIVE_VISUAL_ID, &vid))
     {
-        Log::error("Error: eglGetConfigAttrib() failed with error: %d\n",
+        Log::error("eglGetConfigAttrib() failed with error: %d\n",
                    eglGetError());
         return false;
     }
@@ -177,7 +177,7 @@ CanvasX11EGL::ensure_egl_surface()
     egl_context_ = eglCreateContext(egl_display_, egl_config_,
                                     EGL_NO_CONTEXT, ctx_attribs);
     if (!egl_context_) {
-        Log::error("Error: eglCreateContext() failed with error: %d\n",
+        Log::error("eglCreateContext() failed with error: %d\n",
                      eglGetError());
         return false;
     }
@@ -186,7 +186,7 @@ CanvasX11EGL::ensure_egl_surface()
                                           (EGLNativeWindowType) xwin_,
                                           NULL);
     if (!egl_surface_) {
-        Log::error("Error: eglCreateWindowSurface failed with error: %d\n",
+        Log::error("eglCreateWindowSurface failed with error: %d\n",
                      eglGetError());
         return false;
     }
@@ -231,7 +231,7 @@ CanvasX11EGL::make_current()
         return true;
 
     if (!eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_)) {
-        Log::error("Error: eglMakeCurrent failed with error %d\n", eglGetError());
+        Log::error("eglMakeCurrent failed with error %d\n", eglGetError());
         return false;
     }
 
