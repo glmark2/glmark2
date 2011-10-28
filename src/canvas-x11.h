@@ -26,6 +26,9 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+/** 
+ * Canvas for rendering with GL to an X11 window.
+ */
 class CanvasX11 : public Canvas
 {
 public:
@@ -45,12 +48,46 @@ protected:
     CanvasX11(int width, int height) :
         Canvas(width, height), xwin_(0), xdpy_(0) {}
 
+    /**
+     * Gets the XVisualInfo to use for creating the X window with.
+     *
+     * The caller should XFree() the returned XVisualInfo when done.
+     *
+     * This method should be implemented in derived classes.
+     *
+     * @return the XVisualInfo
+     */
     virtual XVisualInfo *get_xvisualinfo() = 0;
+
+    /**
+     * Makes the canvas the current target for GL rendering.
+     *
+     * This method should be implemented in derived classes.
+     *
+     * @return whether the operation succeeded
+     */
     virtual bool make_current() = 0;
+
+    /**
+     * Swaps the GL buffers (assuming double buffering is used).
+     *
+     * This method should be implemented in derived classes.
+     *
+     * @return whether the operation succeeded
+     */
     virtual void swap_buffers() = 0;
+
+    /**
+     * Whether the current implementation supports GL(ES) 2.0.
+     *
+     * @return true if it supports GL(ES) 2.0, false otherwise
+     */
     bool supports_gl2();
 
+    
+    /** The X window associated with this canvas. */
     Window xwin_;
+    /** The X display associated with this canvas. */
     Display *xdpy_;
 };
 

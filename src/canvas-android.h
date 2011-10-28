@@ -24,6 +24,13 @@
 
 #include "canvas.h"
 
+/** 
+ * Canvas for rendering to Android surfaces.
+ *
+ * This class doesn't perform any GLES2.0 surface and context management
+ * (contrary to the CanvasX11* classes); these are handled in the Java
+ * Android code.
+ */
 class CanvasAndroid : public Canvas
 {
 public:
