@@ -376,15 +376,6 @@ Model::load_3ds(const std::string &filename)
     return true;
 }
 
-template<typename T> T
-fromString(const string& asString)
-{
-    std::stringstream ss(asString);
-    T retVal;
-    ss >> retVal;
-    return retVal;
-}
-
 void
 get_values(const string& source, vec3& v)
 {
@@ -406,7 +397,7 @@ get_values(const string& source, vec3& v)
     }
     string::size_type numChars(endPos - startPos);
     string xs(source, startPos, numChars);
-    float x = fromString<float>(xs);
+    float x = Util::fromString<float>(xs);
     // Then the second value...
     startPos = endPos + 1;
     endPos = source.find(" ", startPos);
@@ -417,7 +408,7 @@ get_values(const string& source, vec3& v)
     }
     numChars = endPos - startPos;
     string ys(source, startPos, numChars);
-    float y = fromString<float>(ys);
+    float y = Util::fromString<float>(ys);
     // And the third value (there might be a fourth, but we don't care)...
     startPos = endPos + 1;
     endPos = source.find(" ", startPos);
@@ -430,7 +421,7 @@ get_values(const string& source, vec3& v)
         numChars = endPos - startPos;
     }
     string zs(source, startPos, endPos - startPos);
-    float z = fromString<float>(zs);
+    float z = Util::fromString<float>(zs);
     v.x(x);
     v.y(y);
     v.z(z);
@@ -457,7 +448,7 @@ get_values(const string& source, vec2& v)
     }
     string::size_type numChars(endPos - startPos);
     string xs(source, startPos, numChars);
-    float x = fromString<float>(xs);
+    float x = Util::fromString<float>(xs);
     // Then the second value (there might be a third, but we don't care)...
     startPos = endPos + 1;
     endPos = source.find(" ", startPos);
@@ -470,7 +461,7 @@ get_values(const string& source, vec2& v)
         numChars = endPos - startPos;
     }
     string ys(source, startPos, numChars);
-    float y = fromString<float>(ys);
+    float y = Util::fromString<float>(ys);
     v.x(x);
     v.y(y);
 }
@@ -496,7 +487,7 @@ get_values(const string& source, uvec3& v)
     }
     string::size_type numChars(endPos - startPos);
     string xs(source, startPos, numChars);
-    unsigned int x = fromString<unsigned int>(xs);
+    unsigned int x = Util::fromString<unsigned int>(xs);
     // Then the second value...
     startPos = endPos+1;
     endPos = source.find(" ", startPos);
@@ -507,7 +498,7 @@ get_values(const string& source, uvec3& v)
     }
     numChars = endPos - startPos;
     string ys(source, startPos, numChars);
-    unsigned int y = fromString<unsigned int>(ys);
+    unsigned int y = Util::fromString<unsigned int>(ys);
     // And the third value (there might be a fourth, but we don't care)...
     startPos = endPos + 1;
     endPos = source.find(" ", startPos);
@@ -520,7 +511,7 @@ get_values(const string& source, uvec3& v)
         numChars = endPos - startPos;
     }
     string zs(source, startPos, numChars);
-    unsigned int z = fromString<unsigned int>(zs);
+    unsigned int z = Util::fromString<unsigned int>(zs);
     v.x(x);
     v.y(y);
     v.z(z);
