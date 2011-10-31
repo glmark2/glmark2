@@ -26,6 +26,7 @@
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
+#include "util.h"
 #include "shader-source.h"
 
 #include <cmath>
@@ -34,24 +35,6 @@
 using LibMatrix::vec3;
 using std::string;
 using std::endl;
-
-template<typename T> T
-fromString(const string& asString)
-{
-    std::stringstream ss(asString);
-    T retVal;
-    ss >> retVal;
-    return retVal;
-}
-
-template<typename T>
-string
-toString(const T t)
-{
-    std::stringstream ss;
-    ss << t;
-    return ss.str();
-}
 
 SceneShading::SceneShading(Canvas &pCanvas) :
     Scene(pCanvas, "shading"),
@@ -122,7 +105,7 @@ get_fragment_shader_source(const string& frg_file, unsigned int lights)
     {
         // Construct constant names for the light position and color and add it
         // to the list of constants for the shader.
-        string indexString(toString(l));
+        string indexString(Util::toString(l));
         string curLightPosition(lightPositionName + indexString);
         string curLightColor(lightColorName + indexString);
         float sin_theta(sin(theta * l));
@@ -186,7 +169,7 @@ SceneShading::setup()
     else if (shading == "phong") {
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.vert";
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.frag";
-        unsigned int num_lights = fromString<unsigned int>(options_["num-lights"].value);
+        unsigned int num_lights = Util::fromString<unsigned int>(options_["num-lights"].value);
         string fragsource = get_fragment_shader_source(frg_shader_filename, num_lights);
         frg_source.append(fragsource);
         frg_source.add_const("MaterialDiffuse", materialDiffuse);
