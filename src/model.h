@@ -24,13 +24,13 @@
 #ifndef GLMARK2_MODEL_H_
 #define GLMARK2_MODEL_H_
 
-#include "mesh.h"
-
-#include <sys/stat.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <string>
 #include <vector>
 #include <map>
+#include "vec.h"
+
+// Forward declare the mesh object.  We don't need the whole header here.
+class Mesh;
 
 enum ModelFormat
 {
