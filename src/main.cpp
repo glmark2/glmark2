@@ -198,7 +198,7 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
                 canvas.update();
             }
 
-            Log::info(" FPS: %u\n", scene.average_fps());
+            Log::info(LOG_CONTINUE" FPS: %u\n", scene.average_fps());
             score += scene.average_fps();
             benchmarks_run++;
         }

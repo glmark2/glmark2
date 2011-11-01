@@ -71,8 +71,22 @@ print_prefixed_message(FILE *stream, const char *color, const char *prefix,
     std::stringstream ss(buf);
 
     while(std::getline(ss, line)) {
-        fprintf(stream, "%s%s%s: %s\n", start_color, prefix, end_color,
-                line.c_str());
+        /* 
+         * If this line is a continuation of a previous log message
+         * just print the line plainly.
+         */
+        if (line[0] == LOG_CONTINUE[0]) {
+            fprintf(stream, "%s", line.c_str() + 1);
+        }
+        else {
+            /* Normal line, emit the prefix. */
+            fprintf(stream, "%s%s%s: %s", start_color, prefix, end_color,
+                    line.c_str());
+        }
+
+        /* Only emit a newline if the original message has it. */
+        if (!(ss.rdstate() & std::stringstream::eofbit))
+            fputs("\n", stream);
     }
 
     delete[] buf;
