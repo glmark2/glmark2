@@ -198,7 +198,7 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
                 canvas.update();
             }
 
-            Log::info(" FPS: %u\n", scene.average_fps());
+            Log::info(LOG_CONTINUE" FPS: %u\n", scene.average_fps());
             score += scene.average_fps();
             benchmarks_run++;
         }
@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
     }
 
     if (!canvas.init()) {
-        Log::error("Error: %s: Could not initialize canvas\n", __FUNCTION__);
+        Log::error("%s: Could not initialize canvas\n", __FUNCTION__);
         return 1;
     }
 

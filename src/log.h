@@ -24,6 +24,13 @@
 #ifndef LOG_H_
 #define LOG_H_
 
+/** 
+ * A prefix that informs the logging infrastructure that the log
+ * message is a continuation of a previous log message to be put
+ * on the same line.
+ */
+#define LOG_CONTINUE "\x10"
+
 class Log
 {
 public:

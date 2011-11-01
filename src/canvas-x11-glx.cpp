@@ -55,7 +55,7 @@ CanvasX11GLX::make_current()
     init_extensions();
 
     if (!glXMakeCurrent(xdpy_, xwin_, glx_context_)) {
-        Log::error("Error: glXMakeCurrent failed\n");
+        Log::error("glXMakeCurrent failed\n");
         return false;
     }
 
@@ -151,7 +151,7 @@ CanvasX11GLX::ensure_glx_fbconfig()
     GLXFBConfig *fbc = glXChooseFBConfig(xdpy_, DefaultScreen(xdpy_),
                                          attribs, &num_configs);
     if (!fbc) {
-        Log::error("Error: glXChooseFBConfig() failed\n");
+        Log::error("glXChooseFBConfig() failed\n");
         return false;
     }
 
@@ -206,7 +206,7 @@ CanvasX11GLX::ensure_glx_context()
     glx_context_ = glXCreateNewContext(xdpy_, glx_fbconfig_, GLX_RGBA_TYPE,
                                        0, True);
     if (!glx_context_) {
-        Log::error("Error: glXCreateNewContext failed\n");
+        Log::error("glXCreateNewContext failed\n");
         return false;
     }
 
