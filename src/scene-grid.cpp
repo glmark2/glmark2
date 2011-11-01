@@ -24,8 +24,7 @@
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
-
-#include <sstream>
+#include "util.h"
 
 SceneGrid::SceneGrid(Canvas &pCanvas, const std::string &name) :
     Scene(pCanvas, name)
@@ -59,16 +58,8 @@ SceneGrid::setup()
 {
     Scene::setup();
 
-    int grid_size = 0;
-    double grid_length = 0;
-
-    std::stringstream ss;
-
-    ss << options_["grid-size"].value;
-    ss >> grid_size;
-    ss.clear();
-    ss << options_["grid-length"].value;
-    ss >> grid_length;
+    int grid_size(Util::fromString<int>(options_["grid-size"].value));
+    double grid_length(Util::fromString<double>(options_["grid-length"].value));
 
     /* Create and configure the grid mesh */
     std::vector<int> vertex_format;

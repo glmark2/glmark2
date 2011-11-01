@@ -216,10 +216,7 @@ parse_matrix(std::string &str, std::vector<float> &matrix,
              iter_el != elems.end();
              iter_el++)
         {
-            std::stringstream ss(*iter_el);
-            float f;
-
-            ss >> f;
+            float f(Util::fromString<float>(*iter_el));
             matrix.push_back(f);
             Log::debug("%f ", f);
         }

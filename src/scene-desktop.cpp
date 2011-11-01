@@ -774,7 +774,7 @@ SceneDesktop::setup()
 {
     Scene::setup();
 
-    std::stringstream ss;
+    /* Parse the options */
     unsigned int windows(0);
     unsigned int passes(0);
     unsigned int blur_radius(0);
@@ -782,20 +782,11 @@ SceneDesktop::setup()
     unsigned int shadow_size(0);
     bool separable(options_["separable"].value == "true");
 
-    ss << options_["windows"].value;
-    ss >> windows;
-    ss.clear();
-    ss << options_["window-size"].value;
-    ss >> window_size_factor;
-    ss.clear();
-    ss << options_["passes"].value;
-    ss >> passes;
-    ss.clear();
-    ss << options_["blur-radius"].value;
-    ss >> blur_radius;
-    ss.clear();
-    ss << options_["shadow-size"].value;
-    ss >> shadow_size;
+    windows = Util::fromString<unsigned int>(options_["windows"].value);
+    window_size_factor = Util::fromString<float>(options_["window-size"].value);
+    passes = Util::fromString<unsigned int>(options_["passes"].value);
+    blur_radius = Util::fromString<unsigned int>(options_["blur-radius"].value);
+    shadow_size = Util::fromString<unsigned int>(options_["shadow-size"].value);
 
     /* Ensure we get a transparent clear color for all following operations */
     glClearColor(0.0, 0.0, 0.0, 0.0);

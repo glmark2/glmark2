@@ -364,18 +364,10 @@ SceneBuffer::setup()
     else
         usage = Mesh::VBOUsageDynamic;
 
-    std::stringstream ss;
-    ss << options_["update-fraction"].value;
-    ss >> update_fraction;
-    ss.clear();
-    ss << options_["update-dispersion"].value;
-    ss >> update_dispersion;
-    ss.clear();
-    ss << options_["columns"].value;
-    ss >> nlength;
-    ss.clear();
-    ss << options_["rows"].value;
-    ss >> nwidth;
+    update_fraction = Util::fromString<double>(options_["update-fraction"].value);
+    update_dispersion = Util::fromString<double>(options_["update-dispersion"].value);
+    nlength = Util::fromString<size_t>(options_["columns"].value);
+    nwidth = Util::fromString<size_t>(options_["rows"].value);
 
     if (update_method == Mesh::VBOUpdateMethodMap &&
         (GLExtensions::MapBuffer == 0 || GLExtensions::UnmapBuffer == 0))

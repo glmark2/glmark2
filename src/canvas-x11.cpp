@@ -198,9 +198,9 @@ CanvasX11::supports_gl2()
         else
             start_pos++;
 
-        std::stringstream ss;
-        ss << gl_version_str.substr(start_pos, point_pos - start_pos + 1);
-        ss >> gl_major;
+        gl_major = Util::fromString<int>(
+                gl_version_str.substr(start_pos, point_pos - start_pos + 1)
+                );
     }
 
     return gl_major >= 2;

@@ -66,18 +66,14 @@ parse_size(const std::string &str, std::pair<int,int> &size)
     std::vector<std::string> d;
     Util::split(str, 'x', d);
 
-    std::stringstream ss(d[0]);
-    ss >> size.first;
+    size.first = Util::fromString<int>(d[0]);
 
     /*
      * Parse the second element (height). If there is none, use the value
      * of the first element for the second (width = height)
      */
-    if (d.size() > 1) {
-        ss.clear();
-        ss.str(d[1]);
-        ss >> size.second;
-    }
+    if (d.size() > 1)
+        size.second = Util::fromString<int>(d[1]);
     else
         size.second = size.first;
 }

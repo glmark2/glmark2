@@ -25,6 +25,7 @@
 #include "log.h"
 #include "shader-source.h"
 #include "options.h"
+#include "util.h"
 #include <sstream>
 #include <cmath>
 #include <sys/time.h>
@@ -66,8 +67,7 @@ Scene::unload()
 void
 Scene::setup()
 {
-    stringstream ss(options_["duration"].value);
-    ss >> duration_;
+    duration_ = Util::fromString<double>(options_["duration"].value);
 
     ShaderSource::default_precision(
             ShaderSource::Precision(options_["vertex-precision"].value),

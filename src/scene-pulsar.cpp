@@ -30,6 +30,7 @@
 #include "log.h"
 #include "program.h"
 #include "shader-source.h"
+#include "util.h"
 
 #include <cmath>
 
@@ -81,9 +82,7 @@ ScenePulsar::setup()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Create a rotation for each quad.
-    std::stringstream ss;
-    ss << options_["quads"].value;
-    ss >> numQuads_;
+    numQuads_ = Util::fromString<int>(options_["quads"].value);
 
     srand((unsigned)time(0));
     for (int i = 0; i < numQuads_; i++) {

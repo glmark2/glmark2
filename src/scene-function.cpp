@@ -25,8 +25,7 @@
 #include "vec.h"
 #include "log.h"
 #include "shader-source.h"
-
-#include <sstream>
+#include "util.h"
 
 static const std::string shader_file_base(GLMARK_DATA_PATH"/shaders/function");
 
@@ -125,16 +124,8 @@ SceneFunction::setup()
     bool frg_function = options_["fragment-function"].value == "true";
     std::string vtx_complexity = options_["vertex-complexity"].value;
     std::string frg_complexity = options_["fragment-complexity"].value;
-    int vtx_steps = 0;
-    int frg_steps = 0;
-
-    std::stringstream ss;
-
-    ss << options_["vertex-steps"].value;
-    ss >> vtx_steps;
-    ss.clear();
-    ss << options_["fragment-steps"].value;
-    ss >> frg_steps;
+    int vtx_steps = Util::fromString<int>(options_["vertex-steps"].value);
+    int frg_steps = Util::fromString<int>(options_["fragment-steps"].value);
 
     /* Load shaders */
     std::string vtx_shader(get_vertex_shader_source(vtx_steps, vtx_function,
