@@ -23,12 +23,12 @@
  *  Marc Ordinas i Llopis, Collabora Ltd. (pulsar scene)
  *  Jesse Barker
  */
+#include <stdlib.h>
 #include "scene.h"
 #include "mat.h"
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
-#include "program.h"
 #include "shader-source.h"
 #include "util.h"
 
