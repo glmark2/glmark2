@@ -26,7 +26,7 @@
 
 #include <EGL/egl.h>
 
-/** 
+/**
  * Canvas for rendering to an X11 window using EGL.
  */
 class CanvasX11EGL : public CanvasX11

@@ -32,7 +32,7 @@
 #include <string>
 #include <stdio.h>
 
-/** 
+/**
  * Abstraction for a GL rendering target.
  */
 class Canvas
@@ -40,7 +40,7 @@ class Canvas
 public:
     virtual ~Canvas() {}
 
-    /** 
+    /**
      * A pixel value.
      */
     struct Pixel {
@@ -67,7 +67,7 @@ public:
         uint8_t a;
     };
 
-    /** 
+    /**
      * Initializes the canvas and makes it the target of GL operations.
      *
      * This method should be implemented in derived classes.
@@ -76,24 +76,24 @@ public:
      */
     virtual bool init() { return false; }
 
-    /** 
+    /**
      * Changes the visibility of the canvas.
      *
      * The canvas is initially not visible.
      *
      * This method should be implemented in derived classes.
-     * 
+     *
      * @param visible true to make the Canvas visible, false otherwise
      */
     virtual void visible(bool visible) { static_cast<void>(visible); }
 
-    /** 
+    /**
      * Clears the canvas.
      * This method should be implemented in derived classes.
      */
     virtual void clear() {}
 
-    /** 
+    /**
      * Ensures that the canvas on-screen representation gets updated
      * with the latest canvas contents.
      *
@@ -101,14 +101,14 @@ public:
      */
     virtual void update() {}
 
-    /** 
+    /**
      * Prints information about the canvas.
      *
      * This method should be implemented in derived classes.
      */
     virtual void print_info() {}
 
-    /** 
+    /**
      * Reads a pixel from the canvas.
      *
      * The (0, 0) point is the lower left corner. The X and Y coordinates
@@ -128,7 +128,7 @@ public:
         return Pixel();
     }
 
-    /** 
+    /**
      * Writes the canvas contents to a file.
      *
      * The pixel save order is  upper left to lower right. Each pixel value
@@ -140,7 +140,7 @@ public:
      */
     virtual void write_to_file(std::string &filename) { static_cast<void>(filename); }
 
-    /** 
+    /**
      * Whether we should quit the application.
      *
      * This method should be implemented in derived classes.
@@ -149,7 +149,7 @@ public:
      */
     virtual bool should_quit() { return false; }
 
-    /** 
+    /**
      * Resizes the canvas.
      *
      * This method should be implemented in derived classes.
@@ -161,7 +161,7 @@ public:
      */
     virtual void resize(int width, int height) { static_cast<void>(width); static_cast<void>(height); }
 
-    /** 
+    /**
      * Gets a dummy canvas object.
      *
      * @return the dummy canvas
@@ -172,25 +172,25 @@ public:
         return dummy_canvas;
     }
 
-    /** 
+    /**
      * Gets the width of the canvas.
-     * 
+     *
      * @return the width in pixels
      */
     int width() { return width_; }
 
-    /** 
+    /**
      * Gets the height of the canvas.
-     * 
+     *
      * @return the height in pixels
      */
     int height() { return height_; }
 
-    /** 
+    /**
      * Gets the projection matrix recommended for use with the canvas.
      *
      * It's not mandatory to use this projection matrix.
-     * 
+     *
      * @return the projection matrix
      */
     const LibMatrix::mat4 &projection() { return projection_; }

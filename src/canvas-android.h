@@ -24,7 +24,7 @@
 
 #include "canvas.h"
 
-/** 
+/**
  * Canvas for rendering to Android surfaces.
  *
  * This class doesn't perform any GLES2.0 surface and context management

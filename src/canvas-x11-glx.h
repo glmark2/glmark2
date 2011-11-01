@@ -28,7 +28,7 @@
 #include <GL/glx.h>
 #include <GL/glxext.h>
 
-/** 
+/**
  * Canvas for rendering to an X11 window using GLX.
  */
 class CanvasX11GLX : public CanvasX11

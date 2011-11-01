@@ -26,7 +26,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-/** 
+/**
  * Canvas for rendering with GL to an X11 window.
  */
 class CanvasX11 : public Canvas
@@ -84,7 +84,7 @@ protected:
      */
     bool supports_gl2();
 
-    
+
     /** The X window associated with this canvas. */
     Window xwin_;
     /** The X display associated with this canvas. */
