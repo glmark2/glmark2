@@ -30,7 +30,7 @@
 
 SceneBuild::SceneBuild(Canvas &pCanvas) :
     Scene(pCanvas, "build"),
-    mOrientModel(false)
+    orientModel_(false)
 {
     const ModelMap& modelMap = Model::find_models();
     std::string optionDesc("Which model to use [");
@@ -48,11 +48,11 @@ SceneBuild::SceneBuild(Canvas &pCanvas) :
         doSeparator = true;
     }
     optionDesc += "]";
-    mOptions["use-vbo"] = Scene::Option("use-vbo", "true",
+    options_["use-vbo"] = Scene::Option("use-vbo", "true",
                                         "Whether to use VBOs for rendering [true,false]");
-    mOptions["interleave"] = Scene::Option("interleave", "false",
+    options_["interleave"] = Scene::Option("interleave", "false",
                                            "Whether to interleave vertex attribute data [true,false]");
-    mOptions["model"] = Scene::Option("model", "horse",
+    options_["model"] = Scene::Option("model", "horse",
                                       optionDesc);
 }
 
@@ -60,22 +60,24 @@ SceneBuild::~SceneBuild()
 {
 }
 
-int SceneBuild::load()
+int
+SceneBuild::load()
 {
-    mRotationSpeed = 36.0f;
+    rotationSpeed_ = 36.0f;
 
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
 
-void SceneBuild::unload()
+void
+SceneBuild::unload()
 {
-    mMesh.reset();
-
+    mesh_.reset();
 }
 
-void SceneBuild::setup()
+void
+SceneBuild::setup()
 {
     using LibMatrix::vec3;
 
@@ -93,14 +95,14 @@ void SceneBuild::setup()
     vtx_source.add_const("LightSourcePosition", lightPosition);
     vtx_source.add_const("MaterialDiffuse", materialDiffuse);
 
-    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
+    if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
         return;
     }
 
     Model model;
-    const std::string& whichModel(mOptions["model"].value);
+    const std::string& whichModel(options_["model"].value);
     bool modelLoaded = model.load(whichModel);
 
     if(!modelLoaded)
@@ -123,9 +125,9 @@ void SceneBuild::setup()
     // Horse rotates around the Y axis
     if (whichModel == "buddha" || whichModel == "dragon")
     {
-        mOrientModel = true;
-        mOrientationAngle = -90.0;
-        mOrientationVec = vec3(1.0, 0.0, 0.0);
+        orientModel_ = true;
+        orientationAngle_ = -90.0;
+        orientationVec_ = vec3(1.0, 0.0, 0.0);
     }
 
     model.calculate_normals();
@@ -135,104 +137,106 @@ void SceneBuild::setup()
     attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
     attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
 
-    model.convert_to_mesh(mMesh, attribs);
+    model.convert_to_mesh(mesh_, attribs);
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram["position"].location());
-    attrib_locations.push_back(mProgram["normal"].location());
-    mMesh.set_attrib_locations(attrib_locations);
+    attrib_locations.push_back(program_["position"].location());
+    attrib_locations.push_back(program_["normal"].location());
+    mesh_.set_attrib_locations(attrib_locations);
 
-    mUseVbo = (mOptions["use-vbo"].value == "true");
-    bool interleave = (mOptions["interleave"].value == "true");
+    useVbo_ = (options_["use-vbo"].value == "true");
+    bool interleave = (options_["interleave"].value == "true");
 
-    mMesh.vbo_update_method(Mesh::VBOUpdateMethodMap);
-    mMesh.interleave(interleave);
+    mesh_.vbo_update_method(Mesh::VBOUpdateMethodMap);
+    mesh_.interleave(interleave);
 
-    if (mUseVbo)
-        mMesh.build_vbo();
+    if (useVbo_)
+        mesh_.build_vbo();
     else
-        mMesh.build_array();
+        mesh_.build_array();
 
     /* Calculate a projection matrix that is a good fit for the model */
     vec3 maxVec = model.maxVec();
     vec3 minVec = model.minVec();
     vec3 diffVec = maxVec - minVec;
-    mCenterVec = maxVec + minVec;
-    mCenterVec /= 2.0;
+    centerVec_ = maxVec + minVec;
+    centerVec_ /= 2.0;
     float diameter = diffVec.length();
-    mRadius = diameter / 2;
-    float fovy = 2.0 * atanf(mRadius / (2.0 + mRadius));
+    radius_ = diameter / 2;
+    float fovy = 2.0 * atanf(radius_ / (2.0 + radius_));
     fovy /= M_PI;
     fovy *= 180.0;
-    float aspect(static_cast<float>(mCanvas.width())/static_cast<float>(mCanvas.height()));
-    mPerspective.setIdentity();
-    mPerspective *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter); 
+    float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
+    perspective_.setIdentity();
+    perspective_ *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter);
 
-    mProgram.start();
+    program_.start();
 
-    mCurrentFrame = 0;
-    mRotation = 0.0;
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    currentFrame_ = 0;
+    rotation_ = 0.0;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void
 SceneBuild::teardown()
 {
-    mProgram.stop();
-    mProgram.release();
+    program_.stop();
+    program_.release();
 
-    mMesh.reset();
+    mesh_.reset();
 
     Scene::teardown();
 }
 
-void SceneBuild::update()
+void
+SceneBuild::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double dt = current_time - mLastUpdateTime;
-    double elapsed_time = current_time - mStartTime;
+    double dt = current_time - lastUpdateTime_;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
-    mRotation += mRotationSpeed * dt;
+    rotation_ += rotationSpeed_ * dt;
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
-void SceneBuild::draw()
+void
+SceneBuild::draw()
 {
     LibMatrix::Stack4 model_view;
 
     // Load the ModelViewProjectionMatrix uniform in the shader
-    LibMatrix::mat4 model_view_proj(mPerspective);
-    model_view.translate(-mCenterVec.x(), -mCenterVec.y(), -(mCenterVec.z() + 2.0 + mRadius));
-    model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
-    if (mOrientModel)
+    LibMatrix::mat4 model_view_proj(perspective_);
+    model_view.translate(-centerVec_.x(), -centerVec_.y(), -(centerVec_.z() + 2.0 + radius_));
+    model_view.rotate(rotation_, 0.0f, 1.0f, 0.0f);
+    if (orientModel_)
     {
-        model_view.rotate(mOrientationAngle, mOrientationVec.x(), mOrientationVec.y(), mOrientationVec.z());
+        model_view.rotate(orientationAngle_, orientationVec_.x(), orientationVec_.y(), orientationVec_.z());
     }
     model_view_proj *= model_view.getCurrent();
 
-    mProgram["ModelViewProjectionMatrix"] = model_view_proj;
+    program_["ModelViewProjectionMatrix"] = model_view_proj;
 
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
     LibMatrix::mat4 normal_matrix(model_view.getCurrent());
     normal_matrix.inverse().transpose();
-    mProgram["NormalMatrix"] = normal_matrix;
+    program_["NormalMatrix"] = normal_matrix;
 
-    if (mUseVbo) {
-        mMesh.render_vbo();
+    if (useVbo_) {
+        mesh_.render_vbo();
     }
     else {
-        mMesh.render_array();
+        mesh_.render_array();
     }
 }
 
@@ -241,12 +245,12 @@ SceneBuild::validate()
 {
     static const double radius_3d(std::sqrt(3.0));
 
-    if (mRotation != 0)
+    if (rotation_ != 0)
         return Scene::ValidationUnknown;
 
     Canvas::Pixel ref(0xa7, 0xa7, 0xa7, 0xff);
-    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 2,
-                                             mCanvas.height() / 2);
+    Canvas::Pixel pixel = canvas_.read_pixel(canvas_.width() / 2,
+                                             canvas_.height() / 2);
 
     double dist = pixel_value_distance(pixel, ref);
     if (dist < radius_3d + 0.01) {

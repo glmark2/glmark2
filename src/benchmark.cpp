@@ -28,7 +28,7 @@ using std::string;
 using std::vector;
 using std::map;
 
-std::map<string, Scene *> Benchmark::mSceneMap;
+std::map<string, Scene *> Benchmark::sceneMap_;
 
 static Scene &
 get_scene_from_description(const string &s)
@@ -37,7 +37,7 @@ get_scene_from_description(const string &s)
 
     Util::split(s, ':', elems);
 
-    const string &name = !elems.empty() ? elems[0] : ""; 
+    const string &name = !elems.empty() ? elems[0] : "";
 
     return Benchmark::get_scene_by_name(name);
 }
@@ -71,7 +71,7 @@ get_options_from_description(const string &s)
 void
 Benchmark::register_scene(Scene &scene)
 {
-    mSceneMap[scene.name()] = &scene;
+    sceneMap_[scene.name()] = &scene;
 }
 
 Scene &
@@ -79,55 +79,55 @@ Benchmark::get_scene_by_name(const string &name)
 {
     map<string, Scene *>::const_iterator iter;
 
-    if ((iter = mSceneMap.find(name)) != mSceneMap.end())
+    if ((iter = sceneMap_.find(name)) != sceneMap_.end())
         return *(iter->second);
     else
         return Scene::dummy();
 }
 
 Benchmark::Benchmark(Scene &scene, const vector<OptionPair> &options) :
-    mScene(scene), mOptions(options)
+    scene_(scene), options_(options)
 {
 }
 
 Benchmark::Benchmark(const string &name, const vector<OptionPair> &options) :
-    mScene(Benchmark::get_scene_by_name(name)), mOptions(options)
+    scene_(Benchmark::get_scene_by_name(name)), options_(options)
 {
 }
 
 Benchmark::Benchmark(const string &s) :
-    mScene(get_scene_from_description(s)),
-    mOptions(get_options_from_description(s))
+    scene_(get_scene_from_description(s)),
+    options_(get_options_from_description(s))
 {
 }
 
 Scene &
 Benchmark::setup_scene()
 {
-    mScene.reset_options();
+    scene_.reset_options();
     load_options();
 
-    mScene.load();
-    mScene.setup();
+    scene_.load();
+    scene_.setup();
 
-    return mScene;
+    return scene_;
 }
 
 void
 Benchmark::teardown_scene()
 {
-    mScene.teardown();
-    mScene.unload();
+    scene_.teardown();
+    scene_.unload();
 }
 
 void
 Benchmark::load_options()
 {
-    for (vector<OptionPair>::iterator iter = mOptions.begin();
-         iter != mOptions.end();
+    for (vector<OptionPair>::iterator iter = options_.begin();
+         iter != options_.end();
          iter++)
     {
-        mScene.set_option(iter->first, iter->second);
+        scene_.set_option(iter->first, iter->second);
     }
 }
 

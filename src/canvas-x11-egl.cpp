@@ -61,6 +61,28 @@ CanvasX11EGL::get_xvisualinfo()
     return vis_info;
 }
 
+bool
+CanvasX11EGL::make_current()
+{
+    if (!ensure_egl_surface())
+        return false;
+
+    if (egl_context_ == eglGetCurrentContext())
+        return true;
+
+    if (!eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_)) {
+        Log::error("Error: eglMakeCurrent failed with error %d\n", eglGetError());
+        return false;
+    }
+
+    if (!eglSwapInterval(egl_display_, 0))
+        Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
+
+    init_gl_extensions();
+
+    return true;
+}
+
 /*******************
  * Private methods *
  *******************/
@@ -210,35 +232,13 @@ CanvasX11EGL::init_gl_extensions()
     }
 
     if (extString.find("GL_OES_mapbuffer") != std::string::npos) {
-        GLExtensions::MapBuffer = 
+        GLExtensions::MapBuffer =
             reinterpret_cast<PFNGLMAPBUFFEROESPROC>(eglGetProcAddress("glMapBufferOES"));
-        GLExtensions::UnmapBuffer = 
+        GLExtensions::UnmapBuffer =
             reinterpret_cast<PFNGLUNMAPBUFFEROESPROC>(eglGetProcAddress("glUnmapBufferOES"));
     }
 #elif USE_GL
     GLExtensions::MapBuffer = glMapBuffer;
     GLExtensions::UnmapBuffer = glUnmapBuffer;
 #endif
-}
-
-bool
-CanvasX11EGL::make_current()
-{
-    if (!ensure_egl_surface())
-        return false;
-
-    if (egl_context_ == eglGetCurrentContext())
-        return true;
-
-    if (!eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_)) {
-        Log::error("eglMakeCurrent failed with error %d\n", eglGetError());
-        return false;
-    }
-
-    if (!eglSwapInterval(egl_display_, 0))
-        Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
-
-    init_gl_extensions();
-
-    return true;
 }

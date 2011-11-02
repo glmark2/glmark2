@@ -36,10 +36,10 @@
 SceneEffect2D::SceneEffect2D(Canvas &pCanvas) :
     Scene(pCanvas, "effect2d")
 {
-    mOptions["kernel"] = Scene::Option("kernel",
+    options_["kernel"] = Scene::Option("kernel",
         "0,0,0;0,1,0;0,0,0",
         "The convolution kernel matrix to use [format: \"a,b,c...;d,e,f...\"");;
-    mOptions["normalize"] = Scene::Option("normalize", "true",
+    options_["normalize"] = Scene::Option("normalize", "true",
         "Whether to normalize the supplied convolution kernel matrix [true,false]");
 }
 
@@ -113,7 +113,7 @@ create_convolution_fragment_shader(Canvas &canvas, std::vector<float> &array,
     ss_def << std::fixed;
     ss_convolution.precision(1);
     ss_convolution << std::fixed;
-    
+
     ss_convolution << "result = ";
 
     for(std::vector<float>::const_iterator iter = array.begin();
@@ -143,12 +143,12 @@ create_convolution_fragment_shader(Canvas &canvas, std::vector<float> &array,
     return source.str();
 }
 
-/** 
+/**
  * Creates a string containing a printout of a kernel matrix.
- * 
+ *
  * @param filter the vector containing the filter coefficients
  * @param width the width of the filter
- * 
+ *
  * @return the printout
  */
 static std::string
@@ -170,19 +170,19 @@ kernel_printout(const std::vector<float> &kernel,
     return ss.str();
 }
 
-/** 
+/**
  * Parses a string representation of a matrix and returns it
  * in row-major format.
  *
  * In the string representation, elements are delimited using
  * commas (',') and rows are delimited using semi-colons (';').
  * eg 0,0,0;0,1.0,0;0,0,0
- * 
+ *
  * @param str the matrix string representation to parse
  * @param matrix the float vector to populate
  * @param[out] width the width of the matrix
- * @param[out] height the height of the matrix 
- * 
+ * @param[out] height the height of the matrix
+ *
  * @return whether parsing succeeded
  */
 static bool
@@ -205,21 +205,18 @@ parse_matrix(std::string &str, std::vector<float> &matrix,
 
         if (w != UINT_MAX && elems.size() != w) {
             Log::error("Matrix row %u contains %u elements, whereas previous"
-                       " rows had %u\n", 
+                       " rows had %u\n",
                        iter - rows.begin(), elems.size(), w);
             return false;
         }
 
         w = elems.size();
-        
+
         for (std::vector<std::string>::const_iterator iter_el = elems.begin();
              iter_el != elems.end();
              iter_el++)
         {
-            std::stringstream ss(*iter_el);
-            float f;
-
-            ss >> f;
+            float f(Util::fromString<float>(*iter_el));
             matrix.push_back(f);
             if (iter_el == elems.begin())
                 Log::debug("%f ", f);
@@ -232,13 +229,13 @@ parse_matrix(std::string &str, std::vector<float> &matrix,
 
     width = w;
     height = rows.size();
-    
+
     return true;
 }
 
-/** 
+/**
  * Normalizes a convolution kernel matrix.
- * 
+ *
  * @param filter the filter to normalize
  */
 static void
@@ -246,7 +243,7 @@ normalize(std::vector<float> &kernel)
 {
     float sum = std::accumulate(kernel.begin(), kernel.end(), 0.0);
 
-    /* 
+    /*
      * If sum is essentially zero, perform a zero-sum normalization.
      * This normalizes positive and negative values separately,
      */
@@ -261,37 +258,40 @@ normalize(std::vector<float> &kernel)
         }
     }
 
-    /* 
+    /*
      * We can simply compare with 0.0f here, because we just care about
      * avoiding division-by-zero.
      */
     if (sum == 0.0)
         return;
-        
+
     for (std::vector<float>::iterator iter = kernel.begin();
          iter != kernel.end();
          iter++)
     {
-        *iter /= sum; 
+        *iter /= sum;
     }
 
 }
 
-int SceneEffect2D::load()
+int
+SceneEffect2D::load()
 {
     Texture::load(GLMARK_DATA_PATH"/textures/effect-2d.png", &texture_,
                   GL_NEAREST, GL_NEAREST, 0);
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
 
-void SceneEffect2D::unload()
+void
+SceneEffect2D::unload()
 {
     glDeleteTextures(1, &texture_);
 }
 
-void SceneEffect2D::setup()
+void
+SceneEffect2D::setup()
 {
     Scene::setup();
 
@@ -302,14 +302,14 @@ void SceneEffect2D::setup()
     unsigned int kernel_height = 0;
 
     /* Parse the kernel matrix from the options */
-    if (!parse_matrix(mOptions["kernel"].value, kernel,
+    if (!parse_matrix(options_["kernel"].value, kernel,
                       kernel_width, kernel_height))
     {
         return;
     }
 
     /* Normalize the kernel matrix if needed */
-    if (mOptions["normalize"].value == "true") {
+    if (options_["normalize"].value == "true") {
         normalize(kernel);
         Log::debug("Normalized kernel matrix:\n%s",
                    kernel_printout(kernel, kernel_width).c_str());
@@ -318,7 +318,7 @@ void SceneEffect2D::setup()
     /* Create and load the shaders */
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source;
-    frg_source.append(create_convolution_fragment_shader(mCanvas, kernel,
+    frg_source.append(create_convolution_fragment_shader(canvas_, kernel,
                                                          kernel_width,
                                                          kernel_height));
 
@@ -347,13 +347,14 @@ void SceneEffect2D::setup()
     // Load texture sampler value
     program_["Texture0"] = 0;
 
-    mCurrentFrame = 0;
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    currentFrame_ = 0;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
-void SceneEffect2D::teardown()
+void
+SceneEffect2D::teardown()
 {
     mesh_.reset();
 
@@ -363,22 +364,24 @@ void SceneEffect2D::teardown()
     Scene::teardown();
 }
 
-void SceneEffect2D::update()
+void
+SceneEffect2D::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double elapsed_time = current_time - mStartTime;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
-void SceneEffect2D::draw()
+void
+SceneEffect2D::draw()
 {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture_);

@@ -26,6 +26,7 @@
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
+#include "util.h"
 #include "shader-source.h"
 
 #include <cmath>
@@ -35,27 +36,9 @@ using LibMatrix::vec3;
 using std::string;
 using std::endl;
 
-template<typename T> T
-fromString(const string& asString)
-{
-    std::stringstream ss(asString);
-    T retVal;
-    ss >> retVal;
-    return retVal;
-}
-
-template<typename T>
-string
-toString(const T t)
-{
-    std::stringstream ss;
-    ss << t;
-    return ss.str();
-}
-
 SceneShading::SceneShading(Canvas &pCanvas) :
     Scene(pCanvas, "shading"),
-    mOrientModel(false)
+    orientModel_(false)
 {
     const ModelMap& modelMap = Model::find_models();
     std::string optionDesc("Which model to use [");
@@ -73,11 +56,11 @@ SceneShading::SceneShading(Canvas &pCanvas) :
         doSeparator = true;
     }
     optionDesc += "]";
-    mOptions["shading"] = Scene::Option("shading", "gouraud",
+    options_["shading"] = Scene::Option("shading", "gouraud",
                                         "[gouraud, blinn-phong-inf, phong]");
-    mOptions["num-lights"] = Scene::Option("num-lights", "1",
+    options_["num-lights"] = Scene::Option("num-lights", "1",
             "The number of lights applied to the scene (phong only)");
-    mOptions["model"] = Scene::Option("model", "cat",
+    options_["model"] = Scene::Option("model", "cat",
                                       optionDesc);
 }
 
@@ -85,18 +68,20 @@ SceneShading::~SceneShading()
 {
 }
 
-int SceneShading::load()
+int
+SceneShading::load()
 {
-    mRotationSpeed = 36.0f;
+    rotationSpeed_ = 36.0f;
 
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
 
-void SceneShading::unload()
+void
+SceneShading::unload()
 {
-    mMesh.reset();
+    mesh_.reset();
 }
 
 static string
@@ -120,7 +105,7 @@ get_fragment_shader_source(const string& frg_file, unsigned int lights)
     {
         // Construct constant names for the light position and color and add it
         // to the list of constants for the shader.
-        string indexString(toString(l));
+        string indexString(Util::toString(l));
         string curLightPosition(lightPositionName + indexString);
         string curLightColor(lightColorName + indexString);
         float sin_theta(sin(theta * l));
@@ -145,7 +130,8 @@ get_fragment_shader_source(const string& frg_file, unsigned int lights)
     return source.str();
 }
 
-void SceneShading::setup()
+void
+SceneShading::setup()
 {
     Scene::setup();
 
@@ -161,7 +147,7 @@ void SceneShading::setup()
     // Load and add constants to shaders
     std::string vtx_shader_filename;
     std::string frg_shader_filename;
-    const std::string &shading = mOptions["shading"].value;
+    const std::string &shading = options_["shading"].value;
     ShaderSource vtx_source;
     ShaderSource frg_source;
     if (shading == "gouraud") {
@@ -183,21 +169,21 @@ void SceneShading::setup()
     else if (shading == "phong") {
         vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.vert";
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.frag";
-        unsigned int num_lights = fromString<unsigned int>(mOptions["num-lights"].value);
+        unsigned int num_lights = Util::fromString<unsigned int>(options_["num-lights"].value);
         string fragsource = get_fragment_shader_source(frg_shader_filename, num_lights);
         frg_source.append(fragsource);
         frg_source.add_const("MaterialDiffuse", materialDiffuse);
         vtx_source.append_file(vtx_shader_filename);
     }
 
-    if (!Scene::load_shaders_from_strings(mProgram, vtx_source.str(),
+    if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
         return;
     }
 
     Model model;
-    const std::string& whichModel(mOptions["model"].value);
+    const std::string& whichModel(options_["model"].value);
     bool modelLoaded = model.load(whichModel);
 
     if(!modelLoaded)
@@ -220,9 +206,9 @@ void SceneShading::setup()
     // Horse rotates around the Y axis
     if (whichModel == "buddha" || whichModel == "dragon")
     {
-        mOrientModel = true;
-        mOrientationAngle = -90.0;
-        mOrientationVec = vec3(1.0, 0.0, 0.0);
+        orientModel_ = true;
+        orientationAngle_ = -90.0;
+        orientationVec_ = vec3(1.0, 0.0, 0.0);
     }
 
     model.calculate_normals();
@@ -232,90 +218,93 @@ void SceneShading::setup()
     attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
     attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
 
-    model.convert_to_mesh(mMesh, attribs);
+    model.convert_to_mesh(mesh_, attribs);
 
-    mMesh.build_vbo();
+    mesh_.build_vbo();
 
     /* Calculate a projection matrix that is a good fit for the model */
     vec3 maxVec = model.maxVec();
     vec3 minVec = model.minVec();
     vec3 diffVec = maxVec - minVec;
-    mCenterVec = maxVec + minVec;
-    mCenterVec /= 2.0;
+    centerVec_ = maxVec + minVec;
+    centerVec_ /= 2.0;
     float diameter = diffVec.length();
-    mRadius = diameter / 2;
-    float fovy = 2.0 * atanf(mRadius / (2.0 + mRadius));
+    radius_ = diameter / 2;
+    float fovy = 2.0 * atanf(radius_ / (2.0 + radius_));
     fovy /= M_PI;
     fovy *= 180.0;
-    float aspect(static_cast<float>(mCanvas.width())/static_cast<float>(mCanvas.height()));
-    mPerspective.setIdentity();
-    mPerspective *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter); 
+    float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
+    perspective_.setIdentity();
+    perspective_ *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter);
 
-    mProgram.start();
+    program_.start();
 
     std::vector<GLint> attrib_locations;
-    attrib_locations.push_back(mProgram["position"].location());
-    attrib_locations.push_back(mProgram["normal"].location());
-    mMesh.set_attrib_locations(attrib_locations);
+    attrib_locations.push_back(program_["position"].location());
+    attrib_locations.push_back(program_["normal"].location());
+    mesh_.set_attrib_locations(attrib_locations);
 
-    mCurrentFrame = 0;
-    mRotation = 0.0f;
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    currentFrame_ = 0;
+    rotation_ = 0.0f;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
-void SceneShading::teardown()
+void
+SceneShading::teardown()
 {
-    mProgram.stop();
-    mProgram.release();
+    program_.stop();
+    program_.release();
 
     Scene::teardown();
 }
 
-void SceneShading::update()
+void
+SceneShading::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double dt = current_time - mLastUpdateTime;
-    double elapsed_time = current_time - mStartTime;
+    double dt = current_time - lastUpdateTime_;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
-    mRotation += mRotationSpeed * dt;
+    rotation_ += rotationSpeed_ * dt;
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
-void SceneShading::draw()
+void
+SceneShading::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;
-    model_view.translate(-mCenterVec.x(), -mCenterVec.y(), -(mCenterVec.z() + 2.0 + mRadius));
-    model_view.rotate(mRotation, 0.0f, 1.0f, 0.0f);
-    if (mOrientModel)
+    model_view.translate(-centerVec_.x(), -centerVec_.y(), -(centerVec_.z() + 2.0 + radius_));
+    model_view.rotate(rotation_, 0.0f, 1.0f, 0.0f);
+    if (orientModel_)
     {
-        model_view.rotate(mOrientationAngle, mOrientationVec.x(), mOrientationVec.y(), mOrientationVec.z());
+        model_view.rotate(orientationAngle_, orientationVec_.x(), orientationVec_.y(), orientationVec_.z());
     }
-    LibMatrix::mat4 model_view_proj(mPerspective);
+    LibMatrix::mat4 model_view_proj(perspective_);
     model_view_proj *= model_view.getCurrent();
 
-    mProgram["ModelViewProjectionMatrix"] = model_view_proj;
+    program_["ModelViewProjectionMatrix"] = model_view_proj;
 
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
     LibMatrix::mat4 normal_matrix(model_view.getCurrent());
     normal_matrix.inverse().transpose();
-    mProgram["NormalMatrix"] = normal_matrix;
+    program_["NormalMatrix"] = normal_matrix;
 
     // Load the modelview matrix itself
-    mProgram["ModelViewMatrix"] = model_view.getCurrent();
+    program_["ModelViewMatrix"] = model_view.getCurrent();
 
-    mMesh.render_vbo();
+    mesh_.render_vbo();
 }
 
 Scene::ValidationResult
@@ -323,21 +312,21 @@ SceneShading::validate()
 {
     static const double radius_3d(std::sqrt(3.0));
 
-    if (mRotation != 0) 
+    if (rotation_ != 0)
         return Scene::ValidationUnknown;
 
     Canvas::Pixel ref;
 
-    Canvas::Pixel pixel = mCanvas.read_pixel(mCanvas.width() / 3,
-                                             mCanvas.height() / 3);
+    Canvas::Pixel pixel = canvas_.read_pixel(canvas_.width() / 3,
+                                             canvas_.height() / 3);
 
-    const std::string &filter = mOptions["shading"].value;
+    const std::string &filter = options_["shading"].value;
 
     if (filter == "gouraud")
         ref = Canvas::Pixel(0x00, 0x00, 0x2d, 0xff);
     else if (filter == "blinn-phong-inf")
         ref = Canvas::Pixel(0x1a, 0x1a, 0x3e, 0xff);
-    else if (filter == "phong" && mOptions["num-lights"].value == "1")
+    else if (filter == "phong" && options_["num-lights"].value == "1")
         ref = Canvas::Pixel(0x05, 0x05, 0xad, 0xff);
     else
         return Scene::ValidationUnknown;

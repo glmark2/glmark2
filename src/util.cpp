@@ -32,9 +32,9 @@
 #include "log.h"
 #include "util.h"
 
-/** 
+/**
  * Splits a string using a delimiter
- * 
+ *
  * @param s the string to split
  * @param delim the delimitir to use
  * @param elems the string vector to populate

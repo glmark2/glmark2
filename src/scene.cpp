@@ -25,6 +25,7 @@
 #include "log.h"
 #include "shader-source.h"
 #include "options.h"
+#include "util.h"
 #include <sstream>
 #include <cmath>
 #include <sys/time.h>
@@ -34,16 +35,16 @@ using std::string;
 using std::map;
 
 Scene::Scene(Canvas &pCanvas, const string &name) :
-    mCanvas(pCanvas), mName(name),
-    mStartTime(0), mLastUpdateTime(0), mCurrentFrame(0), mAverageFPS(0), 
-    mRunning(0), mDuration(0)
+    canvas_(pCanvas), name_(name),
+    startTime_(0), lastUpdateTime_(0), currentFrame_(0), averageFPS_(0),
+    running_(0), duration_(0)
 {
-    mOptions["duration"] = Scene::Option("duration", "10.0",
+    options_["duration"] = Scene::Option("duration", "10.0",
                                          "The duration of each benchmark in seconds");
-    mOptions["vertex-precision"] = Scene::Option("vertex-precision",
+    options_["vertex-precision"] = Scene::Option("vertex-precision",
                                                  "default,default,default,default",
                                                  "The precision values for the vertex shader (\"int,float,sampler2d,samplercube\")");
-    mOptions["fragment-precision"] = Scene::Option("fragment-precision",
+    options_["fragment-precision"] = Scene::Option("fragment-precision",
                                                    "default,default,default,default",
                                                    "The precision values for the fragment shader (\"int,float,sampler2d,samplercube\")");
 }
@@ -52,41 +53,46 @@ Scene::~Scene()
 {
 }
 
-int Scene::load()
+int
+Scene::load()
 {
     return 1;
 }
 
-void Scene::unload()
+void
+Scene::unload()
 {
 }
 
-void Scene::setup()
+void
+Scene::setup()
 {
-    stringstream ss(mOptions["duration"].value);
-    ss >> mDuration;
+    duration_ = Util::fromString<double>(options_["duration"].value);
 
     ShaderSource::default_precision(
-            ShaderSource::Precision(mOptions["vertex-precision"].value),
+            ShaderSource::Precision(options_["vertex-precision"].value),
             ShaderSource::ShaderTypeVertex
             );
 
     ShaderSource::default_precision(
-            ShaderSource::Precision(mOptions["fragment-precision"].value),
+            ShaderSource::Precision(options_["fragment-precision"].value),
             ShaderSource::ShaderTypeFragment
             );
 
 }
 
-void Scene::teardown()
+void
+Scene::teardown()
 {
 }
 
-void Scene::update()
+void
+Scene::update()
 {
 }
 
-void Scene::draw()
+void
+Scene::draw()
 {
 }
 
@@ -95,28 +101,30 @@ Scene::info_string(const string &title)
 {
     stringstream ss;
 
-    ss << "[" << mName << "] " << Scene::construct_title(title) << " ";
+    ss << "[" << name_ << "] " << Scene::construct_title(title) << " ";
 
     return ss.str();
 }
 
-unsigned Scene::average_fps()
+unsigned
+Scene::average_fps()
 {
-    return mAverageFPS;
+    return averageFPS_;
 }
 
 
-bool Scene::is_running()
+bool
+Scene::is_running()
 {
-    return mRunning;
+    return running_;
 }
 
 bool
 Scene::set_option(const string &opt, const string &val)
-{ 
-    map<string, Option>::iterator iter = mOptions.find(opt);
+{
+    map<string, Option>::iterator iter = options_.find(opt);
 
-    if (iter == mOptions.end())
+    if (iter == options_.end())
         return false;
 
     iter->second.value = val;
@@ -128,8 +136,8 @@ Scene::set_option(const string &opt, const string &val)
 void
 Scene::reset_options()
 {
-    for (map<string, Option>::iterator iter = mOptions.begin();
-         iter != mOptions.end();
+    for (map<string, Option>::iterator iter = options_.begin();
+         iter != options_.end();
          iter++)
     {
         Option &opt = iter->second;
@@ -141,10 +149,10 @@ Scene::reset_options()
 
 bool
 Scene::set_option_default(const string &opt, const string &val)
-{ 
-    map<string, Option>::iterator iter = mOptions.find(opt);
+{
+    map<string, Option>::iterator iter = options_.find(opt);
 
-    if (iter == mOptions.end())
+    if (iter == options_.end())
         return false;
 
     iter->second.default_value = val;
@@ -159,8 +167,8 @@ Scene::construct_title(const string &title)
     stringstream ss;
 
     if (title == "") {
-        for (map<string, Option>::iterator iter = mOptions.begin();
-             iter != mOptions.end();
+        for (map<string, Option>::iterator iter = options_.begin();
+             iter != options_.end();
              iter++)
         {
             if (Options::show_all_options || iter->second.set)

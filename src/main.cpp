@@ -162,7 +162,7 @@ list_scenes()
             Log::info("  [Option] %s\n"
                       "    Description  : %s\n"
                       "    Default Value: %s\n",
-                      opt.name.c_str(), 
+                      opt.name.c_str(),
                       opt.description.c_str(),
                       opt.default_value.c_str());
         }
@@ -258,7 +258,8 @@ do_validation(Canvas &canvas, vector<Benchmark *> &benchmarks)
     }
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
 
     if (!Options::parse_args(argc, argv))

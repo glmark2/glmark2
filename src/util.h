@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <istream>
+#include <sstream>
 
 #ifdef ANDROID
 #include <android/asset_manager_jni.h>
@@ -47,6 +48,25 @@ struct Util {
 
         vec.clear();
     }
+    template<typename T>
+    static T
+    fromString(const std::string& asString)
+    {
+        std::stringstream ss(asString);
+        T retVal;
+        ss >> retVal;
+        return retVal;
+    }
+
+    template<typename T>
+    static std::string
+    toString(const T t)
+    {
+        std::stringstream ss;
+        ss << t;
+        return ss.str();
+    }
+
 
 #ifdef ANDROID
     static void android_set_asset_manager(AAssetManager *asset_manager);

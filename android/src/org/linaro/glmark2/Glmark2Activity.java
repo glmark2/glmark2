@@ -57,7 +57,7 @@ public class Glmark2Activity extends Activity {
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             Glmark2Activity.this.finish();
-                            /* 
+                            /*
                              * Force process shutdown. There is no safer way to
                              * do this, as we have open threads we can't close
                              * when we fail to get an EGLConfig

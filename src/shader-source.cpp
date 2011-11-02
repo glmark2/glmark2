@@ -28,16 +28,16 @@
 #include "vec.h"
 #include "util.h"
 
-/** 
+/**
  * Holds default precision values for all shader types
  * (even the unknown type, which is hardwired to default precision values)
  */
 std::vector<ShaderSource::Precision>
 ShaderSource::default_precision_(ShaderSource::ShaderTypeUnknown + 1);
 
-/** 
+/**
  * Loads the contents of a file into a string.
- * 
+ *
  * @param filename the name of the file
  * @param str the string to put the contents of the file into
  */
@@ -64,9 +64,9 @@ ShaderSource::load_file(const std::string& filename, std::string& str)
 }
 
 
-/** 
+/**
  * Appends a string to the shader source.
- * 
+ *
  * @param str the string to append
  */
 void
@@ -75,9 +75,9 @@ ShaderSource::append(const std::string &str)
     source_ << str;
 }
 
-/** 
+/**
  * Appends the contents of a file to the shader source.
- * 
+ *
  * @param filename the name of the file to append
  */
 void
@@ -88,9 +88,9 @@ ShaderSource::append_file(const std::string &filename)
         source_ << source;
 }
 
-/** 
+/**
  * Replaces a string in the source with another string.
- * 
+ *
  * @param remove the string to replace
  * @param insert the string to replace with
  */
@@ -109,9 +109,9 @@ ShaderSource::replace(const std::string &remove, const std::string &insert)
     source_.str(str);
 }
 
-/** 
+/**
  * Replaces a string in the source with the contents of a file.
- * 
+ *
  * @param remove the string to replace
  * @param filename the name of the file to read from
  */
@@ -123,12 +123,12 @@ ShaderSource::replace_with_file(const std::string &remove, const std::string &fi
         replace(remove, source);
 }
 
-/** 
+/**
  * Adds a string (usually containing a constant definition) at
  * global (per shader) scope.
  *
  * The string is placed after any default precision qualifiers.
- * 
+ *
  * @param str the string to add
  */
 void
@@ -141,7 +141,7 @@ ShaderSource::add_global(const std::string &str)
     pos = source.rfind("precision");
 
     if (pos != std::string::npos) {
-        /* 
+        /*
          * Find the next #endif line of a preprocessor block that contains
          * the precision qualifier.
          */
@@ -165,12 +165,12 @@ ShaderSource::add_global(const std::string &str)
     source_.str(source);
 }
 
-/** 
+/**
  * Adds a string (usually containing a constant definition) at
  * global (per shader) scope.
  *
  * The string is placed after any default precision qualifiers.
- * 
+ *
  * @param function the function to add the string into
  * @param str the string to add
  */
@@ -195,7 +195,7 @@ ShaderSource::add_local(const std::string &str, const std::string &function)
     source_.str(source);
 }
 
-/** 
+/**
  * Adds a string (usually containing a constant definition) to a shader source
  *
  * If the function parameter is empty, the string will be added to global
@@ -213,7 +213,7 @@ ShaderSource::add(const std::string &str, const std::string &function)
         add_global(str);
 }
 
-/** 
+/**
  * Adds a float constant definition.
  *
  * @param name the name of the constant
@@ -231,7 +231,7 @@ ShaderSource::add_const(const std::string &name, float f,
     add(ss.str(), function);
 }
 
-/** 
+/**
  * Adds a float array constant definition.
  *
  * Note that various GLSL versions (including ES) don't support
@@ -262,7 +262,7 @@ ShaderSource::add_const(const std::string &name, std::vector<float> &array,
     add(ss.str(), function);
 }
 
-/** 
+/**
  * Adds a vec3 constant definition.
  *
  * @param name the name of the constant
@@ -281,7 +281,7 @@ ShaderSource::add_const(const std::string &name, const LibMatrix::vec3 &v,
     add(ss.str(), function);
 }
 
-/** 
+/**
  * Adds a vec4 constant definition.
  *
  * @param name the name of the constant
@@ -300,7 +300,7 @@ ShaderSource::add_const(const std::string &name, const LibMatrix::vec4 &v,
     add(ss.str(), function);
 }
 
-/** 
+/**
  * Adds a mat3 constant definition.
  *
  * @param name the name of the constant
@@ -322,7 +322,7 @@ ShaderSource::add_const(const std::string &name, const LibMatrix::mat3 &m,
     add(ss.str(), function);
 }
 
-/** 
+/**
  * Adds a float array declaration and initialization.
  *
  * @param name the name of the array
@@ -351,7 +351,7 @@ ShaderSource::add_array(const std::string &name, std::vector<float> &array,
         iter != array.end();
         iter++)
     {
-        ss << name << "[" << iter - array.begin() << "] = " << *iter << ";" << std::endl; 
+        ss << name << "[" << iter - array.begin() << "] = " << *iter << ";" << std::endl;
     }
 
     add(ss.str(), init_function);
@@ -359,12 +359,12 @@ ShaderSource::add_array(const std::string &name, std::vector<float> &array,
     add(decl, decl_function);
 }
 
-/** 
+/**
  * Gets the ShaderType for this ShaderSource.
  *
  * If the ShaderType is unknown, an attempt is made to infer
  * the type from the shader source contents.
- * 
+ *
  * @return the ShaderType
  */
 ShaderSource::ShaderType
@@ -385,9 +385,9 @@ ShaderSource::type()
     return type_;
 }
 
-/** 
+/**
  * Helper function that emits a precision statement.
- * 
+ *
  * @param ss the stringstream to add the statement to
  * @param val the precision value
  * @param type_str the variable type to apply the precision value to
@@ -425,11 +425,11 @@ ShaderSource::emit_precision(std::stringstream& ss, ShaderSource::PrecisionValue
     }
 }
 
-/** 
+/**
  * Gets a string containing the complete shader source.
  *
  * Precision statements are applied at this point.
- * 
+ *
  * @return the shader source
  */
 std::string
@@ -445,7 +445,7 @@ ShaderSource::str()
 
     /* Create the precision statements */
     std::stringstream ss;
-    
+
     emit_precision(ss, precision.int_precision, "int");
     emit_precision(ss, precision.float_precision, "float");
     emit_precision(ss, precision.sampler2d_precision, "sampler2D");
@@ -460,11 +460,11 @@ ShaderSource::str()
     return precision_str + source_.str();
 }
 
-/** 
+/**
  * Sets the precision that will be used for this shader.
  *
  * This overrides any default values set with ShaderSource::default_*_precision().
- * 
+ *
  * @param precision the precision to set
  */
 void
@@ -474,9 +474,9 @@ ShaderSource::precision(const ShaderSource::Precision& precision)
     precision_has_been_set_ = true;
 }
 
-/** 
+/**
  * Gets the precision that will be used for this shader.
- * 
+ *
  * @return the precision
  */
 const ShaderSource::Precision&
@@ -485,14 +485,14 @@ ShaderSource::precision()
     return precision_;
 }
 
-/** 
+/**
  * Sets the default precision that will be used for a shaders type.
  *
  * If type is ShaderTypeUnknown the supplied precision is used for all
  * shader types.
  *
  * This can be overriden per ShaderSource object by using ::precision().
- * 
+ *
  * @param precision the default precision to set
  * @param type the ShaderType to use the precision for
  */
@@ -512,14 +512,14 @@ ShaderSource::default_precision(const ShaderSource::Precision& precision,
     }
 }
 
-/** 
+/**
  * Gets the default precision that will be used for a shader type.
  *
  * It is valid to use a type of ShaderTypeUnknown. This will always
  * return a Precision with default values.
  *
  * @param type the ShaderType to get the precision of
- * 
+ *
  * @return the precision
  */
 const ShaderSource::Precision&
@@ -535,7 +535,7 @@ ShaderSource::default_precision(ShaderSource::ShaderType type)
  * ShaderSource::Precision constructors *
  ****************************************/
 
-/** 
+/**
  * Creates a ShaderSource::Precision with default precision values.
  */
 ShaderSource::Precision::Precision() :
@@ -546,7 +546,7 @@ ShaderSource::Precision::Precision() :
 {
 }
 
-/** 
+/**
  * Creates a ShaderSource::Precision using the supplied precision values.
  */
 ShaderSource::Precision::Precision(ShaderSource::PrecisionValue int_p,
@@ -558,7 +558,7 @@ ShaderSource::Precision::Precision(ShaderSource::PrecisionValue int_p,
 {
 }
 
-/** 
+/**
  * Creates a ShaderSource::Precision from a string representation of
  * precision values.
  *
@@ -566,7 +566,7 @@ ShaderSource::Precision::Precision(ShaderSource::PrecisionValue int_p,
  * "<int>,<float>,<sampler2d>,<samplercube>"
  *
  * Each precision value is one of "high", "medium", "low" or "default".
- * 
+ *
  * @param precision_values the string representation of the precision values
  */
 ShaderSource::Precision::Precision(const std::string& precision_values) :

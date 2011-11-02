@@ -80,14 +80,14 @@ Mesh::set_attrib_locations(const std::vector<int> &locations)
 
 
 bool
-Mesh::check_attrib(int pos, int size)
+Mesh::check_attrib(unsigned int pos, int dim)
 {
-    if (pos > (int)vertex_format_.size()) {
+    if (pos > vertex_format_.size()) {
         Log::error("Trying to set non-existent attribute\n");
         return false;
     }
 
-    if (vertex_format_[pos].first != size) {
+    if (vertex_format_[pos].first != dim) {
         Log::error("Trying to set attribute with value of invalid type\n");
         return false;
     }
@@ -114,7 +114,7 @@ Mesh::ensure_vertex()
  * etc
  */
 void
-Mesh::set_attrib(int pos, const LibMatrix::vec2 &v, std::vector<float> *vertex)
+Mesh::set_attrib(unsigned int pos, const LibMatrix::vec2 &v, std::vector<float> *vertex)
 {
     if (!check_attrib(pos, 2))
         return;
@@ -128,7 +128,7 @@ Mesh::set_attrib(int pos, const LibMatrix::vec2 &v, std::vector<float> *vertex)
 }
 
 void
-Mesh::set_attrib(int pos, const LibMatrix::vec3 &v, std::vector<float> *vertex)
+Mesh::set_attrib(unsigned int pos, const LibMatrix::vec3 &v, std::vector<float> *vertex)
 {
     if (!check_attrib(pos, 3))
         return;
@@ -143,7 +143,7 @@ Mesh::set_attrib(int pos, const LibMatrix::vec3 &v, std::vector<float> *vertex)
 }
 
 void
-Mesh::set_attrib(int pos, const LibMatrix::vec4 &v, std::vector<float> *vertex)
+Mesh::set_attrib(unsigned int pos, const LibMatrix::vec4 &v, std::vector<float> *vertex)
 {
     if (!check_attrib(pos, 4))
         return;
@@ -206,7 +206,7 @@ Mesh::vbo_usage(Mesh::VBOUsage usage)
     vbo_usage_ = usage;
 }
 
-/** 
+/**
  * Sets the vertex attribute interleaving mode.
  *
  * If true the vertex attributes are going to be interleaved in a single
@@ -215,7 +215,7 @@ Mesh::vbo_usage(Mesh::VBOUsage usage)
  *
  * Interleaving mode takes effect in the next call to ::build_array() or
  * ::build_vbo().
- * 
+ *
  * @param interleave whether to interleave
  */
 void

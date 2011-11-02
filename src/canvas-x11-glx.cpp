@@ -102,7 +102,7 @@ CanvasX11GLX::init_extensions()
         extString = exts;
     }
 
-    /* 
+    /*
      * GLX_EXT_swap_control or GL_MESA_swap_control. Note that
      * GLX_SGI_swap_control is not enough because it doesn't allow 0 as a valid
      * value (i.e. you can't turn off VSync).

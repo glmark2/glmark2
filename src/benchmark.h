@@ -44,15 +44,15 @@ public:
 
     static void register_scene(Scene &scene);
     static Scene &get_scene_by_name(const std::string &name);
-    static const std::map<std::string, Scene *> &scenes() { return mSceneMap; }
+    static const std::map<std::string, Scene *> &scenes() { return sceneMap_; }
 
 private:
-    Scene &mScene;
-    std::vector<OptionPair> mOptions;
+    Scene &scene_;
+    std::vector<OptionPair> options_;
 
     void load_options();
 
-    static std::map<std::string, Scene *> mSceneMap;
+    static std::map<std::string, Scene *> sceneMap_;
 };
 
 #endif

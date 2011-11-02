@@ -9,7 +9,7 @@ varying vec3 vertex_normal;
 varying vec4 vertex_position;
 
 void main(void)
-{			
+{
     vec4 current_position = vec4(position, 1.0);
 
     // Transform the normal to eye coordinates

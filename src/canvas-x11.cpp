@@ -18,6 +18,7 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker
  */
 #include "canvas-x11.h"
 #include "log.h"
@@ -28,47 +29,9 @@
 #include <fstream>
 #include <sstream>
 
-static Window
-create_canvas_x_window(Display *xdpy, const char *name, int width, int height,
-                       const XVisualInfo *vis_info)
-{
-    XSetWindowAttributes attr;
-    unsigned long mask;
-    Window win = 0;
-    Window root = RootWindow(xdpy, DefaultScreen(xdpy));
-
-    Log::debug("Creating XWindow W: %d H: %d VisualID: 0x%x\n",
-               width, height, (int)vis_info->visualid);
-    /* window attributes */
-    attr.background_pixel = 0;
-    attr.border_pixel = 0;
-    attr.colormap = XCreateColormap(xdpy, root, vis_info->visual, AllocNone);
-    attr.event_mask = KeyPressMask;
-    mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
-
-    win = XCreateWindow(xdpy, root, 0, 0, width, height,
-                        0, vis_info->depth, InputOutput,
-                        vis_info->visual, mask, &attr);
-
-    /* set hints and properties */
-    {
-        XSizeHints sizehints;
-        sizehints.min_width  = width;
-        sizehints.min_height = height;
-        sizehints.max_width  = width;
-        sizehints.max_height = height;
-        sizehints.flags = PMaxSize | PMinSize;
-        XSetNormalHints(xdpy, win, &sizehints);
-        XSetStandardProperties(xdpy, win, name, name,
-                               None, NULL, 0, &sizehints);
-    }
-
-    /* Gracefully handle Window Delete event from window manager */
-    Atom wmDelete = XInternAtom(xdpy, "WM_DELETE_WINDOW", True);
-    XSetWMProtocols(xdpy, win, &wmDelete, 1);
-
-    return win;
-}
+/******************
+ * Public methods *
+ ******************/
 
 bool
 CanvasX11::init()
@@ -77,7 +40,7 @@ CanvasX11::init()
     if (!xdpy_)
         return false;
 
-    resize(mWidth, mHeight);
+    resize(width_, height_);
 
     if (!xwin_)
         return false;
@@ -158,22 +121,22 @@ CanvasX11::read_pixel(int x, int y)
 void
 CanvasX11::write_to_file(std::string &filename)
 {
-    char *pixels = new char[mWidth * mHeight * 4];
+    char *pixels = new char[width_ * height_ * 4];
 
-    for (int i = 0; i < mHeight; i++) {
-        glReadPixels(0, i, mWidth, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-                     &pixels[(mHeight - i - 1) * mWidth * 4]);
+    for (int i = 0; i < height_; i++) {
+        glReadPixels(0, i, width_, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                     &pixels[(height_ - i - 1) * width_ * 4]);
     }
 
     std::ofstream output (filename.c_str(), std::ios::out | std::ios::binary);
-    output.write(pixels, 4 * mWidth * mHeight);
+    output.write(pixels, 4 * width_ * height_);
 
     delete [] pixels;
 }
 
 bool
 CanvasX11::should_quit()
-{ 
+{
     XEvent event;
 
     if (!XPending(xdpy_))
@@ -198,7 +161,7 @@ CanvasX11::resize(int width, int height)
 {
     /* Recreate an existing window only if it has actually been resized */
     if (xwin_) {
-        if (mWidth != width || mHeight != height) {
+        if (width_ != width || height_ != height) {
             XDestroyWindow(xdpy_, xwin_);
             xwin_ = 0;
         }
@@ -207,23 +170,20 @@ CanvasX11::resize(int width, int height)
         }
     }
 
-    mWidth = width;
-    mHeight = height;
+    width_ = width;
+    height_ = height;
 
-    XVisualInfo *visinfo = get_xvisualinfo();
+    if (!ensure_x_window())
+        Log::error("Error: Couldn't create X Window!\n");
 
-    xwin_ = create_canvas_x_window(xdpy_, "glmark2 "GLMARK_VERSION, mWidth, mHeight, visinfo);
-
-    XFree(visinfo);
-
-    glViewport(0, 0, mWidth, mHeight);
-    mProjection = LibMatrix::Mat4::perspective(60.0, mWidth / (float)mHeight,
+    glViewport(0, 0, width_, height_);
+    projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
                                                1.0, 1024.0);
 }
 
 bool
 CanvasX11::supports_gl2()
-{ 
+{
     std::string gl_version_str(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
     int gl_major(0);
 
@@ -238,10 +198,78 @@ CanvasX11::supports_gl2()
         else
             start_pos++;
 
-        std::stringstream ss;
-        ss << gl_version_str.substr(start_pos, point_pos - start_pos + 1);
-        ss >> gl_major;
+        gl_major = Util::fromString<int>(
+                gl_version_str.substr(start_pos, point_pos - start_pos + 1)
+                );
     }
 
     return gl_major >= 2;
 }
+
+/*******************
+ * Private methods *
+ *******************/
+
+bool
+CanvasX11::ensure_x_window()
+{
+    if (xwin_)
+        return true;
+
+    if (!xdpy_) {
+        Log::error("Error: X11 Display has not been initialized!\n");
+        return false;
+    }
+
+    XVisualInfo *vis_info = get_xvisualinfo();
+    if (!vis_info) {
+        Log::error("Error: Could not get a valid XVisualInfo!\n");
+        return false;
+    }
+
+    Log::debug("Creating XWindow W: %d H: %d VisualID: 0x%x\n",
+               width_, height_, vis_info->visualid);
+
+    /* window attributes */
+    XSetWindowAttributes attr;
+    unsigned long mask;
+    Window root = RootWindow(xdpy_, DefaultScreen(xdpy_));
+
+    attr.background_pixel = 0;
+    attr.border_pixel = 0;
+    attr.colormap = XCreateColormap(xdpy_, root, vis_info->visual, AllocNone);
+    attr.event_mask = KeyPressMask;
+    mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+
+    xwin_ = XCreateWindow(xdpy_, root, 0, 0, width_, height_,
+                          0, vis_info->depth, InputOutput,
+                          vis_info->visual, mask, &attr);
+
+    XFree(vis_info);
+
+    if (!xwin_) {
+        Log::error("Error: XCreateWindow() failed!\n");
+        return false;
+    }
+
+    /* set hints and properties */
+    {
+        static const char *name("glmark2 "GLMARK_VERSION);
+        XSizeHints sizehints;
+        sizehints.min_width  = width_;
+        sizehints.min_height = height_;
+        sizehints.max_width  = width_;
+        sizehints.max_height = height_;
+        sizehints.flags = PMaxSize | PMinSize;
+        XSetNormalHints(xdpy_, xwin_, &sizehints);
+        XSetStandardProperties(xdpy_, xwin_, name, name,
+                               None, NULL, 0, &sizehints);
+    }
+
+    /* Gracefully handle Window Delete event from window manager */
+    Atom wmDelete = XInternAtom(xdpy_, "WM_DELETE_WINDOW", True);
+    XSetWMProtocols(xdpy_, xwin_, &wmDelete, 1);
+
+    return true;
+}
+

@@ -50,9 +50,9 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
 
     unsigned int side = 2 * radius + 1;
 
-    for (size_t i = 0; i < radius + 1; i++) {
+    for (unsigned int i = 0; i < radius + 1; i++) {
         float s2 = 2.0 * sigma * sigma;
-        float k = 1.0 / std::sqrt(M_PI * s2) * std::exp( - ((float)i * i) / s2);
+        float k = 1.0 / std::sqrt(M_PI * s2) * std::exp( - (static_cast<float>(i) * i) / s2);
         std::stringstream ss_tmp;
         ss_tmp << "Kernel" << i;
         frg_source.add_const(ss_tmp.str(), k);
@@ -60,10 +60,10 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
 
     std::stringstream ss;
     ss << "result = " << std::endl;
-   
+
     if (direction == BlurDirectionHorizontal) {
-        for (size_t i = 0; i < side; i++) {
-            int offset = (int)(i - radius);
+        for (unsigned int i = 0; i < side; i++) {
+            int offset = static_cast<int>(i - radius);
             ss << "texture2D(Texture0, TextureCoord + vec2(" <<
                   offset << ".0 * TextureStepX, 0.0)) * Kernel" <<
                   std::abs(offset) << " +" << std::endl;
@@ -71,8 +71,8 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
         ss << "0.0 ;" << std::endl;
     }
     else if (direction == BlurDirectionVertical) {
-        for (size_t i = 0; i < side; i++) {
-            int offset = (int)(i - radius);
+        for (unsigned int i = 0; i < side; i++) {
+            int offset = static_cast<int>(i - radius);
             ss << "texture2D(Texture0, TextureCoord + vec2(0.0, " <<
                   offset << ".0 * TextureStepY)) * Kernel" <<
                   std::abs(offset) << " +" << std::endl;
@@ -80,10 +80,10 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
         ss << "0.0 ;" << std::endl;
     }
     else if (direction == BlurDirectionBoth) {
-        for (size_t i = 0; i < side; i++) {
-            int ioffset = (int)(i - radius);
-            for (size_t j = 0; j < side; j++) {
-                int joffset = (int)(j - radius);
+        for (unsigned int i = 0; i < side; i++) {
+            int ioffset = static_cast<int>(i - radius);
+            for (unsigned int j = 0; j < side; j++) {
+                int joffset = static_cast<int>(j - radius);
                 ss << "texture2D(Texture0, TextureCoord + vec2(" <<
                       ioffset << ".0 * TextureStepX, " <<
                       joffset << ".0 * TextureStepY))" <<
@@ -97,7 +97,7 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
     frg_source.replace("$CONVOLUTION$", ss.str());
 }
 
-/** 
+/**
  * A RenderObject represents a source and target of rendering
  * operations.
  */
@@ -153,7 +153,7 @@ public:
             fbo_ = 0;
         }
 
-        /* 
+        /*
          * Release the shader program when object of this class
          * are no longer in use.
          */
@@ -197,7 +197,12 @@ public:
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    virtual void render_to(RenderObject& target, Program& program = main_program)
+    virtual void render_to(RenderObject& target)
+    {
+        render_to(target, main_program);
+    }
+
+    virtual void render_to(RenderObject& target, Program& program)
     {
         LibMatrix::vec2 anchor(pos_);
         LibMatrix::vec2 ll(pos_ - anchor);
@@ -254,13 +259,13 @@ public:
             ll_tex.x(), ur_tex.y(),
             ur_tex.x(), ur_tex.y(),
         };
-            
+
         make_current();
         glBindTexture(GL_TEXTURE_2D, target.texture());
         draw_quad_with_program(position_blur, texcoord_blur, program);
     }
 
-    /** 
+    /**
      * Normalizes a position from [0, size] to [-1.0, 1.0]
      */
     LibMatrix::vec2 normalize_position(const LibMatrix::vec2& pos)
@@ -268,7 +273,7 @@ public:
         return pos * 2.0 / size_ - 1.0;
     }
 
-    /** 
+    /**
      * Normalizes a position from [0, size] to [0.0, 1.0]
      */
     LibMatrix::vec2 normalize_texcoord(const LibMatrix::vec2& pos)
@@ -332,7 +337,7 @@ private:
 int RenderObject::use_count = 0;
 Program RenderObject::main_program;
 
-/** 
+/**
  * A RenderObject representing the screen.
  *
  * Rendering to this objects renders to the screen framebuffer.
@@ -343,7 +348,7 @@ public:
     virtual void init() {}
 };
 
-/** 
+/**
  * A RenderObject with a background image.
  *
  * The image is drawn to the RenderObject automatically when the
@@ -406,7 +411,7 @@ private:
     GLuint background_texture_;
 };
 
-/** 
+/**
  * A RenderObject that blurs the target it is drawn to.
  */
 class RenderWindowBlur : public RenderObject
@@ -425,7 +430,7 @@ public:
         if (draw_contents_ && RenderWindowBlur::use_count == 0)
             window_contents_.init();
 
-        RenderWindowBlur::use_count++; 
+        RenderWindowBlur::use_count++;
     }
 
     virtual void release()
@@ -446,10 +451,8 @@ public:
             window_contents_.size(size);
     }
 
-    virtual void render_to(RenderObject& target, Program& program)
+    virtual void render_to(RenderObject& target)
     {
-        (void)program;
-
         if (separable_) {
             Program& blur_program_h1 = blur_program_h(target.size().x());
             Program& blur_program_v1 = blur_program_v(target.size().y());
@@ -465,7 +468,7 @@ public:
             for (unsigned int i = 0; i < passes_; i++) {
                 if (i % 2 == 0)
                     render_from(target, blur_program1);
-                else 
+                else
                     RenderObject::render_to(target, blur_program1);
             }
 
@@ -473,7 +476,7 @@ public:
                 RenderObject::render_to(target);
         }
 
-        /* 
+        /*
          * Blend the window contents with the target texture.
          */
         if (draw_contents_) {
@@ -488,7 +491,7 @@ public:
 private:
     Program& blur_program(unsigned int w, unsigned int h)
     {
-        /* 
+        /*
          * If the size of the window has changed we must recreate
          * the shader to contain the correct texture step values.
          */
@@ -515,7 +518,7 @@ private:
 
     Program& blur_program_h(unsigned int w)
     {
-        /* 
+        /*
          * If the size of the window has changed we must recreate
          * the shader to contain the correct texture step values.
          */
@@ -540,7 +543,7 @@ private:
 
     Program& blur_program_v(unsigned int h)
     {
-        /* 
+        /*
          * If the size of the window has changed we must recreate
          * the shader to contain the correct texture step values.
          */
@@ -577,7 +580,7 @@ private:
 
 };
 
-/** 
+/**
  * A RenderObject that draws a drop shadow around the window.
  */
 class RenderWindowShadow : public RenderObject
@@ -592,7 +595,7 @@ public:
     {
         RenderObject::init();
 
-        /* 
+        /*
          * Only have one instance of the resources.
          * This works only if all windows have the same size, which
          * is currently the case for this scene. If this condition
@@ -607,7 +610,7 @@ public:
                 window_contents_.init();
         }
 
-        RenderWindowShadow::use_count++; 
+        RenderWindowShadow::use_count++;
     }
 
     virtual void release()
@@ -640,10 +643,8 @@ public:
             window_contents_.size(size);
     }
 
-    virtual void render_to(RenderObject& target, Program& program)
+    virtual void render_to(RenderObject& target)
     {
-        (void)program;
-
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -659,7 +660,7 @@ public:
         shadow_v_.position(position() +
                            LibMatrix::vec2(size().x() + shadow_v_.size().y(), 0.0));
         shadow_v_.render_to(target);
-        
+
         /* Bottom right shadow */
         shadow_corner_.rotation(0.0);
         shadow_corner_.position(position() +
@@ -669,7 +670,7 @@ public:
 
         /* Top right shadow */
         shadow_corner_.rotation(90.0);
-        shadow_corner_.position(position() + size() + 
+        shadow_corner_.position(position() + size() +
                                 LibMatrix::vec2(shadow_corner_.size().x(),
                                                 -shadow_corner_.size().y()));
         shadow_corner_.render_to(target);
@@ -679,7 +680,7 @@ public:
         shadow_corner_.position(position());
         shadow_corner_.render_to(target);
 
-        /* 
+        /*
          * Blend the window contents with the target texture.
          */
         if (draw_contents_) {
@@ -711,10 +712,10 @@ RenderClearImage RenderWindowShadow::shadow_v_(GLMARK_DATA_PATH"/textures/deskto
 RenderClearImage RenderWindowShadow::shadow_corner_(GLMARK_DATA_PATH"/textures/desktop-shadow-corner.png");
 
 /*******************************
- * SceneDesktop implementation * 
+ * SceneDesktop implementation *
  *******************************/
 
-/** 
+/**
  * Private structure used to avoid contaminating scene.h with all of the
  * SceneDesktop internal classes.
  */
@@ -728,7 +729,7 @@ struct SceneDesktopPrivate
         desktop(GLMARK_DATA_PATH"/textures/effect-2d.png") {}
 
     ~SceneDesktopPrivate() { Util::dispose_pointer_vector(windows); }
-    
+
 };
 
 
@@ -736,19 +737,19 @@ SceneDesktop::SceneDesktop(Canvas &canvas) :
     Scene(canvas, "desktop")
 {
     priv_ = new SceneDesktopPrivate();
-    mOptions["effect"] = Scene::Option("effect", "blur",
+    options_["effect"] = Scene::Option("effect", "blur",
                                        "the effect to use [blur]");
-    mOptions["windows"] = Scene::Option("windows", "4",
+    options_["windows"] = Scene::Option("windows", "4",
                                         "the number of windows");
-    mOptions["window-size"] = Scene::Option("window-size", "0.35",
+    options_["window-size"] = Scene::Option("window-size", "0.35",
                                             "the window size as a percentage of the minimum screen dimension [0.0 - 0.5]");
-    mOptions["passes"] = Scene::Option("passes", "1",
+    options_["passes"] = Scene::Option("passes", "1",
                                        "the number of effect passes (effect dependent)");
-    mOptions["blur-radius"] = Scene::Option("blur-radius", "5",
+    options_["blur-radius"] = Scene::Option("blur-radius", "5",
                                             "the blur effect radius (in pixels)");
-    mOptions["separable"] = Scene::Option("separable", "true",
+    options_["separable"] = Scene::Option("separable", "true",
                                           "use separable convolution for the blur effect");
-    mOptions["shadow-size"] = Scene::Option("shadow-size", "20",
+    options_["shadow-size"] = Scene::Option("shadow-size", "20",
                                             "the size of the shadow (in pixels)");
 }
 
@@ -773,28 +774,19 @@ SceneDesktop::setup()
 {
     Scene::setup();
 
-    std::stringstream ss;
+    /* Parse the options */
     unsigned int windows(0);
     unsigned int passes(0);
     unsigned int blur_radius(0);
     float window_size_factor(0.0);
     unsigned int shadow_size(0);
-    bool separable(mOptions["separable"].value == "true");
+    bool separable(options_["separable"].value == "true");
 
-    ss << mOptions["windows"].value;
-    ss >> windows;
-    ss.clear();
-    ss << mOptions["window-size"].value;
-    ss >> window_size_factor;
-    ss.clear();
-    ss << mOptions["passes"].value;
-    ss >> passes;
-    ss.clear();
-    ss << mOptions["blur-radius"].value;
-    ss >> blur_radius;
-    ss.clear();
-    ss << mOptions["shadow-size"].value;
-    ss >> shadow_size;
+    windows = Util::fromString<unsigned int>(options_["windows"].value);
+    window_size_factor = Util::fromString<float>(options_["window-size"].value);
+    passes = Util::fromString<unsigned int>(options_["passes"].value);
+    blur_radius = Util::fromString<unsigned int>(options_["blur-radius"].value);
+    shadow_size = Util::fromString<unsigned int>(options_["shadow-size"].value);
 
     /* Ensure we get a transparent clear color for all following operations */
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -804,36 +796,35 @@ SceneDesktop::setup()
     /* Set up the screen and desktop RenderObjects */
     priv_->screen.init();
     priv_->desktop.init();
-    priv_->screen.size(LibMatrix::vec2(mCanvas.width(), mCanvas.height()));
-    priv_->desktop.size(LibMatrix::vec2(mCanvas.width(), mCanvas.height()));
+    priv_->screen.size(LibMatrix::vec2(canvas_.width(), canvas_.height()));
+    priv_->desktop.size(LibMatrix::vec2(canvas_.width(), canvas_.height()));
 
     /* Create the windows */
-    float angular_step(2.0 * M_PI / windows);
-    unsigned int min_dimension = std::min(mCanvas.width(), mCanvas.height());
+    const float angular_step(2.0 * M_PI / windows);
+    unsigned int min_dimension = std::min(canvas_.width(), canvas_.height());
     float window_size(min_dimension * window_size_factor);
     static const LibMatrix::vec2 corner_offset(window_size / 2.0,
                                                window_size / 2.0);
 
     for (unsigned int i = 0; i < windows; i++) {
-        LibMatrix::vec2 center(mCanvas.width() * (0.5 + 0.25 * cos(i * angular_step)),
-                               mCanvas.height() * (0.5 + 0.25 * sin(i * angular_step)));
+        LibMatrix::vec2 center(canvas_.width() * (0.5 + 0.25 * cos(i * angular_step)),
+                               canvas_.height() * (0.5 + 0.25 * sin(i * angular_step)));
         RenderObject* win;
-        if (mOptions["effect"].value == "shadow")
+        if (options_["effect"].value == "shadow")
             win = new RenderWindowShadow(shadow_size);
         else
             win = new RenderWindowBlur(passes, blur_radius, separable);
-        (void)angular_step;
 
         win->init();
         win->position(center - corner_offset);
         win->size(LibMatrix::vec2(window_size, window_size));
-        /* 
+        /*
          * Set the speed in increments of about 30 degrees (but not exactly,
          * so we don't get windows moving just on the X axis or Y axis).
          */
-        win->speed(LibMatrix::vec2(cos(0.1 + i * M_PI / 6.0) * mCanvas.width() / 3,
-                                   sin(0.1 + i * M_PI / 6.0) * mCanvas.height() / 3));
-        /* 
+        win->speed(LibMatrix::vec2(cos(0.1 + i * M_PI / 6.0) * canvas_.width() / 3,
+                                   sin(0.1 + i * M_PI / 6.0) * canvas_.height() / 3));
+        /*
          * Perform a dummy rendering to ensure internal shaders are initialized
          * now, in order not to affect the benchmarking.
          */
@@ -841,16 +832,16 @@ SceneDesktop::setup()
         priv_->windows.push_back(win);
     }
 
-    /* 
+    /*
      * Ensure the screen is the current rendering target (it might have changed
      * to a FBO in the previous steps).
      */
     priv_->screen.make_current();
 
-    mCurrentFrame = 0;
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    currentFrame_ = 0;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void
@@ -872,10 +863,10 @@ void
 SceneDesktop::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double dt = current_time - mLastUpdateTime;
-    double elapsed_time = current_time - mStartTime;
+    double dt = current_time - lastUpdateTime_;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
     std::vector<RenderObject *>& windows(priv_->windows);
 
@@ -894,14 +885,14 @@ SceneDesktop::update()
                 win->position().y() + win->speed().y() * dt);
 
         if (new_pos.x() < 0.0 ||
-            new_pos.x() + win->size().x() > ((float)mCanvas.width()))
+            new_pos.x() + win->size().x() > static_cast<float>(canvas_.width()))
         {
             win->speed(LibMatrix::vec2(-win->speed().x(), win->speed().y()));
             should_update = false;
         }
 
         if (new_pos.y() < 0.0 ||
-            new_pos.y() + win->size().y() > ((float)mCanvas.height()))
+            new_pos.y() + win->size().y() > static_cast<float>(canvas_.height()))
         {
             win->speed(LibMatrix::vec2(win->speed().x(), -win->speed().y()));
             should_update = false;
@@ -911,12 +902,12 @@ SceneDesktop::update()
             win->position(new_pos);
     }
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
 void

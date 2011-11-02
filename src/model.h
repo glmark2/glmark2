@@ -24,13 +24,13 @@
 #ifndef GLMARK2_MODEL_H_
 #define GLMARK2_MODEL_H_
 
-#include "mesh.h"
-
-#include <sys/stat.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <string>
 #include <vector>
 #include <map>
+#include "vec.h"
+
+// Forward declare the mesh object.  We don't need the whole header here.
+class Mesh;
 
 enum ModelFormat
 {
@@ -46,7 +46,7 @@ class ModelDescriptor
     ModelFormat format_;
     ModelDescriptor();
 public:
-    ModelDescriptor(const std::string& name, ModelFormat format, 
+    ModelDescriptor(const std::string& name, ModelFormat format,
                     const std::string& pathname) :
         name_(name),
         pathname_(pathname),
@@ -78,7 +78,7 @@ public:
 
     void calculate_normals();
     void convert_to_mesh(Mesh &mesh);
-    void convert_to_mesh(Mesh &mesh, 
+    void convert_to_mesh(Mesh &mesh,
                          const std::vector<std::pair<AttribType, int> > &attribs);
     const LibMatrix::vec3& minVec() const { return minVec_; }
     const LibMatrix::vec3& maxVec() const { return maxVec_; }

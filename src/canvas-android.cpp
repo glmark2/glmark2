@@ -18,6 +18,7 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker
  */
 #include "canvas-android.h"
 #include "log.h"
@@ -28,10 +29,14 @@
 #include <fstream>
 #include <sstream>
 
+/******************
+ * Public methods *
+ ******************/
+
 bool
 CanvasAndroid::init()
 {
-    resize(mWidth, mHeight);
+    resize(width_, height_);
 
     if (!eglSwapInterval(eglGetCurrentDisplay(), 0))
         Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
@@ -51,7 +56,7 @@ CanvasAndroid::init()
 void
 CanvasAndroid::visible(bool visible)
 {
-    (void)visible;
+    static_cast<void>(visible);
 }
 
 void
@@ -93,15 +98,15 @@ CanvasAndroid::read_pixel(int x, int y)
 void
 CanvasAndroid::write_to_file(std::string &filename)
 {
-    char *pixels = new char[mWidth * mHeight * 4];
+    char *pixels = new char[width_ * height_ * 4];
 
-    for (int i = 0; i < mHeight; i++) {
-        glReadPixels(0, i, mWidth, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-                     &pixels[(mHeight - i - 1) * mWidth * 4]);
+    for (int i = 0; i < height_; i++) {
+        glReadPixels(0, i, width_, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                     &pixels[(height_ - i - 1) * width_ * 4]);
     }
 
     std::ofstream output (filename.c_str(), std::ios::out | std::ios::binary);
-    output.write(pixels, 4 * mWidth * mHeight);
+    output.write(pixels, 4 * width_ * height_);
 
     delete [] pixels;
 }
@@ -115,13 +120,17 @@ CanvasAndroid::should_quit()
 void
 CanvasAndroid::resize(int width, int height)
 {
-    mWidth = width;
-    mHeight = height;
+    width_ = width;
+    height_ = height;
 
-    glViewport(0, 0, mWidth, mHeight);
-    mProjection = LibMatrix::Mat4::perspective(60.0, mWidth / (float)mHeight,
+    glViewport(0, 0, width_, height_);
+    projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
                                                1.0, 1024.0);
 }
+
+/*******************
+ * Private methods *
+ *******************/
 
 void
 CanvasAndroid::init_gl_extensions()
@@ -138,9 +147,9 @@ CanvasAndroid::init_gl_extensions()
     }
 
     if (extString.find("GL_OES_mapbuffer") != std::string::npos) {
-        GLExtensions::MapBuffer = 
+        GLExtensions::MapBuffer =
             reinterpret_cast<PFNGLMAPBUFFEROESPROC>(eglGetProcAddress("glMapBufferOES"));
-        GLExtensions::UnmapBuffer = 
+        GLExtensions::UnmapBuffer =
             reinterpret_cast<PFNGLUNMAPBUFFEROESPROC>(eglGetProcAddress("glUnmapBufferOES"));
     }
 }

@@ -18,6 +18,7 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker
  */
 #include "scene.h"
 #include "log.h"
@@ -32,7 +33,7 @@
  * Wave implementation *
  ***********************/
 
-/** 
+/**
  * A callback used to set up the grid by the Wave class.
  * It is called for each "quad" of the grid.
  */
@@ -43,9 +44,14 @@ wave_grid_conf(Mesh &mesh, int x, int y, int n_x, int n_y,
                LibMatrix::vec3 &ur,
                LibMatrix::vec3 &lr)
 {
-    (void)x; (void)y; (void)n_x; (void)n_y;
+    // These parameters are unused in this instance of a virtual callback
+    // function.
+    static_cast<void>(x);
+    static_cast<void>(y);
+    static_cast<void>(n_x);
+    static_cast<void>(n_y);
 
-    /* 
+    /*
      * Order matters here, so that Wave::vertex_length_index() can work.
      * Vertices of the triangles at index i that belong to length index i
      * are even, those that belong to i + 1 are odd.
@@ -56,7 +62,7 @@ wave_grid_conf(Mesh &mesh, int x, int y, int n_x, int n_y,
 
     for (int i = 0; i < 6; i++) {
         mesh.next_vertex();
-        /* 
+        /*
          * Set the vertex position and the three vertex positions
          * of the triangle this vertex belongs to.
          */
@@ -67,15 +73,15 @@ wave_grid_conf(Mesh &mesh, int x, int y, int n_x, int n_y,
     }
 }
 
-/** 
+/**
  * Renders a grid mesh modulated by a sine wave
  */
 class WaveMesh
 {
 public:
-    /** 
+    /**
      * Creates a wave mesh.
-     * 
+     *
      * @param length the total length of the grid (in model coordinates)
      * @param width the total width of the grid (in model coordinates)
      * @param nlength the number of length-wise grid subdivisions
@@ -98,9 +104,9 @@ public:
 
     ~WaveMesh() { reset(); }
 
-    /** 
+    /**
      * Updates the state of a wave mesh.
-     * 
+     *
      * @param elapsed the time elapsed since the beginning of the rendering
      */
     void update(double elapsed)
@@ -134,7 +140,7 @@ public:
         {
             /* First vertex of length index range */
             size_t vstart(iter->first * nwidth_ * 6 + (iter->first % 2));
-            /* 
+            /*
              * First vertex not included in the range. We should also update all
              * vertices of triangles touching index i.
              */
@@ -182,7 +188,7 @@ private:
 
     std::vector<double> displacement_;
 
-    /** 
+    /**
      * Calculates the length index of a vertex.
      */
     size_t vertex_length_index(size_t v)
@@ -190,11 +196,11 @@ private:
         return v / (6 * nwidth_) + (v % 2);
     }
 
-    /** 
+    /**
      * The sine wave function with duty-cycle.
      *
      * @param x the space coordinate
-     * 
+     *
      * @return the operation error code
      */
     double wave_func(double x)
@@ -203,10 +209,10 @@ private:
         if (r < 0)
             r += wave_full_period_;
 
-        /* 
+        /*
          * Return either the sine value or 0.0, depending on the
          * wave duty cycle.
-         */ 
+         */
         if (r > wave_period_)
         {
             return 0;
@@ -217,12 +223,12 @@ private:
         }
     }
 
-    /** 
+    /**
      * Calculates the displacement of the wave.
-     * 
+     *
      * @param n the length index
      * @param elapsed the time elapsed since the beginning of the rendering
-     * 
+     *
      * @return the displacement at point n at time elapsed
      */
     double displacement(size_t n, double elapsed)
@@ -232,7 +238,7 @@ private:
         return wave_func(x - wave_velocity_ * elapsed);
     }
 
-    /** 
+    /**
      * Creates the GL shader program.
      */
     void create_program()
@@ -253,12 +259,12 @@ private:
         }
     }
 
-    /** 
+    /**
      * Creates the grid mesh.
      */
     void create_mesh()
     {
-        /* 
+        /*
          * We need to pass the positions of all vertex of the triangle
          * in order to draw the wireframe.
          */
@@ -295,19 +301,19 @@ SceneBuffer::SceneBuffer(Canvas &pCanvas) :
     Scene(pCanvas, "buffer")
 {
     priv_ = new SceneBufferPrivate();
-    mOptions["interleave"] = Scene::Option("interleave", "false",
+    options_["interleave"] = Scene::Option("interleave", "false",
                                            "Whether to interleave vertex attribute data [true,false]");
-    mOptions["update-method"] = Scene::Option("update-method", "map",
+    options_["update-method"] = Scene::Option("update-method", "map",
                                               "[map,subdata]");
-    mOptions["update-fraction"] = Scene::Option("update-fraction", "1.0",
+    options_["update-fraction"] = Scene::Option("update-fraction", "1.0",
                                                 "The fraction of the mesh length that is updated at every iteration (0.0-1.0)");
-    mOptions["update-dispersion"] = Scene::Option("update-dispersion", "0.0",
+    options_["update-dispersion"] = Scene::Option("update-dispersion", "0.0",
                                                   "How dispersed the updates are [0.0 - 1.0]");
-    mOptions["columns"] = Scene::Option("columns", "100",
+    options_["columns"] = Scene::Option("columns", "100",
                                        "The number of mesh subdivisions length-wise");
-    mOptions["rows"] = Scene::Option("rows", "20",
+    options_["rows"] = Scene::Option("rows", "20",
                                       "The number of mesh subdisivisions width-wise");
-    mOptions["buffer-usage"] = Scene::Option("buffer-usage", "static",
+    options_["buffer-usage"] = Scene::Option("buffer-usage", "static",
                                       "How the buffer will be used [static,stream,dynamic]");
 }
 
@@ -319,7 +325,7 @@ SceneBuffer::~SceneBuffer()
 int
 SceneBuffer::load()
 {
-    mRunning = false;
+    running_ = false;
 
     return 1;
 }
@@ -336,7 +342,7 @@ SceneBuffer::setup()
 
     Scene::setup();
 
-    bool interleave = (mOptions["interleave"].value == "true");
+    bool interleave = (options_["interleave"].value == "true");
     Mesh::VBOUpdateMethod update_method;
     Mesh::VBOUsage usage;
     double update_fraction;
@@ -344,32 +350,24 @@ SceneBuffer::setup()
     size_t nlength;
     size_t nwidth;
 
-    if (mOptions["update-method"].value == "map")
+    if (options_["update-method"].value == "map")
         update_method = Mesh::VBOUpdateMethodMap;
-    else if (mOptions["update-method"].value == "subdata")
+    else if (options_["update-method"].value == "subdata")
         update_method = Mesh::VBOUpdateMethodSubData;
     else
         update_method = Mesh::VBOUpdateMethodMap;
 
-    if (mOptions["buffer-usage"].value == "static")
+    if (options_["buffer-usage"].value == "static")
         usage = Mesh::VBOUsageStatic;
-    else if (mOptions["buffer-usage"].value == "stream")
+    else if (options_["buffer-usage"].value == "stream")
         usage = Mesh::VBOUsageStream;
     else
         usage = Mesh::VBOUsageDynamic;
 
-    std::stringstream ss;
-    ss << mOptions["update-fraction"].value;
-    ss >> update_fraction;
-    ss.clear();
-    ss << mOptions["update-dispersion"].value;
-    ss >> update_dispersion;
-    ss.clear();
-    ss << mOptions["columns"].value;
-    ss >> nlength;
-    ss.clear();
-    ss << mOptions["rows"].value;
-    ss >> nwidth;
+    update_fraction = Util::fromString<double>(options_["update-fraction"].value);
+    update_dispersion = Util::fromString<double>(options_["update-dispersion"].value);
+    nlength = Util::fromString<size_t>(options_["columns"].value);
+    nwidth = Util::fromString<size_t>(options_["rows"].value);
 
     if (update_method == Mesh::VBOUpdateMethodMap &&
         (GLExtensions::MapBuffer == 0 || GLExtensions::UnmapBuffer == 0))
@@ -389,14 +387,14 @@ SceneBuffer::setup()
     priv_->wave->mesh().build_vbo();
 
     priv_->wave->program().start();
-    priv_->wave->program()["Viewport"] = LibMatrix::vec2(mCanvas.width(), mCanvas.height());
+    priv_->wave->program()["Viewport"] = LibMatrix::vec2(canvas_.width(), canvas_.height());
 
     glDisable(GL_CULL_FACE);
 
-    mCurrentFrame = 0;
-    mRunning = true;
-    mStartTime = Scene::get_timestamp_us() / 1000000.0;
-    mLastUpdateTime = mStartTime;
+    currentFrame_ = 0;
+    running_ = true;
+    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void
@@ -414,18 +412,18 @@ void
 SceneBuffer::update()
 {
     double current_time = Scene::get_timestamp_us() / 1000000.0;
-    double elapsed_time = current_time - mStartTime;
+    double elapsed_time = current_time - startTime_;
 
-    mLastUpdateTime = current_time;
+    lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= mDuration) {
-        mAverageFPS = mCurrentFrame / elapsed_time;
-        mRunning = false;
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
     }
 
     priv_->wave->update(elapsed_time);
 
-    mCurrentFrame++;
+    currentFrame_++;
 }
 
 void
@@ -434,7 +432,7 @@ SceneBuffer::draw()
     LibMatrix::Stack4 model_view;
 
     // Load the ModelViewProjectionMatrix uniform in the shader
-    LibMatrix::mat4 model_view_proj(mCanvas.projection());
+    LibMatrix::mat4 model_view_proj(canvas_.projection());
     model_view.translate(0.0, 0.0, -4.0);
     model_view.rotate(45.0, -1.0, 0.0, 0.0);
     model_view_proj *= model_view.getCurrent();

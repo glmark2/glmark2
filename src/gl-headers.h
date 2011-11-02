@@ -35,7 +35,7 @@
 #endif
 #endif
 
-/** 
+/**
  * Struct that holds pointers to functions that belong to extensions
  * in either GL2.0 or GLES2.0.
  */

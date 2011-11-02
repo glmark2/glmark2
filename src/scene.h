@@ -81,11 +81,11 @@ public:
     unsigned average_fps();
     bool is_running();
 
-    const std::string &name() { return mName; }
+    const std::string &name() { return name_; }
     virtual bool set_option(const std::string &opt, const std::string &val);
     void reset_options();
     bool set_option_default(const std::string &opt, const std::string &val);
-    const std::map<std::string, Option> &options() { return mOptions; }
+    const std::map<std::string, Option> &options() { return options_; }
 
     static Scene &dummy()
     {
@@ -112,17 +112,15 @@ protected:
     double pixel_value_distance(Canvas::Pixel p1, Canvas::Pixel p2,
                                 bool use_alpha=false);
 
-    Canvas &mCanvas;
-    std::string mName;
-    std::map<std::string, Option> mOptions;
-
-    double mStartTime;
-    double mLastUpdateTime;
-    unsigned mCurrentFrame;
-    unsigned mAverageFPS;      // Average FPS of run
-
-    bool mRunning;
-    double mDuration;      // Duration of run in seconds
+    Canvas &canvas_;
+    std::string name_;
+    std::map<std::string, Option> options_;
+    double startTime_;
+    double lastUpdateTime_;
+    unsigned currentFrame_;
+    unsigned averageFPS_;      // Average FPS of run
+    bool running_;
+    double duration_;      // Duration of run in seconds
 };
 
 /*
@@ -136,7 +134,7 @@ public:
     void setup();
 
 private:
-    std::list<std::pair<std::string, std::string> > mDefaultOptions;
+    std::list<std::pair<std::string, std::string> > defaultOptions_;
 };
 
 class SceneBuild : public Scene
@@ -154,17 +152,17 @@ public:
     ~SceneBuild();
 
 protected:
-    Program mProgram;
-    LibMatrix::mat4 mPerspective;
-    LibMatrix::vec3 mCenterVec;
-    float mRadius;
-    Mesh mMesh;
-    bool mOrientModel;
-    float mOrientationAngle;
-    LibMatrix::vec3 mOrientationVec;
-    float mRotation;
-    float mRotationSpeed;
-    bool mUseVbo;
+    Program program_;
+    LibMatrix::mat4 perspective_;
+    LibMatrix::vec3 centerVec_;
+    float radius_;
+    Mesh mesh_;
+    bool orientModel_;
+    float orientationAngle_;
+    LibMatrix::vec3 orientationVec_;
+    float rotation_;
+    float rotationSpeed_;
+    bool useVbo_;
 };
 
 class SceneTexture : public Scene
@@ -182,12 +180,11 @@ public:
     ~SceneTexture();
 
 protected:
-    Program mProgram;
-
-    Mesh mCubeMesh;
-    GLuint mTexture;
-    LibMatrix::vec3 mRotation;
-    LibMatrix::vec3 mRotationSpeed;
+    Program program_;
+    Mesh mesh_;
+    GLuint texture_;
+    LibMatrix::vec3 rotation_;
+    LibMatrix::vec3 rotationSpeed_;
 };
 
 class SceneShading : public Scene
@@ -205,16 +202,16 @@ public:
     ~SceneShading();
 
 protected:
-    Program mProgram;
-    float mRadius;
-    bool mOrientModel;
-    float mOrientationAngle;
-    LibMatrix::vec3 mOrientationVec;
-    LibMatrix::vec3 mCenterVec;
-    LibMatrix::mat4 mPerspective;
-    Mesh mMesh;
-    float mRotation;
-    float mRotationSpeed;
+    Program program_;
+    float radius_;
+    bool orientModel_;
+    float orientationAngle_;
+    LibMatrix::vec3 orientationVec_;
+    LibMatrix::vec3 centerVec_;
+    LibMatrix::mat4 perspective_;
+    Mesh mesh_;
+    float rotation_;
+    float rotationSpeed_;
 };
 
 class SceneGrid : public Scene
@@ -232,11 +229,10 @@ public:
     ~SceneGrid();
 
 protected:
-    Program mProgram;
-
-    Mesh mMesh;
-    float mRotation;
-    float mRotationSpeed;
+    Program program_;
+    Mesh mesh_;
+    float rotation_;
+    float rotationSpeed_;
 };
 
 class SceneConditionals : public SceneGrid
@@ -281,12 +277,11 @@ public:
     ~SceneBump();
 
 protected:
-    Program mProgram;
-
-    Mesh mMesh;
-    GLuint mTexture;
-    float mRotation;
-    float mRotationSpeed;
+    Program program_;
+    Mesh mesh_;
+    GLuint texture_;
+    float rotation_;
+    float rotationSpeed_;
 private:
     void setup_model_plain(const std::string &type);
     void setup_model_normals();
@@ -328,15 +323,13 @@ public:
     ~ScenePulsar();
 
 protected:
-    int mNumQuads;
-    Program mProgram;
-
-    Mesh mPlaneMesh;
-    LibMatrix::vec3 mScale;
-    std::vector<LibMatrix::vec3> mRotations;
-    std::vector<LibMatrix::vec3> mRotationSpeeds;
-
-    GLuint mTexture;
+    int numQuads_;
+    Program program_;
+    Mesh mesh_;
+    LibMatrix::vec3 scale_;
+    std::vector<LibMatrix::vec3> rotations_;
+    std::vector<LibMatrix::vec3> rotationSpeeds_;
+    GLuint texture_;
 
 private:
     void create_and_setup_mesh();
