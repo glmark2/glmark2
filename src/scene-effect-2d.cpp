@@ -221,10 +221,13 @@ parse_matrix(std::string &str, std::vector<float> &matrix,
 
             ss >> f;
             matrix.push_back(f);
-            Log::debug("%f ", f);
+            if (iter_el == elems.begin())
+                Log::debug("%f ", f);
+            else
+                Log::debug(LOG_CONTINUE"%f ", f);
         }
 
-        Log::debug("\n");
+        Log::debug(LOG_CONTINUE"\n");
     }
 
     width = w;

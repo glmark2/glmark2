@@ -251,7 +251,7 @@ do_validation(Canvas &canvas, vector<Benchmark *> &benchmarks)
                     break;
             }
 
-            Log::info(" Validation: %s\n", result.c_str());
+            Log::info(LOG_CONTINUE" Validation: %s\n", result.c_str());
         }
 
         bench->teardown_scene();
