@@ -21,6 +21,7 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  *  Marc Ordinas i Llopis, Collabora Ltd. (pulsar scene)
+ *  Jesse Barker (glmark2)
  */
 #ifndef GLMARK2_SCENE_H_
 #define GLMARK2_SCENE_H_
@@ -28,8 +29,6 @@
 #include "gl-headers.h"
 
 #include "mesh.h"
-#include "model.h"
-#include "texture.h"
 #include "vec.h"
 #include "program.h"
 
@@ -38,6 +37,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include "canvas.h"
 
 class Scene
 {

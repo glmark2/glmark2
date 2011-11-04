@@ -21,7 +21,7 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  *  Marc Ordinas i Llopis, Collabora Ltd. (pulsar scene)
- *  Jesse Barker
+ *  Jesse Barker (glmark2)
  */
 #include <stdlib.h>
 #include "scene.h"
@@ -31,7 +31,7 @@
 #include "log.h"
 #include "shader-source.h"
 #include "util.h"
-
+#include "texture.h"
 #include <cmath>
 
 using LibMatrix::vec2;

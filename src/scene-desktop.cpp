@@ -18,6 +18,7 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker (glmark2)
  */
 #include <cmath>
 #include <cstdlib>
@@ -30,6 +31,7 @@
 #include "program.h"
 #include "shader-source.h"
 #include "util.h"
+#include "texture.h"
 
 enum BlurDirection {
     BlurDirectionHorizontal,

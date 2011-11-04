@@ -20,6 +20,7 @@
  * Authors:
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker (glmark2)
  */
 #include "scene.h"
 #include "mat.h"
@@ -28,6 +29,7 @@
 #include "log.h"
 #include "util.h"
 #include "shader-source.h"
+#include "model.h"
 
 #include <cmath>
 #include <sstream>

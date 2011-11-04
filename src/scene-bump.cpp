@@ -18,12 +18,15 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker (glmark2)
  */
 #include "scene.h"
 #include "log.h"
 #include "mat.h"
 #include "stack.h"
 #include "shader-source.h"
+#include "model.h"
+#include "texture.h"
 #include <cmath>
 
 SceneBump::SceneBump(Canvas &pCanvas) :

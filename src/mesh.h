@@ -20,16 +20,14 @@
  * Authors:
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker (glmark2)
  */
 #ifndef GLMARK2_MESH_H_
 #define GLMARK2_MESH_H_
 
-#include "canvas.h"
-#include "vec.h"
-
-#include <stdio.h>
-#include <math.h>
 #include <vector>
+#include "vec.h"
+#include "gl-headers.h"
 
 class Mesh
 {

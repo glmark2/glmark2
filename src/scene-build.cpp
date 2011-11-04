@@ -20,12 +20,14 @@
  * Authors:
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker (glmark2)
  */
 #include "scene.h"
 #include "log.h"
 #include "mat.h"
 #include "stack.h"
 #include "shader-source.h"
+#include "model.h"
 #include <cmath>
 
 SceneBuild::SceneBuild(Canvas &pCanvas) :
