@@ -186,7 +186,7 @@ kernel_printout(const std::vector<float> &kernel,
  * @return whether parsing succeeded
  */
 static bool
-parse_matrix(std::string &str, std::vector<float> &matrix,
+parse_matrix(const std::string &str, std::vector<float> &matrix,
              unsigned int &width, unsigned int &height)
 {
     std::vector<std::string> rows;
@@ -392,5 +392,53 @@ SceneEffect2D::draw()
 Scene::ValidationResult
 SceneEffect2D::validate()
 {
-    return ValidationUnknown;
+    static const double radius_3d(std::sqrt(3.0));
+
+    std::vector<float> kernel;
+    std::vector<float> kernel_edge;
+    std::vector<float> kernel_blur;
+    unsigned int kernel_width = 0;
+    unsigned int kernel_height = 0;
+
+    if (!parse_matrix("0,1,0;1,-4,1;0,1,0;", kernel_edge,
+                      kernel_width, kernel_height))
+    {
+        return Scene::ValidationUnknown;
+    }
+
+    if (!parse_matrix("1,1,1,1,1;1,1,1,1,1;1,1,1,1,1;",
+                      kernel_blur,
+                      kernel_width, kernel_height))
+    {
+        return Scene::ValidationUnknown;
+    }
+
+    if (!parse_matrix(options_["kernel"].value, kernel,
+                      kernel_width, kernel_height))
+    {
+        return Scene::ValidationUnknown;
+    }
+
+    Canvas::Pixel ref;
+
+    if (kernel == kernel_edge)
+        ref = Canvas::Pixel(0x17, 0x0c, 0x2f, 0xff);
+    else if (kernel == kernel_blur)
+        ref = Canvas::Pixel(0xc7, 0xe1, 0x8d, 0xff);
+    else
+        return Scene::ValidationUnknown;
+
+    Canvas::Pixel pixel = canvas_.read_pixel(452, 237);
+
+    double dist = pixel_value_distance(pixel, ref);
+    if (dist < radius_3d + 0.01) {
+        return Scene::ValidationSuccess;
+    }
+    else {
+        Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
+                   ref.to_le32(), pixel.to_le32(), dist);
+        return Scene::ValidationFailure;
+    }
+
+    return Scene::ValidationUnknown;
 }
