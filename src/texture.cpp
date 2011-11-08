@@ -177,13 +177,13 @@ setup_texture(GLuint *tex, ImageData &image, GLint min_filter, GLint mag_filter)
     }
 }
 
-int
+bool
 Texture::load(const std::string &filename, GLuint *pTexture, ...)
 {
     ImageData image;
 
     if (!image.load_png(filename))
-        return 0;
+        return false;
 
     va_list ap;
     va_start(ap, pTexture);
@@ -197,5 +197,5 @@ Texture::load(const std::string &filename, GLuint *pTexture, ...)
 
     va_end(ap);
 
-    return 1;
+    return true;
 }

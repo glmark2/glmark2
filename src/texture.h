@@ -31,7 +31,7 @@
 class Texture
 {
 public:
-    static int load(const std::string &filename, GLuint *pTexture, ...);
+    static bool load(const std::string &filename, GLuint *pTexture, ...);
 };
 
 #endif
