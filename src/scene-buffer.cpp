@@ -445,5 +445,20 @@ SceneBuffer::draw()
 Scene::ValidationResult
 SceneBuffer::validate()
 {
+    static const double radius_3d(std::sqrt(3.0));
+
+    Canvas::Pixel ref(0x36, 0x9a, 0xd7, 0xff);
+    Canvas::Pixel pixel = canvas_.read_pixel(402, 189);
+
+    double dist = pixel_value_distance(pixel, ref);
+    if (dist < radius_3d + 0.01) {
+        return Scene::ValidationSuccess;
+    }
+    else {
+        Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
+                    ref.to_le32(), pixel.to_le32(), dist);
+        return Scene::ValidationFailure;
+    }
+
     return Scene::ValidationUnknown;
 }
