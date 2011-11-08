@@ -447,7 +447,7 @@ SceneBuffer::validate()
 {
     static const double radius_3d(std::sqrt(3.0));
 
-    Canvas::Pixel ref(0x36, 0x9a, 0xd7, 0xff);
+    Canvas::Pixel ref(0x32, 0x99, 0xd6, 0xff);
     Canvas::Pixel pixel = canvas_.read_pixel(402, 189);
 
     double dist = pixel.distance_rgb(ref);
