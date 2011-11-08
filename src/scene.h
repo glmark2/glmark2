@@ -240,6 +240,7 @@ class SceneConditionals : public SceneGrid
 public:
     SceneConditionals(Canvas &pCanvas);
     void setup();
+    ValidationResult validate();
 
     ~SceneConditionals();
 };
