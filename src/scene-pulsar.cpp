@@ -238,7 +238,7 @@ ScenePulsar::validate()
     Canvas::Pixel ref(0x77, 0x02, 0x77, 0xff);
     Canvas::Pixel pixel = canvas_.read_pixel(400, 299);
 
-    double dist = pixel_value_distance(pixel, ref);
+    double dist = pixel.distance_rgb(ref);
     if (dist < radius_3d + 0.01) {
         return Scene::ValidationSuccess;
     }

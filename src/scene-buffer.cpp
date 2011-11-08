@@ -450,7 +450,7 @@ SceneBuffer::validate()
     Canvas::Pixel ref(0x36, 0x9a, 0xd7, 0xff);
     Canvas::Pixel pixel = canvas_.read_pixel(402, 189);
 
-    double dist = pixel_value_distance(pixel, ref);
+    double dist = pixel.distance_rgb(ref);
     if (dist < radius_3d + 0.01) {
         return Scene::ValidationSuccess;
     }

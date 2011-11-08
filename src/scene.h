@@ -109,8 +109,6 @@ public:
 protected:
     Scene(Canvas &pCanvas, const std::string &name);
     std::string construct_title(const std::string &title);
-    double pixel_value_distance(Canvas::Pixel p1, Canvas::Pixel p2,
-                                bool use_alpha=false);
 
     Canvas &canvas_;
     std::string name_;

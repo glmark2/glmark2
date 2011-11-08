@@ -160,7 +160,7 @@ SceneLoop::validate()
 
     Canvas::Pixel pixel = canvas_.read_pixel(293, 89);
 
-    double dist = pixel_value_distance(pixel, ref);
+    double dist = pixel.distance_rgb(ref);
     if (dist < radius_3d + 0.01) {
         return Scene::ValidationSuccess;
     }
