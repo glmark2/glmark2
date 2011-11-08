@@ -250,6 +250,7 @@ class SceneFunction : public SceneGrid
 public:
     SceneFunction(Canvas &pCanvas);
     void setup();
+    ValidationResult validate();
 
     ~SceneFunction();
 };
