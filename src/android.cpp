@@ -144,14 +144,26 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
 }
 
 static JNINativeMethod glmark2_native_methods[] = {
-    {"nativeInit",   "(Landroid/content/res/AssetManager;)V",
-                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeInit},
-    {"nativeResize", "(II)V",
-                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeResize},
-    {"nativeDone",   "()V",
-                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeDone},
-    {"nativeRender", "()Z",
-                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeRender}
+    {
+        "nativeInit",
+        "(Landroid/content/res/AssetManager;)V",
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeInit)
+    },
+    {
+        "nativeResize",
+        "(II)V",
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeResize)
+    },
+    {
+        "nativeDone",
+        "()V",
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeDone)
+    },
+    {
+        "nativeRender",
+        "()Z",
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeRender)
+    }
 };
 
 static int
@@ -193,7 +205,7 @@ JNI_OnLoad(JavaVM* vm, void* reserved)
     JNIEnv* env = NULL;
     jint result = -1;
 
-    if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_4) != JNI_OK) {
         Log::error("JNI_OnLoad: GetEnv failed\n");
         goto bail;
     }
