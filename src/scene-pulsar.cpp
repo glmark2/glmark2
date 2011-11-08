@@ -141,7 +141,7 @@ ScenePulsar::setup()
     currentFrame_ = 0;
 
     running_ = true;
-    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
 }
 
@@ -169,7 +169,7 @@ ScenePulsar::teardown()
 void
 ScenePulsar::update()
 {
-    double current_time = Scene::get_timestamp_us() / 1000000.0;
+    double current_time = Util::get_timestamp_us() / 1000000.0;
     double dt = current_time - lastUpdateTime_;
     double elapsed_time = current_time - startTime_;
 

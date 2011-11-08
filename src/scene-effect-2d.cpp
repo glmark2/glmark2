@@ -347,7 +347,7 @@ SceneEffect2D::setup()
 
     currentFrame_ = 0;
     running_ = true;
-    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
 }
 
@@ -365,7 +365,7 @@ SceneEffect2D::teardown()
 void
 SceneEffect2D::update()
 {
-    double current_time = Scene::get_timestamp_us() / 1000000.0;
+    double current_time = Util::get_timestamp_us() / 1000000.0;
     double elapsed_time = current_time - startTime_;
 
     lastUpdateTime_ = current_time;
