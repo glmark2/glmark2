@@ -27,6 +27,7 @@
 #include "options.h"
 #include "log.h"
 #include "util.h"
+#include "default-benchmarks.h"
 
 #include <iostream>
 #include <fstream>
@@ -41,41 +42,17 @@ using std::vector;
 using std::map;
 using std::string;
 
-static const char *default_benchmarks[] = {
-    "build:use-vbo=false",
-    "build:use-vbo=true",
-    "texture:texture-filter=nearest",
-    "texture:texture-filter=linear",
-    "texture:texture-filter=mipmap",
-    "shading:shading=gouraud",
-    "shading:shading=blinn-phong-inf",
-    "shading:shading=phong",
-    "bump:bump-render=high-poly",
-    "bump:bump-render=normals",
-    "effect2d:kernel=0,1,0;1,-4,1;0,1,0;",
-    "effect2d:kernel=1,1,1,1,1;1,1,1,1,1;1,1,1,1,1;",
-    "pulsar:quads=5:texture=false:light=false",
-    "desktop:windows=4:effect=blur:blur-radius=5:passes=1:separable=true",
-    "desktop:windows=4:effect=shadow",
-    "buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=map:interleave=false",
-    "buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=subdata:interleave=false",
-    "buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=map:interleave=true",
-    "conditionals:vertex-steps=0:fragment-steps=0",
-    "conditionals:vertex-steps=0:fragment-steps=5",
-    "conditionals:vertex-steps=5:fragment-steps=0",
-    "function:fragment-steps=5:fragment-complexity=low",
-    "function:fragment-steps=5:fragment-complexity=medium",
-    "loop:vertex-steps=5:fragment-steps=5:fragment-loop=false",
-    "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=false",
-    "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=true",
-    NULL
-};
-
 void
 add_default_benchmarks(vector<Benchmark *> &benchmarks)
 {
-    for (const char **s = default_benchmarks; *s != NULL; s++)
-        benchmarks.push_back(new Benchmark(*s));
+    const vector<string> &default_benchmarks = DefaultBenchmarks::get();
+
+    for (vector<string>::const_iterator iter = default_benchmarks.begin();
+         iter != default_benchmarks.end();
+         iter++)
+    {
+        benchmarks.push_back(new Benchmark(*iter));
+    }
 }
 
 void
