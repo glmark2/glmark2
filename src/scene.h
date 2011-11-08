@@ -260,6 +260,7 @@ class SceneLoop : public SceneGrid
 public:
     SceneLoop(Canvas &pCanvas);
     void setup();
+    ValidationResult validate();
 
     ~SceneLoop();
 };
