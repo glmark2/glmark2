@@ -52,10 +52,10 @@ Scene::~Scene()
 {
 }
 
-int
+bool
 Scene::load()
 {
-    return 1;
+    return true;
 }
 
 void

@@ -322,12 +322,12 @@ SceneBuffer::~SceneBuffer()
     delete priv_;
 }
 
-int
+bool
 SceneBuffer::load()
 {
     running_ = false;
 
-    return 1;
+    return true;
 }
 
 void

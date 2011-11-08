@@ -70,14 +70,14 @@ SceneShading::~SceneShading()
 {
 }
 
-int
+bool
 SceneShading::load()
 {
     rotationSpeed_ = 36.0f;
 
     running_ = false;
 
-    return 1;
+    return true;
 }
 
 void

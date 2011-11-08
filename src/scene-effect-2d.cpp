@@ -272,14 +272,14 @@ normalize(std::vector<float> &kernel)
 
 }
 
-int
+bool
 SceneEffect2D::load()
 {
     Texture::load(GLMARK_DATA_PATH"/textures/effect-2d.png", &texture_,
                   GL_NEAREST, GL_NEAREST, 0);
     running_ = false;
 
-    return 1;
+    return true;
 }
 
 void

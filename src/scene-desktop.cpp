@@ -760,10 +760,10 @@ SceneDesktop::~SceneDesktop()
     delete priv_;
 }
 
-int
+bool
 SceneDesktop::load()
 {
-    return 1;
+    return true;
 }
 
 void

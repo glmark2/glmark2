@@ -45,14 +45,14 @@ SceneTexture::~SceneTexture()
 {
 }
 
-int
+bool
 SceneTexture::load()
 {
     Model::find_models();
     Model model;
 
     if(!model.load("cube"))
-        return 0;
+        return false;
 
     model.calculate_normals();
     model.convert_to_mesh(mesh_);
@@ -62,7 +62,7 @@ SceneTexture::load()
 
     running_ = false;
 
-    return 1;
+    return true;
 }
 
 void

@@ -55,14 +55,14 @@ ScenePulsar::~ScenePulsar()
 {
 }
 
-int
+bool
 ScenePulsar::load()
 {
     scale_ = vec3(1.0, 1.0, 1.0);
 
     running_ = false;
 
-    return 1;
+    return true;
 }
 
 void

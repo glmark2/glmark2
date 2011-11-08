@@ -79,7 +79,7 @@ public:
      *
      * @return whether loading succeeded
      */
-    virtual int load();
+    virtual bool load();
 
     /**
      * Performs option-independent resource unloading.
@@ -244,7 +244,7 @@ class SceneBuild : public Scene
 {
 public:
     SceneBuild(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -272,7 +272,7 @@ class SceneTexture : public Scene
 {
 public:
     SceneTexture(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -294,7 +294,7 @@ class SceneShading : public Scene
 {
 public:
     SceneShading(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -321,7 +321,7 @@ class SceneGrid : public Scene
 {
 public:
     SceneGrid(Canvas &pCanvas, const std::string &name);
-    virtual int load();
+    virtual bool load();
     virtual void unload();
     virtual void setup();
     virtual void teardown();
@@ -369,7 +369,7 @@ class SceneBump : public Scene
 {
 public:
     SceneBump(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -394,7 +394,7 @@ class SceneEffect2D : public Scene
 {
 public:
     SceneEffect2D(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -415,7 +415,7 @@ class ScenePulsar : public Scene
 {
 public:
     ScenePulsar(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -444,7 +444,7 @@ class SceneDesktop : public Scene
 {
 public:
     SceneDesktop(Canvas &canvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -464,7 +464,7 @@ class SceneBuffer : public Scene
 {
 public:
     SceneBuffer(Canvas &canvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
