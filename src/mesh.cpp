@@ -79,6 +79,14 @@ Mesh::set_attrib_locations(const std::vector<int> &locations)
 }
 
 
+/** 
+ * Checks that an attribute is of the correct dimensionality.
+ *
+ * @param pos the position/index of the attribute to check
+ * @param dim the size of the attribute (in #floats)
+ * 
+ * @return whether the check succeeded
+ */
 bool
 Mesh::check_attrib(unsigned int pos, int dim)
 {
@@ -96,6 +104,11 @@ Mesh::check_attrib(unsigned int pos, int dim)
 }
 
 
+/** 
+ * Ensures that we have a vertex to process.
+ * 
+ * @return the vertex to process
+ */
 std::vector<float> &
 Mesh::ensure_vertex()
 {
@@ -224,6 +237,9 @@ Mesh::interleave(bool interleave)
     interleave_ = interleave;
 }
 
+/** 
+ * Resets a Mesh object to its initial, empty state.
+ */
 void
 Mesh::reset()
 {
@@ -238,6 +254,12 @@ Mesh::reset()
     vertex_stride_ = 0;
 }
 
+/** 
+ * Builds a vertex array containing the mesh vertex data.
+ *
+ * The way the vertex array is constructed is affected by the current
+ * interleave value, which can set using ::interleave().
+ */
 void
 Mesh::build_array()
 {
@@ -287,6 +309,12 @@ Mesh::build_array()
     }
 }
 
+/** 
+ * Builds a vertex buffer object containing the mesh vertex data.
+ *
+ * The way the VBO is constructed is affected by the current interleave
+ * value (::interleave()) and the vbo usage hint (::vbo_usage()).
+ */
 void
 Mesh::build_vbo()
 {
@@ -477,6 +505,9 @@ Mesh::update_vbo(const std::vector<std::pair<size_t, size_t> >& ranges)
 }
 
 
+/** 
+ * Deletes all resources associated with built vertex arrays.
+ */
 void
 Mesh::delete_array()
 {
@@ -487,6 +518,9 @@ Mesh::delete_array()
     vertex_arrays_.clear();
 }
 
+/** 
+ * Deletes all resources associated with built VBOs.
+ */
 void
 Mesh::delete_vbo()
 {
@@ -499,6 +533,12 @@ Mesh::delete_vbo()
 }
 
 
+/** 
+ * Renders a mesh using vertex arrays.
+ *
+ * The vertex arrays must have been previously initialized using
+ * ::build_array().
+ */
 void
 Mesh::render_array()
 {
@@ -516,6 +556,12 @@ Mesh::render_array()
     }
 }
 
+/** 
+ * Renders a mesh using vertex buffer objects.
+ *
+ * The vertex buffer objects must have been previously initialized using
+ * ::build_vbo().
+ */
 void
 Mesh::render_vbo()
 {
@@ -534,6 +580,16 @@ Mesh::render_vbo()
     }
 }
 
+/** 
+ * Creates a grid mesh.
+ * 
+ * @param n_x the number of grid cells on the X axis
+ * @param n_y the number of grid cells on the Y axis
+ * @param width the width X of the grid (normalized)
+ * @param height the height Y of the grid (normalized)
+ * @param spacing the spacing between cells (normalized)
+ * @param conf_func a function to call to configure the grid (or NULL)
+ */
 void
 Mesh::make_grid(int n_x, int n_y, double width, double height,
                 double spacing, grid_configuration_func conf_func)
