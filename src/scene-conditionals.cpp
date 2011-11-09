@@ -120,7 +120,7 @@ SceneConditionals::setup()
 Scene::ValidationResult
 SceneConditionals::validate()
 {
-    static const double radius_3d(std::sqrt(3.0));
+    static const double radius_3d(std::sqrt(3.0 * 5.0 * 5.0));
 
     bool frg_conditionals = options_["fragment-conditionals"].value == "true";
     int frg_steps(Util::fromString<int>(options_["fragment-steps"].value));
@@ -133,7 +133,7 @@ SceneConditionals::validate()
     if (frg_steps == 0)
         ref = Canvas::Pixel(0xa0, 0xa0, 0xa0, 0xff);
     else if (frg_steps == 5)
-        ref = Canvas::Pixel(0x21, 0x21, 0x21, 0xff);
+        ref = Canvas::Pixel(0x25, 0x25, 0x25, 0xff);
     else
         return Scene::ValidationUnknown;
 

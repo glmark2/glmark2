@@ -935,7 +935,7 @@ SceneDesktop::draw()
 Scene::ValidationResult
 SceneDesktop::validate()
 {
-    static const double radius_3d(std::sqrt(3.0));
+    static const double radius_3d(std::sqrt(3.0 * 2.0 * 2.0));
 
     Canvas::Pixel ref;
 
@@ -955,7 +955,7 @@ SceneDesktop::validate()
     if (options_["effect"].value == "blur")
     {
         if (windows == 4 && passes == 1 && blur_radius == 5)
-            ref = Canvas::Pixel(0x88, 0xa3, 0x50, 0xff);
+            ref = Canvas::Pixel(0x89, 0xa3, 0x53, 0xff);
         else
             return Scene::ValidationUnknown;
     }

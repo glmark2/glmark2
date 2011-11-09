@@ -147,14 +147,14 @@ SceneLoop::setup()
 Scene::ValidationResult
 SceneLoop::validate()
 {
-    static const double radius_3d(std::sqrt(3.0));
+    static const double radius_3d(std::sqrt(3.0 * 15.0 * 15.0));
 
     int frg_steps = Util::fromString<int>(options_["fragment-steps"].value);
 
     Canvas::Pixel ref;
 
     if (frg_steps == 5)
-        ref = Canvas::Pixel(0x51, 0x51, 0x51, 0xff);
+        ref = Canvas::Pixel(0x5e, 0x5e, 0x5e, 0xff);
     else
         return Scene::ValidationUnknown;
 
