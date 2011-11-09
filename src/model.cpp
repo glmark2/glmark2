@@ -422,8 +422,8 @@ Model::load_3ds(const std::string &filename)
  * @param source the source line to parse
  * @param v the vec3 to populate
  */
-void
-get_values(const string& source, vec3& v)
+static void
+obj_get_values(const string& source, vec3& v)
 {
     // Skip the definition type...
     string::size_type endPos = source.find(" ");
@@ -474,58 +474,13 @@ get_values(const string& source, vec3& v)
 }
 
 /** 
- * Parse vec2 values from an OBJ file.
- * 
- * @param source the source line to parse
- * @param v the vec2 to populate
- */
-void
-get_values(const string& source, vec2& v)
-{
-    // Skip the definition type...
-    string::size_type endPos = source.find(" ");
-    string::size_type startPos(0);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
-    // Find the first value...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
-    string::size_type numChars(endPos - startPos);
-    string xs(source, startPos, numChars);
-    float x = Util::fromString<float>(xs);
-    // Then the second value (there might be a third, but we don't care)...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        numChars = endPos;
-    }
-    else
-    {
-        numChars = endPos - startPos;
-    }
-    string ys(source, startPos, numChars);
-    float y = Util::fromString<float>(ys);
-    v.x(x);
-    v.y(y);
-}
-
-/** 
  * Parse uvec3 values from an OBJ file.
  * 
  * @param source the source line to parse
  * @param v the uvec3 to populate
  */
-void
-get_values(const string& source, uvec3& v)
+static void
+obj_get_values(const string& source, uvec3& v)
 {
     // Skip the definition type...
     string::size_type endPos = source.find(" ");
@@ -621,7 +576,7 @@ Model::load_obj(const std::string &filename)
         if (definitionType == vertex_definition)
         {
             Vertex v;
-            get_values(curSrc, v.v);
+            obj_get_values(curSrc, v.v);
             object.vertices.push_back(v);
         }
         else if (definitionType == normal_definition)
@@ -639,7 +594,7 @@ Model::load_obj(const std::string &filename)
         else if (definitionType == face_definition)
         {
             uvec3 v;
-            get_values(curSrc, v);
+            obj_get_values(curSrc, v);
             Face f;
             // OBJ models index from '1'.
             f.a = v.x() - 1;
