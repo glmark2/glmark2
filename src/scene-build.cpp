@@ -252,7 +252,7 @@ SceneBuild::validate()
     Canvas::Pixel pixel = canvas_.read_pixel(canvas_.width() / 2,
                                              canvas_.height() / 2);
 
-    double dist = pixel_value_distance(pixel, ref);
+    double dist = pixel.distance_rgb(ref);
     if (dist < radius_3d + 0.01) {
         return Scene::ValidationSuccess;
     }

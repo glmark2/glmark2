@@ -935,5 +935,54 @@ SceneDesktop::draw()
 Scene::ValidationResult
 SceneDesktop::validate()
 {
-    return ValidationUnknown;
+    static const double radius_3d(std::sqrt(3.0 * 2.0 * 2.0));
+
+    Canvas::Pixel ref;
+
+    /* Parse the options */
+    unsigned int windows(0);
+    unsigned int passes(0);
+    unsigned int blur_radius(0);
+    float window_size_factor(0.0);
+    unsigned int shadow_size(0);
+
+    windows = Util::fromString<unsigned int>(options_["windows"].value);
+    window_size_factor = Util::fromString<float>(options_["window-size"].value);
+    passes = Util::fromString<unsigned int>(options_["passes"].value);
+    blur_radius = Util::fromString<unsigned int>(options_["blur-radius"].value);
+    shadow_size = Util::fromString<unsigned int>(options_["shadow-size"].value);
+
+    if (options_["effect"].value == "blur")
+    {
+        if (windows == 4 && passes == 1 && blur_radius == 5)
+            ref = Canvas::Pixel(0x89, 0xa3, 0x53, 0xff);
+        else
+            return Scene::ValidationUnknown;
+    }
+    else if (options_["effect"].value == "shadow")
+    {
+        if (windows == 4 && fabs(window_size_factor - 0.35) < 0.0001 &&
+            shadow_size == 20)
+        {
+            ref = Canvas::Pixel(0x1f, 0x27, 0x0d, 0xff);
+        }
+        else
+        {
+            return Scene::ValidationUnknown;
+        }
+    }
+
+    Canvas::Pixel pixel = canvas_.read_pixel(512, 209);
+
+    double dist = pixel.distance_rgb(ref);
+    if (dist < radius_3d + 0.01) {
+        return Scene::ValidationSuccess;
+    }
+    else {
+        Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
+                    ref.to_le32(), pixel.to_le32(), dist);
+        return Scene::ValidationFailure;
+    }
+
+    return Scene::ValidationUnknown;
 }

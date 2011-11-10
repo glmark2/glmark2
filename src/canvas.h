@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <string>
 #include <stdio.h>
+#include <cmath>
 
 /**
  * Abstraction for a GL rendering target.
@@ -61,6 +62,24 @@ public:
                    (static_cast<uint32_t>(a) << 24);
 
         }
+
+        /** 
+         * Gets the euclidian distance from this pixel in 3D RGB space.
+         * 
+         * @param p the pixel to get the distance from
+         * 
+         * @return the euclidian distance
+         */
+        double distance_rgb(const Canvas::Pixel &p)
+        {
+            // These work without casts because of integer promotion rules
+            // (the uint8_ts are promoted to ints)
+            double d = (r - p.r) * (r - p.r) +
+                       (g - p.g) * (g - p.g) +
+                       (b - p.b) * (b - p.b);
+            return std::sqrt(d);
+        }
+
         uint8_t r;
         uint8_t g;
         uint8_t b;

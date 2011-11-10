@@ -116,3 +116,38 @@ SceneConditionals::setup()
     startTime_ = Scene::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
 }
+
+Scene::ValidationResult
+SceneConditionals::validate()
+{
+    static const double radius_3d(std::sqrt(3.0 * 5.0 * 5.0));
+
+    bool frg_conditionals = options_["fragment-conditionals"].value == "true";
+    int frg_steps(Util::fromString<int>(options_["fragment-steps"].value));
+
+    if (!frg_conditionals)
+        return Scene::ValidationUnknown;
+
+    Canvas::Pixel ref;
+
+    if (frg_steps == 0)
+        ref = Canvas::Pixel(0xa0, 0xa0, 0xa0, 0xff);
+    else if (frg_steps == 5)
+        ref = Canvas::Pixel(0x25, 0x25, 0x25, 0xff);
+    else
+        return Scene::ValidationUnknown;
+
+    Canvas::Pixel pixel = canvas_.read_pixel(293, 89);
+
+    double dist = pixel.distance_rgb(ref);
+    if (dist < radius_3d + 0.01) {
+        return Scene::ValidationSuccess;
+    }
+    else {
+        Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
+                    ref.to_le32(), pixel.to_le32(), dist);
+        return Scene::ValidationFailure;
+    }
+
+    return Scene::ValidationUnknown;
+}

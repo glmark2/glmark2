@@ -109,8 +109,6 @@ public:
 protected:
     Scene(Canvas &pCanvas, const std::string &name);
     std::string construct_title(const std::string &title);
-    double pixel_value_distance(Canvas::Pixel p1, Canvas::Pixel p2,
-                                bool use_alpha=false);
 
     Canvas &canvas_;
     std::string name_;
@@ -240,6 +238,7 @@ class SceneConditionals : public SceneGrid
 public:
     SceneConditionals(Canvas &pCanvas);
     void setup();
+    ValidationResult validate();
 
     ~SceneConditionals();
 };
@@ -249,6 +248,7 @@ class SceneFunction : public SceneGrid
 public:
     SceneFunction(Canvas &pCanvas);
     void setup();
+    ValidationResult validate();
 
     ~SceneFunction();
 };
@@ -258,6 +258,7 @@ class SceneLoop : public SceneGrid
 public:
     SceneLoop(Canvas &pCanvas);
     void setup();
+    ValidationResult validate();
 
     ~SceneLoop();
 };

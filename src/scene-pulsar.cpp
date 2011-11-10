@@ -224,7 +224,31 @@ ScenePulsar::draw()
 Scene::ValidationResult
 ScenePulsar::validate()
 {
-    return ValidationUnknown;
+    static const double radius_3d(std::sqrt(3.0));
+
+    int quads = Util::fromString<int>(options_["quads"].value);
+
+    if (options_["texture"].value != "false" ||
+        options_["light"].value != "false" ||
+        quads != 5)
+    {
+        return Scene::ValidationUnknown;
+    }
+
+    Canvas::Pixel ref(0x77, 0x02, 0x77, 0xff);
+    Canvas::Pixel pixel = canvas_.read_pixel(400, 299);
+
+    double dist = pixel.distance_rgb(ref);
+    if (dist < radius_3d + 0.01) {
+        return Scene::ValidationSuccess;
+    }
+    else {
+        Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
+                    ref.to_le32(), pixel.to_le32(), dist);
+        return Scene::ValidationFailure;
+    }
+
+    return Scene::ValidationUnknown;
 }
 
 void

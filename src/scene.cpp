@@ -187,24 +187,6 @@ Scene::construct_title(const string &title)
 
 }
 
-double
-Scene::pixel_value_distance(Canvas::Pixel p1, Canvas::Pixel p2,
-                            bool use_alpha)
-{
-    double s(0.0);
-
-    // These work without casts because of integer promotion rules
-    // (the Uint8s are promoted to ints)
-    s += (p1.r - p2.r) * (p1.r - p2.r);
-    s += (p1.g - p2.g) * (p1.g - p2.g);
-    s += (p1.b - p2.b) * (p1.b - p2.b);
-
-    if (use_alpha)
-        s += (p1.a - p2.a) * (p1.a - p2.a);
-
-    return std::sqrt(s);
-}
-
 bool
 Scene::load_shaders_from_strings(Program &program,
                                  const std::string &vtx_shader,

@@ -270,6 +270,15 @@ main(int argc, char *argv[])
         return 0;
     }
 
+    /* Force 800x600 output for validation */
+    if (Options::validate &&
+        Options::size != std::pair<int,int>(800, 600))
+    {
+        Log::info("Ignoring custom size %dx%d for validation. Using 800x600.\n",
+                  Options::size.first, Options::size.second);
+        Options::size = std::pair<int,int>(800, 600);
+    }
+
     // Create the canvas
 #if USE_GL
     CanvasX11GLX canvas(Options::size.first, Options::size.second);
