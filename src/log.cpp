@@ -71,7 +71,7 @@ print_prefixed_message(FILE *stream, const char *color, const char *prefix,
     std::stringstream ss(buf);
 
     while(std::getline(ss, line)) {
-        /* 
+        /*
          * If this line is a continuation of a previous log message
          * just print the line plainly.
          */

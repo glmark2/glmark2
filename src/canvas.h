@@ -63,11 +63,11 @@ public:
 
         }
 
-        /** 
+        /**
          * Gets the euclidian distance from this pixel in 3D RGB space.
-         * 
+         *
          * @param p the pixel to get the distance from
-         * 
+         *
          * @return the euclidian distance
          */
         double distance_rgb(const Canvas::Pixel &p)
