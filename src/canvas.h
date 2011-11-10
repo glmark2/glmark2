@@ -74,9 +74,10 @@ public:
         {
             // These work without casts because of integer promotion rules
             // (the uint8_ts are promoted to ints)
-            return std::sqrt((r - p.r) * (r - p.r) + 
-                             (g - p.g) * (g - p.g) +
-                             (b - p.b) * (b - p.b));
+            double d = (r - p.r) * (r - p.r) +
+                       (g - p.g) * (g - p.g) +
+                       (b - p.b) * (b - p.b);
+            return std::sqrt(d);
         }
 
         uint8_t r;
