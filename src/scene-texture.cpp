@@ -20,6 +20,7 @@
  * Authors:
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker (glmark2)
  */
 #include "scene.h"
 #include "mat.h"
@@ -28,7 +29,9 @@
 #include "log.h"
 #include "program.h"
 #include "shader-source.h"
-
+#include "texture.h"
+#include "model.h"
+#include "util.h"
 #include <cmath>
 
 SceneTexture::SceneTexture(Canvas &pCanvas) :
@@ -42,14 +45,14 @@ SceneTexture::~SceneTexture()
 {
 }
 
-int
+bool
 SceneTexture::load()
 {
     Model::find_models();
     Model model;
 
     if(!model.load("cube"))
-        return 0;
+        return false;
 
     model.calculate_normals();
     model.convert_to_mesh(mesh_);
@@ -59,7 +62,7 @@ SceneTexture::load()
 
     running_ = false;
 
-    return 1;
+    return true;
 }
 
 void
@@ -123,7 +126,7 @@ SceneTexture::setup()
     currentFrame_ = 0;
     rotation_ = LibMatrix::vec3();
     running_ = true;
-    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
 }
 
@@ -141,7 +144,7 @@ SceneTexture::teardown()
 void
 SceneTexture::update()
 {
-    double current_time = Scene::get_timestamp_us() / 1000000.0;
+    double current_time = Util::get_timestamp_us() / 1000000.0;
     double dt = current_time - lastUpdateTime_;
     double elapsed_time = current_time - startTime_;
 

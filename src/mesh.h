@@ -20,17 +20,18 @@
  * Authors:
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker (glmark2)
  */
 #ifndef GLMARK2_MESH_H_
 #define GLMARK2_MESH_H_
 
-#include "canvas.h"
-#include "vec.h"
-
-#include <stdio.h>
-#include <math.h>
 #include <vector>
+#include "vec.h"
+#include "gl-headers.h"
 
+/** 
+ * A mesh of vertices.
+ */
 class Mesh
 {
 public:
@@ -81,8 +82,6 @@ public:
                    double spacing, grid_configuration_func conf_func = 0);
 
 private:
-    // check_attrib ensures that the attribute at the specified position is of
-    // the correct dimensionality (see the description of vertex_format_ below).
     bool check_attrib(unsigned int pos, int dim);
     std::vector<float> &ensure_vertex();
     void update_single_array(const std::vector<std::pair<size_t, size_t> >& ranges,

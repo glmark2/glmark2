@@ -322,12 +322,12 @@ SceneBuffer::~SceneBuffer()
     delete priv_;
 }
 
-int
+bool
 SceneBuffer::load()
 {
     running_ = false;
 
-    return 1;
+    return true;
 }
 
 void
@@ -393,7 +393,7 @@ SceneBuffer::setup()
 
     currentFrame_ = 0;
     running_ = true;
-    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
 }
 
@@ -411,7 +411,7 @@ SceneBuffer::teardown()
 void
 SceneBuffer::update()
 {
-    double current_time = Scene::get_timestamp_us() / 1000000.0;
+    double current_time = Util::get_timestamp_us() / 1000000.0;
     double elapsed_time = current_time - startTime_;
 
     lastUpdateTime_ = current_time;

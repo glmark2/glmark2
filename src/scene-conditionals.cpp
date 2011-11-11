@@ -113,7 +113,7 @@ SceneConditionals::setup()
     mesh_.set_attrib_locations(attrib_locations);
 
     running_ = true;
-    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
 }
 

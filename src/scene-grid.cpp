@@ -39,13 +39,13 @@ SceneGrid::~SceneGrid()
 {
 }
 
-int
+bool
 SceneGrid::load()
 {
     rotationSpeed_ = 36.0f;
     running_ = false;
 
-    return 1;
+    return true;
 }
 
 void
@@ -93,7 +93,7 @@ SceneGrid::teardown()
 void
 SceneGrid::update()
 {
-    double current_time = Scene::get_timestamp_us() / 1000000.0;
+    double current_time = Util::get_timestamp_us() / 1000000.0;
     double dt = current_time - lastUpdateTime_;
     double elapsed_time = current_time - startTime_;
 

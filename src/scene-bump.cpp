@@ -18,12 +18,16 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker (glmark2)
  */
 #include "scene.h"
 #include "log.h"
 #include "mat.h"
 #include "stack.h"
 #include "shader-source.h"
+#include "model.h"
+#include "texture.h"
+#include "util.h"
 #include <cmath>
 
 SceneBump::SceneBump(Canvas &pCanvas) :
@@ -38,14 +42,14 @@ SceneBump::~SceneBump()
 {
 }
 
-int
+bool
 SceneBump::load()
 {
     rotationSpeed_ = 36.0f;
 
     running_ = false;
 
-    return 1;
+    return true;
 }
 
 void
@@ -178,7 +182,7 @@ SceneBump::setup()
     currentFrame_ = 0;
     rotation_ = 0.0;
     running_ = true;
-    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
 }
 
@@ -199,7 +203,7 @@ SceneBump::teardown()
 void
 SceneBump::update()
 {
-    double current_time = Scene::get_timestamp_us() / 1000000.0;
+    double current_time = Util::get_timestamp_us() / 1000000.0;
     double dt = current_time - lastUpdateTime_;
     double elapsed_time = current_time - startTime_;
 

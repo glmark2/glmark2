@@ -110,12 +110,18 @@ CanvasX11GLX::init_extensions()
     if (extString.find("GLX_EXT_swap_control") != std::string::npos) {
         glXSwapIntervalEXT_ =
             reinterpret_cast<PFNGLXSWAPINTERVALEXTPROC>(
-                glXGetProcAddress((const GLubyte *)"glXSwapIntervalEXT"));
+                glXGetProcAddress(
+                    reinterpret_cast<const GLubyte *>("glXSwapIntervalEXT")
+                )
+            );
     }
     else if (extString.find("GLX_MESA_swap_control") != std::string::npos) {
         glXSwapIntervalMESA_ =
             reinterpret_cast<PFNGLXSWAPINTERVALMESAPROC>(
-                glXGetProcAddress((const GLubyte *)"glXSwapIntervalMESA"));
+                glXGetProcAddress(
+                    reinterpret_cast<const GLubyte *>("glXSwapIntervalMESA")
+                )
+            );
     }
 
 

@@ -18,6 +18,7 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker (glmark2)
  */
 #include <cmath>
 #include <climits>
@@ -31,7 +32,7 @@
 #include "program.h"
 #include "shader-source.h"
 #include "util.h"
-
+#include "texture.h"
 
 SceneEffect2D::SceneEffect2D(Canvas &pCanvas) :
     Scene(pCanvas, "effect2d")
@@ -274,14 +275,14 @@ normalize(std::vector<float> &kernel)
 
 }
 
-int
+bool
 SceneEffect2D::load()
 {
     Texture::load(GLMARK_DATA_PATH"/textures/effect-2d.png", &texture_,
                   GL_NEAREST, GL_NEAREST, 0);
     running_ = false;
 
-    return 1;
+    return true;
 }
 
 void
@@ -349,7 +350,7 @@ SceneEffect2D::setup()
 
     currentFrame_ = 0;
     running_ = true;
-    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
 }
 
@@ -367,7 +368,7 @@ SceneEffect2D::teardown()
 void
 SceneEffect2D::update()
 {
-    double current_time = Scene::get_timestamp_us() / 1000000.0;
+    double current_time = Util::get_timestamp_us() / 1000000.0;
     double elapsed_time = current_time - startTime_;
 
     lastUpdateTime_ = current_time;

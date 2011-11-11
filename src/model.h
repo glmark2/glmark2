@@ -39,6 +39,9 @@ enum ModelFormat
     MODEL_OBJ
 };
 
+/** 
+ * A descriptor for a model file.
+ */
 class ModelDescriptor
 {
     std::string name_;
@@ -58,7 +61,9 @@ public:
 
 typedef std::map<std::string, ModelDescriptor*> ModelMap;
 
-// A model as loaded from a 3D object data file
+/** 
+ * A model as loaded from a 3D object data file.
+ */
 class Model
 {
 public:
@@ -73,7 +78,6 @@ public:
     Model() {}
     ~Model() {}
 
-    // Load a named model from the ModelMap.
     bool load(const std::string& name);
 
     void calculate_normals();
@@ -82,11 +86,6 @@ public:
                          const std::vector<std::pair<AttribType, int> > &attribs);
     const LibMatrix::vec3& minVec() const { return minVec_; }
     const LibMatrix::vec3& maxVec() const { return maxVec_; }
-    // Scan the built-in data paths and build a database of usable models
-    // available to scenes.  Map is available on a read-only basis to scenes
-    // that might find it useful for listing models, etc.
-    //
-    // NOTE: This must be called before load().
     static const ModelMap& find_models();
 private:
     struct Face {

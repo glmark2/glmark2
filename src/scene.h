@@ -21,6 +21,7 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  *  Marc Ordinas i Llopis, Collabora Ltd. (pulsar scene)
+ *  Jesse Barker (glmark2)
  */
 #ifndef GLMARK2_SCENE_H_
 #define GLMARK2_SCENE_H_
@@ -28,8 +29,6 @@
 #include "gl-headers.h"
 
 #include "mesh.h"
-#include "model.h"
-#include "texture.h"
 #include "vec.h"
 #include "program.h"
 
@@ -38,12 +37,19 @@
 #include <string>
 #include <map>
 #include <list>
+#include "canvas.h"
 
+/**
+ * A configurable scene used for creating benchmarks.
+ */
 class Scene
 {
 public:
     virtual ~Scene();
 
+    /**
+     * Scene options.
+     */
     struct Option {
         Option(const std::string &nam, const std::string &val, const std::string &desc) :
             name(nam), value(val), default_value(val), description(desc), set(false) {}
@@ -55,56 +61,144 @@ public:
         bool set;
     };
 
+    /**
+     * The result of a validation check.
+     */
     enum ValidationResult {
         ValidationFailure,
         ValidationSuccess,
         ValidationUnknown
     };
 
-    // load() and unload() handle option-independent configuration.
-    // It should be safe to call these only once per program execution,
-    // although you may choose to do so more times to better manage
-    // resource consumption.
-    virtual int load();
+    /**
+     * Performs option-independent resource loading and configuration.
+     *
+     * It should be safe to call ::load() (and the corresponding ::unload())
+     * only once per program execution, although you may choose to do so more
+     * times to better manage resource consumption.
+     *
+     * @return whether loading succeeded
+     */
+    virtual bool load();
+
+    /**
+     * Performs option-independent resource unloading.
+     */
     virtual void unload();
 
-    // setup() and teardown() handle option-dependent configuration and
-    // also prepare a scene for a benchmark run.
-    // They should be called just before and after running a scene/benchmark.
+    /**
+     * Performs option-dependent resource loading and configuration.
+     *
+     * This method also prepares a scene for a benchmark run.
+     * It should be called just before running a scene/benchmark.
+     *
+     * @return the operation status
+     */
     virtual void setup();
+
+    /**
+     * Performs option-dependent resource unloading.
+     *
+     * This method should be called just after running a scene/benchmark.
+     *
+     * @return the operation status
+     */
     virtual void teardown();
 
+    /**
+     * Updates the scene state.
+     */
     virtual void update();
+
+    /**
+     * Draws the current scene state.
+     */
     virtual void draw();
+
+    /**
+     * Gets an informational string describing the scene.
+     *
+     * @param title if specified, a custom title to use, instead of the default
+     */
     virtual std::string info_string(const std::string &title = "");
 
-    unsigned average_fps();
+    /**
+     * Sets the value of an option for this scene.
+     *
+     * @param opt the option to set
+     * @param val the value to set the option to
+     *
+     * @return whether the option value was set successfully
+     */
+    virtual bool set_option(const std::string &opt, const std::string &val);
+
+    /**
+     * Validates the current output of this scene.
+     *
+     * This method should be called after having called ::draw() once.
+     *
+     * @return the validation result
+     */
+    virtual ValidationResult validate() { return ValidationUnknown; }
+
+    /**
+     * Gets whether this scene is running.
+     *
+     * @return true if running, false otherwise
+     */
     bool is_running();
 
+    /**
+     * Gets the average FPS value for this scene.
+     *
+     * @return the average FPS value
+     */
+    unsigned average_fps();
+
+    /**
+     * Gets the name of the scene.
+     * @return the name of the scene
+     */
     const std::string &name() { return name_; }
-    virtual bool set_option(const std::string &opt, const std::string &val);
+
+    /**
+     * Resets all scene options to their default values.
+     */
     void reset_options();
+
+    /**
+     * Sets the default value of a scene option.
+     */
     bool set_option_default(const std::string &opt, const std::string &val);
+
+    /**
+     * Gets the scene options.
+     *
+     * @return the scene options
+     */
     const std::map<std::string, Option> &options() { return options_; }
 
+    /**
+     * Gets a dummy scene object reference.
+     *
+     * @return the dummy Scene
+     */
     static Scene &dummy()
     {
         static Scene dummy_scene(Canvas::dummy(), "");
         return dummy_scene;
     }
 
-    virtual ValidationResult validate() { return ValidationUnknown; }
-
+    /**
+     * Loads a shader program from a pair of vertex and fragment shader strings.
+     *
+     * @return whether the operation succeeded
+     */
     static bool load_shaders_from_strings(Program &program,
                                           const std::string &vtx_shader,
                                           const std::string &frg_shader,
                                           const std::string &vtx_shader_filename = "None",
                                           const std::string &frg_shader_filename = "None");
-    static bool load_shaders_from_files(Program &program,
-                                        const std::string &vtx_shader_filename,
-                                        const std::string &frg_shader_filename);
-
-    static uint64_t get_timestamp_us();
 
 protected:
     Scene(Canvas &pCanvas, const std::string &name);
@@ -139,7 +233,7 @@ class SceneBuild : public Scene
 {
 public:
     SceneBuild(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -167,7 +261,7 @@ class SceneTexture : public Scene
 {
 public:
     SceneTexture(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -189,7 +283,7 @@ class SceneShading : public Scene
 {
 public:
     SceneShading(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -216,7 +310,7 @@ class SceneGrid : public Scene
 {
 public:
     SceneGrid(Canvas &pCanvas, const std::string &name);
-    virtual int load();
+    virtual bool load();
     virtual void unload();
     virtual void setup();
     virtual void teardown();
@@ -267,7 +361,7 @@ class SceneBump : public Scene
 {
 public:
     SceneBump(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -292,7 +386,7 @@ class SceneEffect2D : public Scene
 {
 public:
     SceneEffect2D(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -313,7 +407,7 @@ class ScenePulsar : public Scene
 {
 public:
     ScenePulsar(Canvas &pCanvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -342,7 +436,7 @@ class SceneDesktop : public Scene
 {
 public:
     SceneDesktop(Canvas &canvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();
@@ -362,7 +456,7 @@ class SceneBuffer : public Scene
 {
 public:
     SceneBuffer(Canvas &canvas);
-    int load();
+    bool load();
     void unload();
     void setup();
     void teardown();

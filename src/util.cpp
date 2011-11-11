@@ -23,6 +23,7 @@
 
 #include <sstream>
 #include <fstream>
+#include <sys/time.h>
 #ifdef ANDROID
 #include <android/asset_manager.h>
 #else
@@ -47,6 +48,16 @@ Util::split(const std::string &s, char delim, std::vector<std::string> &elems)
     std::string item;
     while(std::getline(ss, item, delim))
         elems.push_back(item);
+}
+
+uint64_t
+Util::get_timestamp_us()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    uint64_t now = static_cast<uint64_t>(tv.tv_sec) * 1000000 +
+                   static_cast<double>(tv.tv_usec);
+    return now;
 }
 
 #ifndef ANDROID

@@ -28,6 +28,7 @@
 #include <vector>
 #include <istream>
 #include <sstream>
+#include <stdint.h>
 
 #ifdef ANDROID
 #include <android/asset_manager_jni.h>
@@ -35,6 +36,7 @@
 
 struct Util {
     static void split(const std::string &s, char delim, std::vector<std::string> &elems);
+    static uint64_t get_timestamp_us();
     static std::istream *get_resource(const std::string &path);
     static void list_files(const std::string& dirName, std::vector<std::string>& fileVec);
     template <class T> static void dispose_pointer_vector(std::vector<T*> &vec)

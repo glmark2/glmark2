@@ -21,7 +21,7 @@
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
  *  Marc Ordinas i Llopis, Collabora Ltd. (pulsar scene)
- *  Jesse Barker
+ *  Jesse Barker (glmark2)
  */
 #include <stdlib.h>
 #include "scene.h"
@@ -31,7 +31,7 @@
 #include "log.h"
 #include "shader-source.h"
 #include "util.h"
-
+#include "texture.h"
 #include <cmath>
 
 using LibMatrix::vec2;
@@ -55,14 +55,14 @@ ScenePulsar::~ScenePulsar()
 {
 }
 
-int
+bool
 ScenePulsar::load()
 {
     scale_ = vec3(1.0, 1.0, 1.0);
 
     running_ = false;
 
-    return 1;
+    return true;
 }
 
 void
@@ -141,7 +141,7 @@ ScenePulsar::setup()
     currentFrame_ = 0;
 
     running_ = true;
-    startTime_ = Scene::get_timestamp_us() / 1000000.0;
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
 }
 
@@ -169,7 +169,7 @@ ScenePulsar::teardown()
 void
 ScenePulsar::update()
 {
-    double current_time = Scene::get_timestamp_us() / 1000000.0;
+    double current_time = Util::get_timestamp_us() / 1000000.0;
     double dt = current_time - lastUpdateTime_;
     double elapsed_time = current_time - startTime_;
 

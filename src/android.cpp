@@ -29,36 +29,7 @@
 #include "options.h"
 #include "log.h"
 #include "util.h"
-
-static const char *default_benchmarks[] = {
-    "build:use-vbo=false",
-    "build:use-vbo=true",
-    "texture:texture-filter=nearest",
-    "texture:texture-filter=linear",
-    "texture:texture-filter=mipmap",
-    "shading:shading=gouraud",
-    "shading:shading=blinn-phong-inf",
-    "shading:shading=phong",
-    "bump:bump-render=high-poly",
-    "bump:bump-render=normals",
-    "effect2d:kernel=0,1,0;1,-4,1;0,1,0;",
-    "effect2d:kernel=1,1,1,1,1;1,1,1,1,1;1,1,1,1,1;",
-    "pulsar:quads=5:texture=false:light=false",
-    "desktop:windows=4:effect=blur:blur-radius=5:passes=1:separable=true",
-    "desktop:windows=4:effect=shadow",
-    "buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=map:interleave=false",
-    "buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=subdata:interleave=false",
-    "buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=map:interleave=true",
-    "conditionals:vertex-steps=0:fragment-steps=0",
-    "conditionals:vertex-steps=0:fragment-steps=5",
-    "conditionals:vertex-steps=5:fragment-steps=0",
-    "function:fragment-steps=5:fragment-complexity=low",
-    "function:fragment-steps=5:fragment-complexity=medium",
-    "loop:vertex-steps=5:fragment-steps=5:fragment-loop=false",
-    "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=false",
-    "loop:vertex-steps=5:fragment-steps=5:fragment-uniform=true",
-    NULL
-};
+#include "default-benchmarks.h"
 
 static Canvas *g_canvas;
 static std::vector<Benchmark *> g_benchmarks;
@@ -66,8 +37,14 @@ static std::vector<Benchmark *> g_benchmarks;
 static void
 add_default_benchmarks(std::vector<Benchmark *> &benchmarks)
 {
-    for (const char **s = default_benchmarks; *s != NULL; s++)
-        benchmarks.push_back(new Benchmark(*s));
+    const std::vector<std::string> &default_benchmarks = DefaultBenchmarks::get();
+
+    for (std::vector<std::string>::const_iterator iter = default_benchmarks.begin();
+         iter != default_benchmarks.end();
+         iter++)
+    {
+        benchmarks.push_back(new Benchmark(*iter));
+    }
 }
 
 void
@@ -144,14 +121,26 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
 }
 
 static JNINativeMethod glmark2_native_methods[] = {
-    {"nativeInit",   "(Landroid/content/res/AssetManager;)V",
-                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeInit},
-    {"nativeResize", "(II)V",
-                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeResize},
-    {"nativeDone",   "()V",
-                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeDone},
-    {"nativeRender", "()Z",
-                     (void*)Java_org_linaro_glmark2_Glmark2Renderer_nativeRender}
+    {
+        "nativeInit",
+        "(Landroid/content/res/AssetManager;)V",
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeInit)
+    },
+    {
+        "nativeResize",
+        "(II)V",
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeResize)
+    },
+    {
+        "nativeDone",
+        "()V",
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeDone)
+    },
+    {
+        "nativeRender",
+        "()Z",
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeRender)
+    }
 };
 
 static int
@@ -193,7 +182,7 @@ JNI_OnLoad(JavaVM* vm, void* reserved)
     JNIEnv* env = NULL;
     jint result = -1;
 
-    if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_4) != JNI_OK) {
         Log::error("JNI_OnLoad: GetEnv failed\n");
         goto bail;
     }
