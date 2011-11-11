@@ -159,6 +159,58 @@ SceneBump::setup_model_normals()
 }
 
 void
+SceneBump::setup_model_normals_tangent()
+{
+    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals-tangent.vert");
+    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals-tangent.frag");
+    static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
+    Model model;
+
+    if(!model.load("asteroid-low"))
+        return;
+
+    model.calculate_normals();
+
+    /* Calculate the half vector */
+    LibMatrix::vec3 halfVector(lightPosition.x(), lightPosition.y(), lightPosition.z());
+    halfVector.normalize();
+    halfVector += LibMatrix::vec3(0.0, 0.0, 1.0);
+    halfVector.normalize();
+
+    std::vector<std::pair<Model::AttribType, int> > attribs;
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeTexcoord, 2));
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeTangent, 3));
+
+    model.convert_to_mesh(mesh_, attribs);
+
+    /* Load shaders */
+    ShaderSource vtx_source(vtx_shader_filename);
+    ShaderSource frg_source(frg_shader_filename);
+
+    /* Add constants to shaders */
+    frg_source.add_const("LightSourcePosition", lightPosition);
+    frg_source.add_const("LightSourceHalfVector", halfVector);
+
+    if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
+                                          frg_source.str()))
+    {
+        return;
+    }
+
+    std::vector<GLint> attrib_locations;
+    attrib_locations.push_back(program_["position"].location());
+    attrib_locations.push_back(program_["normal"].location());
+    attrib_locations.push_back(program_["texcoord"].location());
+    attrib_locations.push_back(program_["tangent"].location());
+    mesh_.set_attrib_locations(attrib_locations);
+
+    Texture::load(GLMARK_DATA_PATH"/textures/asteroid-normal-map-tangent.png", &texture_,
+                  GL_NEAREST, GL_NEAREST, 0);
+}
+
+void
 SceneBump::setup()
 {
     Scene::setup();
@@ -168,6 +220,8 @@ SceneBump::setup()
     Model::find_models();
     if (bump_render == "normals")
         setup_model_normals();
+    else if (bump_render == "normals-tangent")
+        setup_model_normals_tangent();
     else if (bump_render == "off" || bump_render == "high-poly")
         setup_model_plain(bump_render);
 

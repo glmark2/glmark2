@@ -380,6 +380,7 @@ protected:
 private:
     void setup_model_plain(const std::string &type);
     void setup_model_normals();
+    void setup_model_normals_tangent();
 };
 
 class SceneEffect2D : public Scene
