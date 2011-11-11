@@ -199,15 +199,6 @@ public:
                                           const std::string &frg_shader,
                                           const std::string &vtx_shader_filename = "None",
                                           const std::string &frg_shader_filename = "None");
-    /**
-     * Loads a shader program from a pair of vertex and fragment shader
-     * source files.
-     *
-     * @return whether the operation succeeded
-     */
-    static bool load_shaders_from_files(Program &program,
-                                        const std::string &vtx_shader_filename,
-                                        const std::string &frg_shader_filename);
 
 protected:
     Scene(Canvas &pCanvas, const std::string &name);

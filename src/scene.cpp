@@ -249,23 +249,3 @@ Scene::load_shaders_from_strings(Program &program,
 
     return true;
 }
-
-bool
-Scene::load_shaders_from_files(Program &program,
-                               const std::string &vtx_shader_filename,
-                               const std::string &frg_shader_filename)
-{
-    std::string vtx_shader;
-    std::string frg_shader;
-
-    if (!gotSource(vtx_shader_filename, vtx_shader))
-        return false;
-
-    if (!gotSource(frg_shader_filename, frg_shader))
-        return false;
-
-    return Scene::load_shaders_from_strings(program, vtx_shader, frg_shader,
-                                            vtx_shader_filename,
-                                            frg_shader_filename);
-
-}
