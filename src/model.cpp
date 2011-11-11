@@ -105,7 +105,8 @@ Model::compute_bounding_box(const Object& object)
  */
 void
 Model::append_object_to_mesh(const Object &object, Mesh &mesh,
-                             int p_pos, int n_pos, int t_pos)
+                             int p_pos, int n_pos, int t_pos,
+                             int nt_pos, int nb_pos)
 {
     size_t face_count = object.faces.size();
 
@@ -123,6 +124,10 @@ Model::append_object_to_mesh(const Object &object, Mesh &mesh,
             mesh.set_attrib(n_pos, a.n);
         if (t_pos >= 0)
             mesh.set_attrib(t_pos, a.t);
+        if (nt_pos >= 0)
+            mesh.set_attrib(nt_pos, a.nt);
+        if (nb_pos >= 0)
+            mesh.set_attrib(nb_pos, a.nb);
 
         mesh.next_vertex();
         if (p_pos >= 0)
@@ -131,6 +136,10 @@ Model::append_object_to_mesh(const Object &object, Mesh &mesh,
             mesh.set_attrib(n_pos, b.n);
         if (t_pos >= 0)
             mesh.set_attrib(t_pos, b.t);
+        if (nt_pos >= 0)
+            mesh.set_attrib(nt_pos, b.nt);
+        if (nb_pos >= 0)
+            mesh.set_attrib(nb_pos, b.nb);
 
         mesh.next_vertex();
         if (p_pos >= 0)
@@ -139,8 +148,11 @@ Model::append_object_to_mesh(const Object &object, Mesh &mesh,
             mesh.set_attrib(n_pos, c.n);
         if (t_pos >= 0)
             mesh.set_attrib(t_pos, c.t);
+        if (nt_pos >= 0)
+            mesh.set_attrib(nt_pos, c.nt);
+        if (nb_pos >= 0)
+            mesh.set_attrib(nb_pos, c.nb);
     }
-
 }
 
 /** 
@@ -178,6 +190,8 @@ Model::convert_to_mesh(Mesh &mesh,
     int p_pos = -1;
     int n_pos = -1;
     int t_pos = -1;
+    int nt_pos = -1;
+    int nb_pos = -1;
 
     mesh.reset();
 
@@ -192,6 +206,10 @@ Model::convert_to_mesh(Mesh &mesh,
             n_pos = ai - attribs.begin();
         else if (ai->first == AttribTypeTexcoord)
             t_pos = ai - attribs.begin();
+        else if (ai->first == AttribTypeTangent)
+            nt_pos = ai - attribs.begin();
+        else if (ai->first == AttribTypeBitangent)
+            nb_pos = ai - attribs.begin();
     }
 
     mesh.set_vertex_format(format);
@@ -200,7 +218,7 @@ Model::convert_to_mesh(Mesh &mesh,
          iter != objects_.end();
          iter++)
     {
-        append_object_to_mesh(*iter, mesh, p_pos, n_pos, t_pos);
+        append_object_to_mesh(*iter, mesh, p_pos, n_pos, t_pos, nt_pos, nb_pos);
     }
 }
 
@@ -217,25 +235,62 @@ Model::calculate_normals()
          iter++)
     {
         Object &object = *iter;
-        size_t face_count = object.faces.size();
-        size_t vertex_count = object.vertices.size();
 
-        for(unsigned i = 0; i < face_count; i++)
+        for (vector<Face>::const_iterator f_iter = object.faces.begin();
+             f_iter != object.faces.end();
+             f_iter++)
         {
-            const Face &face = object.faces[i];
+            const Face &face = *f_iter;
             Vertex &a = object.vertices[face.a];
             Vertex &b = object.vertices[face.b];
             Vertex &c = object.vertices[face.c];
 
+            /* Calculate normal */
             n = LibMatrix::vec3::cross(b.v - a.v, c.v - a.v);
             n.normalize();
             a.n += n;
             b.n += n;
             c.n += n;
+
+            LibMatrix::vec3 q1(b.v - a.v);
+            LibMatrix::vec3 q2(c.v - a.v);
+            LibMatrix::vec2 u1(b.t - a.t);
+            LibMatrix::vec2 u2(c.t - a.t);
+            float det = (u1.x() * u2.y() - u2.x() * u1.y());
+
+            /* Calculate tangent */
+            LibMatrix::vec3 nt;
+            nt.x(det * (u2.y() * q1.x() - u1.y() * q2.x()));
+            nt.y(det * (u2.y() * q1.y() - u1.y() * q2.y()));
+            nt.z(det * (u2.y() * q1.z() - u1.y() * q2.z()));
+            nt.normalize();
+            a.nt += nt;
+            b.nt += nt;
+            c.nt += nt;
+
+            /* Calculate bitangent */
+            LibMatrix::vec3 nb;
+            nb.x(det * (u1.x() * q2.x() - u2.x() * q1.x()));
+            nb.y(det * (u1.x() * q2.y() - u2.x() * q1.y()));
+            nb.z(det * (u1.x() * q2.z() - u2.x() * q1.z()));
+            nb.normalize();
+            a.nb += nb;
+            b.nb += nb;
+            c.nb += nb;
         }
 
-        for(unsigned i = 0; i < vertex_count; i++)
-            object.vertices[i].n.normalize();
+        for (vector<Vertex>::iterator v_iter = object.vertices.begin();
+             v_iter != object.vertices.end();
+             v_iter++)
+        {
+            Vertex &v = *v_iter;
+            /* Orthogonalize */
+            v.nt = (v.nt - v.n * LibMatrix::vec3::dot(v.nt, v.n));
+            v.n.normalize();
+            v.nt.normalize();
+            v.nb.normalize();
+        }
+
     }
 }
 
