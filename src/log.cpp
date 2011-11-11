@@ -92,6 +92,20 @@ print_prefixed_message(FILE *stream, const char *color, const char *prefix,
     delete[] buf;
 }
 
+static void
+print_plain_message(FILE *stream, const char *fmt, va_list ap)
+{
+    va_list aq;
+    const char *msg = fmt;
+
+    if (msg[0] == LOG_CONTINUE[0])
+        msg++;
+
+    va_copy(aq, ap);
+    vfprintf(stream, msg, ap);
+    va_end(aq);
+}
+
 void
 Log::info(const char *fmt, ...)
 {
@@ -100,7 +114,7 @@ Log::info(const char *fmt, ...)
     if (Options::show_debug)
         print_prefixed_message(stdout, terminal_color_cyan, "Info", fmt, ap);
     else
-        vfprintf(stdout, fmt, ap);
+        print_plain_message(stdout, fmt, ap);
     va_end(ap);
 }
 
