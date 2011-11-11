@@ -101,7 +101,7 @@ Scene::info_string(const string &title)
 {
     stringstream ss;
 
-    ss << "[" << name_ << "] " << Scene::construct_title(title) << " ";
+    ss << "[" << name_ << "] " << Scene::construct_title(title);
 
     return ss.str();
 }
