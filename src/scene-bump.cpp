@@ -373,6 +373,10 @@ SceneBump::validate()
         ref = Canvas::Pixel(0x9c, 0x9c, 0x9c, 0xff);
     else if (bump_render == "normals")
         ref = Canvas::Pixel(0xa4, 0xa4, 0xa4, 0xff);
+    else if (bump_render == "normals-tangent")
+        ref = Canvas::Pixel(0x99, 0x99, 0x99, 0xff);
+    else if (bump_render == "height")
+        ref = Canvas::Pixel(0x93, 0x93, 0x93, 0xff);
     else
         return Scene::ValidationUnknown;
 
