@@ -18,7 +18,7 @@ void main(void)
     const vec4 MaterialDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
     const vec4 MaterialSpecular = vec4(0.2, 0.2, 0.2, 1.0);
     const float MaterialShininess = 100.0;
-    const float height_factor = 12.0;
+    const float height_factor = 13.0;
 
     // Get the data from the height map
     float height0 = texture2D(NormalMap, TextureCoord).x;
