@@ -51,6 +51,7 @@ private:
         benchmarks.push_back("shading:shading=phong");
         benchmarks.push_back("bump:bump-render=high-poly");
         benchmarks.push_back("bump:bump-render=normals");
+        benchmarks.push_back("bump:bump-render=height");
         benchmarks.push_back("effect2d:kernel=0,1,0;1,-4,1;0,1,0;");
         benchmarks.push_back("effect2d:kernel=1,1,1,1,1;1,1,1,1,1;1,1,1,1,1;");
         benchmarks.push_back("pulsar:quads=5:texture=false:light=false");
