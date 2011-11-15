@@ -349,6 +349,9 @@ SceneBump::draw()
     normal_matrix.inverse().transpose();
     program_["NormalMatrix"] = normal_matrix;
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture_);
+
     mesh_.render_vbo();
 }
 
