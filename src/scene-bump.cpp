@@ -288,6 +288,7 @@ SceneBump::setup()
 
     // Load texture sampler value
     program_["NormalMap"] = 0;
+    program_["HeightMap"] = 0;
 
     currentFrame_ = 0;
     rotation_ = 0.0;

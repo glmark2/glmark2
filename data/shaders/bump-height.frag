@@ -2,7 +2,7 @@
 precision mediump float;
 #endif
 
-uniform sampler2D NormalMap;
+uniform sampler2D HeightMap;
 
 varying vec2 TextureCoord;
 varying vec3 NormalEye;
@@ -21,9 +21,9 @@ void main(void)
     const float height_factor = 13.0;
 
     // Get the data from the height map
-    float height0 = texture2D(NormalMap, TextureCoord).x;
-    float heightX = texture2D(NormalMap, TextureCoord + vec2(TextureStepX, 0.0)).x;
-    float heightY = texture2D(NormalMap, TextureCoord + vec2(0.0, TextureStepY)).x;
+    float height0 = texture2D(HeightMap, TextureCoord).x;
+    float heightX = texture2D(HeightMap, TextureCoord + vec2(TextureStepX, 0.0)).x;
+    float heightY = texture2D(HeightMap, TextureCoord + vec2(0.0, TextureStepY)).x;
     vec2 dh = vec2(heightX - height0, heightY - height0);
 
     // Adjust the normal based on the height map data
