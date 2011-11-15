@@ -70,9 +70,11 @@ public:
 
     typedef enum {
         AttribTypePosition = 1,
-        AttribTypeNormal = 2,
-        AttribTypeTexcoord = 4,
-        AttribTypeCustom = 8
+        AttribTypeNormal,
+        AttribTypeTexcoord,
+        AttribTypeTangent,
+        AttribTypeBitangent,
+        AttribTypeCustom
     } AttribType;
 
     Model() {}
@@ -97,6 +99,8 @@ private:
         LibMatrix::vec3 v;
         LibMatrix::vec3 n;
         LibMatrix::vec2 t;
+        LibMatrix::vec3 nt;
+        LibMatrix::vec3 nb;
     };
 
     struct Object {
@@ -107,7 +111,8 @@ private:
     };
 
     void append_object_to_mesh(const Object &object, Mesh &mesh,
-                               int p_pos, int n_pos, int t_pos);
+                               int p_pos, int n_pos, int t_pos,
+                               int nt_pos, int nb_pos);
     bool load_3ds(const std::string &filename);
     bool load_obj(const std::string &filename);
 
