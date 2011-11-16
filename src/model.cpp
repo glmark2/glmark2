@@ -48,9 +48,9 @@ using LibMatrix::uvec3;
     } \
 } while(0);
 
-/** 
+/**
  * Computes the bounding box for a Model::Object.
- * 
+ *
  * @param object the Model object
  */
 void
@@ -94,9 +94,9 @@ Model::compute_bounding_box(const Object& object)
     minVec_ = vec3(minX, minY, minZ);
 }
 
-/** 
+/**
  * Appends the vertices of a Model::Object to a Mesh.
- * 
+ *
  * @param object the object to append
  * @param mesh the mesh to append to
  * @param p_pos the attribute position to use for the 'position' attribute
@@ -155,11 +155,11 @@ Model::append_object_to_mesh(const Object &object, Mesh &mesh,
     }
 }
 
-/** 
+/**
  * Converts a model to a mesh using the default attributes bindings.
  *
  * The default attributes and their order is: Position, Normal, Texcoord
- * 
+ *
  * @param mesh the mesh to populate
  */
 void
@@ -174,7 +174,7 @@ Model::convert_to_mesh(Mesh &mesh)
     convert_to_mesh(mesh, attribs);
 }
 
-/** 
+/**
  * Converts a model to a mesh using custom attribute bindings.
  *
  * The attribute bindings are pairs of <AttribType, dimensionality>.
@@ -222,7 +222,7 @@ Model::convert_to_mesh(Mesh &mesh,
     }
 }
 
-/** 
+/**
  * Calculates the normal vectors of the model vertices.
  */
 void
@@ -294,11 +294,11 @@ Model::calculate_normals()
     }
 }
 
-/** 
+/**
  * Load a model from a 3DS file.
- * 
+ *
  * @param filename the name of the file
- * 
+ *
  * @return whether loading succeeded
  */
 bool
@@ -471,9 +471,9 @@ Model::load_3ds(const std::string &filename)
     return true;
 }
 
-/** 
+/**
  * Parse vec3 values from an OBJ file.
- * 
+ *
  * @param source the source line to parse
  * @param v the vec3 to populate
  */
@@ -528,9 +528,9 @@ obj_get_values(const string& source, vec3& v)
     v.z(z);
 }
 
-/** 
+/**
  * Parse uvec3 values from an OBJ file.
- * 
+ *
  * @param source the source line to parse
  * @param v the uvec3 to populate
  */
@@ -585,11 +585,11 @@ obj_get_values(const string& source, uvec3& v)
     v.z(z);
 }
 
-/** 
+/**
  * Load a model from an OBJ file.
- * 
+ *
  * @param filename the name of the file
- * 
+ *
  * @return whether loading succeeded
  */
 bool
@@ -671,13 +671,13 @@ namespace ModelPrivate
 ModelMap modelMap;
 }
 
-/** 
+/**
  * Locate all available models.
  *
  * This method scans the built-in data paths and build a database of usable
  * models available to scenes.  Map is available on a read-only basis to scenes
  * that might find it useful for listing models, etc.
- * 
+ *
  * @return a map containing information about the located models
  */
 const ModelMap&
@@ -738,14 +738,14 @@ Model::find_models()
     return ModelPrivate::modelMap;
 }
 
-/** 
+/**
  * Load a model by name.
  *
  * You must initialize the available model collection using
  * Model::find_models() before using this method.
- * 
+ *
  * @param modelName the model name
- * 
+ *
  * @return whether the operation succeeded
  */
 bool

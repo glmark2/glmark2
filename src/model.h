@@ -39,7 +39,7 @@ enum ModelFormat
     MODEL_OBJ
 };
 
-/** 
+/**
  * A descriptor for a model file.
  */
 class ModelDescriptor
@@ -61,7 +61,7 @@ public:
 
 typedef std::map<std::string, ModelDescriptor*> ModelMap;
 
-/** 
+/**
  * A model as loaded from a 3D object data file.
  */
 class Model

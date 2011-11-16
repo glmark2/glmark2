@@ -29,7 +29,7 @@
 #include "vec.h"
 #include "gl-headers.h"
 
-/** 
+/**
  * A mesh of vertices.
  */
 class Mesh
