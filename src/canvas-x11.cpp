@@ -40,7 +40,7 @@ CanvasX11::init()
     if (!xdpy_)
         return false;
 
-    resize(width_, height_);
+    resize_no_viewport(width_, height_);
 
     if (!xwin_)
         return false;
@@ -54,6 +54,8 @@ CanvasX11::init()
                    glGetString(GL_VERSION));
         return false;
     }
+
+    glViewport(0, 0, width_, height_);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -159,26 +161,8 @@ CanvasX11::should_quit()
 void
 CanvasX11::resize(int width, int height)
 {
-    /* Recreate an existing window only if it has actually been resized */
-    if (xwin_) {
-        if (width_ != width || height_ != height) {
-            XDestroyWindow(xdpy_, xwin_);
-            xwin_ = 0;
-        }
-        else {
-            return;
-        }
-    }
-
-    width_ = width;
-    height_ = height;
-
-    if (!ensure_x_window())
-        Log::error("Error: Couldn't create X Window!\n");
-
+    resize_no_viewport(width, height);
     glViewport(0, 0, width_, height_);
-    projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
-                                               1.0, 1024.0);
 }
 
 bool
@@ -271,5 +255,29 @@ CanvasX11::ensure_x_window()
     XSetWMProtocols(xdpy_, xwin_, &wmDelete, 1);
 
     return true;
+}
+
+void
+CanvasX11::resize_no_viewport(int width, int height)
+{
+    /* Recreate an existing window only if it has actually been resized */
+    if (xwin_) {
+        if (width_ != width || height_ != height) {
+            XDestroyWindow(xdpy_, xwin_);
+            xwin_ = 0;
+        }
+        else {
+            return;
+        }
+    }
+
+    width_ = width;
+    height_ = height;
+
+    if (!ensure_x_window())
+        Log::error("Error: Couldn't create X Window!\n");
+
+    projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
+                                               1.0, 1024.0);
 }
 

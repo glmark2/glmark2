@@ -91,6 +91,7 @@ protected:
     Display *xdpy_;
 
 private:
+    void resize_no_viewport(int width, int height);
     bool ensure_x_window();
 };
 
