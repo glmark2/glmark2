@@ -263,6 +263,25 @@ ShaderSource::add_const(const std::string &name, std::vector<float> &array,
 }
 
 /**
+ * Adds a vec2 constant definition.
+ *
+ * @param name the name of the constant
+ * @param v the value of the constant
+ * @param function if not empty, the function to put the definition in
+ */
+void
+ShaderSource::add_const(const std::string &name, const LibMatrix::vec2 &v,
+                        const std::string &function)
+{
+    std::stringstream ss;
+
+    ss << "const vec2 " << name << " = vec2(" << std::fixed;
+    ss << v.x() << ", " << v.y() << ");" << std::endl;
+
+    add(ss.str(), function);
+}
+
+/**
  * Adds a vec3 constant definition.
  *
  * @param name the name of the constant
