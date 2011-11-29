@@ -204,7 +204,7 @@ SceneTexture::draw()
 Scene::ValidationResult
 SceneTexture::validate()
 {
-    static const double radius_3d(std::sqrt(3.0));
+    static const double radius_3d(std::sqrt(3 * 2.0 * 2.0));
 
     if (rotation_.x() != 0 || rotation_.y() != 0 || rotation_.z() != 0)
         return Scene::ValidationUnknown;
@@ -220,6 +220,8 @@ SceneTexture::validate()
         ref = Canvas::Pixel(0x3b, 0x3a, 0x39, 0xff);
     else if (filter == "linear")
         ref = Canvas::Pixel(0x36, 0x36, 0x34, 0xff);
+    else if (filter == "linear-shader")
+        ref = Canvas::Pixel(0x30, 0x30, 0x2f, 0xff);
     else if (filter == "mipmap")
         ref = Canvas::Pixel(0x35, 0x35, 0x34, 0xff);
     else
