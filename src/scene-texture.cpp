@@ -38,7 +38,7 @@ SceneTexture::SceneTexture(Canvas &pCanvas) :
     Scene(pCanvas, "texture")
 {
     options_["texture-filter"] = Scene::Option("texture-filter", "nearest",
-                                               "[nearest, linear, mipmap]");
+                                               "[nearest, linear, linear-shader, mipmap]");
 }
 
 SceneTexture::~SceneTexture()
@@ -76,13 +76,48 @@ SceneTexture::setup()
 {
     Scene::setup();
 
-    // Load shaders
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
     static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic-tex.frag");
+    static const std::string frg_shader_bilinear_filename(GLMARK_DATA_PATH"/shaders/light-basic-tex-bilinear.frag");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     static const LibMatrix::vec4 materialDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
+
+    // Create texture according to selected filtering
+    GLint min_filter = GL_NONE;
+    GLint mag_filter = GL_NONE;
+    const std::string &filter = options_["texture-filter"].value;
+
+    if (filter == "nearest") {
+        min_filter = GL_NEAREST;
+        mag_filter = GL_NEAREST;
+    }
+    else if (filter == "linear") {
+        min_filter = GL_LINEAR;
+        mag_filter = GL_LINEAR;
+    }
+    else if (filter == "linear-shader") {
+        min_filter = GL_NEAREST;
+        mag_filter = GL_NEAREST;
+    }
+    else if (filter == "mipmap") {
+        min_filter = GL_LINEAR_MIPMAP_LINEAR;
+        mag_filter = GL_LINEAR;
+    }
+
+    Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &texture_,
+                  min_filter, mag_filter, 0);
+
+    // Load shaders
     ShaderSource vtx_source(vtx_shader_filename);
-    ShaderSource frg_source(frg_shader_filename);
+    ShaderSource frg_source;
+    if (filter == "linear-shader") {
+        frg_source.append_file(frg_shader_bilinear_filename);
+        LibMatrix::vec2 texture_size(512, 512);
+        frg_source.add_const("TextureSize", texture_size);
+    }
+    else {
+        frg_source.append_file(frg_shader_filename);
+    }
 
     // Add constants to shaders
     vtx_source.add_const("LightSourcePosition", lightPosition);
@@ -99,27 +134,6 @@ SceneTexture::setup()
     attrib_locations.push_back(program_["normal"].location());
     attrib_locations.push_back(program_["texcoord"].location());
     mesh_.set_attrib_locations(attrib_locations);
-
-    // Create texture according to selected filtering
-    GLint min_filter = GL_NONE;
-    GLint mag_filter = GL_NONE;
-    const std::string &filter = options_["texture-filter"].value;
-
-    if (filter == "nearest") {
-        min_filter = GL_NEAREST;
-        mag_filter = GL_NEAREST;
-    }
-    else if (filter == "linear") {
-        min_filter = GL_LINEAR;
-        mag_filter = GL_LINEAR;
-    }
-    else if (filter == "mipmap") {
-        min_filter = GL_LINEAR_MIPMAP_LINEAR;
-        mag_filter = GL_LINEAR;
-    }
-
-    Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &texture_,
-                  min_filter, mag_filter, 0);
 
     program_.start();
 
