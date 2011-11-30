@@ -55,6 +55,8 @@ public:
                    const std::string &function = "");
     void add_const(const std::string &name, std::vector<float> &f,
                    const std::string &function = "");
+    void add_const(const std::string &name, const LibMatrix::vec2 &v,
+                   const std::string &function = "");
     void add_const(const std::string &name, const LibMatrix::vec3 &v,
                    const std::string &function = "");
     void add_const(const std::string &name, const LibMatrix::vec4 &v,
