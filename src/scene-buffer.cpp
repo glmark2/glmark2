@@ -294,6 +294,7 @@ private:
 
 struct SceneBufferPrivate {
     WaveMesh *wave;
+    SceneBufferPrivate() : wave(0) {}
     ~SceneBufferPrivate() { delete wave; }
 };
 
