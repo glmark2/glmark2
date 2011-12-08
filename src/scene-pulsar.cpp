@@ -170,7 +170,6 @@ void
 ScenePulsar::update()
 {
     double current_time = Util::get_timestamp_us() / 1000000.0;
-    double dt = current_time - lastUpdateTime_;
     double elapsed_time = current_time - startTime_;
 
     lastUpdateTime_ = current_time;
@@ -181,7 +180,7 @@ ScenePulsar::update()
     }
 
     for (int i = 0; i < numQuads_; i++) {
-        rotations_[i] += rotationSpeeds_[i] * (dt * 60);
+        rotations_[i] = rotationSpeeds_[i] * (elapsed_time * 60);
     }
 
     scale_ = vec3(cos(elapsed_time / 3.60) * 10.0, sin(elapsed_time / 3.60) * 10.0, 1.0);

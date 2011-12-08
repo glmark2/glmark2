@@ -94,7 +94,6 @@ void
 SceneGrid::update()
 {
     double current_time = Util::get_timestamp_us() / 1000000.0;
-    double dt = current_time - lastUpdateTime_;
     double elapsed_time = current_time - startTime_;
 
     lastUpdateTime_ = current_time;
@@ -104,7 +103,7 @@ SceneGrid::update()
         running_ = false;
     }
 
-    rotation_ += rotationSpeed_ * dt;
+    rotation_ = rotationSpeed_ * elapsed_time;
 
     currentFrame_++;
 }
