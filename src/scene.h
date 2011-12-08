@@ -210,7 +210,6 @@ protected:
     double startTime_;
     double lastUpdateTime_;
     unsigned currentFrame_;
-    unsigned averageFPS_;      // Average FPS of run
     bool running_;
     double duration_;      // Duration of run in seconds
 };

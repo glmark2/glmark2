@@ -35,7 +35,7 @@ using std::map;
 
 Scene::Scene(Canvas &pCanvas, const string &name) :
     canvas_(pCanvas), name_(name),
-    startTime_(0), lastUpdateTime_(0), currentFrame_(0), averageFPS_(0),
+    startTime_(0), lastUpdateTime_(0), currentFrame_(0),
     running_(0), duration_(0)
 {
     options_["duration"] = Scene::Option("duration", "10.0",
@@ -95,10 +95,8 @@ Scene::update()
 
     lastUpdateTime_ = current_time;
 
-    if (elapsed_time >= duration_) {
-        averageFPS_ = currentFrame_ / elapsed_time;
+    if (elapsed_time >= duration_)
         running_ = false;
-    }
 }
 
 void
@@ -119,7 +117,8 @@ Scene::info_string(const string &title)
 unsigned
 Scene::average_fps()
 {
-    return averageFPS_;
+    double elapsed_time = lastUpdateTime_ - startTime_;
+    return currentFrame_ / elapsed_time;
 }
 
 
