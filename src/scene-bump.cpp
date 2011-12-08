@@ -314,19 +314,11 @@ SceneBump::teardown()
 void
 SceneBump::update()
 {
-    double current_time = Util::get_timestamp_us() / 1000000.0;
-    double elapsed_time = current_time - startTime_;
+    Scene::update();
 
-    lastUpdateTime_ = current_time;
-
-    if (elapsed_time >= duration_) {
-        averageFPS_ = currentFrame_ / elapsed_time;
-        running_ = false;
-    }
+    double elapsed_time = lastUpdateTime_ - startTime_;
 
     rotation_ = rotationSpeed_ * elapsed_time;
-
-    currentFrame_++;
 }
 
 void

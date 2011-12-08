@@ -88,6 +88,17 @@ Scene::teardown()
 void
 Scene::update()
 {
+    double current_time = Util::get_timestamp_us() / 1000000.0;
+    double elapsed_time = current_time - startTime_;
+
+    currentFrame_++;
+
+    lastUpdateTime_ = current_time;
+
+    if (elapsed_time >= duration_) {
+        averageFPS_ = currentFrame_ / elapsed_time;
+        running_ = false;
+    }
 }
 
 void

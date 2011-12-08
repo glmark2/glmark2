@@ -169,23 +169,15 @@ ScenePulsar::teardown()
 void
 ScenePulsar::update()
 {
-    double current_time = Util::get_timestamp_us() / 1000000.0;
-    double elapsed_time = current_time - startTime_;
+    Scene::update();
 
-    lastUpdateTime_ = current_time;
-
-    if (elapsed_time >= duration_) {
-        averageFPS_ = currentFrame_ / elapsed_time;
-        running_ = false;
-    }
+    double elapsed_time = lastUpdateTime_ - startTime_;
 
     for (int i = 0; i < numQuads_; i++) {
         rotations_[i] = rotationSpeeds_[i] * (elapsed_time * 60);
     }
 
     scale_ = vec3(cos(elapsed_time / 3.60) * 10.0, sin(elapsed_time / 3.60) * 10.0, 1.0);
-
-    currentFrame_++;
 }
 
 void
