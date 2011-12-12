@@ -457,10 +457,13 @@ ShaderSource::str()
     /* Decide which precision values to use */
     ShaderSource::Precision precision;
 
+    /* Ensure we have tried to infer the type from the contents */
+    type();
+
     if (precision_has_been_set_)
         precision = precision_;
     else
-        precision = default_precision(type());
+        precision = default_precision(type_);
 
     /* Create the precision statements */
     std::stringstream ss;
