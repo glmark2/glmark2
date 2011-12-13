@@ -36,6 +36,10 @@ and their options
 Show all scene option values used for benchmarks
 (only explicitly set options are shown by default)
 .TP
+\fB\-\-show-fps\fR
+Show live FPS count on screen (showing live FPS
+affects benchmarking results, use with care!)
+.TP
 \fB\-d\fR, \fB\-\-debug\fR
 Display debug messages
 .TP
