@@ -28,6 +28,7 @@
 #include "log.h"
 #include "util.h"
 #include "default-benchmarks.h"
+#include "text-renderer.h"
 
 #include <iostream>
 #include <fstream>
@@ -149,6 +150,8 @@ list_scenes()
 void
 do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
 {
+    static const unsigned int fps_interval = 500000;
+    TextRenderer fps_renderer(canvas);
     unsigned score = 0;
     unsigned int benchmarks_run = 0;
 
@@ -158,6 +161,7 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
     {
         bool keep_running = true;
         Benchmark *bench = *bench_iter;
+        uint64_t fps_timestamp = Util::get_timestamp_us();
         Scene &scene = bench->setup_scene();
 
         if (!scene.name().empty()) {
@@ -171,6 +175,17 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
 
                 scene.draw();
                 scene.update();
+
+                if (Options::show_fps) {
+                    uint64_t now = Util::get_timestamp_us();
+                    if (now - fps_timestamp >= fps_interval) {
+                        std::stringstream ss;
+                        ss << "FPS: " << scene.average_fps();
+                        fps_renderer.text(ss.str());
+                        fps_timestamp = now;
+                    }
+                    fps_renderer.render();
+                }
 
                 canvas.update();
             }
