@@ -41,11 +41,13 @@ public:
 protected:
     XVisualInfo *get_xvisualinfo();
     bool make_current();
+    bool reset_context();
     void swap_buffers() { eglSwapBuffers(egl_display_, egl_surface_); }
 
 private:
     bool ensure_egl_display();
     bool ensure_egl_config();
+    bool ensure_egl_context();
     bool ensure_egl_surface();
     void init_gl_extensions();
 

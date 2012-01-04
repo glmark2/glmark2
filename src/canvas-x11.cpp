@@ -32,17 +32,10 @@
 /******************
  * Public methods *
  ******************/
-
 bool
-CanvasX11::init()
+CanvasX11::reset()
 {
-    xdpy_ = XOpenDisplay(NULL);
-    if (!xdpy_)
-        return false;
-
-    resize_no_viewport(width_, height_);
-
-    if (!xwin_)
+    if (!reset_context())
         return false;
 
     if (!make_current())
@@ -65,6 +58,21 @@ CanvasX11::init()
     clear();
 
     return true;
+}
+
+bool
+CanvasX11::init()
+{
+    xdpy_ = XOpenDisplay(NULL);
+    if (!xdpy_)
+        return false;
+
+    resize_no_viewport(width_, height_);
+
+    if (!xwin_)
+        return false;
+
+    return reset();
 }
 
 void

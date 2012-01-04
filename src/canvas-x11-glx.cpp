@@ -201,6 +201,15 @@ CanvasX11GLX::init_gl_extensions()
 }
 
 bool
+CanvasX11GLX::reset_context()
+{
+    glXDestroyContext(xdpy_, glx_context_);
+    glx_context_ = 0;
+
+    return true;
+}
+
+bool
 CanvasX11GLX::ensure_glx_context()
 {
     if (glx_context_)

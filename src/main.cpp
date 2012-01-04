@@ -181,6 +181,7 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
         }
 
         bench->teardown_scene();
+        canvas.reset();
 
         if (!keep_running)
             break;
@@ -232,6 +233,7 @@ do_validation(Canvas &canvas, vector<Benchmark *> &benchmarks)
         }
 
         bench->teardown_scene();
+        canvas.reset();
     }
 }
 
