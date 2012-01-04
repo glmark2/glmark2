@@ -40,6 +40,7 @@ struct Options {
     static bool show_all_options;
     static bool show_debug;
     static bool show_help;
+    static bool reuse_context;
 };
 
 #endif /* OPTIONS_H_ */

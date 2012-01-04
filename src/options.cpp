@@ -40,12 +40,14 @@ bool Options::list_scenes = false;
 bool Options::show_all_options = false;
 bool Options::show_debug = false;
 bool Options::show_help = false;
+bool Options::reuse_context = false;
 
 static struct option long_options[] = {
     {"benchmark", 1, 0, 0},
     {"benchmark-file", 1, 0, 0},
     {"validate", 0, 0, 0},
     {"no-swap-buffers", 0, 0, 0},
+    {"reuse-context", 0, 0, 0},
     {"size", 1, 0, 0},
     {"list-scenes", 0, 0, 0},
     {"show-all-options", 0, 0, 0},
@@ -93,6 +95,8 @@ Options::print_help()
            "                         running the benchmarks\n"
            "      --no-swap-buffers  Don't update the canvas by swapping the front and\n"
            "                         back buffer, use glFinish() instead\n"
+           "      --reuse-context    Use a single context for all scenes\n"
+           "                         (by default, each scene gets its own context)\n"
            "  -s, --size WxH         Size of the output window (default: 800x600)\n"
            "  -l, --list-scenes      Display information about the available scenes\n"
            "                         and their options\n"
@@ -128,6 +132,8 @@ Options::parse_args(int argc, char **argv)
             Options::validate = true;
         else if (!strcmp(optname, "no-swap-buffers"))
             Options::swap_buffers = false;
+        else if (!strcmp(optname, "reuse-context"))
+            Options::reuse_context = true;
         else if (c == 's' || !strcmp(optname, "size"))
             parse_size(optarg, Options::size);
         else if (c == 'l' || !strcmp(optname, "list-scenes"))
