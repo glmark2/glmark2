@@ -187,7 +187,7 @@ CanvasX11EGL::reset_context()
         return true;
 
     if (eglDestroyContext(egl_display_, egl_context_) == EGL_FALSE) {
-        Log::error("eglDestroyContext() failed with error: %d\n",
+        Log::debug("eglDestroyContext() failed with error: 0x%x\n",
                    eglGetError());
     }
 
@@ -198,6 +198,9 @@ CanvasX11EGL::reset_context()
 bool
 CanvasX11EGL::ensure_egl_context()
 {
+    if (egl_context_)
+        return true;
+
     if (!ensure_egl_display())
         return false;
 
@@ -214,7 +217,7 @@ CanvasX11EGL::ensure_egl_context()
     egl_context_ = eglCreateContext(egl_display_, egl_config_,
                                     EGL_NO_CONTEXT, ctx_attribs);
     if (!egl_context_) {
-        Log::error("eglCreateContext() failed with error: %d\n",
+        Log::error("eglCreateContext() failed with error: 0x%x\n",
                      eglGetError());
         return false;
     }
