@@ -132,11 +132,6 @@ TextRenderer::size(float s)
 void
 TextRenderer::render()
 {
-    if (dirty_) {
-        create_geometry();
-        dirty_ = false;
-    }
-
     /* Save state */
     GLint prev_program = 0;
     GLint prev_array_buffer = 0;
@@ -165,6 +160,11 @@ TextRenderer::render()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_DEPTH_TEST);
+
+    if (dirty_) {
+        create_geometry();
+        dirty_ = false;
+    }
 
     program_.start();
     GLint position_loc = program_["position"].location();
@@ -200,6 +200,8 @@ TextRenderer::render()
 
 /**
  * Creates the geometry needed to render the text.
+ *
+ * This method assumes that the text VBOs are properly bound.
  */
 void
 TextRenderer::create_geometry()
@@ -256,24 +258,12 @@ TextRenderer::create_geometry()
         elem_array.push_back(4 * i + 3);
     }
 
-    /* Save VBO state */
-    GLint prev_array_buffer = 0;
-    GLint prev_elem_array_buffer = 0;
-    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &prev_array_buffer);
-    glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &prev_elem_array_buffer);
-
     /* Load the data into the corresponding VBOs */
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_[0]);
     glBufferData(GL_ARRAY_BUFFER, array.size() * sizeof(float),
                  &array[0], GL_DYNAMIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, elem_array.size() * sizeof(GLushort),
                  &elem_array[0], GL_DYNAMIC_DRAW);
-
-    /* Restore VBO state */
-    glBindBuffer(GL_ARRAY_BUFFER, prev_array_buffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prev_elem_array_buffer);
 }
 
 /**
