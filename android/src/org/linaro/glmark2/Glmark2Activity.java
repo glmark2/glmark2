@@ -17,7 +17,7 @@ public class Glmark2Activity extends Activity {
 
     @Override
     protected void onDestroy() {
-        super.onPause();
+        super.onDestroy();
         mWakeLock.release();
     }
 
