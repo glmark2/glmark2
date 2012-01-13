@@ -100,10 +100,15 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
     static unsigned int benchmarks_run = 0;
 
     if (!scene) {
-        if (bench_iter != g_benchmarks.end()) {
+        /* Find the next normal scene */
+        while (bench_iter != g_benchmarks.end()) {
             scene = &(*bench_iter)->setup_scene();
+            if (!scene->name().empty())
+                break;
+            bench_iter++;
         }
-        else {
+
+        if (bench_iter == g_benchmarks.end()) {
             if (benchmarks_run)
                 score /= benchmarks_run;
             Log::info("glmark2 Score: %u\n", score);
