@@ -112,6 +112,10 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
             if (benchmarks_run)
                 score /= benchmarks_run;
             Log::info("glmark2 Score: %u\n", score);
+            /* Reset the rendering state, in case we get called again */
+            bench_iter = g_benchmarks.begin();
+            score = 0;
+            benchmarks_run = 0;
             return false;
         }
     }
