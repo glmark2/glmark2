@@ -5,6 +5,7 @@ import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.content.res.AssetManager;
 import android.app.Activity;
+import android.util.Log;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLDisplay;
@@ -12,6 +13,8 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 class Glmark2SurfaceView extends GLSurfaceView {
+
+    public static final String LOG_TAG = "glmark2";
 
     public Glmark2SurfaceView(Activity activity) {
         super(activity);
@@ -60,6 +63,8 @@ class Glmark2SurfaceView extends GLSurfaceView {
                 return chooseConfigInternal(egl, display);
             }
             catch (Exception e) {
+                /* Log an error message */
+                Log.e(LOG_TAG, "No suitable EGLConfig for GLES2.0 found. Please check that proper GLES2.0 drivers are installed.");
                 /* Display an informative (and lethal for the app) dialog */
                 mActivity.runOnUiThread(new Runnable() {
                     public void run() {
