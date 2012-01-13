@@ -343,6 +343,7 @@ SceneBuffer::setup()
 
     Scene::setup();
 
+    bool should_run = true;
     bool interleave = (options_["interleave"].value == "true");
     Mesh::VBOUpdateMethod update_method;
     Mesh::VBOUsage usage;
@@ -374,8 +375,8 @@ SceneBuffer::setup()
         (GLExtensions::MapBuffer == 0 || GLExtensions::UnmapBuffer == 0))
     {
         Log::error("Requested MapBuffer VBO update method but GL_OES_mapbuffer"
-                   "is not supported!");
-        return;
+                   " is not supported!\n");
+        should_run = false;
     }
 
     priv_->wave = new WaveMesh(5.0, 2.0, nlength, nwidth,
@@ -393,7 +394,7 @@ SceneBuffer::setup()
     glDisable(GL_CULL_FACE);
 
     currentFrame_ = 0;
-    running_ = true;
+    running_ = should_run;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
 }
