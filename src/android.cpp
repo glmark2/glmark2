@@ -96,13 +96,19 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
 {
     static std::vector<Benchmark *>::iterator bench_iter = g_benchmarks.begin();
     static Scene *scene = 0;
+    static unsigned int score = 0;
+    static unsigned int benchmarks_run = 0;
 
     if (!scene) {
         if (bench_iter != g_benchmarks.end()) {
             scene = &(*bench_iter)->setup_scene();
         }
-        else
+        else {
+            if (benchmarks_run)
+                score /= benchmarks_run;
+            Log::info("glmark2 Score: %u\n", score);
             return false;
+        }
     }
 
     if (scene->is_running()) {
@@ -117,10 +123,12 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
      * may have changed the state.
      */
     if (!scene->is_running()) {
-        (*bench_iter)->teardown_scene();
         Log::info("%s FPS: %u", scene->info_string().c_str(), scene->average_fps());
+        score += scene->average_fps();
+        (*bench_iter)->teardown_scene();
         scene = 0;
         bench_iter++;
+        benchmarks_run++;
     }
 
     return true;
