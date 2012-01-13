@@ -38,7 +38,7 @@ public:
     ~TextRenderer();
 
     void text(const std::string& t);
-    void position(LibMatrix::vec2& p);
+    void position(const LibMatrix::vec2& p);
     void size(float s);
 
     void render();

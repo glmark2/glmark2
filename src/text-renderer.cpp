@@ -97,7 +97,7 @@ TextRenderer::text(const std::string& t)
  * @param t the position
  */
 void
-TextRenderer::position(LibMatrix::vec2& p)
+TextRenderer::position(const LibMatrix::vec2& p)
 {
     if (position_ != p) {
         position_ = p;
