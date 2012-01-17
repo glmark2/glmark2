@@ -69,6 +69,16 @@ public:
     Benchmark(const std::string &s);
 
     /**
+     * Gets the Scene associated with the benchmark.
+     *
+     * This method doesn't prepare the scene for a run.
+     * (See ::setup_scene())
+     *
+     * @return the Scene
+     */
+    Scene &scene() const { return scene_; }
+
+    /**
      * Sets up the Scene associated with the benchmark.
      *
      * @return the Scene
