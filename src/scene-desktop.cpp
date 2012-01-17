@@ -108,8 +108,6 @@ class RenderObject
 public:
     RenderObject() : texture_(0), fbo_(0), rotation_rad_(0) { }
 
-    virtual ~RenderObject() { release(); }
-
     virtual void init()
     {
         /* Create a texture to draw to */
@@ -348,6 +346,7 @@ class RenderScreen : public RenderObject
 {
 public:
     virtual void init() {}
+    virtual void release() {}
 };
 
 /**
@@ -625,7 +624,6 @@ public:
             shadow_v_.release();
             shadow_corner_.release();
             if (draw_contents_)
-            if (draw_contents_)
                 window_contents_.release();
         }
 
@@ -849,7 +847,15 @@ SceneDesktop::setup()
 void
 SceneDesktop::teardown()
 {
-    Util::dispose_pointer_vector(priv_->windows);
+    for (std::vector<RenderObject*>::iterator winIt = priv_->windows.begin();
+         winIt != priv_->windows.end();
+         winIt++)
+    {
+        RenderObject* curObj = *winIt;
+        curObj->release();
+        delete curObj;
+    }
+    priv_->windows.clear();
     priv_->screen.make_current();
 
     glEnable(GL_DEPTH_TEST);
