@@ -37,6 +37,8 @@ public class Glmark2Activity extends Activity {
     protected void onPause() {
         super.onPause();
         mGLView.onPause();
+        Glmark2Activity.this.finish();
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     @Override
