@@ -116,6 +116,21 @@ add_and_register_scenes(vector<Scene*>& scenes, Canvas& canvas)
     }
 }
 
+static bool
+benchmarks_contain_normal_scenes(vector<Benchmark *> &benchmarks)
+{
+    for (vector<Benchmark *>::const_iterator bench_iter = benchmarks.begin();
+         bench_iter != benchmarks.end();
+         bench_iter++)
+    {
+        const Benchmark *bench = *bench_iter;
+        if (!bench->scene().name().empty())
+            return true;
+    }
+
+    return false;
+}
+
 static void
 list_scenes()
 {
@@ -300,7 +315,8 @@ main(int argc, char *argv[])
         add_custom_benchmarks(benchmarks);
     else if (!Options::benchmark_files.empty())
         add_custom_benchmarks_from_files(benchmarks);
-    else
+
+    if (!benchmarks_contain_normal_scenes(benchmarks))
         add_default_benchmarks(benchmarks);
 
     Log::info("=======================================================\n");
