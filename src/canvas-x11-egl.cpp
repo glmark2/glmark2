@@ -67,6 +67,9 @@ CanvasX11EGL::make_current()
     if (!ensure_egl_surface())
         return false;
 
+    if (!ensure_egl_context())
+        return false;
+
     if (egl_context_ == eglGetCurrentContext())
         return true;
 
@@ -175,8 +178,35 @@ CanvasX11EGL::ensure_egl_config()
 }
 
 bool
-CanvasX11EGL::ensure_egl_surface()
+CanvasX11EGL::reset_context()
 {
+    if (!ensure_egl_display())
+        return false;
+
+    if (!egl_context_)
+        return true;
+
+    if (eglDestroyContext(egl_display_, egl_context_) == EGL_FALSE) {
+        Log::debug("eglDestroyContext() failed with error: 0x%x\n",
+                   eglGetError());
+    }
+
+    egl_context_ = 0;
+    return true;
+}
+
+bool
+CanvasX11EGL::ensure_egl_context()
+{
+    if (egl_context_)
+        return true;
+
+    if (!ensure_egl_display())
+        return false;
+
+    if (!ensure_egl_config())
+        return false;
+
     static const EGLint ctx_attribs[] = {
 #ifdef USE_GLESv2
         EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -184,6 +214,20 @@ CanvasX11EGL::ensure_egl_surface()
         EGL_NONE
     };
 
+    egl_context_ = eglCreateContext(egl_display_, egl_config_,
+                                    EGL_NO_CONTEXT, ctx_attribs);
+    if (!egl_context_) {
+        Log::error("eglCreateContext() failed with error: 0x%x\n",
+                     eglGetError());
+        return false;
+    }
+
+    return true;
+}
+
+bool
+CanvasX11EGL::ensure_egl_surface()
+{
     if (egl_surface_)
         return true;
 
@@ -195,14 +239,6 @@ CanvasX11EGL::ensure_egl_surface()
 #elif USE_GL
     eglBindAPI(EGL_OPENGL_API);
 #endif
-
-    egl_context_ = eglCreateContext(egl_display_, egl_config_,
-                                    EGL_NO_CONTEXT, ctx_attribs);
-    if (!egl_context_) {
-        Log::error("eglCreateContext() failed with error: %d\n",
-                     eglGetError());
-        return false;
-    }
 
     egl_surface_ = eglCreateWindowSurface(egl_display_, egl_config_,
                                           (EGLNativeWindowType) xwin_,

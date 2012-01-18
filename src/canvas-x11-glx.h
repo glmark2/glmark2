@@ -41,6 +41,7 @@ public:
 protected:
     XVisualInfo *get_xvisualinfo();
     bool make_current();
+    bool reset_context();
     void swap_buffers() { glXSwapBuffers(xdpy_, xwin_); }
 
 private:

@@ -96,6 +96,16 @@ public:
     virtual bool init() { return false; }
 
     /**
+     * Resets the canvas, destroying and recreating resources to give each new
+     * test scenario a fresh context for rendering.
+     *
+     * This method should be implemented in derived classes.
+     *
+     * @return whether reset succeeded
+     */
+    virtual bool reset() { return false; }
+
+    /**
      * Changes the visibility of the canvas.
      *
      * The canvas is initially not visible.

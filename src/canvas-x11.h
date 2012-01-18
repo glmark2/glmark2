@@ -35,6 +35,7 @@ public:
     ~CanvasX11() {}
 
     virtual bool init();
+    virtual bool reset();
     virtual void visible(bool visible);
     virtual void clear();
     virtual void update();
@@ -67,6 +68,15 @@ protected:
      * @return whether the operation succeeded
      */
     virtual bool make_current() = 0;
+
+    /**
+     * Resets the underlying GL context for rendering.
+     *
+     * This method should be implemented in derived classes.
+     *
+     * @return whether the operation succeeded
+     */
+    virtual bool reset_context() = 0;
 
     /**
      * Swaps the GL buffers (assuming double buffering is used).

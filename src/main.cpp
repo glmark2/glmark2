@@ -174,6 +174,9 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
          bench_iter != benchmarks.end();
          bench_iter++)
     {
+        if (!Options::reuse_context)
+            canvas.reset();
+
         bool keep_running = true;
         Benchmark *bench = *bench_iter;
         uint64_t fps_timestamp = Util::get_timestamp_us();
@@ -232,6 +235,9 @@ do_validation(Canvas &canvas, vector<Benchmark *> &benchmarks)
          bench_iter != benchmarks.end();
          bench_iter++)
     {
+        if (!Options::reuse_context)
+            canvas.reset();
+
         Benchmark *bench = *bench_iter;
         Scene &scene = bench->setup_scene();
 

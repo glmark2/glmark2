@@ -25,6 +25,10 @@ running the benchmarks
 Don't update the screen by swapping the front and
 back buffer, use glFinish() instead
 .TP
+\fB\-\-reuse\-context\fR
+Use a single context for all scenes
+(by default, each scene gets its own context)
+.TP
 \fB\-s\fR, \fB\-\-size WxH\fR
 Size of the output window (default: 800x600)
 .TP
