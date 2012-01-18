@@ -106,7 +106,9 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
 class RenderObject
 {
 public:
-    RenderObject() : texture_(0), fbo_(0), rotation_rad_(0) { }
+    RenderObject() :
+        texture_(0), fbo_(0), rotation_rad_(0),
+        texture_contents_invalid_(true) { }
 
     virtual void init()
     {
@@ -136,6 +138,7 @@ public:
                                              frg_source.str());
         }
 
+        texture_contents_invalid_ = true;
         RenderObject::use_count++;
     }
 
@@ -180,7 +183,12 @@ public:
             glBindTexture(GL_TEXTURE_2D, texture_);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_.x(), size_.y(), 0,
                          GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            texture_contents_invalid_ = true;
+        }
+
+        if (texture_contents_invalid_) {
             clear();
+            texture_contents_invalid_ = false;
         }
     }
 
@@ -330,6 +338,7 @@ private:
     }
 
     float rotation_rad_;
+    bool texture_contents_invalid_;
     static int use_count;
 
 };
