@@ -166,7 +166,6 @@ void
 do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
 {
     static const unsigned int fps_interval = 500000;
-    TextRenderer fps_renderer(canvas);
     unsigned score = 0;
     unsigned int benchmarks_run = 0;
 
@@ -181,6 +180,7 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
         Benchmark *bench = *bench_iter;
         uint64_t fps_timestamp = Util::get_timestamp_us();
         Scene &scene = bench->setup_scene();
+        TextRenderer fps_renderer(canvas);
 
         if (!scene.name().empty()) {
             Log::info("%s", scene.info_string().c_str());
