@@ -162,11 +162,20 @@ list_scenes()
     }
 }
 
+static inline void
+fps_renderer_update_text(TextRenderer &fps_renderer, unsigned int fps)
+{
+    std::stringstream ss;
+    ss << "FPS: " << fps;
+    fps_renderer.text(ss.str());
+}
+
 void
 do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
 {
     static const unsigned int fps_interval = 500000;
     unsigned score = 0;
+    unsigned int last_fps = 0;
     unsigned int benchmarks_run = 0;
 
     for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
@@ -176,11 +185,14 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
         if (!Options::reuse_context)
             canvas.reset();
 
+        TextRenderer fps_renderer(canvas);
+        if (Options::show_fps)
+            fps_renderer_update_text(fps_renderer, last_fps);
+
         bool keep_running = true;
         Benchmark *bench = *bench_iter;
         uint64_t fps_timestamp = Util::get_timestamp_us();
         Scene &scene = bench->setup_scene();
-        TextRenderer fps_renderer(canvas);
 
         if (!scene.name().empty()) {
             Log::info("%s", scene.info_string().c_str());
@@ -197,9 +209,8 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
                 if (Options::show_fps) {
                     uint64_t now = Util::get_timestamp_us();
                     if (now - fps_timestamp >= fps_interval) {
-                        std::stringstream ss;
-                        ss << "FPS: " << scene.average_fps();
-                        fps_renderer.text(ss.str());
+                        last_fps = scene.average_fps();
+                        fps_renderer_update_text(fps_renderer, last_fps);
                         fps_timestamp = now;
                     }
                     fps_renderer.render();
