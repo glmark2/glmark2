@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010-2011 Linaro Limited
+ * Copyright © 2010-2012 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *

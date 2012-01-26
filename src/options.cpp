@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011 Linaro Limited
+ * Copyright © 2011-2012 Linaro Limited
  *
  * This file is part of glcompbench.
  *

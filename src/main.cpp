@@ -1,6 +1,6 @@
 /*
  * Copyright © 2008 Ben Smith
- * Copyright © 2010-2011 Linaro Limited
+ * Copyright © 2010-2012 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
@@ -20,6 +20,7 @@
  * Authors:
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker (glmark2)
  */
 #include "gl-headers.h"
 #include "scene.h"
