@@ -152,5 +152,8 @@ Options::parse_args(int argc, char **argv)
             Options::show_help = true;
     }
 
+    // Initialize the logger based upon the debug flag
+    Log::init(Options::show_debug);
+
     return true;
 }
