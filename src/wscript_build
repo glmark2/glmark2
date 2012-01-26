@@ -22,7 +22,7 @@ if bld.env.USE_GL:
         target       = 'glmark2',
         use          = ['x11', 'gl', 'matrix', 'libpng12'],
         lib          = ['m'],
-        defines      = ['USE_GL']
+        defines      = ['USE_GL', 'USE_EXCEPTIONS']
         )
 
 if bld.env.USE_GLESv2:
@@ -41,5 +41,5 @@ if bld.env.USE_GLESv2:
         target       = 'glmark2-es2',
         use          = ['x11', 'egl', 'glesv2', 'matrix-es2', 'libpng12'],
         lib          = ['m', 'dl'],
-        defines      = ['USE_GLESv2']
+        defines      = ['USE_GLESv2', 'USE_EXCEPTIONS']
         )

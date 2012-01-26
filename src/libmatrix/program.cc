@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2011 Linaro Limited
+// Copyright (c) 2011-2012 Linaro Limited
 //
 // All rights reserved. This program and the accompanying materials
 // are made available under the terms of the MIT License which accompanies
@@ -14,8 +14,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
-
-#include "gl-headers.h"
+#include "gl-if.h"
 #include "program.h"
 
 using std::string;
@@ -23,27 +22,6 @@ using LibMatrix::mat4;
 using LibMatrix::vec2;
 using LibMatrix::vec3;
 using LibMatrix::vec4;
-
-bool
-gotSource(const string& filename, string& source)
-{
-    using std::ifstream;
-    ifstream inputFile(filename.c_str());
-    if (!inputFile)
-    {
-        std::cerr << "Failed to open \"" << filename << "\"" << std::endl;
-        return false;
-    }
-
-    string curLine;
-    while (getline(inputFile, curLine))
-    {
-        source += curLine;
-        source += '\n';
-    }
-
-    return true;
-}
 
 Shader::Shader(unsigned int type, const string& source) :
     handle_(0),
@@ -59,7 +37,7 @@ Shader::Shader(unsigned int type, const string& source) :
         message_ = string("Failed to create the new shader.");
         return;
     }
-    const char* shaderSource = source_.c_str();
+    const GLchar* shaderSource = source_.c_str();
     glShaderSource(handle_, 1, &shaderSource, NULL);
     GLint param = 0;
     glGetShaderiv(handle_, GL_SHADER_SOURCE_LENGTH, &param);
@@ -95,7 +73,7 @@ Shader::compile()
     if (param == GL_FALSE)
     {
         glGetShaderiv(handle_, GL_INFO_LOG_LENGTH, &param);
-        char* infoLog = new char[param + 1];
+        GLchar* infoLog = new GLchar[param + 1];
         glGetShaderInfoLog(handle_, param + 1, NULL, infoLog);
         message_ = infoLog;
         delete [] infoLog;
@@ -235,7 +213,7 @@ Program::build()
     if (param == GL_FALSE)
     {
         glGetProgramiv(handle_, GL_INFO_LOG_LENGTH, &param);
-        char* infoLog = new char[param + 1];
+        GLchar* infoLog = new GLchar[param + 1];
         glGetProgramInfoLog(handle_, param + 1, NULL, infoLog);
         message_ = infoLog;
         delete [] infoLog;

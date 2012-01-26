@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2011 Linaro Limited
+// Copyright (c) 2011-2012 Linaro Limited
 //
 // All rights reserved. This program and the accompanying materials
 // are made available under the terms of the MIT License which accompanies
@@ -160,8 +160,5 @@ private:
     bool ready_;
     bool valid_;
 };
-
-// Handy utility for extracting shader source from a named file
-bool gotSource(const std::string& filename, std::string& sourceOut);
 
 #endif // PROGRAM_H_
