@@ -58,16 +58,21 @@ print_prefixed_message(std::ostream& stream, const string& color, const string& 
      * Print the message lines prefixed with the supplied prefix.
      * If the target stream is a terminal make the prefix colored.
      */
-    string start_color;
-    string end_color;
-    static const string colon(": ");
-    if (!color.empty())
+    string linePrefix;
+    if (!prefix.empty())
     {
-        start_color = color;
-        if (color[0] != 0)
+        static const string colon(": ");
+        string start_color;
+        string end_color;
+        if (!color.empty())
         {
-            end_color = terminal_color_normal;
+            start_color = color;
+            if (color[0] != 0)
+            {
+                end_color = terminal_color_normal;
+            }
         }
+        linePrefix = start_color + prefix + end_color + colon;
     }
 
     std::string line;
@@ -83,7 +88,7 @@ print_prefixed_message(std::ostream& stream, const string& color, const string& 
         }
         else {
             /* Normal line, emit the prefix. */
-            stream << start_color << prefix << end_color << colon << line;
+            stream << linePrefix << line;
         }
 
         /* Only emit a newline if the original message has it. */
