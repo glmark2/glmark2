@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011 Linaro Limited
+ * Copyright © 2011-2012 Linaro Limited
  *
  * This file is part of glcompbench.
  *
@@ -29,7 +29,6 @@
 
 #include "options.h"
 #include "util.h"
-#include "log.h"
 
 std::vector<std::string> Options::benchmarks;
 std::vector<std::string> Options::benchmark_files;

@@ -1,26 +1,15 @@
-/*
- * Copyright © 2011 Linaro Limited
- *
- * This file is part of glcompbench.
- *
- * glcompbench is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * glcompbench is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with glcompbench.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Authors:
- *  Alexandros Frantzis <alexandros.frantzis@linaro.org>
- *  Jesse Barker <jesse.barker@linaro.org>
- */
-
+//
+// Copyright (c) 2010-2011 Linaro Limited
+//
+// All rights reserved. This program and the accompanying materials
+// are made available under the terms of the MIT License which accompanies
+// this distribution, and is available at
+// http://www.opensource.org/licenses/mit-license.php
+//
+// Contributors:
+//     Alexandros Frantzis <alexandros.frantzis@linaro.org>
+//     Jesse Barker <jesse.barker@linaro.org>
+//
 #ifndef UTIL_H_
 #define UTIL_H_
 
@@ -68,7 +57,8 @@ struct Util {
         ss << t;
         return ss.str();
     }
-
+    static std::string
+    appname_from_path(const std::string& path);
 
 #ifdef ANDROID
     static void android_set_asset_manager(AAssetManager *asset_manager);

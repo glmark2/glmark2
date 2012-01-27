@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010-2011 Linaro Limited
+ * Copyright © 2010-2012 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
@@ -196,6 +196,9 @@ parse_matrix(const std::string &str, std::vector<float> &matrix,
     Util::split(str, ';', rows);
 
     Log::debug("Parsing kernel matrix:\n");
+    static const std::string format("%f ");
+    static const std::string format_cont(Log::continuation_prefix + format);
+    static const std::string newline(Log::continuation_prefix + "\n");
 
     for (std::vector<std::string>::const_iterator iter = rows.begin();
          iter != rows.end();
@@ -220,12 +223,12 @@ parse_matrix(const std::string &str, std::vector<float> &matrix,
             float f(Util::fromString<float>(*iter_el));
             matrix.push_back(f);
             if (iter_el == elems.begin())
-                Log::debug("%f ", f);
+                Log::debug(format.c_str(), f);
             else
-                Log::debug(LOG_CONTINUE"%f ", f);
+                Log::debug(format_cont.c_str(), f);
         }
 
-        Log::debug(LOG_CONTINUE"\n");
+        Log::debug(newline.c_str());
     }
 
     width = w;

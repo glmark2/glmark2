@@ -1,6 +1,6 @@
 /*
  * Copyright © 2008 Ben Smith
- * Copyright © 2010-2011 Linaro Limited
+ * Copyright © 2010-2012 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
@@ -20,6 +20,7 @@
  * Authors:
  *  Ben Smith (original glmark benchmark)
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker (glmark2)
  */
 #include "gl-headers.h"
 #include "scene.h"
@@ -177,6 +178,7 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
     unsigned score = 0;
     unsigned int last_fps = 0;
     unsigned int benchmarks_run = 0;
+    static const string format(Log::continuation_prefix + " FPS: %u\n");
 
     for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
          bench_iter != benchmarks.end();
@@ -219,7 +221,7 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
                 canvas.update();
             }
 
-            Log::info(LOG_CONTINUE" FPS: %u\n", scene.average_fps());
+            Log::info(format.c_str(), scene.average_fps());
             score += scene.average_fps();
             benchmarks_run++;
         }
@@ -242,6 +244,7 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
 void
 do_validation(Canvas &canvas, vector<Benchmark *> &benchmarks)
 {
+    static const string format(Log::continuation_prefix + " Validation: %s\n");
     for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
          bench_iter != benchmarks.end();
          bench_iter++)
@@ -275,7 +278,7 @@ do_validation(Canvas &canvas, vector<Benchmark *> &benchmarks)
                     break;
             }
 
-            Log::info(LOG_CONTINUE" Validation: %s\n", result.c_str());
+            Log::info(format.c_str(), result.c_str());
         }
 
         bench->teardown_scene();
@@ -288,6 +291,9 @@ main(int argc, char *argv[])
 
     if (!Options::parse_args(argc, argv))
         return 1;
+
+    /* Initialize Log class */
+    Log::init(Util::appname_from_path(argv[0]), Options::show_debug);
 
     if (Options::show_help) {
         Options::print_help();
