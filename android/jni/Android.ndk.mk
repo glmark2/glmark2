@@ -6,8 +6,7 @@ LOCAL_CPP_EXTENSION := .cc
 LOCAL_MODULE := libglmark2-matrix
 LOCAL_CFLAGS := -DUSE_GLESv2
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/src
-LOCAL_SRC_FILES := src/libmatrix/mat.cc \
-                   src/libmatrix/program.cc
+LOCAL_SRC_FILES := $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/libmatrix/*.cc))
 
 include $(BUILD_STATIC_LIBRARY)
 
