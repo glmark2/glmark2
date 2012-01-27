@@ -57,7 +57,8 @@ struct Util {
         ss << t;
         return ss.str();
     }
-
+    static std::string
+    appname_from_path(const std::string& path);
 
 #ifdef ANDROID
     static void android_set_asset_manager(AAssetManager *asset_manager);

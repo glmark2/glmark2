@@ -18,7 +18,11 @@
 class Log
 {
 public:
-    static void init(bool do_debug = false) { do_debug_ = do_debug; }
+    static void init(const std::string& appname, bool do_debug = false)
+    {
+        appname_ = appname;
+        do_debug_ = do_debug;
+    }
     // Emit an informational message
     static void info(const char *fmt, ...);
     // Emit a debugging message
@@ -31,10 +35,11 @@ public:
     // message is a continuation of a previous log message to be put on the
     // same line.
     static const std::string continuation_prefix;
+private:
     // A constant for identifying the log messages as originating from a
     // particular application.
-    static std::string appname;
-private:
+    static std::string appname_;
+    // Indicates whether debug level messages should generate any output
     static bool do_debug_;
 };
 

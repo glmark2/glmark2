@@ -293,7 +293,7 @@ main(int argc, char *argv[])
         return 1;
 
     /* Initialize Log class */
-    Log::init(Options::show_debug);
+    Log::init(Util::appname_from_path(argv[0]), Options::show_debug);
 
     if (Options::show_help) {
         Options::print_help();

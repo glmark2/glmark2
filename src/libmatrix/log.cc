@@ -24,7 +24,7 @@
 using std::string;
 
 const string Log::continuation_prefix("\x10");
-string Log::appname;
+string Log::appname_;
 bool Log::do_debug_(false);
 
 #ifndef ANDROID
@@ -146,7 +146,7 @@ Log::info(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    __android_log_vprint(ANDROID_LOG_INFO, appname.c_str(), fmt, ap);
+    __android_log_vprint(ANDROID_LOG_INFO, appname_.c_str(), fmt, ap);
     va_end(ap);
 }
 
@@ -157,7 +157,7 @@ Log::debug(const char *fmt, ...)
         return;
     va_list ap;
     va_start(ap, fmt);
-    __android_log_vprint(ANDROID_LOG_DEBUG, appname.c_str(), fmt, ap);
+    __android_log_vprint(ANDROID_LOG_DEBUG, appname_.c_str(), fmt, ap);
     va_end(ap);
 }
 
@@ -166,7 +166,7 @@ Log::error(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    __android_log_vprint(ANDROID_LOG_ERROR, appname.c_str(), fmt, ap);
+    __android_log_vprint(ANDROID_LOG_ERROR, appname_.c_str(), fmt, ap);
     va_end(ap);
 }
 

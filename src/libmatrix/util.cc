@@ -49,6 +49,18 @@ Util::get_timestamp_us()
     return now;
 }
 
+std::string
+Util::appname_from_path(const std::string& path)
+{
+    std::string::size_type slashPos = path.rfind("/");
+    std::string::size_type startPos(0);
+    if (slashPos != std::string::npos)
+    {
+        startPos = slashPos + 1;
+    }
+    return std::string(path, startPos, std::string::npos);
+}
+
 #ifndef ANDROID
 
 std::istream *
