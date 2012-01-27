@@ -292,6 +292,9 @@ main(int argc, char *argv[])
     if (!Options::parse_args(argc, argv))
         return 1;
 
+    /* Initialize Log class */
+    Log::init(Options::show_debug);
+
     if (Options::show_help) {
         Options::print_help();
         return 0;

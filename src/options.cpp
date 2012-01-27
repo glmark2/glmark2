@@ -29,7 +29,6 @@
 
 #include "options.h"
 #include "util.h"
-#include "log.h"
 
 std::vector<std::string> Options::benchmarks;
 std::vector<std::string> Options::benchmark_files;
@@ -151,9 +150,6 @@ Options::parse_args(int argc, char **argv)
         else if (c == 'h' || !strcmp(optname, "help"))
             Options::show_help = true;
     }
-
-    // Initialize the logger based upon the debug flag
-    Log::init(Options::show_debug);
 
     return true;
 }
