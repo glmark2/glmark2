@@ -67,10 +67,7 @@ print_prefixed_message(std::ostream& stream, const string& color, const string& 
         if (!color.empty())
         {
             start_color = color;
-            if (color[0] != 0)
-            {
-                end_color = terminal_color_normal;
-            }
+            end_color = terminal_color_normal;
         }
         linePrefix = start_color + prefix + end_color + colon;
     }
@@ -151,12 +148,12 @@ Log::info(const char *fmt, ...)
     va_start(ap, fmt);
     __android_log_vprint(ANDROID_LOG_INFO, appname.c_str(), fmt, ap);
     va_end(ap);
-}q
+}
 
 void
 Log::debug(const char *fmt, ...)
 {
-    if (!Options::show_debug)
+    if (!do_debug_)
         return;
     va_list ap;
     va_start(ap, fmt);
