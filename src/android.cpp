@@ -129,7 +129,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
         }
     }
 
-    if (scene->is_running()) {
+    if (scene->running()) {
         g_canvas->clear();
 
         scene->draw();
@@ -140,7 +140,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
      * Need to recheck whether screen is running, because scene->update()
      * may have changed the state.
      */
-    if (!scene->is_running()) {
+    if (!scene->running()) {
         Log::info("%s FPS: %u", scene->info_string().c_str(), scene->average_fps());
         score += scene->average_fps();
         (*bench_iter)->teardown_scene();

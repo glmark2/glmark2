@@ -121,13 +121,6 @@ Scene::average_fps()
     return currentFrame_ / elapsed_time;
 }
 
-
-bool
-Scene::is_running()
-{
-    return running_;
-}
-
 bool
 Scene::set_option(const string &opt, const string &val)
 {

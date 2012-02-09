@@ -200,7 +200,7 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
             Log::info("%s", scene.info_string().c_str());
             Log::flush();
 
-            while (scene.is_running() &&
+            while (scene.running() &&
                    (keep_running = !canvas.should_quit()))
             {
                 canvas.clear();
