@@ -110,6 +110,8 @@ public:
         texture_(0), fbo_(0), rotation_rad_(0),
         texture_contents_invalid_(true) { }
 
+    virtual ~RenderObject() {}
+
     virtual void init()
     {
         /* Create a texture to draw to */
