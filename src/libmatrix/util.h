@@ -44,7 +44,7 @@ struct Util {
     fromString(const std::string& asString)
     {
         std::stringstream ss(asString);
-        T retVal;
+        T retVal = T();
         ss >> retVal;
         return retVal;
     }

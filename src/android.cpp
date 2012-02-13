@@ -51,6 +51,8 @@ void
 Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
                                                    jobject asset_manager)
 {
+    static_cast<void>(clazz);
+
     Log::init("glmark2", false);
     Util::android_set_asset_manager(AAssetManager_fromJava(env, asset_manager));
 
@@ -82,6 +84,9 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeResize(JNIEnv* env,
                                                      jint w,
                                                      jint h)
 {
+    static_cast<void>(env);
+    static_cast<void>(clazz);
+
     Log::debug("Resizing to %d x %d\n", w, h);
     g_canvas->resize(w, h);
 }
@@ -89,12 +94,15 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeResize(JNIEnv* env,
 void
 Java_org_linaro_glmark2_Glmark2Renderer_nativeDone(JNIEnv* env)
 {
+    static_cast<void>(env);
+
     delete g_canvas;
 }
 
 jboolean
 Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
 {
+    static_cast<void>(env);
     static std::vector<Benchmark *>::iterator bench_iter = g_benchmarks.begin();
     static Scene *scene = 0;
     static unsigned int score = 0;
@@ -203,6 +211,7 @@ register_natives(JNIEnv *env)
 extern "C" jint
 JNI_OnLoad(JavaVM* vm, void* reserved)
 {
+    static_cast<void>(reserved);
     JNIEnv* env = NULL;
     jint result = -1;
 
