@@ -52,6 +52,21 @@ public:
     }
 };
 
+class MainLoopDecorationAndroid : public MainLoopDecoration
+{
+public:
+    MainLoopDecorationAndroid(Canvas &canvas) :
+        MainLoopDecoration(canvas) {}
+
+    virtual void after_scene_setup() {}
+
+    virtual void before_scene_teardown()
+    {
+        Log::info("%s FPS: %u", scene_->info_string().c_str(),
+                                scene_->average_fps());
+    }
+};
+
 /** 
  * Populates the command line arguments from the arguments file.
  * 
@@ -135,7 +150,11 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
     Benchmark::register_scene(*new SceneDesktop(*g_canvas));
     Benchmark::register_scene(*new SceneBuffer(*g_canvas));
 
-    g_loop = new MainLoopAndroid(*g_canvas);
+    if (Options::show_fps)
+        g_loop = new MainLoopDecorationAndroid(*g_canvas);
+    else
+        g_loop = new MainLoopAndroid(*g_canvas);
+
     g_loop->add_benchmarks();
 }
 
