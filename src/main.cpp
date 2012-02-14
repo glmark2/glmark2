@@ -46,55 +46,6 @@ using std::map;
 using std::string;
 
 void
-add_default_benchmarks(vector<Benchmark *> &benchmarks)
-{
-    const vector<string> &default_benchmarks = DefaultBenchmarks::get();
-
-    for (vector<string>::const_iterator iter = default_benchmarks.begin();
-         iter != default_benchmarks.end();
-         iter++)
-    {
-        benchmarks.push_back(new Benchmark(*iter));
-    }
-}
-
-void
-add_custom_benchmarks(vector<Benchmark *> &benchmarks)
-{
-    for (vector<string>::const_iterator iter = Options::benchmarks.begin();
-         iter != Options::benchmarks.end();
-         iter++)
-    {
-        benchmarks.push_back(new Benchmark(*iter));
-    }
-}
-
-void
-add_custom_benchmarks_from_files(vector<Benchmark *> &benchmarks)
-{
-    for (vector<string>::const_iterator iter = Options::benchmark_files.begin();
-         iter != Options::benchmark_files.end();
-         iter++)
-    {
-        std::ifstream ifs(iter->c_str());
-
-        if (!ifs.fail()) {
-            std::string line;
-
-            while (getline(ifs, line)) {
-                if (!line.empty())
-                    benchmarks.push_back(new Benchmark(line));
-            }
-        }
-        else {
-            Log::error("Cannot open benchmark file %s\n",
-                       iter->c_str());
-        }
-
-    }
-}
-
-void
 add_and_register_scenes(vector<Scene*>& scenes, Canvas& canvas)
 {
     scenes.push_back(new SceneDefaultOptions(canvas));
@@ -116,21 +67,6 @@ add_and_register_scenes(vector<Scene*>& scenes, Canvas& canvas)
     {
         Benchmark::register_scene(**iter);
     }
-}
-
-static bool
-benchmarks_contain_normal_scenes(vector<Benchmark *> &benchmarks)
-{
-    for (vector<Benchmark *>::const_iterator bench_iter = benchmarks.begin();
-         bench_iter != benchmarks.end();
-         bench_iter++)
-    {
-        const Benchmark *bench = *bench_iter;
-        if (!bench->scene().name().empty())
-            return true;
-    }
-
-    return false;
 }
 
 static void
@@ -173,12 +109,13 @@ fps_renderer_update_text(TextRenderer &fps_renderer, unsigned int fps)
 }
 
 void
-do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
+do_benchmark(Canvas &canvas)
 {
-    MainLoop loop_normal(canvas, benchmarks);
-    MainLoopDecoration loop_decoration(canvas, benchmarks);
+    MainLoop loop_normal(canvas);
+    MainLoopDecoration loop_decoration(canvas);
 
     MainLoop &loop(Options::show_fps ? loop_decoration : loop_normal);
+    loop.add_benchmarks();
     
     while (loop.step());
 
@@ -188,9 +125,10 @@ do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
 }
 
 void
-do_validation(Canvas &canvas, vector<Benchmark *> &benchmarks)
+do_validation(Canvas &canvas)
 {
-    MainLoopValidation loop(canvas, benchmarks);
+    MainLoopValidation loop(canvas);
+    loop.add_benchmarks();
 
     while (loop.step());
 }
@@ -241,17 +179,6 @@ main(int argc, char *argv[])
         return 1;
     }
 
-    // Add the benchmarks to run
-    vector<Benchmark *> benchmarks;
-
-    if (!Options::benchmarks.empty())
-        add_custom_benchmarks(benchmarks);
-    else if (!Options::benchmark_files.empty())
-        add_custom_benchmarks_from_files(benchmarks);
-
-    if (!benchmarks_contain_normal_scenes(benchmarks))
-        add_default_benchmarks(benchmarks);
-
     Log::info("=======================================================\n");
     Log::info("    glmark2 %s\n", GLMARK_VERSION);
     Log::info("=======================================================\n");
@@ -261,11 +188,10 @@ main(int argc, char *argv[])
     canvas.visible(true);
 
     if (Options::validate)
-        do_validation(canvas, benchmarks);
+        do_validation(canvas);
     else
-        do_benchmark(canvas, benchmarks);
+        do_benchmark(canvas);
 
-    Util::dispose_pointer_vector(benchmarks);
     Util::dispose_pointer_vector(scenes);
 
     return 0;

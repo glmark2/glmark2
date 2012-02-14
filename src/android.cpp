@@ -33,14 +33,13 @@
 #include "main-loop.h"
 
 static Canvas *g_canvas;
-static std::vector<Benchmark *> g_benchmarks;
 static MainLoop *g_loop;
 
 class MainLoopAndroid : public MainLoop
 {
 public:
-    MainLoopAndroid(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
-        MainLoop(canvas, benchmarks) {}
+    MainLoopAndroid(Canvas &canvas) :
+        MainLoop(canvas) {}
 
     virtual void after_scene_setup() {}
 
@@ -50,19 +49,6 @@ public:
                                 scene_->average_fps());
     }
 };
-
-static void
-add_default_benchmarks(std::vector<Benchmark *> &benchmarks)
-{
-    const std::vector<std::string> &default_benchmarks = DefaultBenchmarks::get();
-
-    for (std::vector<std::string>::const_iterator iter = default_benchmarks.begin();
-         iter != default_benchmarks.end();
-         iter++)
-    {
-        benchmarks.push_back(new Benchmark(*iter));
-    }
-}
 
 void
 Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
@@ -93,8 +79,8 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
     Benchmark::register_scene(*new SceneDesktop(*g_canvas));
     Benchmark::register_scene(*new SceneBuffer(*g_canvas));
 
-    add_default_benchmarks(g_benchmarks);
-    g_loop = new MainLoopAndroid(*g_canvas, g_benchmarks);
+    g_loop = new MainLoopAndroid(*g_canvas);
+    g_loop->add_benchmarks();
 }
 
 void
