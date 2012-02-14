@@ -24,6 +24,8 @@
 #include <assert.h>
 #include <jni.h>
 #include <vector>
+#include <string>
+#include <fstream>
 #include "canvas-android.h"
 #include "benchmark.h"
 #include "options.h"
@@ -50,13 +52,67 @@ public:
     }
 };
 
+/** 
+ * Populates the command line arguments from the arguments file.
+ * 
+ * @param argc the number of arguments
+ * @param argv the argument array
+ */
+static void
+get_args_from_file(const std::string &arguments_file, int &argc, char **&argv)
+{
+    std::vector<std::string> arguments;
+    std::ifstream ifs(arguments_file.c_str());
+
+    if (!ifs.fail()) {
+        std::string line;
+        while (getline(ifs, line)) {
+            if (!line.empty())
+                Util::split(line, ' ', arguments);
+        }
+    }
+
+    /* Convert std::vector to argc,argv */
+    argc = arguments.size() + 1;
+    argv = new char* [argc];
+    argv[0] = strdup("glmark2");
+
+    for (unsigned int i = 0; i < arguments.size(); i++)
+        argv[i + 1] = strdup(arguments[i].c_str());
+}
+
+/** 
+ * Releases the command line arguments.
+ * 
+ * @param argc the number of arguments
+ * @param argv the argument array
+ */
+static void
+release_args(int argc, char **argv)
+{
+    for (int i = 0; i < argc; i++)
+        free(argv[i]);
+
+    delete[] argv;
+}
+
 void
 Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
                                                    jobject asset_manager)
 {
     static_cast<void>(clazz);
+    static const std::string arguments_file("/data/glmark2/args");
+    int argc;
+    char **argv;
 
+    /* Load arguments from arguments file and parse them */
+    get_args_from_file(arguments_file, argc, argv);
+    Options::parse_args(argc, argv);
+    release_args(argc, argv);
+
+    /* Force reuse of EGL/GL context */
     Options::reuse_context = true;
+
     Log::init("glmark2", false);
     Util::android_set_asset_manager(AAssetManager_fromJava(env, asset_manager));
 
