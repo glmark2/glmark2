@@ -68,6 +68,20 @@ public:
 };
 
 /** 
+ * Converts an std::vector containing arguments to argc,argv.
+ */
+static void
+arg_vector_to_argv(const std::vector<std::string> &arguments, int &argc, char **&argv)
+{
+    argc = arguments.size() + 1;
+    argv = new char* [argc];
+    argv[0] = strdup("glmark2");
+
+    for (unsigned int i = 0; i < arguments.size(); i++)
+        argv[i + 1] = strdup(arguments[i].c_str());
+}
+
+/** 
  * Populates the command line arguments from the arguments file.
  * 
  * @param argc the number of arguments
@@ -87,13 +101,22 @@ get_args_from_file(const std::string &arguments_file, int &argc, char **&argv)
         }
     }
 
-    /* Convert std::vector to argc,argv */
-    argc = arguments.size() + 1;
-    argv = new char* [argc];
-    argv[0] = strdup("glmark2");
+    arg_vector_to_argv(arguments, argc, argv);
+}
 
-    for (unsigned int i = 0; i < arguments.size(); i++)
-        argv[i + 1] = strdup(arguments[i].c_str());
+/** 
+ * Populates the command line arguments from the arguments file.
+ * 
+ * @param argc the number of arguments
+ * @param argv the argument array
+ */
+static void
+get_args_from_string(const std::string &args_str, int &argc, char **&argv)
+{
+    std::vector<std::string> arguments;
+    Util::split(args_str, ' ', arguments);
+
+    arg_vector_to_argv(arguments, argc, argv);
 }
 
 /** 
@@ -113,15 +136,28 @@ release_args(int argc, char **argv)
 
 void
 Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
-                                                   jobject asset_manager)
+                                                   jobject asset_manager,
+                                                   jstring args)
 {
     static_cast<void>(clazz);
     static const std::string arguments_file("/data/glmark2/args");
-    int argc;
-    char **argv;
+    int argc = 0;
+    char **argv = 0;
 
-    /* Load arguments from arguments file and parse them */
-    get_args_from_file(arguments_file, argc, argv);
+    /* Load arguments from argument string or arguments file and parse them */
+    if (args) {
+        if (env->GetStringUTFLength(args) > 0) {
+            const char *args_c_str = env->GetStringUTFChars(args, 0);
+            if (args_c_str) {
+                get_args_from_string(std::string(args_c_str), argc, argv);
+                env->ReleaseStringUTFChars(args, args_c_str);
+            }
+        }
+    }
+    else {
+        get_args_from_file(arguments_file, argc, argv);
+    }
+
     Options::parse_args(argc, argv);
     release_args(argc, argv);
 
@@ -196,7 +232,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
 static JNINativeMethod glmark2_native_methods[] = {
     {
         "nativeInit",
-        "(Landroid/content/res/AssetManager;)V",
+        "(Landroid/content/res/AssetManager;Ljava/lang/String;)V",
         reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeInit)
     },
     {
