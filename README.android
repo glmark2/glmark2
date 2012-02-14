@@ -1,0 +1,23 @@
+The Android version of glmark2 can accept "command line" arguments from either
+an extra intent key or a file. If arguments are specified in an intent key, the
+file is disregarded.
+
+Arguments from an extra intent key
+----------------------------------
+
+The 'args' extra intent key is used to specify arguments. For example:
+
+am start -a android.intent.action.MAIN \
+         -n org.linaro.glmark2/org.linaro.glmark2.Glmark2Activity \
+         -e args '-b :duration=2 -b texture -f /path/file --debug'
+
+Arguments from a file
+---------------------
+
+If the 'args' intent key is not defined, the contents of the file
+'/data/glmark2/args' (if present) are used as command line arguments. The
+arguments can be placed in either a single or multiple lines. For example:
+
+-b :duration -b texture
+-f /path/file
+--debug
