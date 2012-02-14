@@ -128,7 +128,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
     /* Force reuse of EGL/GL context */
     Options::reuse_context = true;
 
-    Log::init("glmark2", false);
+    Log::init("glmark2", Options::show_debug);
     Util::android_set_asset_manager(AAssetManager_fromJava(env, asset_manager));
 
     g_canvas = new CanvasAndroid(100, 100);
