@@ -30,6 +30,7 @@
 #include "util.h"
 #include "default-benchmarks.h"
 #include "text-renderer.h"
+#include "main-loop.h"
 
 #include <iostream>
 #include <fstream>
@@ -174,115 +175,24 @@ fps_renderer_update_text(TextRenderer &fps_renderer, unsigned int fps)
 void
 do_benchmark(Canvas &canvas, vector<Benchmark *> &benchmarks)
 {
-    static const unsigned int fps_interval = 500000;
-    unsigned score = 0;
-    unsigned int last_fps = 0;
-    unsigned int benchmarks_run = 0;
-    static const string format(Log::continuation_prefix + " FPS: %u\n");
+    MainLoop loop_normal(canvas, benchmarks);
+    MainLoopDecoration loop_decoration(canvas, benchmarks);
 
-    for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
-         bench_iter != benchmarks.end();
-         bench_iter++)
-    {
-        if (!Options::reuse_context)
-            canvas.reset();
-
-        TextRenderer fps_renderer(canvas);
-        if (Options::show_fps)
-            fps_renderer_update_text(fps_renderer, last_fps);
-
-        bool keep_running = true;
-        Benchmark *bench = *bench_iter;
-        uint64_t fps_timestamp = Util::get_timestamp_us();
-        Scene &scene = bench->setup_scene();
-
-        if (!scene.name().empty()) {
-            Log::info("%s", scene.info_string().c_str());
-            Log::flush();
-
-            while (scene.is_running() &&
-                   (keep_running = !canvas.should_quit()))
-            {
-                canvas.clear();
-
-                scene.draw();
-                scene.update();
-
-                if (Options::show_fps) {
-                    uint64_t now = Util::get_timestamp_us();
-                    if (now - fps_timestamp >= fps_interval) {
-                        last_fps = scene.average_fps();
-                        fps_renderer_update_text(fps_renderer, last_fps);
-                        fps_timestamp = now;
-                    }
-                    fps_renderer.render();
-                }
-
-                canvas.update();
-            }
-
-            Log::info(format.c_str(), scene.average_fps());
-            score += scene.average_fps();
-            benchmarks_run++;
-        }
-
-        bench->teardown_scene();
-
-        if (!keep_running)
-            break;
-    }
-
-    if (benchmarks_run)
-        score /= benchmarks_run;
+    MainLoop &loop(Options::show_fps ? loop_decoration : loop_normal);
+    
+    while (loop.step());
 
     Log::info("=======================================================\n");
-    Log::info("                                  glmark2 Score: %u \n", score);
+    Log::info("                                  glmark2 Score: %u \n", loop.score());
     Log::info("=======================================================\n");
-
 }
 
 void
 do_validation(Canvas &canvas, vector<Benchmark *> &benchmarks)
 {
-    static const string format(Log::continuation_prefix + " Validation: %s\n");
-    for (vector<Benchmark *>::iterator bench_iter = benchmarks.begin();
-         bench_iter != benchmarks.end();
-         bench_iter++)
-    {
-        if (!Options::reuse_context)
-            canvas.reset();
+    MainLoopValidation loop(canvas, benchmarks);
 
-        Benchmark *bench = *bench_iter;
-        Scene &scene = bench->setup_scene();
-
-        if (!scene.name().empty()) {
-            Log::info("%s", scene.info_string().c_str());
-            Log::flush();
-
-            canvas.clear();
-            scene.draw();
-            canvas.update();
-
-            string result;
-            switch(scene.validate()) {
-                case Scene::ValidationSuccess:
-                    result = "Success";
-                    break;
-                case Scene::ValidationFailure:
-                    result = "Failure";
-                    break;
-                case Scene::ValidationUnknown:
-                    result = "Unknown";
-                    break;
-                default:
-                    break;
-            }
-
-            Log::info(format.c_str(), result.c_str());
-        }
-
-        bench->teardown_scene();
-    }
+    while (loop.step());
 }
 
 int

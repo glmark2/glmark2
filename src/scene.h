@@ -146,7 +146,14 @@ public:
      *
      * @return true if running, false otherwise
      */
-    bool is_running();
+    bool running() { return running_; }
+
+    /**
+     * Sets whether this scene is running.
+     *
+     * @return true if running, false otherwise
+     */
+    void running(bool r) { running_ = r; }
 
     /**
      * Gets the average FPS value for this scene.

@@ -30,9 +30,26 @@
 #include "log.h"
 #include "util.h"
 #include "default-benchmarks.h"
+#include "main-loop.h"
 
 static Canvas *g_canvas;
 static std::vector<Benchmark *> g_benchmarks;
+static MainLoop *g_loop;
+
+class MainLoopAndroid : public MainLoop
+{
+public:
+    MainLoopAndroid(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
+        MainLoop(canvas, benchmarks) {}
+
+    virtual void after_scene_setup() {}
+
+    virtual void before_scene_teardown()
+    {
+        Log::info("%s FPS: %u", scene_->info_string().c_str(),
+                                scene_->average_fps());
+    }
+};
 
 static void
 add_default_benchmarks(std::vector<Benchmark *> &benchmarks)
@@ -53,6 +70,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
 {
     static_cast<void>(clazz);
 
+    Options::reuse_context = true;
     Log::init("glmark2", false);
     Util::android_set_asset_manager(AAssetManager_fromJava(env, asset_manager));
 
@@ -76,6 +94,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
     Benchmark::register_scene(*new SceneBuffer(*g_canvas));
 
     add_default_benchmarks(g_benchmarks);
+    g_loop = new MainLoopAndroid(*g_canvas, g_benchmarks);
 }
 
 void
@@ -96,6 +115,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeDone(JNIEnv* env)
 {
     static_cast<void>(env);
 
+    delete g_loop;
     delete g_canvas;
 }
 
@@ -103,50 +123,10 @@ jboolean
 Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
 {
     static_cast<void>(env);
-    static std::vector<Benchmark *>::iterator bench_iter = g_benchmarks.begin();
-    static Scene *scene = 0;
-    static unsigned int score = 0;
-    static unsigned int benchmarks_run = 0;
 
-    if (!scene) {
-        /* Find the next normal scene */
-        while (bench_iter != g_benchmarks.end()) {
-            scene = &(*bench_iter)->setup_scene();
-            if (!scene->name().empty())
-                break;
-            bench_iter++;
-        }
-
-        if (bench_iter == g_benchmarks.end()) {
-            if (benchmarks_run)
-                score /= benchmarks_run;
-            Log::info("glmark2 Score: %u\n", score);
-            /* Reset the rendering state, in case we get called again */
-            bench_iter = g_benchmarks.begin();
-            score = 0;
-            benchmarks_run = 0;
-            return false;
-        }
-    }
-
-    if (scene->is_running()) {
-        g_canvas->clear();
-
-        scene->draw();
-        scene->update();
-    }
-
-    /* 
-     * Need to recheck whether screen is running, because scene->update()
-     * may have changed the state.
-     */
-    if (!scene->is_running()) {
-        Log::info("%s FPS: %u", scene->info_string().c_str(), scene->average_fps());
-        score += scene->average_fps();
-        (*bench_iter)->teardown_scene();
-        scene = 0;
-        bench_iter++;
-        benchmarks_run++;
+    if (!g_loop->step()) {
+        Log::info("glmark2 Score: %u\n", g_loop->score());
+        return false;
     }
 
     return true;
