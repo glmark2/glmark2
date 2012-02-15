@@ -33,9 +33,9 @@
 class MainLoop
 {
 public:
-    MainLoop(Canvas &canvas);
+    MainLoop(Canvas &canvas, const std::vector<Benchmark *> &benchmarks);
 
-    virtual ~MainLoop();
+    virtual ~MainLoop() {}
 
     /**
      * Resets the main loop.
@@ -44,19 +44,6 @@ public:
      * you need to run it again.
      */
     void reset();
-
-    /** 
-     * Adds benchmarks.
-     * 
-     * This method takes into account benchmark related command line options
-     * to decide which benchmarks to add.
-     */
-    void add_benchmarks();
-
-    /** 
-     * Adds user defined benchmarks.
-     */
-    void add_benchmarks(const std::vector<Benchmark *> &benchmarks);
 
     /**
      * Gets the current total benchmarking score.
@@ -98,17 +85,11 @@ public:
 protected:
     Canvas &canvas_;
     Scene *scene_;
-    std::vector<Benchmark *> benchmarks_;
+    const std::vector<Benchmark *> &benchmarks_;
     unsigned int score_;
     unsigned int benchmarks_run_;
 
     std::vector<Benchmark *>::const_iterator bench_iter_;
-
-private:
-    void add_default_benchmarks();
-    void add_custom_benchmarks();
-    void add_custom_benchmarks_from_files();
-    bool benchmarks_contain_normal_scenes();
 };
 
 /**
@@ -117,7 +98,7 @@ private:
 class MainLoopDecoration : public MainLoop
 {
 public:
-    MainLoopDecoration(Canvas &canvas);
+    MainLoopDecoration(Canvas &canvas, const std::vector<Benchmark *> &benchmarks);
     virtual ~MainLoopDecoration();
 
     virtual void draw();
@@ -136,7 +117,7 @@ protected:
 class MainLoopValidation : public MainLoop
 {
 public:
-    MainLoopValidation(Canvas &canvas);
+    MainLoopValidation(Canvas &canvas, const std::vector<Benchmark *> &benchmarks);
 
     virtual void draw();
     virtual void log_scene_result();

@@ -31,17 +31,18 @@
 #include "options.h"
 #include "log.h"
 #include "util.h"
-#include "default-benchmarks.h"
 #include "main-loop.h"
+#include "benchmark-collection.h"
 
 static Canvas *g_canvas;
 static MainLoop *g_loop;
+static BenchmarkCollection *g_benchmark_collection;
 
 class MainLoopAndroid : public MainLoop
 {
 public:
-    MainLoopAndroid(Canvas &canvas) :
-        MainLoop(canvas) {}
+    MainLoopAndroid(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
+        MainLoop(canvas, benchmarks) {}
 
     virtual void log_scene_info() {}
 
@@ -55,8 +56,8 @@ public:
 class MainLoopDecorationAndroid : public MainLoopDecoration
 {
 public:
-    MainLoopDecorationAndroid(Canvas &canvas) :
-        MainLoopDecoration(canvas) {}
+    MainLoopDecorationAndroid(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
+        MainLoopDecoration(canvas, benchmarks) {}
 
     virtual void log_scene_info() {}
 
@@ -186,12 +187,17 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
     Benchmark::register_scene(*new SceneDesktop(*g_canvas));
     Benchmark::register_scene(*new SceneBuffer(*g_canvas));
 
-    if (Options::show_fps)
-        g_loop = new MainLoopDecorationAndroid(*g_canvas);
-    else
-        g_loop = new MainLoopAndroid(*g_canvas);
+    g_benchmark_collection = new BenchmarkCollection();
+    g_benchmark_collection->populate_from_options();
 
-    g_loop->add_benchmarks();
+    if (Options::show_fps || g_benchmark_collection->needs_decoration()) {
+        g_loop = new MainLoopDecorationAndroid(*g_canvas,
+                                               g_benchmark_collection->benchmarks());
+    }
+    else {
+        g_loop = new MainLoopAndroid(*g_canvas,
+                                     g_benchmark_collection->benchmarks());
+    }
 }
 
 void
@@ -213,6 +219,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeDone(JNIEnv* env)
     static_cast<void>(env);
 
     delete g_loop;
+    delete g_benchmark_collection;
     delete g_canvas;
 }
 

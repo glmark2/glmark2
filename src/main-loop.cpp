@@ -23,26 +23,20 @@
 #include "main-loop.h"
 #include "util.h"
 #include "log.h"
-#include "default-benchmarks.h"
 
 #include <string>
 #include <sstream>
-#include <fstream>
 
 /************
  * MainLoop *
  ************/
 
-MainLoop::MainLoop(Canvas &canvas) :
-    canvas_(canvas)
+MainLoop::MainLoop(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
+    canvas_(canvas), benchmarks_(benchmarks)
 {
     reset();
 }
 
-MainLoop::~MainLoop()
-{
-    Util::dispose_pointer_vector(benchmarks_);
-}
 
 void
 MainLoop::reset()
@@ -50,28 +44,6 @@ MainLoop::reset()
     scene_ = 0;
     score_ = 0;
     benchmarks_run_ = 0;
-    bench_iter_ = benchmarks_.begin();
-}
-
-void
-MainLoop::add_benchmarks()
-{
-    if (!Options::benchmarks.empty())
-        add_custom_benchmarks();
-
-    if (!Options::benchmark_files.empty())
-        add_custom_benchmarks_from_files();
-
-    if (!benchmarks_contain_normal_scenes())
-        add_default_benchmarks();
-
-    bench_iter_ = benchmarks_.begin();
-}
-
-void
-MainLoop::add_benchmarks(const std::vector<Benchmark *> &benchmarks)
-{
-    benchmarks_.insert(benchmarks_.end(), benchmarks.begin(), benchmarks.end());
     bench_iter_ = benchmarks_.begin();
 }
 
@@ -166,77 +138,12 @@ MainLoop::log_scene_result()
     Log::info(format.c_str(), scene_->average_fps());
 }
 
-void
-MainLoop::add_default_benchmarks()
-{
-    const std::vector<std::string> &default_benchmarks = DefaultBenchmarks::get();
-
-    for (std::vector<std::string>::const_iterator iter = default_benchmarks.begin();
-         iter != default_benchmarks.end();
-         iter++)
-    {
-        benchmarks_.push_back(new Benchmark(*iter));
-    }
-}
-
-void
-MainLoop::add_custom_benchmarks()
-{
-    for (std::vector<std::string>::const_iterator iter = Options::benchmarks.begin();
-         iter != Options::benchmarks.end();
-         iter++)
-    {
-        benchmarks_.push_back(new Benchmark(*iter));
-    }
-}
-
-void
-MainLoop::add_custom_benchmarks_from_files()
-{
-    for (std::vector<std::string>::const_iterator iter = Options::benchmark_files.begin();
-         iter != Options::benchmark_files.end();
-         iter++)
-    {
-        std::ifstream ifs(iter->c_str());
-
-        if (!ifs.fail()) {
-            std::string line;
-
-            while (getline(ifs, line)) {
-                if (!line.empty())
-                    benchmarks_.push_back(new Benchmark(line));
-            }
-        }
-        else {
-            Log::error("Cannot open benchmark file %s\n",
-                       iter->c_str());
-        }
-
-    }
-}
-
-bool
-MainLoop::benchmarks_contain_normal_scenes()
-{
-    for (std::vector<Benchmark *>::const_iterator bench_iter = benchmarks_.begin();
-         bench_iter != benchmarks_.end();
-         bench_iter++)
-    {
-        const Benchmark *bench = *bench_iter;
-        if (!bench->scene().name().empty())
-            return true;
-    }
-
-    return false;
-}
-
-
 /**********************
  * MainLoopDecoration *
  **********************/
 
-MainLoopDecoration::MainLoopDecoration(Canvas &canvas) :
-    MainLoop(canvas), fps_renderer_(0), last_fps_(0)
+MainLoopDecoration::MainLoopDecoration(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
+    MainLoop(canvas, benchmarks), fps_renderer_(0), last_fps_(0)
 {
 
 }
@@ -289,8 +196,8 @@ MainLoopDecoration::fps_renderer_update_text(unsigned int fps)
  * MainLoopValidation *
  **********************/
 
-MainLoopValidation::MainLoopValidation(Canvas &canvas) :
-        MainLoop(canvas)
+MainLoopValidation::MainLoopValidation(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
+        MainLoop(canvas, benchmarks)
 {
 }
 
