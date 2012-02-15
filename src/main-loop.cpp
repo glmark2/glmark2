@@ -112,6 +112,7 @@ MainLoop::step()
             before_scene_setup();
             scene_ = &(*bench_iter_)->setup_scene();
             after_scene_setup();
+            log_scene_info();
         }
         else {
             /* ... otherwise we are done */
@@ -130,7 +131,7 @@ MainLoop::step()
      */
     if (!scene_->running() || should_quit) {
         score_ += scene_->average_fps();
-        before_scene_teardown();
+        log_scene_result();
         (*bench_iter_)->teardown_scene();
         scene_ = 0;
         bench_iter_++;
@@ -152,14 +153,14 @@ MainLoop::draw()
 }
 
 void
-MainLoop::after_scene_setup()
+MainLoop::log_scene_info()
 {
     Log::info("%s", scene_->info_string().c_str());
     Log::flush();
 }
 
 void
-MainLoop::before_scene_teardown()
+MainLoop::log_scene_result()
 {
     static const std::string format(Log::continuation_prefix + " FPS: %u\n");
     Log::info(format.c_str(), scene_->average_fps());
@@ -307,7 +308,7 @@ MainLoopValidation::draw()
 }
 
 void
-MainLoopValidation::before_scene_teardown()
+MainLoopValidation::log_scene_result()
 {
     static const std::string format(Log::continuation_prefix + " Validation: %s\n");
     std::string result;

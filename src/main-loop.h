@@ -83,12 +83,17 @@ public:
     /**
      * Overridable method for post scene-setup customizations.
      */
-    virtual void after_scene_setup();
+    virtual void after_scene_setup() {}
 
     /**
-     * Overridable method for pre scene-teardown customizations.
+     * Overridable method for logging scene info.
      */
-    virtual void before_scene_teardown();
+    virtual void log_scene_info();
+
+    /**
+     * Overridable method for logging scene result.
+     */
+    virtual void log_scene_result();
 
 protected:
     Canvas &canvas_;
@@ -134,7 +139,7 @@ public:
     MainLoopValidation(Canvas &canvas);
 
     virtual void draw();
-    virtual void before_scene_teardown();
+    virtual void log_scene_result();
 };
 
 #endif /* GLMARK2_MAIN_LOOP_H_ */

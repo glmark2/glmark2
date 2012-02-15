@@ -43,9 +43,9 @@ public:
     MainLoopAndroid(Canvas &canvas) :
         MainLoop(canvas) {}
 
-    virtual void after_scene_setup() {}
+    virtual void log_scene_info() {}
 
-    virtual void before_scene_teardown()
+    virtual void log_scene_result()
     {
         Log::info("%s FPS: %u", scene_->info_string().c_str(),
                                 scene_->average_fps());
@@ -58,9 +58,9 @@ public:
     MainLoopDecorationAndroid(Canvas &canvas) :
         MainLoopDecoration(canvas) {}
 
-    virtual void after_scene_setup() {}
+    virtual void log_scene_info() {}
 
-    virtual void before_scene_teardown()
+    virtual void log_scene_result()
     {
         Log::info("%s FPS: %u", scene_->info_string().c_str(),
                                 scene_->average_fps());
