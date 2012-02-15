@@ -111,7 +111,9 @@ protected:
     LibMatrix::vec2 vec2_from_pos_string(const std::string &s);
 
     bool show_fps_;
+    bool show_title_;
     TextRenderer *fps_renderer_;
+    TextRenderer *title_renderer_;
     unsigned int last_fps_;
     uint64_t fps_timestamp_;
 };

@@ -127,8 +127,11 @@ Benchmark::needs_decoration() const
          iter != options_.end();
          iter++)
     {
-        if (iter->first == "show-fps" && iter->second == "true")
+        if ((iter->first == "show-fps" && iter->second == "true") ||
+            (iter->first == "title" && !iter->second.empty()))
+        {
             return true;
+        }
     }
 
     return false;

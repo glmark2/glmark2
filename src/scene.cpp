@@ -53,6 +53,13 @@ Scene::Scene(Canvas &pCanvas, const string &name) :
                                          "The position on screen where to show FPS");
     options_["fps-size"] = Scene::Option("fps-size", "0.03",
                                          "The width of each glyph for the FPS");
+    /* Title options */
+    options_["title"] = Scene::Option("title", "",
+                                      "The scene title to show");
+    options_["title-pos"] = Scene::Option("title-pos", "-0.7,-1.0",
+                                      "The position on screen where to show the title");
+    options_["title-size"] = Scene::Option("title-size", "0.03",
+                                           "The width of each glyph in the title");
 }
 
 Scene::~Scene()

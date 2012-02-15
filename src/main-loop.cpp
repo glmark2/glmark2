@@ -143,7 +143,8 @@ MainLoop::log_scene_result()
  **********************/
 
 MainLoopDecoration::MainLoopDecoration(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
-    MainLoop(canvas, benchmarks), fps_renderer_(0), last_fps_(0)
+    MainLoop(canvas, benchmarks), show_fps_(false), show_title_(false),
+    fps_renderer_(0), title_renderer_(0), last_fps_(0)
 {
 
 }
@@ -152,6 +153,8 @@ MainLoopDecoration::~MainLoopDecoration()
 {
     delete fps_renderer_;
     fps_renderer_ = 0;
+    delete title_renderer_;
+    title_renderer_ = 0;
 }
 
 void
@@ -174,6 +177,9 @@ MainLoopDecoration::draw()
         fps_renderer_->render();
     }
 
+    if (show_title_)
+        title_renderer_->render();
+
     canvas_.update();
 }
 
@@ -182,13 +188,17 @@ MainLoopDecoration::before_scene_setup()
 {
     delete fps_renderer_;
     fps_renderer_ = 0;
+    delete title_renderer_;
+    title_renderer_ = 0;
 }
 
 void
 MainLoopDecoration::after_scene_setup()
 {
     const Scene::Option &show_fps_option(scene_->options().find("show-fps")->second);
+    const Scene::Option &title_option(scene_->options().find("title")->second);
     show_fps_ = show_fps_option.value == "true";
+    show_title_ = !title_option.value.empty();
 
     if (show_fps_) {
         const Scene::Option &fps_pos_option(scene_->options().find("fps-pos")->second);
@@ -198,6 +208,15 @@ MainLoopDecoration::after_scene_setup()
         fps_renderer_->size(Util::fromString<float>(fps_size_option.value));
         fps_renderer_update_text(last_fps_);
         fps_timestamp_ = Util::get_timestamp_us();
+    }
+
+    if (show_title_) {
+        const Scene::Option &title_pos_option(scene_->options().find("title-pos")->second);
+        const Scene::Option &title_size_option(scene_->options().find("title-size")->second);
+        title_renderer_ = new TextRenderer(canvas_);
+        title_renderer_->position(vec2_from_pos_string(title_pos_option.value));
+        title_renderer_->size(Util::fromString<float>(title_size_option.value));
+        title_renderer_->text(title_option.value);
     }
 }
 
