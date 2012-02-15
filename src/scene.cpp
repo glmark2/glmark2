@@ -46,6 +46,13 @@ Scene::Scene(Canvas &pCanvas, const string &name) :
     options_["fragment-precision"] = Scene::Option("fragment-precision",
                                                    "default,default,default,default",
                                                    "The precision values for the fragment shader (\"int,float,sampler2d,samplercube\")");
+    /* FPS options */
+    options_["show-fps"] = Scene::Option("show-fps", "false",
+                                         "Show live FPS counter");
+    options_["fps-pos"] = Scene::Option("fps-pos", "-1.0,-1.0",
+                                         "The position on screen where to show FPS");
+    options_["fps-size"] = Scene::Option("fps-size", "0.03",
+                                         "The width of each glyph for the FPS");
 }
 
 Scene::~Scene()

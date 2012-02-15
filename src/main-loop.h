@@ -25,6 +25,7 @@
 #include "canvas.h"
 #include "benchmark.h"
 #include "text-renderer.h"
+#include "vec.h"
 #include <vector>
 
 /**
@@ -103,9 +104,13 @@ public:
 
     virtual void draw();
     virtual void before_scene_setup();
+    virtual void after_scene_setup();
 
 protected:
     void fps_renderer_update_text(unsigned int fps);
+    LibMatrix::vec2 vec2_from_pos_string(const std::string &s);
+
+    bool show_fps_;
     TextRenderer *fps_renderer_;
     unsigned int last_fps_;
     uint64_t fps_timestamp_;

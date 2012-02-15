@@ -158,19 +158,21 @@ void
 MainLoopDecoration::draw()
 {
     static const unsigned int fps_interval = 500000;
-    uint64_t now = Util::get_timestamp_us();
 
     canvas_.clear();
 
     scene_->draw();
     scene_->update();
 
-    if (now - fps_timestamp_ >= fps_interval) {
-        last_fps_ = scene_->average_fps();
-        fps_renderer_update_text(last_fps_);
-        fps_timestamp_ = now;
+    if (show_fps_) {
+        uint64_t now = Util::get_timestamp_us();
+        if (now - fps_timestamp_ >= fps_interval) {
+            last_fps_ = scene_->average_fps();
+            fps_renderer_update_text(last_fps_);
+            fps_timestamp_ = now;
+        }
+        fps_renderer_->render();
     }
-    fps_renderer_->render();
 
     canvas_.update();
 }
@@ -179,9 +181,24 @@ void
 MainLoopDecoration::before_scene_setup()
 {
     delete fps_renderer_;
-    fps_renderer_ = new TextRenderer(canvas_);
-    fps_renderer_update_text(last_fps_);
-    fps_timestamp_ = Util::get_timestamp_us();
+    fps_renderer_ = 0;
+}
+
+void
+MainLoopDecoration::after_scene_setup()
+{
+    const Scene::Option &show_fps_option(scene_->options().find("show-fps")->second);
+    show_fps_ = Options::show_fps || show_fps_option.value == "true";
+
+    if (show_fps_) {
+        const Scene::Option &fps_pos_option(scene_->options().find("fps-pos")->second);
+        const Scene::Option &fps_size_option(scene_->options().find("fps-size")->second);
+        fps_renderer_ = new TextRenderer(canvas_);
+        fps_renderer_->position(vec2_from_pos_string(fps_pos_option.value));
+        fps_renderer_->size(Util::fromString<float>(fps_size_option.value));
+        fps_renderer_update_text(last_fps_);
+        fps_timestamp_ = Util::get_timestamp_us();
+    }
 }
 
 void
@@ -190,6 +207,22 @@ MainLoopDecoration::fps_renderer_update_text(unsigned int fps)
     std::stringstream ss;
     ss << "FPS: " << fps;
     fps_renderer_->text(ss.str());
+}
+
+LibMatrix::vec2
+MainLoopDecoration::vec2_from_pos_string(const std::string &s)
+{
+    LibMatrix::vec2 v(0.0, 0.0);
+    std::vector<std::string> elems;
+    Util::split(s, ',', elems);
+
+    if (elems.size() > 0)
+        v.x(Util::fromString<float>(elems[0]));
+
+    if (elems.size() > 1)
+        v.y(Util::fromString<float>(elems[1]));
+
+    return v;
 }
 
 /**********************
