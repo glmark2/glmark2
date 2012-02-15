@@ -24,6 +24,8 @@
 #include <assert.h>
 #include <jni.h>
 #include <vector>
+#include <string>
+#include <fstream>
 #include "canvas-android.h"
 #include "benchmark.h"
 #include "options.h"
@@ -33,14 +35,13 @@
 #include "main-loop.h"
 
 static Canvas *g_canvas;
-static std::vector<Benchmark *> g_benchmarks;
 static MainLoop *g_loop;
 
 class MainLoopAndroid : public MainLoop
 {
 public:
-    MainLoopAndroid(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
-        MainLoop(canvas, benchmarks) {}
+    MainLoopAndroid(Canvas &canvas) :
+        MainLoop(canvas) {}
 
     virtual void after_scene_setup() {}
 
@@ -51,27 +52,119 @@ public:
     }
 };
 
-static void
-add_default_benchmarks(std::vector<Benchmark *> &benchmarks)
+class MainLoopDecorationAndroid : public MainLoopDecoration
 {
-    const std::vector<std::string> &default_benchmarks = DefaultBenchmarks::get();
+public:
+    MainLoopDecorationAndroid(Canvas &canvas) :
+        MainLoopDecoration(canvas) {}
 
-    for (std::vector<std::string>::const_iterator iter = default_benchmarks.begin();
-         iter != default_benchmarks.end();
-         iter++)
+    virtual void after_scene_setup() {}
+
+    virtual void before_scene_teardown()
     {
-        benchmarks.push_back(new Benchmark(*iter));
+        Log::info("%s FPS: %u", scene_->info_string().c_str(),
+                                scene_->average_fps());
     }
+};
+
+/** 
+ * Converts an std::vector containing arguments to argc,argv.
+ */
+static void
+arg_vector_to_argv(const std::vector<std::string> &arguments, int &argc, char **&argv)
+{
+    argc = arguments.size() + 1;
+    argv = new char* [argc];
+    argv[0] = strdup("glmark2");
+
+    for (unsigned int i = 0; i < arguments.size(); i++)
+        argv[i + 1] = strdup(arguments[i].c_str());
+}
+
+/** 
+ * Populates the command line arguments from the arguments file.
+ * 
+ * @param argc the number of arguments
+ * @param argv the argument array
+ */
+static void
+get_args_from_file(const std::string &arguments_file, int &argc, char **&argv)
+{
+    std::vector<std::string> arguments;
+    std::ifstream ifs(arguments_file.c_str());
+
+    if (!ifs.fail()) {
+        std::string line;
+        while (getline(ifs, line)) {
+            if (!line.empty())
+                Util::split(line, ' ', arguments);
+        }
+    }
+
+    arg_vector_to_argv(arguments, argc, argv);
+}
+
+/** 
+ * Populates the command line arguments from the arguments file.
+ * 
+ * @param argc the number of arguments
+ * @param argv the argument array
+ */
+static void
+get_args_from_string(const std::string &args_str, int &argc, char **&argv)
+{
+    std::vector<std::string> arguments;
+    Util::split(args_str, ' ', arguments);
+
+    arg_vector_to_argv(arguments, argc, argv);
+}
+
+/** 
+ * Releases the command line arguments.
+ * 
+ * @param argc the number of arguments
+ * @param argv the argument array
+ */
+static void
+release_args(int argc, char **argv)
+{
+    for (int i = 0; i < argc; i++)
+        free(argv[i]);
+
+    delete[] argv;
 }
 
 void
 Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
-                                                   jobject asset_manager)
+                                                   jobject asset_manager,
+                                                   jstring args)
 {
     static_cast<void>(clazz);
+    static const std::string arguments_file("/data/glmark2/args");
+    int argc = 0;
+    char **argv = 0;
 
+    /* Load arguments from argument string or arguments file and parse them */
+    if (args) {
+        if (env->GetStringUTFLength(args) > 0) {
+            const char *args_c_str = env->GetStringUTFChars(args, 0);
+            if (args_c_str) {
+                get_args_from_string(std::string(args_c_str), argc, argv);
+                env->ReleaseStringUTFChars(args, args_c_str);
+            }
+        }
+    }
+    else {
+        get_args_from_file(arguments_file, argc, argv);
+    }
+
+    Options::parse_args(argc, argv);
+    release_args(argc, argv);
+
+    /* Force reuse of EGL/GL context */
     Options::reuse_context = true;
-    Log::init("glmark2", false);
+
+    Log::init("glmark2", Options::show_debug);
     Util::android_set_asset_manager(AAssetManager_fromJava(env, asset_manager));
 
     g_canvas = new CanvasAndroid(100, 100);
@@ -93,8 +186,12 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
     Benchmark::register_scene(*new SceneDesktop(*g_canvas));
     Benchmark::register_scene(*new SceneBuffer(*g_canvas));
 
-    add_default_benchmarks(g_benchmarks);
-    g_loop = new MainLoopAndroid(*g_canvas, g_benchmarks);
+    if (Options::show_fps)
+        g_loop = new MainLoopDecorationAndroid(*g_canvas);
+    else
+        g_loop = new MainLoopAndroid(*g_canvas);
+
+    g_loop->add_benchmarks();
 }
 
 void
@@ -135,7 +232,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
 static JNINativeMethod glmark2_native_methods[] = {
     {
         "nativeInit",
-        "(Landroid/content/res/AssetManager;)V",
+        "(Landroid/content/res/AssetManager;Ljava/lang/String;)V",
         reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeInit)
     },
     {

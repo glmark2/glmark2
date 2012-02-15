@@ -168,11 +168,12 @@ class Glmark2Renderer implements GLSurfaceView.Renderer {
     }
 
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        nativeInit(mView.getActivity().getAssets());
+        String args = mView.getActivity().getIntent().getStringExtra("args");
+        nativeInit(mView.getActivity().getAssets(), args);
     }
 
     private Glmark2SurfaceView mView;
-    private static native void nativeInit(AssetManager assetManager);
+    private static native void nativeInit(AssetManager assetManager, String args);
     private static native void nativeResize(int w, int h);
     private static native boolean nativeRender();
     private static native void nativeDone();
