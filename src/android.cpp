@@ -190,7 +190,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
     g_benchmark_collection = new BenchmarkCollection();
     g_benchmark_collection->populate_from_options();
 
-    if (Options::show_fps || g_benchmark_collection->needs_decoration()) {
+    if (g_benchmark_collection->needs_decoration()) {
         g_loop = new MainLoopDecorationAndroid(*g_canvas,
                                                g_benchmark_collection->benchmarks());
     }

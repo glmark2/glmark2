@@ -116,7 +116,7 @@ do_benchmark(Canvas &canvas)
 
     benchmark_collection.populate_from_options();
     
-    if (Options::show_fps || benchmark_collection.needs_decoration())
+    if (benchmark_collection.needs_decoration())
         loop = new MainLoopDecoration(canvas, benchmark_collection.benchmarks());
     else
         loop = new MainLoop(canvas, benchmark_collection.benchmarks());

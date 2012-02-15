@@ -188,7 +188,7 @@ void
 MainLoopDecoration::after_scene_setup()
 {
     const Scene::Option &show_fps_option(scene_->options().find("show-fps")->second);
-    show_fps_ = Options::show_fps || show_fps_option.value == "true";
+    show_fps_ = show_fps_option.value == "true";
 
     if (show_fps_) {
         const Scene::Option &fps_pos_option(scene_->options().find("fps-pos")->second);
