@@ -84,6 +84,7 @@ public:
     virtual void log_scene_result();
 
 protected:
+    void next_benchmark();
     Canvas &canvas_;
     Scene *scene_;
     const std::vector<Benchmark *> &benchmarks_;

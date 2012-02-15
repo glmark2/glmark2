@@ -74,7 +74,7 @@ MainLoop::step()
             else
                 break;
 
-            bench_iter_++;
+            next_benchmark();
         }
 
         /* If we have found a valid scene, set it up */
@@ -106,7 +106,7 @@ MainLoop::step()
         log_scene_result();
         (*bench_iter_)->teardown_scene();
         scene_ = 0;
-        bench_iter_++;
+        next_benchmark();
         benchmarks_run_++;
     }
 
@@ -136,6 +136,14 @@ MainLoop::log_scene_result()
 {
     static const std::string format(Log::continuation_prefix + " FPS: %u\n");
     Log::info(format.c_str(), scene_->average_fps());
+}
+
+void
+MainLoop::next_benchmark()
+{
+    bench_iter_++;
+    if (bench_iter_ == benchmarks_.end() && Options::run_forever)
+        bench_iter_ = benchmarks_.begin();
 }
 
 /**********************
