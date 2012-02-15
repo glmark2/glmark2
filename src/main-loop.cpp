@@ -216,7 +216,15 @@ MainLoopDecoration::after_scene_setup()
         title_renderer_ = new TextRenderer(canvas_);
         title_renderer_->position(vec2_from_pos_string(title_pos_option.value));
         title_renderer_->size(Util::fromString<float>(title_size_option.value));
-        title_renderer_->text(title_option.value);
+
+        if (title_option.value == "#info#")
+            title_renderer_->text(scene_->info_string());
+        else if (title_option.value == "#name#")
+            title_renderer_->text(scene_->name());
+        else if (title_option.value == "#r2d2#")
+            title_renderer_->text("Help me, Obi-Wan Kenobi. You're my only hope.");
+        else
+            title_renderer_->text(title_option.value);
     }
 }
 
