@@ -19,6 +19,9 @@
  * Authors:
  *  Alexandros Frantzis
  */
+#ifndef GLMARK2_BENCHMARK_COLLECTION_H_
+#define GLMARK2_BENCHMARK_COLLECTION_H_
+
 #include <vector>
 #include <string>
 #include "benchmark.h"
@@ -52,3 +55,5 @@ private:
 
     std::vector<Benchmark *> benchmarks_;
 };
+
+#endif /* GLMARK2_BENCHMARK_COLLECTION_H_ */
