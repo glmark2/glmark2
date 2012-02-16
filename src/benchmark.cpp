@@ -120,6 +120,23 @@ Benchmark::teardown_scene()
     scene_.unload();
 }
 
+bool
+Benchmark::needs_decoration() const
+{
+    for (vector<OptionPair>::const_iterator iter = options_.begin();
+         iter != options_.end();
+         iter++)
+    {
+        if ((iter->first == "show-fps" && iter->second == "true") ||
+            (iter->first == "title" && !iter->second.empty()))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void
 Benchmark::load_options()
 {

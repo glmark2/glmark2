@@ -38,20 +38,22 @@ std::pair<int,int> Options::size(800, 600);
 bool Options::list_scenes = false;
 bool Options::show_all_options = false;
 bool Options::show_debug = false;
-bool Options::show_fps = false;
 bool Options::show_help = false;
 bool Options::reuse_context = false;
+bool Options::run_forever = false;
+bool Options::annotate = false;
 
 static struct option long_options[] = {
+    {"annotate", 0, 0, 0},
     {"benchmark", 1, 0, 0},
     {"benchmark-file", 1, 0, 0},
     {"validate", 0, 0, 0},
     {"no-swap-buffers", 0, 0, 0},
     {"reuse-context", 0, 0, 0},
+    {"run-forever", 0, 0, 0},
     {"size", 1, 0, 0},
     {"list-scenes", 0, 0, 0},
     {"show-all-options", 0, 0, 0},
-    {"show-fps", 0, 0, 0},
     {"debug", 0, 0, 0},
     {"help", 0, 0, 0},
     {0, 0, 0, 0}
@@ -103,8 +105,10 @@ Options::print_help()
            "                         and their options\n"
            "      --show-all-options Show all scene option values used for benchmarks\n"
            "                         (only explicitly set options are shown by default)\n"
-           "      --show-fps         Show live FPS count on screen (showing live FPS\n"
-           "                         affects benchmarking results, use with care!)\n"
+           "      --run-forever      Run indefinitely, looping from the last benchmark\n"
+           "                         back to the first\n"
+           "      --annotate         Annotate the benchmarks with on-screen information\n"
+           "                         (same as -b :show-fps=true:title=#info#)\n"
            "  -d, --debug            Display debug messages\n"
            "  -h, --help             Display help\n");
 }
@@ -127,6 +131,8 @@ Options::parse_args(int argc, char **argv)
         if (option_index != -1)
             optname = long_options[option_index].name;
 
+        if (!strcmp(optname, "annotate"))
+            Options::annotate = true;
         if (c == 'b' || !strcmp(optname, "benchmark"))
             Options::benchmarks.push_back(optarg);
         else if (c == 'f' || !strcmp(optname, "benchmark-file"))
@@ -143,8 +149,8 @@ Options::parse_args(int argc, char **argv)
             Options::list_scenes = true;
         else if (!strcmp(optname, "show-all-options"))
             Options::show_all_options = true;
-        else if (!strcmp(optname, "show-fps"))
-            Options::show_fps = true;
+        else if (!strcmp(optname, "run-forever"))
+            Options::run_forever = true;
         else if (c == 'd' || !strcmp(optname, "debug"))
             Options::show_debug = true;
         else if (c == 'h' || !strcmp(optname, "help"))

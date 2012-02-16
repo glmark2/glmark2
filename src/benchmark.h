@@ -91,6 +91,11 @@ public:
     void teardown_scene();
 
     /**
+     * Whether the benchmark needs extra decoration.
+     */
+    bool needs_decoration() const;
+
+    /**
      * Registers a Scene, so that it becomes accessible by name.
      */
     static void register_scene(Scene &scene);

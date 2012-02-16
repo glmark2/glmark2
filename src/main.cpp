@@ -28,9 +28,9 @@
 #include "options.h"
 #include "log.h"
 #include "util.h"
-#include "default-benchmarks.h"
 #include "text-renderer.h"
 #include "main-loop.h"
+#include "benchmark-collection.h"
 
 #include <iostream>
 #include <fstream>
@@ -111,24 +111,33 @@ fps_renderer_update_text(TextRenderer &fps_renderer, unsigned int fps)
 void
 do_benchmark(Canvas &canvas)
 {
-    MainLoop loop_normal(canvas);
-    MainLoopDecoration loop_decoration(canvas);
+    BenchmarkCollection benchmark_collection;
+    MainLoop *loop;
 
-    MainLoop &loop(Options::show_fps ? loop_decoration : loop_normal);
-    loop.add_benchmarks();
+    benchmark_collection.populate_from_options();
     
-    while (loop.step());
+    if (benchmark_collection.needs_decoration())
+        loop = new MainLoopDecoration(canvas, benchmark_collection.benchmarks());
+    else
+        loop = new MainLoop(canvas, benchmark_collection.benchmarks());
+
+    while (loop->step());
 
     Log::info("=======================================================\n");
-    Log::info("                                  glmark2 Score: %u \n", loop.score());
+    Log::info("                                  glmark2 Score: %u \n", loop->score());
     Log::info("=======================================================\n");
+
+    delete loop;
 }
 
 void
 do_validation(Canvas &canvas)
 {
-    MainLoopValidation loop(canvas);
-    loop.add_benchmarks();
+    BenchmarkCollection benchmark_collection;
+
+    benchmark_collection.populate_from_options();
+
+    MainLoopValidation loop(canvas, benchmark_collection.benchmarks());
 
     while (loop.step());
 }

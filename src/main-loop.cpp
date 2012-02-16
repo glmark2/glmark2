@@ -23,26 +23,20 @@
 #include "main-loop.h"
 #include "util.h"
 #include "log.h"
-#include "default-benchmarks.h"
 
 #include <string>
 #include <sstream>
-#include <fstream>
 
 /************
  * MainLoop *
  ************/
 
-MainLoop::MainLoop(Canvas &canvas) :
-    canvas_(canvas)
+MainLoop::MainLoop(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
+    canvas_(canvas), benchmarks_(benchmarks)
 {
     reset();
 }
 
-MainLoop::~MainLoop()
-{
-    Util::dispose_pointer_vector(benchmarks_);
-}
 
 void
 MainLoop::reset()
@@ -50,28 +44,6 @@ MainLoop::reset()
     scene_ = 0;
     score_ = 0;
     benchmarks_run_ = 0;
-    bench_iter_ = benchmarks_.begin();
-}
-
-void
-MainLoop::add_benchmarks()
-{
-    if (!Options::benchmarks.empty())
-        add_custom_benchmarks();
-
-    if (!Options::benchmark_files.empty())
-        add_custom_benchmarks_from_files();
-
-    if (!benchmarks_contain_normal_scenes())
-        add_default_benchmarks();
-
-    bench_iter_ = benchmarks_.begin();
-}
-
-void
-MainLoop::add_benchmarks(const std::vector<Benchmark *> &benchmarks)
-{
-    benchmarks_.insert(benchmarks_.end(), benchmarks.begin(), benchmarks.end());
     bench_iter_ = benchmarks_.begin();
 }
 
@@ -102,7 +74,7 @@ MainLoop::step()
             else
                 break;
 
-            bench_iter_++;
+            next_benchmark();
         }
 
         /* If we have found a valid scene, set it up */
@@ -112,6 +84,7 @@ MainLoop::step()
             before_scene_setup();
             scene_ = &(*bench_iter_)->setup_scene();
             after_scene_setup();
+            log_scene_info();
         }
         else {
             /* ... otherwise we are done */
@@ -130,10 +103,10 @@ MainLoop::step()
      */
     if (!scene_->running() || should_quit) {
         score_ += scene_->average_fps();
-        before_scene_teardown();
+        log_scene_result();
         (*bench_iter_)->teardown_scene();
         scene_ = 0;
-        bench_iter_++;
+        next_benchmark();
         benchmarks_run_++;
     }
 
@@ -152,90 +125,34 @@ MainLoop::draw()
 }
 
 void
-MainLoop::after_scene_setup()
+MainLoop::log_scene_info()
 {
     Log::info("%s", scene_->info_string().c_str());
     Log::flush();
 }
 
 void
-MainLoop::before_scene_teardown()
+MainLoop::log_scene_result()
 {
     static const std::string format(Log::continuation_prefix + " FPS: %u\n");
     Log::info(format.c_str(), scene_->average_fps());
 }
 
 void
-MainLoop::add_default_benchmarks()
+MainLoop::next_benchmark()
 {
-    const std::vector<std::string> &default_benchmarks = DefaultBenchmarks::get();
-
-    for (std::vector<std::string>::const_iterator iter = default_benchmarks.begin();
-         iter != default_benchmarks.end();
-         iter++)
-    {
-        benchmarks_.push_back(new Benchmark(*iter));
-    }
+    bench_iter_++;
+    if (bench_iter_ == benchmarks_.end() && Options::run_forever)
+        bench_iter_ = benchmarks_.begin();
 }
-
-void
-MainLoop::add_custom_benchmarks()
-{
-    for (std::vector<std::string>::const_iterator iter = Options::benchmarks.begin();
-         iter != Options::benchmarks.end();
-         iter++)
-    {
-        benchmarks_.push_back(new Benchmark(*iter));
-    }
-}
-
-void
-MainLoop::add_custom_benchmarks_from_files()
-{
-    for (std::vector<std::string>::const_iterator iter = Options::benchmark_files.begin();
-         iter != Options::benchmark_files.end();
-         iter++)
-    {
-        std::ifstream ifs(iter->c_str());
-
-        if (!ifs.fail()) {
-            std::string line;
-
-            while (getline(ifs, line)) {
-                if (!line.empty())
-                    benchmarks_.push_back(new Benchmark(line));
-            }
-        }
-        else {
-            Log::error("Cannot open benchmark file %s\n",
-                       iter->c_str());
-        }
-
-    }
-}
-
-bool
-MainLoop::benchmarks_contain_normal_scenes()
-{
-    for (std::vector<Benchmark *>::const_iterator bench_iter = benchmarks_.begin();
-         bench_iter != benchmarks_.end();
-         bench_iter++)
-    {
-        const Benchmark *bench = *bench_iter;
-        if (!bench->scene().name().empty())
-            return true;
-    }
-
-    return false;
-}
-
 
 /**********************
  * MainLoopDecoration *
  **********************/
 
-MainLoopDecoration::MainLoopDecoration(Canvas &canvas) :
-    MainLoop(canvas), fps_renderer_(0), last_fps_(0)
+MainLoopDecoration::MainLoopDecoration(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
+    MainLoop(canvas, benchmarks), show_fps_(false), show_title_(false),
+    fps_renderer_(0), title_renderer_(0), last_fps_(0)
 {
 
 }
@@ -244,25 +161,32 @@ MainLoopDecoration::~MainLoopDecoration()
 {
     delete fps_renderer_;
     fps_renderer_ = 0;
+    delete title_renderer_;
+    title_renderer_ = 0;
 }
 
 void
 MainLoopDecoration::draw()
 {
     static const unsigned int fps_interval = 500000;
-    uint64_t now = Util::get_timestamp_us();
 
     canvas_.clear();
 
     scene_->draw();
     scene_->update();
 
-    if (now - fps_timestamp_ >= fps_interval) {
-        last_fps_ = scene_->average_fps();
-        fps_renderer_update_text(last_fps_);
-        fps_timestamp_ = now;
+    if (show_fps_) {
+        uint64_t now = Util::get_timestamp_us();
+        if (now - fps_timestamp_ >= fps_interval) {
+            last_fps_ = scene_->average_fps();
+            fps_renderer_update_text(last_fps_);
+            fps_timestamp_ = now;
+        }
+        fps_renderer_->render();
     }
-    fps_renderer_->render();
+
+    if (show_title_)
+        title_renderer_->render();
 
     canvas_.update();
 }
@@ -271,9 +195,45 @@ void
 MainLoopDecoration::before_scene_setup()
 {
     delete fps_renderer_;
-    fps_renderer_ = new TextRenderer(canvas_);
-    fps_renderer_update_text(last_fps_);
-    fps_timestamp_ = Util::get_timestamp_us();
+    fps_renderer_ = 0;
+    delete title_renderer_;
+    title_renderer_ = 0;
+}
+
+void
+MainLoopDecoration::after_scene_setup()
+{
+    const Scene::Option &show_fps_option(scene_->options().find("show-fps")->second);
+    const Scene::Option &title_option(scene_->options().find("title")->second);
+    show_fps_ = show_fps_option.value == "true";
+    show_title_ = !title_option.value.empty();
+
+    if (show_fps_) {
+        const Scene::Option &fps_pos_option(scene_->options().find("fps-pos")->second);
+        const Scene::Option &fps_size_option(scene_->options().find("fps-size")->second);
+        fps_renderer_ = new TextRenderer(canvas_);
+        fps_renderer_->position(vec2_from_pos_string(fps_pos_option.value));
+        fps_renderer_->size(Util::fromString<float>(fps_size_option.value));
+        fps_renderer_update_text(last_fps_);
+        fps_timestamp_ = Util::get_timestamp_us();
+    }
+
+    if (show_title_) {
+        const Scene::Option &title_pos_option(scene_->options().find("title-pos")->second);
+        const Scene::Option &title_size_option(scene_->options().find("title-size")->second);
+        title_renderer_ = new TextRenderer(canvas_);
+        title_renderer_->position(vec2_from_pos_string(title_pos_option.value));
+        title_renderer_->size(Util::fromString<float>(title_size_option.value));
+
+        if (title_option.value == "#info#")
+            title_renderer_->text(scene_->info_string());
+        else if (title_option.value == "#name#")
+            title_renderer_->text(scene_->name());
+        else if (title_option.value == "#r2d2#")
+            title_renderer_->text("Help me, Obi-Wan Kenobi. You're my only hope.");
+        else
+            title_renderer_->text(title_option.value);
+    }
 }
 
 void
@@ -284,12 +244,28 @@ MainLoopDecoration::fps_renderer_update_text(unsigned int fps)
     fps_renderer_->text(ss.str());
 }
 
+LibMatrix::vec2
+MainLoopDecoration::vec2_from_pos_string(const std::string &s)
+{
+    LibMatrix::vec2 v(0.0, 0.0);
+    std::vector<std::string> elems;
+    Util::split(s, ',', elems);
+
+    if (elems.size() > 0)
+        v.x(Util::fromString<float>(elems[0]));
+
+    if (elems.size() > 1)
+        v.y(Util::fromString<float>(elems[1]));
+
+    return v;
+}
+
 /**********************
  * MainLoopValidation *
  **********************/
 
-MainLoopValidation::MainLoopValidation(Canvas &canvas) :
-        MainLoop(canvas)
+MainLoopValidation::MainLoopValidation(Canvas &canvas, const std::vector<Benchmark *> &benchmarks) :
+        MainLoop(canvas, benchmarks)
 {
 }
 
@@ -307,7 +283,7 @@ MainLoopValidation::draw()
 }
 
 void
-MainLoopValidation::before_scene_teardown()
+MainLoopValidation::log_scene_result()
 {
     static const std::string format(Log::continuation_prefix + " Validation: %s\n");
     std::string result;

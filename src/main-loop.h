@@ -25,6 +25,7 @@
 #include "canvas.h"
 #include "benchmark.h"
 #include "text-renderer.h"
+#include "vec.h"
 #include <vector>
 
 /**
@@ -33,9 +34,9 @@
 class MainLoop
 {
 public:
-    MainLoop(Canvas &canvas);
+    MainLoop(Canvas &canvas, const std::vector<Benchmark *> &benchmarks);
 
-    virtual ~MainLoop();
+    virtual ~MainLoop() {}
 
     /**
      * Resets the main loop.
@@ -44,19 +45,6 @@ public:
      * you need to run it again.
      */
     void reset();
-
-    /** 
-     * Adds benchmarks.
-     * 
-     * This method takes into account benchmark related command line options
-     * to decide which benchmarks to add.
-     */
-    void add_benchmarks();
-
-    /** 
-     * Adds user defined benchmarks.
-     */
-    void add_benchmarks(const std::vector<Benchmark *> &benchmarks);
 
     /**
      * Gets the current total benchmarking score.
@@ -83,27 +71,27 @@ public:
     /**
      * Overridable method for post scene-setup customizations.
      */
-    virtual void after_scene_setup();
+    virtual void after_scene_setup() {}
 
     /**
-     * Overridable method for pre scene-teardown customizations.
+     * Overridable method for logging scene info.
      */
-    virtual void before_scene_teardown();
+    virtual void log_scene_info();
+
+    /**
+     * Overridable method for logging scene result.
+     */
+    virtual void log_scene_result();
 
 protected:
+    void next_benchmark();
     Canvas &canvas_;
     Scene *scene_;
-    std::vector<Benchmark *> benchmarks_;
+    const std::vector<Benchmark *> &benchmarks_;
     unsigned int score_;
     unsigned int benchmarks_run_;
 
     std::vector<Benchmark *>::const_iterator bench_iter_;
-
-private:
-    void add_default_benchmarks();
-    void add_custom_benchmarks();
-    void add_custom_benchmarks_from_files();
-    bool benchmarks_contain_normal_scenes();
 };
 
 /**
@@ -112,15 +100,21 @@ private:
 class MainLoopDecoration : public MainLoop
 {
 public:
-    MainLoopDecoration(Canvas &canvas);
+    MainLoopDecoration(Canvas &canvas, const std::vector<Benchmark *> &benchmarks);
     virtual ~MainLoopDecoration();
 
     virtual void draw();
     virtual void before_scene_setup();
+    virtual void after_scene_setup();
 
 protected:
     void fps_renderer_update_text(unsigned int fps);
+    LibMatrix::vec2 vec2_from_pos_string(const std::string &s);
+
+    bool show_fps_;
+    bool show_title_;
     TextRenderer *fps_renderer_;
+    TextRenderer *title_renderer_;
     unsigned int last_fps_;
     uint64_t fps_timestamp_;
 };
@@ -131,10 +125,10 @@ protected:
 class MainLoopValidation : public MainLoop
 {
 public:
-    MainLoopValidation(Canvas &canvas);
+    MainLoopValidation(Canvas &canvas, const std::vector<Benchmark *> &benchmarks);
 
     virtual void draw();
-    virtual void before_scene_teardown();
+    virtual void log_scene_result();
 };
 
 #endif /* GLMARK2_MAIN_LOOP_H_ */

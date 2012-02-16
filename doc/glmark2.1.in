@@ -40,9 +40,13 @@ and their options
 Show all scene option values used for benchmarks
 (only explicitly set options are shown by default)
 .TP
-\fB\-\-show-fps\fR
-Show live FPS count on screen (showing live FPS
-affects benchmarking results, use with care!)
+\fB\-\-run-forever\fR
+Run indefinitely, looping from the last benchmark
+back to the first
+.TP
+\fB\-\-annotate\fR
+Annotate the benchmarks with on-screen information
+(same as -b :show-fps=true:title=#info#)
 .TP
 \fB\-d\fR, \fB\-\-debug\fR
 Display debug messages
