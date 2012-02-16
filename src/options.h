@@ -42,6 +42,7 @@ struct Options {
     static bool show_help;
     static bool reuse_context;
     static bool run_forever;
+    static bool annotate;
 };
 
 #endif /* OPTIONS_H_ */

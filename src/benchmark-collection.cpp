@@ -45,6 +45,12 @@ BenchmarkCollection::add(const std::vector<std::string> &benchmarks)
 void
 BenchmarkCollection::populate_from_options()
 {
+    if (Options::annotate) {
+        std::vector<std::string> annotate;
+        annotate.push_back(":show-fps=true:title=#info#");
+        add(annotate);
+    }
+
     if (!Options::benchmarks.empty())
         add(Options::benchmarks);
 

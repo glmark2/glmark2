@@ -41,8 +41,10 @@ bool Options::show_debug = false;
 bool Options::show_help = false;
 bool Options::reuse_context = false;
 bool Options::run_forever = false;
+bool Options::annotate = false;
 
 static struct option long_options[] = {
+    {"annotate", 0, 0, 0},
     {"benchmark", 1, 0, 0},
     {"benchmark-file", 1, 0, 0},
     {"validate", 0, 0, 0},
@@ -105,6 +107,8 @@ Options::print_help()
            "                         (only explicitly set options are shown by default)\n"
            "      --run-forever      Run indefinitely, looping from the last benchmark\n"
            "                         back to the first\n"
+           "      --annotate         Annotate the benchmarks with on-screen information\n"
+           "                         (same as -b :show-fps=true:title=#info#)\n"
            "  -d, --debug            Display debug messages\n"
            "  -h, --help             Display help\n");
 }
@@ -127,6 +131,8 @@ Options::parse_args(int argc, char **argv)
         if (option_index != -1)
             optname = long_options[option_index].name;
 
+        if (!strcmp(optname, "annotate"))
+            Options::annotate = true;
         if (c == 'b' || !strcmp(optname, "benchmark"))
             Options::benchmarks.push_back(optarg);
         else if (c == 'f' || !strcmp(optname, "benchmark-file"))
