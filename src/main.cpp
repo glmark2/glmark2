@@ -100,14 +100,6 @@ list_scenes()
     }
 }
 
-static inline void
-fps_renderer_update_text(TextRenderer &fps_renderer, unsigned int fps)
-{
-    std::stringstream ss;
-    ss << "FPS: " << fps;
-    fps_renderer.text(ss.str());
-}
-
 void
 do_benchmark(Canvas &canvas)
 {
