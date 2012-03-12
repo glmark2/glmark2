@@ -191,6 +191,13 @@ public:
     virtual void resize(int width, int height) { static_cast<void>(width); static_cast<void>(height); }
 
     /**
+     * Gets the FBO associated with the canvas.
+     *
+     * @return the FBO
+     */
+    virtual unsigned int fbo() { return 0; }
+
+    /**
      * Gets a dummy canvas object.
      *
      * @return the dummy canvas
