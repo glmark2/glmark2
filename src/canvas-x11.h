@@ -50,6 +50,18 @@ protected:
         Canvas(width, height), xwin_(0), xdpy_(0) {}
 
     /**
+     * Information about a GL visual.
+     */
+    struct GLVisualInfo {
+        int buffer_size;
+        int red_size;
+        int green_size;
+        int blue_size;
+        int alpha_size;
+        int depth_size;
+    };
+
+    /**
      * Gets the XVisualInfo to use for creating the X window with.
      *
      * The caller should XFree() the returned XVisualInfo when done.
@@ -86,6 +98,13 @@ protected:
      * @return whether the operation succeeded
      */
     virtual void swap_buffers() = 0;
+
+    /**
+     * Gets information about the GL visual used for this canvas.
+     *
+     * This method should be implemented in derived classes.
+     */
+    virtual void get_glvisualinfo(GLVisualInfo &gl_visinfo) = 0;
 
     /**
      * Whether the current implementation supports GL(ES) 2.0.

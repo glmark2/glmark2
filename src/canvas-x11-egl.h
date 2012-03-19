@@ -43,6 +43,7 @@ protected:
     bool make_current();
     bool reset_context();
     void swap_buffers() { eglSwapBuffers(egl_display_, egl_surface_); }
+    void get_glvisualinfo(GLVisualInfo &gl_visinfo);
 
 private:
     bool ensure_egl_display();

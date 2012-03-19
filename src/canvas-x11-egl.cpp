@@ -86,6 +86,20 @@ CanvasX11EGL::make_current()
     return true;
 }
 
+void
+CanvasX11EGL::get_glvisualinfo(GLVisualInfo &gl_visinfo)
+{
+    if (!ensure_egl_config())
+        return;
+
+    eglGetConfigAttrib(egl_display_, egl_config_, EGL_BUFFER_SIZE, &gl_visinfo.buffer_size);
+    eglGetConfigAttrib(egl_display_, egl_config_, EGL_RED_SIZE, &gl_visinfo.red_size);
+    eglGetConfigAttrib(egl_display_, egl_config_, EGL_GREEN_SIZE, &gl_visinfo.green_size);
+    eglGetConfigAttrib(egl_display_, egl_config_, EGL_BLUE_SIZE, &gl_visinfo.blue_size);
+    eglGetConfigAttrib(egl_display_, egl_config_, EGL_ALPHA_SIZE, &gl_visinfo.alpha_size);
+    eglGetConfigAttrib(egl_display_, egl_config_, EGL_DEPTH_SIZE, &gl_visinfo.depth_size);
+}
+
 /*******************
  * Private methods *
  *******************/

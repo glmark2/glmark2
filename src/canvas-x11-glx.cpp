@@ -68,6 +68,19 @@ CanvasX11GLX::make_current()
     return true;
 }
 
+void
+CanvasX11GLX::get_glvisualinfo(GLVisualInfo &gl_visinfo)
+{
+    if (!ensure_glx_fbconfig())
+        return;
+
+    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_BUFFER_SIZE, &gl_visinfo.buffer_size);
+    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_RED_SIZE, &gl_visinfo.red_size);
+    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_GREEN_SIZE, &gl_visinfo.green_size);
+    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_BLUE_SIZE, &gl_visinfo.blue_size);
+    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_ALPHA_SIZE, &gl_visinfo.alpha_size);
+    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_DEPTH_SIZE, &gl_visinfo.depth_size);
+}
 
 /*******************
  * Private methods *
