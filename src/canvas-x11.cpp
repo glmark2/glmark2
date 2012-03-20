@@ -99,10 +99,29 @@ CanvasX11::clear()
 void
 CanvasX11::update()
 {
-    if (!offscreen_ && Options::swap_buffers)
-        swap_buffers();
-    else
-        glFinish();
+    Options::FrameEnd m = Options::frame_end;
+
+    if (m == Options::FrameEndDefault) {
+        if (offscreen_)
+            m = Options::FrameEndFinish;
+        else
+            m = Options::FrameEndSwap;
+    }
+
+    switch(m) {
+        case Options::FrameEndSwap:
+            swap_buffers();
+            break;
+        case Options::FrameEndFinish:
+            glFinish();
+            break;
+        case Options::FrameEndReadPixels:
+            read_pixel(width_ / 2, height_ / 2);
+            break;
+        case Options::FrameEndNone:
+        default:
+            break;
+    }
 }
 
 void
