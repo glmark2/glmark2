@@ -27,11 +27,26 @@
 #if USE_GL
 #include <GL/gl.h>
 #include <GL/glext.h>
+#ifndef GL_RGB565
+#define GL_RGB565 0x8D62
+#endif
 #elif USE_GLESv2
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #ifndef GL_WRITE_ONLY
 #define GL_WRITE_ONLY GL_WRITE_ONLY_OES
+#endif
+#ifndef GL_DEPTH_COMPONENT24
+#define GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24_OES
+#endif
+#ifndef GL_DEPTH_COMPONENT32
+#define GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32_OES
+#endif
+#ifndef GL_RGBA8
+#define GL_RGBA8 GL_RGBA8_OES
+#endif
+#ifndef GL_RGB8
+#define GL_RGB8 GL_RGB8_OES
 #endif
 #endif
 

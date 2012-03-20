@@ -35,10 +35,12 @@
 bool
 CanvasX11::reset()
 {
+    release_fbo();
+
     if (!reset_context())
         return false;
 
-    if (!make_current())
+    if (!do_make_current())
         return false;
 
     if (!supports_gl2()) {
@@ -78,7 +80,7 @@ CanvasX11::init()
 void
 CanvasX11::visible(bool visible)
 {
-    if (visible)
+    if (visible && !offscreen_)
         XMapWindow(xdpy_, xwin_);
 }
 
@@ -97,7 +99,7 @@ CanvasX11::clear()
 void
 CanvasX11::update()
 {
-    if (Options::swap_buffers)
+    if (!offscreen_ && Options::swap_buffers)
         swap_buffers();
     else
         glFinish();
@@ -106,7 +108,7 @@ CanvasX11::update()
 void
 CanvasX11::print_info()
 {
-    make_current();
+    do_make_current();
 
     std::stringstream ss;
 
@@ -171,6 +173,12 @@ CanvasX11::resize(int width, int height)
 {
     resize_no_viewport(width, height);
     glViewport(0, 0, width_, height_);
+}
+
+unsigned int
+CanvasX11::fbo()
+{
+    return fbo_;
 }
 
 bool
@@ -285,7 +293,183 @@ CanvasX11::resize_no_viewport(int width, int height)
     if (!ensure_x_window())
         Log::error("Error: Couldn't create X Window!\n");
 
+    if (color_renderbuffer_) {
+        glBindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer_);
+        glRenderbufferStorage(GL_RENDERBUFFER, gl_color_format_,
+                              width_, height_);
+    }
+
+    if (depth_renderbuffer_) {
+        glBindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
+        glRenderbufferStorage(GL_RENDERBUFFER, gl_depth_format_,
+                              width_, height_);
+    }
+
     projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
                                                1.0, 1024.0);
+}
+
+bool
+CanvasX11::do_make_current()
+{
+    if (!make_current())
+        return false;
+
+    if (offscreen_) {
+        if (!ensure_fbo())
+            return false;
+
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    }
+
+    return true;
+}
+
+bool
+CanvasX11::ensure_gl_formats()
+{
+    if (gl_color_format_ && gl_depth_format_)
+        return true;
+
+    GLVisualInfo gl_visinfo;
+    get_glvisualinfo(gl_visinfo);
+
+    gl_color_format_ = 0;
+    gl_depth_format_ = 0;
+
+    bool supports_rgba8(false);
+    bool supports_rgb8(false);
+    bool supports_depth24(false);
+    bool supports_depth32(false);
+
+#if USE_GLESv2
+    if (GLExtensions::support("GL_ARM_rgba8"))
+        supports_rgba8 = true;
+
+    if (GLExtensions::support("GL_OES_rgb8_rgba8")) {
+        supports_rgba8 = true;
+        supports_rgb8 = true;
+    }
+
+    if (GLExtensions::support("GL_OES_depth24"))
+        supports_depth24 = true;
+
+    if (GLExtensions::support("GL_OES_depth32"))
+        supports_depth32 = true;
+#elif USE_GL
+    supports_rgba8 = true;
+    supports_rgb8 = true;
+    supports_depth24 = true;
+    supports_depth32 = true;
+#endif
+
+    if (gl_visinfo.buffer_size == 32) {
+        if (supports_rgba8)
+            gl_color_format_ = GL_RGBA8;
+        else
+            gl_color_format_ = GL_RGBA4;
+    }
+    else if (gl_visinfo.buffer_size == 24) {
+        if (supports_rgb8)
+            gl_color_format_ = GL_RGB8;
+        else
+            gl_color_format_ = GL_RGB565;
+    }
+    else if (gl_visinfo.buffer_size == 16) {
+        if (gl_visinfo.red_size == 4 && gl_visinfo.green_size == 4 &&
+            gl_visinfo.blue_size == 4 && gl_visinfo.alpha_size == 4)
+        {
+            gl_color_format_ = GL_RGBA4;
+        }
+        else if (gl_visinfo.red_size == 5 && gl_visinfo.green_size == 5 &&
+                 gl_visinfo.blue_size == 5 && gl_visinfo.alpha_size == 1)
+        {
+            gl_color_format_ = GL_RGB5_A1;
+        }
+        else if (gl_visinfo.red_size == 5 && gl_visinfo.green_size == 6 &&
+                 gl_visinfo.blue_size == 5 && gl_visinfo.alpha_size == 0)
+        {
+            gl_color_format_ = GL_RGB565;
+        }
+    }
+
+    if (gl_visinfo.depth_size == 32 && supports_depth32)
+        gl_depth_format_ = GL_DEPTH_COMPONENT32;
+    else if (gl_visinfo.depth_size >= 24 && supports_depth24)
+        gl_depth_format_ = GL_DEPTH_COMPONENT24;
+    else if (gl_visinfo.depth_size == 16)
+        gl_depth_format_ = GL_DEPTH_COMPONENT16;
+
+    Log::debug("Selected Renderbuffer ColorFormat: %s DepthFormat: %s\n",
+               get_gl_format_str(gl_color_format_),
+               get_gl_format_str(gl_depth_format_));
+
+    return (gl_color_format_ && gl_depth_format_);
+}
+
+bool
+CanvasX11::ensure_fbo()
+{
+    if (!fbo_) {
+        if (!ensure_gl_formats())
+            return false;
+
+        /* Create a texture for the color attachment  */
+        glGenRenderbuffers(1, &color_renderbuffer_);
+        glBindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer_);
+        glRenderbufferStorage(GL_RENDERBUFFER, gl_color_format_,
+                              width_, height_);
+
+        /* Create a renderbuffer for the depth attachment */
+        glGenRenderbuffers(1, &depth_renderbuffer_);
+        glBindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
+        glRenderbufferStorage(GL_RENDERBUFFER, gl_depth_format_,
+                              width_, height_);
+
+        /* Create a FBO and set it up */
+        glGenFramebuffers(1, &fbo_);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                  GL_RENDERBUFFER, color_renderbuffer_);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                  GL_RENDERBUFFER, depth_renderbuffer_);
+    }
+
+    return true;
+}
+
+void
+CanvasX11::release_fbo()
+{
+    glDeleteFramebuffers(1, &fbo_);
+    glDeleteRenderbuffers(1, &color_renderbuffer_);
+    glDeleteRenderbuffers(1, &depth_renderbuffer_);
+    fbo_ = 0;
+    color_renderbuffer_ = 0;
+    depth_renderbuffer_ = 0;
+
+    gl_color_format_ = 0;
+    gl_depth_format_ = 0;
+}
+
+const char *
+CanvasX11::get_gl_format_str(GLenum f)
+{
+    const char *str;
+
+    switch(f) {
+        case GL_RGBA8: str = "GL_RGBA8"; break;
+        case GL_RGB8: str = "GL_RGB8"; break;
+        case GL_RGBA4: str = "GL_RGBA4"; break;
+        case GL_RGB5_A1: str = "GL_RGB5_A1"; break;
+        case GL_RGB565: str = "GL_RGB565"; break;
+        case GL_DEPTH_COMPONENT16: str = "GL_DEPTH_COMPONENT16"; break;
+        case GL_DEPTH_COMPONENT24: str = "GL_DEPTH_COMPONENT24"; break;
+        case GL_DEPTH_COMPONENT32: str = "GL_DEPTH_COMPONENT32"; break;
+        case GL_NONE: str = "GL_NONE"; break;
+        default: str = "Unknown"; break;
+    }
+
+    return str;
 }
 
