@@ -42,6 +42,7 @@ bool Options::show_help = false;
 bool Options::reuse_context = false;
 bool Options::run_forever = false;
 bool Options::annotate = false;
+bool Options::offscreen = false;
 
 static struct option long_options[] = {
     {"annotate", 0, 0, 0},
@@ -49,6 +50,7 @@ static struct option long_options[] = {
     {"benchmark-file", 1, 0, 0},
     {"validate", 0, 0, 0},
     {"no-swap-buffers", 0, 0, 0},
+    {"off-screen", 0, 0, 0},
     {"reuse-context", 0, 0, 0},
     {"run-forever", 0, 0, 0},
     {"size", 1, 0, 0},
@@ -98,6 +100,7 @@ Options::print_help()
            "                         running the benchmarks\n"
            "      --no-swap-buffers  Don't update the canvas by swapping the front and\n"
            "                         back buffer, use glFinish() instead\n"
+           "      --off-screen       Render to an off-screen surface\n"
            "      --reuse-context    Use a single context for all scenes\n"
            "                         (by default, each scene gets its own context)\n"
            "  -s, --size WxH         Size of the output window (default: 800x600)\n"
@@ -141,6 +144,8 @@ Options::parse_args(int argc, char **argv)
             Options::validate = true;
         else if (!strcmp(optname, "no-swap-buffers"))
             Options::swap_buffers = false;
+        else if (!strcmp(optname, "off-screen"))
+            Options::offscreen = true;
         else if (!strcmp(optname, "reuse-context"))
             Options::reuse_context = true;
         else if (c == 's' || !strcmp(optname, "size"))

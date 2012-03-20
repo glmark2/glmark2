@@ -173,6 +173,8 @@ main(int argc, char *argv[])
     CanvasX11EGL canvas(Options::size.first, Options::size.second);
 #endif
 
+    canvas.offscreen(Options::offscreen);
+
     vector<Scene*> scenes;
 
     // Register the scenes, so they can be looked up by name
