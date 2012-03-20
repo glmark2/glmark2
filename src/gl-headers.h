@@ -35,11 +35,20 @@
 #endif
 #endif
 
+#include <string>
+
 /**
  * Struct that holds pointers to functions that belong to extensions
  * in either GL2.0 or GLES2.0.
  */
 struct GLExtensions {
+    /**
+     * Whether the current context has support for a GL extension.
+     *
+     * @return true if the extension is supported
+     */
+    static bool support(const std::string &ext);
+
     static void* (*MapBuffer) (GLenum target, GLenum access);
     static GLboolean (*UnmapBuffer) (GLenum target);
 };
