@@ -270,18 +270,7 @@ void
 CanvasX11EGL::init_gl_extensions()
 {
 #if USE_GLESv2
-    /*
-     * Parse the extensions we care about from the extension string.
-     * Don't even bother to get function pointers until we know the
-     * extension is present.
-     */
-    std::string extString;
-    const char* exts = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
-    if (exts) {
-        extString = exts;
-    }
-
-    if (extString.find("GL_OES_mapbuffer") != std::string::npos) {
+    if (GLExtensions::support("GL_OES_mapbuffer")) {
         GLExtensions::MapBuffer =
             reinterpret_cast<PFNGLMAPBUFFEROESPROC>(eglGetProcAddress("glMapBufferOES"));
         GLExtensions::UnmapBuffer =
