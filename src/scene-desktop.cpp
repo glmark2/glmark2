@@ -356,6 +356,7 @@ Program RenderObject::main_program;
 class RenderScreen : public RenderObject
 {
 public:
+    RenderScreen(Canvas &canvas) { fbo_ = canvas.fbo(); }
     virtual void init() {}
     virtual void release() {}
 };
@@ -736,8 +737,8 @@ struct SceneDesktopPrivate
     RenderClearImage desktop;
     std::vector<RenderObject *> windows;
 
-    SceneDesktopPrivate() :
-        desktop(GLMARK_DATA_PATH"/textures/effect-2d.png") {}
+    SceneDesktopPrivate(Canvas &canvas) :
+        screen(canvas), desktop(GLMARK_DATA_PATH"/textures/effect-2d.png") {}
 
     ~SceneDesktopPrivate() { Util::dispose_pointer_vector(windows); }
 
@@ -747,7 +748,7 @@ struct SceneDesktopPrivate
 SceneDesktop::SceneDesktop(Canvas &canvas) :
     Scene(canvas, "desktop")
 {
-    priv_ = new SceneDesktopPrivate();
+    priv_ = new SceneDesktopPrivate(canvas);
     options_["effect"] = Scene::Option("effect", "blur",
                                        "the effect to use [blur]");
     options_["windows"] = Scene::Option("windows", "4",

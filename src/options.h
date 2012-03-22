@@ -28,13 +28,21 @@
 #include <vector>
 
 struct Options {
+    enum FrameEnd {
+        FrameEndDefault,
+        FrameEndNone,
+        FrameEndSwap,
+        FrameEndFinish,
+        FrameEndReadPixels
+    };
+
     static bool parse_args(int argc, char **argv);
     static void print_help();
 
     static std::vector<std::string> benchmarks;
     static std::vector<std::string> benchmark_files;
     static bool validate;
-    static bool swap_buffers;
+    static FrameEnd frame_end;
     static std::pair<int,int> size;
     static bool list_scenes;
     static bool show_all_options;
@@ -43,6 +51,7 @@ struct Options {
     static bool reuse_context;
     static bool run_forever;
     static bool annotate;
+    static bool offscreen;
 };
 
 #endif /* OPTIONS_H_ */

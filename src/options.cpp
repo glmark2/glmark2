@@ -33,7 +33,7 @@
 std::vector<std::string> Options::benchmarks;
 std::vector<std::string> Options::benchmark_files;
 bool Options::validate = false;
-bool Options::swap_buffers = true;
+Options::FrameEnd Options::frame_end = Options::FrameEndDefault;
 std::pair<int,int> Options::size(800, 600);
 bool Options::list_scenes = false;
 bool Options::show_all_options = false;
@@ -42,13 +42,15 @@ bool Options::show_help = false;
 bool Options::reuse_context = false;
 bool Options::run_forever = false;
 bool Options::annotate = false;
+bool Options::offscreen = false;
 
 static struct option long_options[] = {
     {"annotate", 0, 0, 0},
     {"benchmark", 1, 0, 0},
     {"benchmark-file", 1, 0, 0},
     {"validate", 0, 0, 0},
-    {"no-swap-buffers", 0, 0, 0},
+    {"frame-end", 1, 0, 0},
+    {"off-screen", 0, 0, 0},
     {"reuse-context", 0, 0, 0},
     {"run-forever", 0, 0, 0},
     {"size", 1, 0, 0},
@@ -83,6 +85,31 @@ parse_size(const std::string &str, std::pair<int,int> &size)
         size.second = size.first;
 }
 
+/**
+ * Parses a frame-end method string
+ *
+ * @param str the string to parse
+ *
+ * @return the parsed frame end method
+ */
+static Options::FrameEnd 
+frame_end_from_str(const std::string &str)
+{
+    Options::FrameEnd m = Options::FrameEndDefault;
+
+    if (str == "swap")
+        m = Options::FrameEndSwap;
+    else if (str == "finish")
+        m = Options::FrameEndFinish;
+    else if (str == "readpixels")
+        m = Options::FrameEndReadPixels;
+    else if (str == "none")
+        m = Options::FrameEndNone;
+
+    return m;
+}
+
+
 void
 Options::print_help()
 {
@@ -96,8 +123,8 @@ Options::print_help()
            "                         (the option can be used multiple times)\n"
            "      --validate         Run a quick output validation test instead of \n"
            "                         running the benchmarks\n"
-           "      --no-swap-buffers  Don't update the canvas by swapping the front and\n"
-           "                         back buffer, use glFinish() instead\n"
+           "      --frame-end METHOD How to end a frame [default,none,swap,finish,readpixels]\n"
+           "      --off-screen       Render to an off-screen surface\n"
            "      --reuse-context    Use a single context for all scenes\n"
            "                         (by default, each scene gets its own context)\n"
            "  -s, --size WxH         Size of the output window (default: 800x600)\n"
@@ -139,8 +166,10 @@ Options::parse_args(int argc, char **argv)
             Options::benchmark_files.push_back(optarg);
         else if (!strcmp(optname, "validate"))
             Options::validate = true;
-        else if (!strcmp(optname, "no-swap-buffers"))
-            Options::swap_buffers = false;
+        else if (!strcmp(optname, "frame-end"))
+            Options::frame_end = frame_end_from_str(optarg);
+        else if (!strcmp(optname, "off-screen"))
+            Options::offscreen = true;
         else if (!strcmp(optname, "reuse-context"))
             Options::reuse_context = true;
         else if (c == 's' || !strcmp(optname, "size"))

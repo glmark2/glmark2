@@ -191,6 +191,13 @@ public:
     virtual void resize(int width, int height) { static_cast<void>(width); static_cast<void>(height); }
 
     /**
+     * Gets the FBO associated with the canvas.
+     *
+     * @return the FBO
+     */
+    virtual unsigned int fbo() { return 0; }
+
+    /**
      * Gets a dummy canvas object.
      *
      * @return the dummy canvas
@@ -224,12 +231,21 @@ public:
      */
     const LibMatrix::mat4 &projection() { return projection_; }
 
+    /**
+     * Sets whether the canvas should be backed by an off-screen surface.
+     *
+     * This takes effect after the next init()/reset().
+     */
+    void offscreen(bool offscreen) { offscreen_ = offscreen; }
+
 protected:
-    Canvas(int width, int height) : width_(width), height_(height) {}
+    Canvas(int width, int height) :
+        width_(width), height_(height), offscreen_(false) {}
 
     int width_;
     int height_;
     LibMatrix::mat4 projection_;
+    bool offscreen_;
 };
 
 #endif

@@ -21,15 +21,17 @@ list of benchmark descriptions (one per line)
 Run a quick output validation test instead of
 running the benchmarks
 .TP
-\fB\-\-no\-swap\-buffers\fR
-Don't update the screen by swapping the front and
-back buffer, use glFinish() instead
+\fB\-\-frame-end\fR METHOD
+How to end a frame [default,none,swap,finish,readpixels]
+.TP
+\fB\-\-off-screen\fR
+Render to an off-screen surface
 .TP
 \fB\-\-reuse\-context\fR
 Use a single context for all scenes
 (by default, each scene gets its own context)
 .TP
-\fB\-s\fR, \fB\-\-size WxH\fR
+\fB\-s\fR, \fB\-\-size\fR WxH
 Size of the output window (default: 800x600)
 .TP
 \fB\-l\fR, \fB\-\-list\-scenes\fR
