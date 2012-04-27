@@ -477,4 +477,25 @@ public:
 private:
     SceneBufferPrivate *priv_;
 };
+
+class SceneIdeasPrivate;
+
+class SceneIdeas : public Scene
+{
+public:
+    SceneIdeas(Canvas &pCanvas);
+    bool load();
+    void unload();
+    void setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+
+    ~SceneIdeas();
+
+private:
+    SceneIdeasPrivate* priv_;
+};
+
 #endif
