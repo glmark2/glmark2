@@ -2,7 +2,6 @@ uniform vec4 light0Position;
 varying vec3 vertex_normal;
 varying vec4 vertex_position;
 varying vec3 eye_direction;
-out varying vec4 fragColor;
 
 vec3 unitvec(vec4 v1, vec4 v2)
 {
@@ -32,5 +31,5 @@ void main()
     vec4 specular = (lightSpecular * matSpecular);
     vec4 ambient = (lightAmbient * matAmbient);
     vec4 diffuse = (lightDiffuse * matDiffuse);
-    fragColor = (specular * specularTerm) + ambient + (diffuse * diffuseTerm);
+    gl_FragColor = (specular * specularTerm) + ambient + (diffuse * diffuseTerm);
 }

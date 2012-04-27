@@ -1,6 +1,6 @@
 uniform mat4 projection;
 uniform mat4 modelview;
-in vec3 vertex;
+attribute vec3 vertex;
 
 void main()
 {

@@ -5,27 +5,7 @@ struct LightSourceParameters
     vec4 specular;
     vec4 position;
 };
-LightSourceParameters lightSource[3] =
-{
-    {
-        vec4(0.0, 0.0, 0.0, 1.0),
-        vec4(1.0, 1.0, 1.0, 1.0),
-        vec4(1.0, 1.0, 1.0, 1.0),
-        vec4(0.0, 1.0, 0.0, 0.0)
-    },
-    {
-        vec4(0.0, 0.0, 0.0, 1.0),
-        vec4(0.3, 0.3, 0.5, 1.0),
-        vec4(0.3, 0.3, 0.5, 1.0),
-        vec4(-1.0, 0.0, 0.0, 0.0),
-    },
-    {
-        vec4(0.2, 0.2, 0.2, 1.0),
-        vec4(0.2, 0.2, 0.2, 1.0),
-        vec4(0.2, 0.2, 0.2, 1.0),
-        vec4(0.0, -1.0, 0.0, 0.0)
-    }
-};
+LightSourceParameters lightSource[3];
 uniform mat4 modelview;
 uniform vec4 light0Position;
 uniform vec4 light1Position;
@@ -33,7 +13,6 @@ uniform vec4 light2Position;
 varying vec3 vertex_normal;
 varying vec4 vertex_position;
 varying vec3 eye_direction;
-out varying vec4 fragColor;
 
 vec3 unitvec(vec4 v1, vec4 v2)
 {
@@ -48,6 +27,24 @@ vec3 unitvec(vec4 v1, vec4 v2)
 
 void main()
 {
+    lightSource[0] = LightSourceParameters(
+        vec4(0.0, 0.0, 0.0, 1.0),
+        vec4(1.0, 1.0, 1.0, 1.0),
+        vec4(1.0, 1.0, 1.0, 1.0),
+        vec4(0.0, 1.0, 0.0, 0.0)
+    );
+    lightSource[1] = LightSourceParameters(
+        vec4(0.0, 0.0, 0.0, 1.0),
+        vec4(0.3, 0.3, 0.5, 1.0),
+        vec4(0.3, 0.3, 0.5, 1.0),
+        vec4(-1.0, 0.0, 0.0, 0.0)
+    );
+    lightSource[2] = LightSourceParameters(
+        vec4(0.2, 0.2, 0.2, 1.0),
+        vec4(0.2, 0.2, 0.2, 1.0),
+        vec4(0.2, 0.2, 0.2, 1.0),
+        vec4(0.0, -1.0, 0.0, 0.0)
+    );
     vec4 matAmbient = vec4(0.0, 0.0, 0.0, 1.0);
     vec4 matDiffuse = vec4(1.0, 0.2, 0.2, 1.0);
     vec4 matSpecular = vec4(0.5, 0.5, 0.5, 1.0);
@@ -67,5 +64,5 @@ void main()
         diffuseSum += max(0.0, dot(normalized_normal, light_direction)) * lightSource[light].diffuse;
         ambientSum += lightSource[light].ambient;
     }
-    fragColor = (matSpecular * specularSum) + (matAmbient * ambientSum) + (matDiffuse * diffuseSum);
+    gl_FragColor = (matSpecular * specularSum) + (matAmbient * ambientSum) + (matDiffuse * diffuseSum);
 }

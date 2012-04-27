@@ -3,8 +3,8 @@ uniform mat4 modelview;
 uniform vec3 lightPosition;
 uniform vec3 logoDirection;
 uniform float currentTime;
-in vec3 vertex;
-out varying vec4 color;
+attribute vec3 vertex;
+varying vec4 color;
 
 void main()
 {

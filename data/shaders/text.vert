@@ -1,8 +1,8 @@
 uniform mat4 projection;
 uniform mat4 modelview;
 uniform float currentTime;
-in vec2 vertex;
-out varying vec4 color;
+attribute vec2 vertex;
+varying vec4 color;
 
 void main()
 {

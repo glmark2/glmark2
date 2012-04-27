@@ -1,7 +1,7 @@
 uniform mat4 projection;
 uniform mat4 modelview;
-in vec3 vertex;
-out varying vec4 color;
+attribute vec3 vertex;
+varying vec4 color;
 
 void main()
 {

@@ -3,8 +3,8 @@ uniform mat4 modelview;
 varying vec3 vertex_normal;
 varying vec4 vertex_position;
 varying vec3 eye_direction;
-in vec3 vertex;
-in vec3 normal;
+attribute vec3 vertex;
+attribute vec3 normal;
 
 vec3 unitvec(vec4 v1, vec4 v2)
 {
