@@ -4,6 +4,7 @@
 #include "table.h"
 #include "logo.h"
 #include "lamp.h"
+#include "util.h"
 #include <sys/time.h>
 
 using LibMatrix::Stack4;
@@ -34,6 +35,7 @@ public:
     void initialize();
     void reset_time();
     void update_time();
+    void update_projection(const mat4& proj);
     void draw();
 
 private:
@@ -139,6 +141,19 @@ SceneIdeasPrivate::update_time()
     currentTime_ = timediff + timeOffset_;
 }
 
+void
+SceneIdeasPrivate::update_projection(const mat4& proj)
+{
+    // Projection hasn't changed since last frame.
+    if (projection_.getCurrent() == proj)
+    {
+        return;
+    }
+
+    projection_.loadIdentity();
+    projection_ *= proj;
+}
+
 SceneIdeas::SceneIdeas(Canvas& canvas) :
     Scene(canvas, "ideas")
 {
@@ -164,7 +179,12 @@ SceneIdeas::unload()
 void
 SceneIdeas::setup()
 {
+    Scene::setup();
     priv_->initialize();
+    priv_->update_projection(canvas_.projection());
+    running_ = true;
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
 }
 
 void
@@ -172,6 +192,7 @@ SceneIdeas::update()
 {
     Scene::update();
     priv_->update_time();
+    priv_->update_projection(canvas_.projection());
 }
 
 void
@@ -188,7 +209,7 @@ SceneIdeasPrivate::draw()
 
     vec4 lp4(lightPos_.x(), lightPos_.y(), lightPos_.z(), 0.0);
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
     //
     // SHADOW
