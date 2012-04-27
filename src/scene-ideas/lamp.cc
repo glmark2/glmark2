@@ -218,9 +218,7 @@ Lamp::draw(Stack4& modelview, Stack4& projection, const vec4* lightPositions)
     glEnableVertexAttribArray(vertexIndex);
     unlitProgram_[modelviewName_] = modelview.getCurrent();
     unlitProgram_[projectionName_] = projection.getCurrent();
-    // FIXME - replacing a GL_POLYGON with a GL_TRIANGLE_STRIP won't work, but
-    //         I need it to build first.
-    glDrawElements(GL_TRIANGLE_STRIP, 12, GL_UNSIGNED_INT, reinterpret_cast<const GLvoid*>(5 * 26 * sui));
+    glDrawElements(GL_TRIANGLE_FAN, 12, GL_UNSIGNED_INT, reinterpret_cast<const GLvoid*>(5 * 26 * sui));
     glDisableVertexAttribArray(vertexIndex);
     unlitProgram_.stop();
 

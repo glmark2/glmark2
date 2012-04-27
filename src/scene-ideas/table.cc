@@ -17,8 +17,8 @@ const unsigned int Table::TABLERES_(12);
 const vec3 Table::paperVertices_[4] = {
     vec3(-0.8, 0.0, 0.4),
     vec3(-0.2, 0.0, -1.4),
-    vec3(1.0, 0.0, -1.0),
     vec3(0.4, 0.0, 0.8),
+    vec3(1.0, 0.0, -1.0),
 };
 
 Table::Table() :
@@ -237,8 +237,6 @@ Table::draw(Stack4& modelview,
     glVertexAttribPointer(paperVertexIndex_, 3, GL_FLOAT, GL_FALSE, 0,
         reinterpret_cast<const GLvoid*>(dataMap_.pvOffset));
     glEnableVertexAttribArray(paperVertexIndex_);
-    // FIXME - replacing a GL_POLYGON with a GL_TRIANGLE_STRIP won't work, but
-    //         I need it to build first.
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glDisableVertexAttribArray(paperVertexIndex_);
     paperProgram_.stop();
