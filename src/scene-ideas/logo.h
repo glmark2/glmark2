@@ -40,6 +40,7 @@ private:
     void bendRight(LibMatrix::Stack4& ms);
     void bendForward(LibMatrix::Stack4& ms);
     void updateXform(const LibMatrix::mat4& mv, Program& program);
+    Program& getProgram();
     LibMatrix::vec3 currentPosition_;
     std::vector<LibMatrix::vec3> singleCylinderVertices_;
     std::vector<LibMatrix::vec3> singleCylinderNormals_;
