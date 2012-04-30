@@ -32,6 +32,7 @@ private:
     static const std::string light2PositionName_;
     static const std::string vertexAttribName_;
     static const std::string normalAttribName_;
+    static const std::string normalMatrixName_;
     std::vector<LibMatrix::vec3> vertexData_;
     std::vector<unsigned int> indexData_;
     unsigned int bufferObjects_[2];

@@ -15,6 +15,7 @@ const string Lamp::light1PositionName_("light1Position");
 const string Lamp::light2PositionName_("light2Position");
 const string Lamp::vertexAttribName_("vertex");
 const string Lamp::normalAttribName_("normal");
+const string Lamp::normalMatrixName_("normalMatrix");
 
 Lamp::Lamp() :
     valid_(false)
@@ -198,7 +199,13 @@ Lamp::draw(Stack4& modelview, Stack4& projection, const vec4* lightPositions)
     glVertexAttribPointer(normalIndex, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(vertexIndex);
     glEnableVertexAttribArray(normalIndex);
-    litProgram_[modelviewName_] = modelview.getCurrent();
+    const LibMatrix::mat4& mv = modelview.getCurrent();
+    LibMatrix::mat3 normalMatrix(mv[0][0], mv[1][0], mv[2][0],
+                                 mv[0][1], mv[1][1], mv[2][1],
+                                 mv[0][2], mv[1][2], mv[2][2]);
+    normalMatrix.transpose().inverse();
+    litProgram_[normalMatrixName_] = normalMatrix;
+    litProgram_[modelviewName_] = mv;
     litProgram_[projectionName_] = projection.getCurrent();
     litProgram_[light0PositionName_] = lightPositions[0];
     litProgram_[light1PositionName_] = lightPositions[1];
@@ -216,7 +223,7 @@ Lamp::draw(Stack4& modelview, Stack4& projection, const vec4* lightPositions)
     vertexIndex = unlitProgram_[vertexAttribName_].location();
     glVertexAttribPointer(vertexIndex, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(vertexIndex);
-    unlitProgram_[modelviewName_] = modelview.getCurrent();
+    unlitProgram_[modelviewName_] = mv;
     unlitProgram_[projectionName_] = projection.getCurrent();
     glDrawElements(GL_TRIANGLE_FAN, 12, GL_UNSIGNED_INT, reinterpret_cast<const GLvoid*>(5 * 26 * sui));
     glDisableVertexAttribArray(vertexIndex);
