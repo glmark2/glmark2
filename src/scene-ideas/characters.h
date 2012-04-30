@@ -29,27 +29,22 @@ struct Character
 {
     void draw()
     {
-        //glBindVertexArray(vertexArray_);
         glBindBuffer(GL_ARRAY_BUFFER, bufferObjects_[0]);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);
+        glVertexAttribPointer(vertexIndex_, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        glEnableVertexAttribArray(vertexIndex_);
         for (std::vector<PrimitiveState>::const_iterator primIt = primVec_.begin();
              primIt != primVec_.end();
              primIt++)
         {
             primIt->issue();
         }
-        //glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     void init(int vertexAttribIndex) 
     {
         vertexIndex_ = vertexAttribIndex;
-
-        // Create and bind a vertex array object to hold our buffer and 
-        // attribute state.
-        //glGenVertexArrays(1, &vertexArray_);
-        //glBindVertexArray(vertexArray_);
 
         // We need 2 buffers for our work here.  One for the vertex data.
         // and one for the index data.
@@ -72,16 +67,14 @@ struct Character
             indexData_.size() * sizeof(unsigned int), indexData_.data(), 
             GL_STATIC_DRAW);
 
-        // Unbind our vertex array object so that it's state isn't affected by
-        // other objects.
-        //glBindVertexArray(0);
+        // Unbind our vertex buffer objects so that their state isn't affected
+        // by other objects.
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     ~Character()
     {
         glDeleteBuffers(2, &bufferObjects_[0]);
-        //glDeleteVertexArrays(1, &vertexArray_);
     }
     Character() :
         vertexIndex_(0),
