@@ -19,6 +19,7 @@
 
 using std::string;
 using LibMatrix::mat4;
+using LibMatrix::mat3;
 using LibMatrix::vec2;
 using LibMatrix::vec3;
 using LibMatrix::vec4;
@@ -270,6 +271,17 @@ Program::Symbol::operator=(const mat4& m)
     {
         // Our matrix representation is column-major, so transpose is false here.
         glUniformMatrix4fv(location_, 1, GL_FALSE, m);
+    }
+    return *this;
+}
+
+Program::Symbol&
+Program::Symbol::operator=(const mat3& m)
+{
+    if (type_ == Uniform)
+    {
+        // Our matrix representation is column-major, so transpose is false here.
+        glUniformMatrix3fv(location_, 1, GL_FALSE, m);
     }
     return *this;
 }

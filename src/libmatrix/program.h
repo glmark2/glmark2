@@ -126,6 +126,7 @@ public:
         // These members cause data to be bound to program variables, so
         // the program must be bound for use for these to be effective.
         Symbol& operator=(const LibMatrix::mat4& m);
+        Symbol& operator=(const LibMatrix::mat3& m);
         Symbol& operator=(const LibMatrix::vec2& v);
         Symbol& operator=(const LibMatrix::vec3& v);
         Symbol& operator=(const LibMatrix::vec4& v);
