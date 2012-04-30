@@ -8,6 +8,7 @@ using LibMatrix::vec3;
 using LibMatrix::uvec3;
 using LibMatrix::vec4;
 using LibMatrix::Stack4;
+using LibMatrix::mat4;
 
 const unsigned int SGILogo::textureResolution_(32);
 const string SGILogo::modelviewName_("modelview");
@@ -16,6 +17,7 @@ const string SGILogo::lightPositionName_("light0Position");
 const string SGILogo::logoColorName_("logoColor");
 const string SGILogo::vertexAttribName_("vertex");
 const string SGILogo::normalAttribName_("normal");
+const string SGILogo::normalMatrixName_("normalMatrix");
 
 SGILogo::SGILogo(void) :
     normalNormalIndex_(0),
@@ -559,6 +561,26 @@ SGILogo::drawElbow(void)
     }
 }
 
+// Generate a normal matrix from a modelview matrix
+//
+// Since we can't universally handle the normal matrix inside the
+// vertex shader (inverse() and transpose() built-ins not supported by
+// GLSL ES, for example), we'll generate it here, and load it as a
+// uniform.
+void
+SGILogo::updateXform(const mat4& mv, Program& program)
+{
+    if (drawStyle_ == LOGO_NORMAL)
+    {
+        LibMatrix::mat3 normalMatrix(mv[0][0], mv[1][0], mv[2][0],
+                                     mv[0][1], mv[1][1], mv[2][1],
+                                     mv[0][2], mv[1][2], mv[2][2]);
+        normalMatrix.transpose().inverse();
+        program[normalMatrixName_] = normalMatrix;
+    }
+    program[modelviewName_] = mv;
+}
+
 void
 SGILogo::draw(Stack4& modelview, 
     Stack4& projection, 
@@ -604,112 +626,112 @@ SGILogo::draw(Stack4& modelview,
     (*curProgram)[projectionName_] = projection.getCurrent();
     modelview.translate(5.500000, -3.500000, 4.500000);
     modelview.translate(0.0,  0.0,  -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -5.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawSingleCylinder();
     bendRight(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -5.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawSingleCylinder();
     bendLeft(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -5.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawSingleCylinder();
     bendRight(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -5.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawSingleCylinder();
     bendLeft(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -5.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawSingleCylinder();
     bendRight(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -7.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawDoubleCylinder();
     bendForward(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     modelview.translate(0.0, 0.0, -5.000000);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawSingleCylinder();
     bendLeft(modelview);
-    (*curProgram)[modelviewName_] = modelview.getCurrent();
+    updateXform(modelview.getCurrent(), *curProgram);
     drawElbow();
     glDisableVertexAttribArray(vertexIndex_);
     switch (drawStyle_)

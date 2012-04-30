@@ -39,6 +39,7 @@ private:
     void bendLeft(LibMatrix::Stack4& ms);
     void bendRight(LibMatrix::Stack4& ms);
     void bendForward(LibMatrix::Stack4& ms);
+    void updateXform(const LibMatrix::mat4& mv, Program& program);
     LibMatrix::vec3 currentPosition_;
     std::vector<LibMatrix::vec3> singleCylinderVertices_;
     std::vector<LibMatrix::vec3> singleCylinderNormals_;
@@ -89,6 +90,7 @@ private:
     static const std::string logoColorName_;
     static const std::string vertexAttribName_;
     static const std::string normalAttribName_;
+    static const std::string normalMatrixName_;
     // "Shadow" state
     GLuint textureName_;
     GLubyte textureImage_[32][32];
