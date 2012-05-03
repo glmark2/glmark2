@@ -170,8 +170,8 @@ Lamp::init()
 
     // Initialize shader sources from input files and create programs from them
     // The program for handling lighting...
-    string lit_vtx_filename(GLMARK_DATA_PATH"/shaders/lamp-lit.vert");
-    string lit_frg_filename(GLMARK_DATA_PATH"/shaders/lamp-lit.frag");
+    string lit_vtx_filename(GLMARK_DATA_PATH"/shaders/ideas-lamp-lit.vert");
+    string lit_frg_filename(GLMARK_DATA_PATH"/shaders/ideas-lamp-lit.frag");
     ShaderSource lit_vtx_source(lit_vtx_filename);
     ShaderSource lit_frg_source(lit_frg_filename);
     if (!Scene::load_shaders_from_strings(litProgram_, lit_vtx_source.str(),
@@ -182,8 +182,8 @@ Lamp::init()
     }
 
     // The simple program with no lighting...
-    string unlit_vtx_filename(GLMARK_DATA_PATH"/shaders/lamp-unlit.vert");
-    string unlit_frg_filename(GLMARK_DATA_PATH"/shaders/lamp-unlit.frag");
+    string unlit_vtx_filename(GLMARK_DATA_PATH"/shaders/ideas-lamp-unlit.vert");
+    string unlit_frg_filename(GLMARK_DATA_PATH"/shaders/ideas-lamp-unlit.frag");
     ShaderSource unlit_vtx_source(unlit_vtx_filename);
     ShaderSource unlit_frg_source(unlit_frg_filename);
     if (!Scene::load_shaders_from_strings(unlitProgram_, unlit_vtx_source.str(),
