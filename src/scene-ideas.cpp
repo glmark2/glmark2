@@ -27,6 +27,7 @@
 #include "logo.h"
 #include "lamp.h"
 #include "util.h"
+#include "log.h"
 #include <sys/time.h>
 
 using LibMatrix::Stack4;
@@ -34,18 +35,15 @@ using LibMatrix::mat4;
 using LibMatrix::vec3;
 using LibMatrix::vec4;
 using LibMatrix::uvec3;
+using std::string;
 
 class SceneIdeasPrivate
 {
 public:
     SceneIdeasPrivate() :
         valid_(false),
-//        paused_(false),
-//        doTimerReset_(true),
-//        doPostIdle_(false),
-//        timeJerked_(false),
+        currentSpeed_(SPEED_MAXIMUM),
         currentTime_(START_TIME_),
-//        holdTime_(0),
         timeOffset_(START_TIME_)
     {
         startTime_.tv_sec = 0;
@@ -54,29 +52,29 @@ public:
     ~SceneIdeasPrivate()
     {
     }
-    void initialize();
+    void initialize(const string& speed);
     void reset_time();
     void update_time();
     void update_projection(const mat4& proj);
     void draw();
 
 private:
+    float speed_from_optval(const string& optval);
     void postIdle();
     void initLights();
-    //OptionData od_;
     bool valid_;
     Stack4 projection_;
     Stack4 modelview_;
-//    bool paused_;
-//    bool doTimerReset_;
-//    bool doPostIdle_;
-//    bool timeJerked_; // Indicates radical time shift due to UI.
+    float currentSpeed_;
     float currentTime_;
-//    float holdTime_;
     float timeOffset_;
     struct timeval startTime_;
     static const float TIME_;
     static const float START_TIME_;
+    static const float SPEED_SLOW;
+    static const float SPEED_MEDIUM;
+    static const float SPEED_FAST;
+    static const float SPEED_MAXIMUM;
     // Table
     Table table_;
     // Logo
@@ -101,6 +99,10 @@ private:
     vec4 lightPositions_[3];
 };
 
+const float SceneIdeasPrivate::SPEED_SLOW(0.2);
+const float SceneIdeasPrivate::SPEED_MEDIUM(0.4);
+const float SceneIdeasPrivate::SPEED_FAST(0.7);
+const float SceneIdeasPrivate::SPEED_MAXIMUM(1.0);
 const float SceneIdeasPrivate::TIME_(15.0);
 const float SceneIdeasPrivate::START_TIME_(0.6);
 const vec4 SceneIdeasPrivate::light0_position_(0.0, 1.0, 0.0, 0.0);
@@ -117,7 +119,7 @@ SceneIdeasPrivate::initLights()
 }
 
 void
-SceneIdeasPrivate::initialize()
+SceneIdeasPrivate::initialize(const string& speed)
 {
     // Initialize the positions for the lights we'll use.
     initLights();
@@ -126,20 +128,25 @@ SceneIdeasPrivate::initialize()
     table_.init();
     if (!table_.valid())
     {
+        Log::debug("SceneIdeas: table object not properly initialized!\n");
         return;
     }
     logo_.init();
     if (!logo_.valid())
     {
+        Log::debug("SceneIdeas: logo object not properly initialized!\n");
         return;
     }
     lamp_.init();
     if (!lamp_.valid())
     {
+        Log::debug("SceneIdeas: lamp object not properly initialized!\n");
         return;
     }
 
     reset_time();
+
+    currentSpeed_ = speed_from_optval(speed);
 
     // If we're here, we're okay to run.
     valid_ = true;
@@ -160,7 +167,7 @@ SceneIdeasPrivate::update_time()
     gettimeofday(&current, NULL);
     float timediff = (current.tv_sec - startTime_.tv_sec) + 
         static_cast<double>(current.tv_usec - startTime_.tv_usec) / 1000000.0;
-    currentTime_ = timediff + timeOffset_;
+    currentTime_ = timediff * currentSpeed_ + timeOffset_;
 
     // See if we've hit the end of the scene, temporally speaking.
     // If so, we need to clamp the time so that we "pause" on the final frame.
@@ -185,10 +192,35 @@ SceneIdeasPrivate::update_projection(const mat4& proj)
     projection_ *= proj;
 }
 
+float
+SceneIdeasPrivate::speed_from_optval(const string& optval)
+{
+    float retVal(SPEED_MAXIMUM);
+    if (optval == "slow")
+    {
+        retVal = SPEED_SLOW;
+    }
+    else if (optval == "medium")
+    {
+        retVal = SPEED_MEDIUM;
+    }
+    else if (optval == "fast")
+    {
+        retVal = SPEED_FAST;
+    }
+    else if (optval != "max")
+    {
+        Log::error("Unknown speed option '%s', using default.\n", optval.c_str());
+    }
+
+    return retVal;
+}
+
 SceneIdeas::SceneIdeas(Canvas& canvas) :
     Scene(canvas, "ideas")
 {
-    priv_ = new SceneIdeasPrivate();
+    options_["speed"] = Scene::Option("speed", "max",
+                                      "Rendering speed [slow, medium, fast, max]");
 }
 
 SceneIdeas::~SceneIdeas()
@@ -199,6 +231,7 @@ SceneIdeas::~SceneIdeas()
 bool
 SceneIdeas::load()
 {
+    running_ = false;
     return true;
 }
 
@@ -211,8 +244,12 @@ void
 SceneIdeas::setup()
 {
     Scene::setup();
-    priv_->initialize();
+    priv_ = new SceneIdeasPrivate();
+    priv_->initialize(options_["speed"].value);
     priv_->update_projection(canvas_.projection());
+
+    // Core Scene state
+    currentFrame_ = 0;
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
@@ -380,5 +417,7 @@ SceneIdeas::validate()
 void
 SceneIdeas::teardown()
 {
+    delete priv_;
+    priv_ = 0;
     Scene::teardown();
 }
