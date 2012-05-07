@@ -161,6 +161,15 @@ SceneIdeasPrivate::update_time()
     float timediff = (current.tv_sec - startTime_.tv_sec) + 
         static_cast<double>(current.tv_usec - startTime_.tv_usec) / 1000000.0;
     currentTime_ = timediff + timeOffset_;
+
+    // See if we've hit the end of the scene, temporally speaking.
+    // If so, we need to clamp the time so that we "pause" on the final frame.
+    // If we're also running continuously, we need to reset back to the
+    // beginning after a few seconds.
+    if (currentTime_ > (TIME_ * 1.0) - 3.0)
+    {
+        currentTime_ = ((TIME_ * 1.0) - 3.001);
+    }
 }
 
 void
@@ -230,8 +239,6 @@ SceneIdeasPrivate::draw()
     logo_.setPosition(logoPos_);
 
     vec4 lp4(lightPos_.x(), lightPos_.y(), lightPos_.z(), 0.0);
-
-//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
     //
     // SHADOW
