@@ -79,7 +79,8 @@ ScenePulsar::setup()
     glDisable(GL_CULL_FACE);
     // Enable alpha blending
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // Blend the colors normally, but don't change the destination alpha value.
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 
     // Create a rotation for each quad.
     numQuads_ = Util::fromString<int>(options_["quads"].value);

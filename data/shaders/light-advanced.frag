@@ -29,5 +29,5 @@ void main(void)
                     pow(max(dot(N,H), 0.0), MaterialShininess);
 
     // Calculate the final color
-    gl_FragColor = ambient + specular + diffuse;
+    gl_FragColor = vec4((ambient + specular + diffuse).xyz, 1.0);
 }

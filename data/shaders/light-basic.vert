@@ -19,7 +19,7 @@ void main(void)
     // Multiply the diffuse value by the vertex color (which is fixed in this case)
     // to get the actual color that we will use to draw this vertex with
     float diffuse = max(dot(N, L), 0.0);
-    Color = diffuse * MaterialDiffuse;
+    Color = vec4(diffuse * MaterialDiffuse.rgb, MaterialDiffuse.a);
 
     // Set the texture coordinates as a varying
     TextureCoord = texcoord;

@@ -494,7 +494,12 @@ public:
          */
         if (draw_contents_) {
             glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            /*
+             * Blend the colors normally, but don't change the
+             * destination alpha value.
+             */
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+                                GL_ZERO, GL_ONE);
             window_contents_.position(position());
             window_contents_.render_to(target);
             glDisable(GL_BLEND);
@@ -658,7 +663,12 @@ public:
     virtual void render_to(RenderObject& target)
     {
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        /*
+         * Blend the colors normally, but don't change the
+         * destination alpha value.
+         */
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+                            GL_ZERO, GL_ONE);
 
         /* Bottom shadow */
         shadow_h_.rotation(0.0);

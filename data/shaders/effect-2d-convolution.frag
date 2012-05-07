@@ -7,6 +7,6 @@ void main(void)
 
     $CONVOLUTION$
 
-    gl_FragColor = result;
+    gl_FragColor = vec4(result.xyz, 1.0);
 }
 
