@@ -172,14 +172,14 @@ Table::init(void)
     glBindBuffer(GL_ARRAY_BUFFER, bufferObjects_[0]);
     glBufferData(GL_ARRAY_BUFFER, dataMap_.totalSize, 0, GL_STATIC_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, dataMap_.tvOffset, dataMap_.tvSize, 
-                    tableVertices_.data());
+                    &tableVertices_.front());
     glBufferSubData(GL_ARRAY_BUFFER, dataMap_.pvOffset, dataMap_.pvSize,
                     &paperVertices_[0]);
 
     // Now repeat for our index data.
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData_.size() * sizeof(unsigned int),
-                 indexData_.data(), GL_STATIC_DRAW);
+                 &indexData_.front(), GL_STATIC_DRAW);
 
     // We're ready to go.
     valid_ = true;

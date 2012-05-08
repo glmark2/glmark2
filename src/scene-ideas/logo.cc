@@ -471,24 +471,24 @@ SGILogo::init()
     glBindBuffer(GL_ARRAY_BUFFER, bufferObjects_[0]);
     glBufferData(GL_ARRAY_BUFFER, dataMap_.totalSize, 0, GL_STATIC_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, dataMap_.scvOffset, dataMap_.scvSize,
-                    singleCylinderVertices_.data());
+                    &singleCylinderVertices_.front());
     glBufferSubData(GL_ARRAY_BUFFER, dataMap_.scnOffset, dataMap_.scnSize,
-                    singleCylinderNormals_.data());
+                    &singleCylinderNormals_.front());
     glBufferSubData(GL_ARRAY_BUFFER, dataMap_.dcvOffset, dataMap_.dcvSize,
-                    doubleCylinderVertices_.data());
+                    &doubleCylinderVertices_.front());
     glBufferSubData(GL_ARRAY_BUFFER, dataMap_.dcnOffset, dataMap_.dcnSize,
-                    doubleCylinderNormals_.data());
+                    &doubleCylinderNormals_.front());
     glBufferSubData(GL_ARRAY_BUFFER, dataMap_.evOffset, dataMap_.evSize,
-                    elbowVertices_.data());
+                    &elbowVertices_.front());
     glBufferSubData(GL_ARRAY_BUFFER, dataMap_.enOffset, dataMap_.enSize, 
-                    elbowNormals_.data());
+                    &elbowNormals_.front());
     glBufferSubData(GL_ARRAY_BUFFER, dataMap_.esvOffset, dataMap_.esvSize, 
-                    elbowShadowVertices_.data());
+                    &elbowShadowVertices_.front());
 
     // Now repeat for our index data.
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData_.size() * sizeof(unsigned int),
-                 indexData_.data(), GL_STATIC_DRAW);
+                 &indexData_.front(), GL_STATIC_DRAW);
 
     // Setup our the texture that the shadow program will use...
     glGenTextures(1, &textureName_);

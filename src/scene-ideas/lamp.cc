@@ -200,11 +200,11 @@ Lamp::init()
     // First, setup the vertex data by binding the first buffer object, 
     // allocating its data store, and filling it in with our vertex data.
     glBindBuffer(GL_ARRAY_BUFFER, bufferObjects_[0]);
-    glBufferData(GL_ARRAY_BUFFER, vertexData_.size() * sizeof(vec3), vertexData_.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexData_.size() * sizeof(vec3), &vertexData_.front(), GL_STATIC_DRAW);
 
     // Now repeat for our index data.
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData_.size() * sizeof(unsigned int), indexData_.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData_.size() * sizeof(unsigned int), &indexData_.front(), GL_STATIC_DRAW);
 
     // We're ready to go.
     valid_ = true;
