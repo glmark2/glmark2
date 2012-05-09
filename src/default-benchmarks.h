@@ -41,7 +41,6 @@ public:
 private:
     static void populate(std::vector<std::string>& benchmarks)
     {
-        benchmarks.push_back("ideas:speed=max:duration=12");
         benchmarks.push_back("build:use-vbo=false");
         benchmarks.push_back("build:use-vbo=true");
         benchmarks.push_back("texture:texture-filter=nearest");
@@ -61,6 +60,7 @@ private:
         benchmarks.push_back("buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=map:interleave=false");
         benchmarks.push_back("buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=subdata:interleave=false");
         benchmarks.push_back("buffer:update-fraction=0.5:update-dispersion=0.9:columns=200:update-method=map:interleave=true");
+        benchmarks.push_back("ideas:speed=max:duration=12");
         benchmarks.push_back("conditionals:vertex-steps=0:fragment-steps=0");
         benchmarks.push_back("conditionals:vertex-steps=0:fragment-steps=5");
         benchmarks.push_back("conditionals:vertex-steps=5:fragment-steps=0");
