@@ -171,11 +171,10 @@ SceneIdeasPrivate::update_time()
         static_cast<double>(current.tv_usec - startTime_.tv_usec) / 1000000.0;
     float sceneTime = timediff * currentSpeed_ + timeOffset_;
 
-    // The current time is always in [START_TIME_..CYCLE_TIME_)
-    currentTime_ = std::fmod(sceneTime, CYCLE_TIME_);
-
+    // Keep the current time in [START_TIME_..CYCLE_TIME_)
     // Every other cycle starting with 0 start at the beginning and goes
     // forward in time.  Other cycles start at the end and go backwards.
+    currentTime_ = std::fmod(sceneTime, CYCLE_TIME_);
     unsigned int cycle = sceneTime/CYCLE_TIME_;
     if (cycle % 2)
     {
