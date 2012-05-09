@@ -69,6 +69,7 @@ private:
     float currentTime_;
     float timeOffset_;
     struct timeval startTime_;
+    static const float CYCLE_TIME_;
     static const float TIME_;
     static const float START_TIME_;
     static const float SPEED_SLOW;
@@ -104,6 +105,7 @@ const float SceneIdeasPrivate::SPEED_MEDIUM(0.4);
 const float SceneIdeasPrivate::SPEED_FAST(0.7);
 const float SceneIdeasPrivate::SPEED_MAXIMUM(1.0);
 const float SceneIdeasPrivate::TIME_(15.0);
+const float SceneIdeasPrivate::CYCLE_TIME_(TIME_ * 1.0 - 3.0);
 const float SceneIdeasPrivate::START_TIME_(0.6);
 const vec4 SceneIdeasPrivate::light0_position_(0.0, 1.0, 0.0, 0.0);
 const vec4 SceneIdeasPrivate::light1_position_(-1.0, 0.0, 0.0, 0.0);
@@ -167,13 +169,17 @@ SceneIdeasPrivate::update_time()
     gettimeofday(&current, NULL);
     float timediff = (current.tv_sec - startTime_.tv_sec) + 
         static_cast<double>(current.tv_usec - startTime_.tv_usec) / 1000000.0;
-    currentTime_ = timediff * currentSpeed_ + timeOffset_;
+    float sceneTime = timediff * currentSpeed_ + timeOffset_;
 
-    // See if we've hit the end of the scene, temporally speaking.
-    // If so, we need to clamp the time so that we "pause" on the final frame.
-    if (currentTime_ > (TIME_ * 1.0) - 3.0)
+    // The current time is always in [START_TIME_..CYCLE_TIME_)
+    currentTime_ = std::fmod(sceneTime, CYCLE_TIME_);
+
+    // Every other cycle starting with 0 start at the beginning and goes
+    // forward in time.  Other cycles start at the end and go backwards.
+    unsigned int cycle = sceneTime/CYCLE_TIME_;
+    if (cycle % 2)
     {
-        currentTime_ = ((TIME_ * 1.0) - 3.001);
+        currentTime_ = CYCLE_TIME_ - currentTime_;
     }
 }
 
