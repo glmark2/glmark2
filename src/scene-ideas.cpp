@@ -171,8 +171,6 @@ SceneIdeasPrivate::update_time()
 
     // See if we've hit the end of the scene, temporally speaking.
     // If so, we need to clamp the time so that we "pause" on the final frame.
-    // If we're also running continuously, we need to reset back to the
-    // beginning after a few seconds.
     if (currentTime_ > (TIME_ * 1.0) - 3.0)
     {
         currentTime_ = ((TIME_ * 1.0) - 3.001);
