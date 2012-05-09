@@ -41,6 +41,7 @@ public:
 private:
     static void populate(std::vector<std::string>& benchmarks)
     {
+        benchmarks.push_back("ideas:speed=max:duration=12");
         benchmarks.push_back("build:use-vbo=false");
         benchmarks.push_back("build:use-vbo=true");
         benchmarks.push_back("texture:texture-filter=nearest");
