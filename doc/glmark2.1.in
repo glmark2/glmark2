@@ -27,6 +27,11 @@ How to end a frame [default,none,swap,finish,readpixels]
 \fB\-\-off-screen\fR
 Render to an off-screen surface
 .TP
+\fB--visual-config\fR
+The visual configuration to use for the rendering target:
+\'red=R:green=G:blue=B:alpha=A:buffer=BUF'. The parameters may be defined
+in any order, and any omitted parameters assume a default value of '1'
+.TP
 \fB\-\-reuse\-context\fR
 Use a single context for all scenes
 (by default, each scene gets its own context)
