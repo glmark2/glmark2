@@ -151,11 +151,12 @@ CanvasX11GLX::ensure_glx_fbconfig()
         GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
         GLX_RENDER_TYPE, GLX_RGBA_BIT,
         GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
-        GLX_RED_SIZE, 1,
-        GLX_GREEN_SIZE, 1,
-        GLX_BLUE_SIZE, 1,
-        GLX_ALPHA_SIZE, 1,
-        GLX_DEPTH_SIZE, 1,
+        GLX_RED_SIZE, visual_config_.red,
+        GLX_GREEN_SIZE, visual_config_.green,
+        GLX_BLUE_SIZE, visual_config_.blue,
+        GLX_ALPHA_SIZE, visual_config_.alpha,
+        GLX_DEPTH_SIZE, visual_config_.depth,
+        GLX_BUFFER_SIZE, visual_config_.buffer,
         GLX_DOUBLEBUFFER, True,
         None
     };

@@ -129,12 +129,13 @@ CanvasX11EGL::ensure_egl_display()
 bool
 CanvasX11EGL::ensure_egl_config()
 {
-    static const EGLint attribs[] = {
-        EGL_RED_SIZE, 1,
-        EGL_GREEN_SIZE, 1,
-        EGL_BLUE_SIZE, 1,
-        EGL_ALPHA_SIZE, 1,
-        EGL_DEPTH_SIZE, 1,
+    const EGLint attribs[] = {
+        EGL_RED_SIZE, visual_config_.red,
+        EGL_GREEN_SIZE, visual_config_.green,
+        EGL_BLUE_SIZE, visual_config_.blue,
+        EGL_ALPHA_SIZE, visual_config_.alpha,
+        EGL_DEPTH_SIZE, visual_config_.depth,
+        EGL_BUFFER_SIZE, visual_config_.buffer,
 #ifdef USE_GLESv2
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 #elif USE_GL
