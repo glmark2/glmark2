@@ -167,6 +167,8 @@ main(int argc, char *argv[])
 
     canvas.offscreen(Options::offscreen);
 
+    canvas.visual_config(Options::visual_config);
+
     vector<Scene*> scenes;
 
     // Register the scenes, so they can be looked up by name

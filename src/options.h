@@ -26,6 +26,7 @@
 
 #include <string>
 #include <vector>
+#include "gl-visual-config.h"
 
 struct Options {
     enum FrameEnd {
@@ -52,6 +53,7 @@ struct Options {
     static bool run_forever;
     static bool annotate;
     static bool offscreen;
+    static GLVisualConfig visual_config;
 };
 
 #endif /* OPTIONS_H_ */
