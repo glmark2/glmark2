@@ -60,3 +60,61 @@ GLVisualConfig::GLVisualConfig(const std::string &s) :
     }
 }
 
+int
+GLVisualConfig::match_score(const GLVisualConfig &target) const
+{
+    int score(0);
+
+    /* 
+     * R,G,B,A integer values are at most 8 bits wide (for current widespread
+     * hardware), so we need to scale them by 4 to get them in the [0,32] range.
+     */
+    score += score_component(red, target.red, 4);
+    score += score_component(green, target.green, 4);
+    score += score_component(blue, target.blue, 4);
+    score += score_component(alpha, target.alpha, 4);
+    score += score_component(depth, target.depth, 1);
+    score += score_component(buffer, target.buffer, 1);
+
+    return score;
+}
+
+int
+GLVisualConfig::score_component(int component, int target, int scale) const
+{
+    /* 
+     * The maximum (positive) score that can be returned is based
+     * on the maximum bit width of the components. We assume this to
+     * be 32 bits, which is a reasonable assumption for current platforms.
+     */
+    static const int MAXIMUM_COMPONENT_SCORE = 32;
+    static const int UNACCEPTABLE_COMPONENT_PENALTY = -1000;
+    int score(0);
+
+    if ((component > 0 && target == 0) ||
+        (component == 0 && target > 0))
+    {
+        /* 
+         * Penalize components that are not present but have been requested,
+         * and components that have been excluded but are present.
+         */
+        score = UNACCEPTABLE_COMPONENT_PENALTY;
+    }
+    else if (component == target)
+    {
+        /* Reward exact matches with the maximum per component score */
+        score = MAXIMUM_COMPONENT_SCORE;
+    }
+    else
+    {
+        /* 
+         * Reward deeper than requested component values, penalize shallower
+         * than requested component values. Because the ranges of component
+         * values vary we use a scaling factor to even them out, so that the
+         * score for all components ranges from [0,MAXIMUM_COMPONENT_SCORE).
+         */
+        score = scale * (component - target);
+    }
+
+    return score;
+}

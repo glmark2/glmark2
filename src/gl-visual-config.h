@@ -36,12 +36,29 @@ public:
         red(r), green(g), blue(b), alpha(a), depth(d), buffer(buf) {}
     GLVisualConfig(const std::string &s);
 
+    /**
+     * How well a GLVisualConfig matches another target config.
+     *
+     * The returned score has no meaning on its own. Its only purpose is
+     * to allow comparison of how well different configs match a target
+     * config, with a higher scores denoting a better match.
+     *
+     * Also note that this operation is not commutative:
+     * a.match_score(b) != b.match_score(a)
+     *
+     * @return the match score
+     */
+    int match_score(const GLVisualConfig &target) const;
+
     int red;
     int green;
     int blue;
     int alpha;
     int depth;
     int buffer;
+
+private:
+    int score_component(int component, int target, int scale) const;
 };
 
 #endif
