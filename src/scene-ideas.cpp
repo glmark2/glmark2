@@ -36,13 +36,14 @@ using LibMatrix::vec3;
 using LibMatrix::vec4;
 using LibMatrix::uvec3;
 using std::string;
+using std::map;
 
 class SceneIdeasPrivate
 {
 public:
     SceneIdeasPrivate() :
         valid_(false),
-        currentSpeed_(SPEED_MAXIMUM),
+        currentSpeed_(1.0), // Real time.
         currentTime_(START_TIME_),
         timeOffset_(START_TIME_)
     {
@@ -52,14 +53,13 @@ public:
     ~SceneIdeasPrivate()
     {
     }
-    void initialize(const string& speed);
+    void initialize(map<string, Scene::Option>& options);
     void reset_time();
     void update_time();
     void update_projection(const mat4& proj);
     void draw();
 
 private:
-    float speed_from_optval(const string& optval);
     void postIdle();
     void initLights();
     bool valid_;
@@ -72,10 +72,6 @@ private:
     static const float CYCLE_TIME_;
     static const float TIME_;
     static const float START_TIME_;
-    static const float SPEED_SLOW;
-    static const float SPEED_MEDIUM;
-    static const float SPEED_FAST;
-    static const float SPEED_MAXIMUM;
     // Table
     Table table_;
     // Logo
@@ -100,10 +96,6 @@ private:
     vec4 lightPositions_[3];
 };
 
-const float SceneIdeasPrivate::SPEED_SLOW(0.2);
-const float SceneIdeasPrivate::SPEED_MEDIUM(0.4);
-const float SceneIdeasPrivate::SPEED_FAST(0.7);
-const float SceneIdeasPrivate::SPEED_MAXIMUM(1.0);
 const float SceneIdeasPrivate::TIME_(15.0);
 const float SceneIdeasPrivate::CYCLE_TIME_(TIME_ * 1.0 - 3.0);
 const float SceneIdeasPrivate::START_TIME_(0.6);
@@ -121,7 +113,7 @@ SceneIdeasPrivate::initLights()
 }
 
 void
-SceneIdeasPrivate::initialize(const string& speed)
+SceneIdeasPrivate::initialize(map<string, Scene::Option>& options)
 {
     // Initialize the positions for the lights we'll use.
     initLights();
@@ -148,7 +140,19 @@ SceneIdeasPrivate::initialize(const string& speed)
 
     reset_time();
 
-    currentSpeed_ = speed_from_optval(speed);
+    // If the option string tells us the user wants the speed to be a function
+    // of the scene duration, do it.  Otherwise, take the value explicitly.
+    static const string durationLabel("duration");
+    static const string speedLabel("speed");
+    if (options[speedLabel].value == durationLabel)
+    {
+        float duration = Util::fromString<float>(options[durationLabel].value);
+        currentSpeed_ = (CYCLE_TIME_ - START_TIME_) / duration;
+    }
+    else
+    {
+        currentSpeed_ = Util::fromString<float>(options[speedLabel].value);
+    }
 
     // If we're here, we're okay to run.
     valid_ = true;
@@ -195,35 +199,11 @@ SceneIdeasPrivate::update_projection(const mat4& proj)
     projection_ *= proj;
 }
 
-float
-SceneIdeasPrivate::speed_from_optval(const string& optval)
-{
-    float retVal(SPEED_MAXIMUM);
-    if (optval == "slow")
-    {
-        retVal = SPEED_SLOW;
-    }
-    else if (optval == "medium")
-    {
-        retVal = SPEED_MEDIUM;
-    }
-    else if (optval == "fast")
-    {
-        retVal = SPEED_FAST;
-    }
-    else if (optval != "max")
-    {
-        Log::error("Unknown speed option '%s', using default.\n", optval.c_str());
-    }
-
-    return retVal;
-}
-
 SceneIdeas::SceneIdeas(Canvas& canvas) :
     Scene(canvas, "ideas")
 {
-    options_["speed"] = Scene::Option("speed", "max",
-                                      "Rendering speed [slow, medium, fast, max]");
+    options_["speed"] = Scene::Option("speed", "duration",
+                                      "Time coefficient (1.0 is \"wall clock\" speed, <1.0 is slower, >1.0 is faster).  A special value of \"duration\" computes this as a function of the \"duration\" option");
 }
 
 SceneIdeas::~SceneIdeas()
@@ -248,7 +228,7 @@ SceneIdeas::setup()
 {
     Scene::setup();
     priv_ = new SceneIdeasPrivate();
-    priv_->initialize(options_["speed"].value);
+    priv_->initialize(options_);
     priv_->update_projection(canvas_.projection());
 
     // Core Scene state
