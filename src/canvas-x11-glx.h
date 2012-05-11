@@ -43,7 +43,7 @@ protected:
     bool make_current();
     bool reset_context();
     void swap_buffers() { glXSwapBuffers(xdpy_, xwin_); }
-    void get_glvisualinfo(GLVisualInfo &gl_visinfo);
+    void get_glvisualconfig(GLVisualConfig &visual_config);
 
 private:
     bool check_glx_version();
@@ -51,6 +51,7 @@ private:
     bool ensure_glx_fbconfig();
     bool ensure_glx_context();
     void init_gl_extensions();
+    void get_glvisualconfig_glx(GLXFBConfig config, GLVisualConfig &visual_config);
 
     GLXFBConfig glx_fbconfig_;
     GLXContext glx_context_;
