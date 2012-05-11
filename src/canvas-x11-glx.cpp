@@ -24,6 +24,7 @@
 #include "options.h"
 
 #include <string>
+#include <climits>
 
 static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT_;
 static PFNGLXSWAPINTERVALMESAPROC glXSwapIntervalMESA_;
@@ -170,10 +171,12 @@ CanvasX11GLX::ensure_glx_fbconfig()
         return false;
     }
 
+    std::vector<GLXFBConfig> configs(fbc, fbc + num_configs);
+
     Log::debug("Found %d matching FB configs.\n", num_configs);
 
-    /* Get the first matching config */
-    glx_fbconfig_ = fbc[0];
+    /* Select the best matching config */
+    glx_fbconfig_ = select_best_config(configs);
 
     XFree(fbc);
 
@@ -248,4 +251,35 @@ CanvasX11GLX::get_glvisualconfig_glx(const GLXFBConfig config, GLVisualConfig &v
     glXGetFBConfigAttrib(xdpy_, config, GLX_BLUE_SIZE, &visual_config.blue);
     glXGetFBConfigAttrib(xdpy_, config, GLX_ALPHA_SIZE, &visual_config.alpha);
     glXGetFBConfigAttrib(xdpy_, config, GLX_DEPTH_SIZE, &visual_config.depth);
+}
+
+GLXFBConfig
+CanvasX11GLX::select_best_config(std::vector<GLXFBConfig> configs)
+{
+    int best_score(INT_MIN);
+    GLXFBConfig best_config(0);
+
+    /*
+     * Go through all the configs and choose the one with the best score,
+     * i.e., the one better matching the requested config.
+     */
+    for (std::vector<GLXFBConfig>::const_iterator iter = configs.begin();
+         iter != configs.end();
+         iter++)
+    {
+        const GLXFBConfig config(*iter);
+        GLVisualConfig vc;
+        int score;
+
+        get_glvisualconfig_glx(config, vc);
+
+        score = vc.match_score(visual_config_);
+
+        if (score > best_score) {
+            best_score = score;
+            best_config = config;
+        }
+    }
+
+    return best_config;
 }

@@ -25,6 +25,7 @@
 #include "canvas-x11.h"
 
 #include <EGL/egl.h>
+#include <vector>
 
 /**
  * Canvas for rendering to an X11 window using EGL.
@@ -52,6 +53,7 @@ private:
     bool ensure_egl_surface();
     void init_gl_extensions();
     void get_glvisualconfig_egl(EGLConfig config, GLVisualConfig &visual_config);
+    EGLConfig select_best_config(std::vector<EGLConfig> configs);
 
     EGLDisplay egl_display_;
     EGLSurface egl_surface_;

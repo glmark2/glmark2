@@ -27,6 +27,7 @@
 #define GLX_GLXEXT_PROTOTYPES
 #include <GL/glx.h>
 #include <GL/glxext.h>
+#include <vector>
 
 /**
  * Canvas for rendering to an X11 window using GLX.
@@ -52,6 +53,7 @@ private:
     bool ensure_glx_context();
     void init_gl_extensions();
     void get_glvisualconfig_glx(GLXFBConfig config, GLVisualConfig &visual_config);
+    GLXFBConfig select_best_config(std::vector<GLXFBConfig> configs);
 
     GLXFBConfig glx_fbconfig_;
     GLXContext glx_context_;

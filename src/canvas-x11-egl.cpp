@@ -25,6 +25,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <climits>
 
 /*********************
  * Protected methods *
@@ -147,13 +148,31 @@ CanvasX11EGL::ensure_egl_config()
     if (!ensure_egl_display())
         return false;
 
-    if (!eglChooseConfig(egl_display_, attribs, &egl_config_,
-                         1, &num_configs))
+    /* Find out how many configs match the attributes */
+    if (!eglChooseConfig(egl_display_, attribs, 0, 0, &num_configs)) {
+        Log::error("eglChooseConfig() (explore) failed with error: %d\n",
+                   eglGetError());
+        return false;
+    }
+
+    if (num_configs == 0) {
+        Log::error("eglChooseConfig() didn't return any configs\n");
+        return false;
+    }
+
+    /* Get all the matching configs */
+    std::vector<EGLConfig> configs(num_configs);
+
+    if (!eglChooseConfig(egl_display_, attribs, &(configs[0]),
+                         num_configs, &num_configs))
     {
         Log::error("eglChooseConfig() failed with error: %d\n",
                      eglGetError());
         return false;
     }
+
+    /* Select the best matching config */
+    egl_config_ = select_best_config(configs);
 
     if (!eglGetConfigAttrib(egl_display_, egl_config_,
                             EGL_NATIVE_VISUAL_ID, &vid))
@@ -287,4 +306,35 @@ CanvasX11EGL::get_glvisualconfig_egl(EGLConfig config, GLVisualConfig &visual_co
     eglGetConfigAttrib(egl_display_, config, EGL_BLUE_SIZE, &visual_config.blue);
     eglGetConfigAttrib(egl_display_, config, EGL_ALPHA_SIZE, &visual_config.alpha);
     eglGetConfigAttrib(egl_display_, config, EGL_DEPTH_SIZE, &visual_config.depth);
+}
+
+EGLConfig
+CanvasX11EGL::select_best_config(std::vector<EGLConfig> configs)
+{
+    int best_score(INT_MIN);
+    EGLConfig best_config(0);
+
+    /*
+     * Go through all the configs and choose the one with the best score,
+     * i.e., the one better matching the requested config.
+     */
+    for (std::vector<EGLConfig>::const_iterator iter = configs.begin();
+         iter != configs.end();
+         iter++)
+    {
+        const EGLConfig config(*iter);
+        GLVisualConfig vc;
+        int score;
+
+        get_glvisualconfig_egl(config, vc);
+
+        score = vc.match_score(visual_config_);
+
+        if (score > best_score) {
+            best_score = score;
+            best_config = config;
+        }
+    }
+
+    return best_config;
 }
