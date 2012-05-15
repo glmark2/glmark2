@@ -24,6 +24,7 @@
 #include "options.h"
 
 #include <string>
+#include <climits>
 
 static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT_;
 static PFNGLXSWAPINTERVALMESAPROC glXSwapIntervalMESA_;
@@ -69,17 +70,12 @@ CanvasX11GLX::make_current()
 }
 
 void
-CanvasX11GLX::get_glvisualinfo(GLVisualInfo &gl_visinfo)
+CanvasX11GLX::get_glvisualconfig(GLVisualConfig &visual_config)
 {
     if (!ensure_glx_fbconfig())
         return;
 
-    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_BUFFER_SIZE, &gl_visinfo.buffer_size);
-    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_RED_SIZE, &gl_visinfo.red_size);
-    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_GREEN_SIZE, &gl_visinfo.green_size);
-    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_BLUE_SIZE, &gl_visinfo.blue_size);
-    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_ALPHA_SIZE, &gl_visinfo.alpha_size);
-    glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_DEPTH_SIZE, &gl_visinfo.depth_size);
+    get_glvisualconfig_glx(glx_fbconfig_, visual_config);
 }
 
 /*******************
@@ -151,11 +147,12 @@ CanvasX11GLX::ensure_glx_fbconfig()
         GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
         GLX_RENDER_TYPE, GLX_RGBA_BIT,
         GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
-        GLX_RED_SIZE, 1,
-        GLX_GREEN_SIZE, 1,
-        GLX_BLUE_SIZE, 1,
-        GLX_ALPHA_SIZE, 1,
-        GLX_DEPTH_SIZE, 1,
+        GLX_RED_SIZE, visual_config_.red,
+        GLX_GREEN_SIZE, visual_config_.green,
+        GLX_BLUE_SIZE, visual_config_.blue,
+        GLX_ALPHA_SIZE, visual_config_.alpha,
+        GLX_DEPTH_SIZE, visual_config_.depth,
+        GLX_BUFFER_SIZE, visual_config_.buffer,
         GLX_DOUBLEBUFFER, True,
         None
     };
@@ -174,10 +171,12 @@ CanvasX11GLX::ensure_glx_fbconfig()
         return false;
     }
 
+    std::vector<GLXFBConfig> configs(fbc, fbc + num_configs);
+
     Log::debug("Found %d matching FB configs.\n", num_configs);
 
-    /* Get the first matching config */
-    glx_fbconfig_ = fbc[0];
+    /* Select the best matching config */
+    glx_fbconfig_ = select_best_config(configs);
 
     XFree(fbc);
 
@@ -243,3 +242,44 @@ CanvasX11GLX::ensure_glx_context()
     return true;
 }
 
+void
+CanvasX11GLX::get_glvisualconfig_glx(const GLXFBConfig config, GLVisualConfig &visual_config)
+{
+    glXGetFBConfigAttrib(xdpy_, config, GLX_BUFFER_SIZE, &visual_config.buffer);
+    glXGetFBConfigAttrib(xdpy_, config, GLX_RED_SIZE, &visual_config.red);
+    glXGetFBConfigAttrib(xdpy_, config, GLX_GREEN_SIZE, &visual_config.green);
+    glXGetFBConfigAttrib(xdpy_, config, GLX_BLUE_SIZE, &visual_config.blue);
+    glXGetFBConfigAttrib(xdpy_, config, GLX_ALPHA_SIZE, &visual_config.alpha);
+    glXGetFBConfigAttrib(xdpy_, config, GLX_DEPTH_SIZE, &visual_config.depth);
+}
+
+GLXFBConfig
+CanvasX11GLX::select_best_config(std::vector<GLXFBConfig> configs)
+{
+    int best_score(INT_MIN);
+    GLXFBConfig best_config(0);
+
+    /*
+     * Go through all the configs and choose the one with the best score,
+     * i.e., the one better matching the requested config.
+     */
+    for (std::vector<GLXFBConfig>::const_iterator iter = configs.begin();
+         iter != configs.end();
+         iter++)
+    {
+        const GLXFBConfig config(*iter);
+        GLVisualConfig vc;
+        int score;
+
+        get_glvisualconfig_glx(config, vc);
+
+        score = vc.match_score(visual_config_);
+
+        if (score > best_score) {
+            best_score = score;
+            best_config = config;
+        }
+    }
+
+    return best_config;
+}

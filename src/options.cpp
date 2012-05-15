@@ -43,6 +43,7 @@ bool Options::reuse_context = false;
 bool Options::run_forever = false;
 bool Options::annotate = false;
 bool Options::offscreen = false;
+GLVisualConfig Options::visual_config;
 
 static struct option long_options[] = {
     {"annotate", 0, 0, 0},
@@ -51,6 +52,7 @@ static struct option long_options[] = {
     {"validate", 0, 0, 0},
     {"frame-end", 1, 0, 0},
     {"off-screen", 0, 0, 0},
+    {"visual-config", 1, 0, 0},
     {"reuse-context", 0, 0, 0},
     {"run-forever", 0, 0, 0},
     {"size", 1, 0, 0},
@@ -109,7 +111,6 @@ frame_end_from_str(const std::string &str)
     return m;
 }
 
-
 void
 Options::print_help()
 {
@@ -125,6 +126,10 @@ Options::print_help()
            "                         running the benchmarks\n"
            "      --frame-end METHOD How to end a frame [default,none,swap,finish,readpixels]\n"
            "      --off-screen       Render to an off-screen surface\n"
+           "      --visual-config C  The visual configuration to use for the rendering\n"
+           "                         target: 'red=R:green=G:blue=B:alpha=A:buffer=BUF'.\n"
+           "                         The parameters may be defined in any order, and any\n"
+           "                         omitted parameters assume a default value of '1'\n"
            "      --reuse-context    Use a single context for all scenes\n"
            "                         (by default, each scene gets its own context)\n"
            "  -s, --size WxH         Size of the output window (default: 800x600)\n"
@@ -170,6 +175,8 @@ Options::parse_args(int argc, char **argv)
             Options::frame_end = frame_end_from_str(optarg);
         else if (!strcmp(optname, "off-screen"))
             Options::offscreen = true;
+        else if (!strcmp(optname, "visual-config"))
+            Options::visual_config = GLVisualConfig(optarg);
         else if (!strcmp(optname, "reuse-context"))
             Options::reuse_context = true;
         else if (c == 's' || !strcmp(optname, "size"))

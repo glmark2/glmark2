@@ -350,8 +350,8 @@ CanvasX11::ensure_gl_formats()
     if (gl_color_format_ && gl_depth_format_)
         return true;
 
-    GLVisualInfo gl_visinfo;
-    get_glvisualinfo(gl_visinfo);
+    GLVisualConfig vc;
+    get_glvisualconfig(vc);
 
     gl_color_format_ = 0;
     gl_depth_format_ = 0;
@@ -382,41 +382,41 @@ CanvasX11::ensure_gl_formats()
     supports_depth32 = true;
 #endif
 
-    if (gl_visinfo.buffer_size == 32) {
+    if (vc.buffer == 32) {
         if (supports_rgba8)
             gl_color_format_ = GL_RGBA8;
         else
             gl_color_format_ = GL_RGBA4;
     }
-    else if (gl_visinfo.buffer_size == 24) {
+    else if (vc.buffer == 24) {
         if (supports_rgb8)
             gl_color_format_ = GL_RGB8;
         else
             gl_color_format_ = GL_RGB565;
     }
-    else if (gl_visinfo.buffer_size == 16) {
-        if (gl_visinfo.red_size == 4 && gl_visinfo.green_size == 4 &&
-            gl_visinfo.blue_size == 4 && gl_visinfo.alpha_size == 4)
+    else if (vc.buffer == 16) {
+        if (vc.red == 4 && vc.green == 4 &&
+            vc.blue == 4 && vc.alpha == 4)
         {
             gl_color_format_ = GL_RGBA4;
         }
-        else if (gl_visinfo.red_size == 5 && gl_visinfo.green_size == 5 &&
-                 gl_visinfo.blue_size == 5 && gl_visinfo.alpha_size == 1)
+        else if (vc.red == 5 && vc.green == 5 &&
+                 vc.blue == 5 && vc.alpha == 1)
         {
             gl_color_format_ = GL_RGB5_A1;
         }
-        else if (gl_visinfo.red_size == 5 && gl_visinfo.green_size == 6 &&
-                 gl_visinfo.blue_size == 5 && gl_visinfo.alpha_size == 0)
+        else if (vc.red == 5 && vc.green == 6 &&
+                 vc.blue == 5 && vc.alpha == 0)
         {
             gl_color_format_ = GL_RGB565;
         }
     }
 
-    if (gl_visinfo.depth_size == 32 && supports_depth32)
+    if (vc.depth == 32 && supports_depth32)
         gl_depth_format_ = GL_DEPTH_COMPONENT32;
-    else if (gl_visinfo.depth_size >= 24 && supports_depth24)
+    else if (vc.depth >= 24 && supports_depth24)
         gl_depth_format_ = GL_DEPTH_COMPONENT24;
-    else if (gl_visinfo.depth_size == 16)
+    else if (vc.depth == 16)
         gl_depth_format_ = GL_DEPTH_COMPONENT16;
 
     Log::debug("Selected Renderbuffer ColorFormat: %s DepthFormat: %s\n",

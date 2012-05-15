@@ -27,6 +27,7 @@
 
 #include "gl-headers.h"
 #include "mat.h"
+#include "gl-visual-config.h"
 
 #include <sys/types.h>
 #include <string>
@@ -85,6 +86,7 @@ public:
         uint8_t b;
         uint8_t a;
     };
+
 
     /**
      * Initializes the canvas and makes it the target of GL operations.
@@ -238,6 +240,13 @@ public:
      */
     void offscreen(bool offscreen) { offscreen_ = offscreen; }
 
+    /**
+     * Sets the preferred visual configuration.
+     *
+     * This takes effect after the next init()/reset().
+     */
+    void visual_config(GLVisualConfig &config) { visual_config_ = config; }
+
 protected:
     Canvas(int width, int height) :
         width_(width), height_(height), offscreen_(false) {}
@@ -246,6 +255,7 @@ protected:
     int height_;
     LibMatrix::mat4 projection_;
     bool offscreen_;
+    GLVisualConfig visual_config_;
 };
 
 #endif
