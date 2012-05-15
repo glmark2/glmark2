@@ -281,7 +281,7 @@ normalize(std::vector<float> &kernel)
 bool
 SceneEffect2D::load()
 {
-    Texture::load(GLMARK_DATA_PATH"/textures/effect-2d.png", &texture_,
+    Texture::load("effect-2d", &texture_,
                   GL_NEAREST, GL_NEAREST, 0);
     running_ = false;
 
@@ -298,6 +298,8 @@ void
 SceneEffect2D::setup()
 {
     Scene::setup();
+
+    Texture::find_textures();
 
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/effect-2d.vert");
 

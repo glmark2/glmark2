@@ -67,7 +67,8 @@ TextRenderer::TextRenderer(Canvas& canvas) :
     glUseProgram(prev_program);
 
     /* Load the glyph texture atlas */
-    Texture::load(GLMARK_DATA_PATH"/textures/glyph-atlas.png", &texture_,
+    Texture::find_textures();
+    Texture::load("glyph-atlas", &texture_,
                   GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,0);
 }
 

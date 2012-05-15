@@ -154,7 +154,7 @@ SceneBump::setup_model_normals()
     attrib_locations.push_back(program_["texcoord"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    Texture::load(GLMARK_DATA_PATH"/textures/asteroid-normal-map.png", &texture_,
+    Texture::load("asteroid-normal-map", &texture_,
                   GL_NEAREST, GL_NEAREST, 0);
 }
 
@@ -206,7 +206,7 @@ SceneBump::setup_model_normals_tangent()
     attrib_locations.push_back(program_["tangent"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    Texture::load(GLMARK_DATA_PATH"/textures/asteroid-normal-map-tangent.png", &texture_,
+    Texture::load("asteroid-normal-map-tangent", &texture_,
                   GL_NEAREST, GL_NEAREST, 0);
 }
 
@@ -260,7 +260,7 @@ SceneBump::setup_model_height()
     attrib_locations.push_back(program_["tangent"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    Texture::load(GLMARK_DATA_PATH"/textures/asteroid-height-map.png", &texture_,
+    Texture::load("asteroid-height-map", &texture_,
                   GL_NEAREST, GL_NEAREST, 0);
 }
 
@@ -270,7 +270,7 @@ SceneBump::setup()
     Scene::setup();
 
     const std::string &bump_render = options_["bump-render"].value;
-
+    Texture::find_textures();
     Model::find_models();
     if (bump_render == "normals")
         setup_model_normals();

@@ -56,10 +56,28 @@ SceneTexture::SceneTexture(Canvas &pCanvas) :
         doSeparator = true;
     }
     optionDesc += "]";
-    options_["texture-filter"] = Scene::Option("texture-filter", "nearest",
-                                               "[nearest, linear, linear-shader, mipmap]");
     options_["model"] = Scene::Option("model", "cube",
                                       optionDesc);
+    options_["texture-filter"] = Scene::Option("texture-filter", "nearest",
+                                               "[nearest, linear, linear-shader, mipmap]");
+    optionDesc = "Which texture to use [";
+    const TextureMap& textureMap = Texture::find_textures();
+    for (TextureMap::const_iterator textureIt = textureMap.begin();
+         textureIt != textureMap.end();
+         textureIt++)
+    {
+        static bool doSeparator(false);
+        if (doSeparator)
+        {
+            optionDesc += ", ";
+        }
+        const std::string& curName = textureIt->first;
+        optionDesc += curName;
+        doSeparator = true;
+    }
+    optionDesc += "]";
+    options_["texture"] = Scene::Option("texture", "crate-base",
+                                        optionDesc);
 }
 
 SceneTexture::~SceneTexture()
@@ -115,7 +133,8 @@ SceneTexture::setup()
         mag_filter = GL_LINEAR;
     }
 
-    Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &texture_,
+    const string& whichTexture(options_["texture"].value);
+    Texture::load(whichTexture, &texture_,
                   min_filter, mag_filter, 0);
 
     // Load shaders
