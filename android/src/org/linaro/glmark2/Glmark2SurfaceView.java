@@ -159,22 +159,25 @@ class Glmark2Renderer implements GLSurfaceView.Renderer {
     }
 
     public void onDrawFrame(GL10 gl) {
-        if (!nativeRender())
+        if (!Glmark2Native.render())
             mView.getActivity().finish();
     }
 
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        nativeResize(width, height);
+        Glmark2Native.resize(width, height);
     }
 
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         String args = mView.getActivity().getIntent().getStringExtra("args");
-        nativeInit(mView.getActivity().getAssets(), args);
+        Glmark2Native.init(mView.getActivity().getAssets(), args);
     }
 
     private Glmark2SurfaceView mView;
-    private static native void nativeInit(AssetManager assetManager, String args);
-    private static native void nativeResize(int w, int h);
-    private static native boolean nativeRender();
-    private static native void nativeDone();
+}
+
+class Glmark2Native {
+    public static native void init(AssetManager assetManager, String args);
+    public static native void resize(int w, int h);
+    public static native boolean render();
+    public static native void done();
 }

@@ -136,9 +136,9 @@ release_args(int argc, char **argv)
 }
 
 void
-Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
-                                                   jobject asset_manager,
-                                                   jstring args)
+Java_org_linaro_glmark2_native_init(JNIEnv* env, jclass clazz,
+                                    jobject asset_manager,
+                                    jstring args)
 {
     static_cast<void>(clazz);
     static const std::string arguments_file("/data/glmark2/args");
@@ -202,10 +202,10 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeInit(JNIEnv* env, jclass clazz,
 }
 
 void
-Java_org_linaro_glmark2_Glmark2Renderer_nativeResize(JNIEnv* env,
-                                                     jclass clazz,
-                                                     jint w,
-                                                     jint h)
+Java_org_linaro_glmark2_native_resize(JNIEnv* env,
+                                      jclass clazz,
+                                      jint w,
+                                      jint h)
 {
     static_cast<void>(env);
     static_cast<void>(clazz);
@@ -215,7 +215,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeResize(JNIEnv* env,
 }
 
 void
-Java_org_linaro_glmark2_Glmark2Renderer_nativeDone(JNIEnv* env)
+Java_org_linaro_glmark2_native_done(JNIEnv* env)
 {
     static_cast<void>(env);
 
@@ -225,7 +225,7 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeDone(JNIEnv* env)
 }
 
 jboolean
-Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
+Java_org_linaro_glmark2_native_render(JNIEnv* env)
 {
     static_cast<void>(env);
 
@@ -239,24 +239,24 @@ Java_org_linaro_glmark2_Glmark2Renderer_nativeRender(JNIEnv* env)
 
 static JNINativeMethod glmark2_native_methods[] = {
     {
-        "nativeInit",
+        "init",
         "(Landroid/content/res/AssetManager;Ljava/lang/String;)V",
-        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeInit)
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_native_init)
     },
     {
-        "nativeResize",
+        "resize",
         "(II)V",
-        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeResize)
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_native_resize)
     },
     {
-        "nativeDone",
+        "done",
         "()V",
-        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeDone)
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_native_done)
     },
     {
-        "nativeRender",
+        "render",
         "()Z",
-        reinterpret_cast<void*>(Java_org_linaro_glmark2_Glmark2Renderer_nativeRender)
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_native_render)
     }
 };
 
@@ -283,7 +283,7 @@ register_native_methods(JNIEnv* env, const char* className,
 static int
 register_natives(JNIEnv *env)
 {
-    const char* const class_path_name = "org/linaro/glmark2/Glmark2Renderer";
+    const char* const class_path_name = "org/linaro/glmark2/Glmark2Native";
     return register_native_methods(env, class_path_name,
                                    glmark2_native_methods,
                                    sizeof(glmark2_native_methods) /
