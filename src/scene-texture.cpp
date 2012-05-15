@@ -34,11 +34,32 @@
 #include "util.h"
 #include <cmath>
 
+using LibMatrix::vec3;
+using std::string;
+
 SceneTexture::SceneTexture(Canvas &pCanvas) :
     Scene(pCanvas, "texture")
 {
+    const ModelMap& modelMap = Model::find_models();
+    string optionDesc("Which model to use [");
+    for (ModelMap::const_iterator modelIt = modelMap.begin();
+         modelIt != modelMap.end();
+         modelIt++)
+    {
+        static bool doSeparator(false);
+        if (doSeparator)
+        {
+            optionDesc += ", ";
+        }
+        const std::string& curName = modelIt->first;
+        optionDesc += curName;
+        doSeparator = true;
+    }
+    optionDesc += "]";
     options_["texture-filter"] = Scene::Option("texture-filter", "nearest",
                                                "[nearest, linear, linear-shader, mipmap]");
+    options_["model"] = Scene::Option("model", "cube",
+                                      optionDesc);
 }
 
 SceneTexture::~SceneTexture()
@@ -48,16 +69,6 @@ SceneTexture::~SceneTexture()
 bool
 SceneTexture::load()
 {
-    Model::find_models();
-    Model model;
-
-    if(!model.load("cube"))
-        return false;
-
-    model.calculate_normals();
-    model.convert_to_mesh(mesh_);
-    mesh_.build_vbo();
-
     rotationSpeed_ = LibMatrix::vec3(36.0f, 36.0f, 36.0f);
 
     running_ = false;
@@ -129,13 +140,62 @@ SceneTexture::setup()
         return;
     }
 
+    Model model;
+    const string& whichModel(options_["model"].value);
+    bool modelLoaded = model.load(whichModel);
+    if(!modelLoaded)
+        return;
+
+    // Now that we're successfully loaded, there are a few quirks about
+    // some of the known models that we need to account for.  The draw
+    // logic for the scene wants to rotate the model around the Y axis.
+    // Most of our models are described this way.  Some need adjustment
+    // (an additional rotation that gets the model into the correct
+    // orientation).
+    //
+    // Here's a summary:
+    //
+    // Angel rotates around the Y axis
+    // Armadillo rotates around the Y axis
+    // Buddha rotates around the X axis
+    // Bunny rotates around the Y axis
+    // Dragon rotates around the X axis
+    // Horse rotates around the Y axis
+    if (whichModel == "buddha" || whichModel == "dragon")
+    {
+        orientModel_ = true;
+        orientationAngle_ = -90.0;
+        orientationVec_ = vec3(1.0, 0.0, 0.0);
+    }
+
+    model.calculate_normals();
+    if (model.needTexcoords())
+        model.calculate_texcoords();
+    model.convert_to_mesh(mesh_);
+    mesh_.build_vbo();
+
+    // Calculate a projection matrix that is a good fit for the model
+    vec3 maxVec = model.maxVec();
+    vec3 minVec = model.minVec();
+    vec3 diffVec = maxVec - minVec;
+    centerVec_ = maxVec + minVec;
+    centerVec_ /= 2.0;
+    float diameter = diffVec.length();
+    radius_ = diameter / 2;
+    float fovy = 2.0 * atanf(radius_ / (2.0 + radius_));
+    fovy /= M_PI;
+    fovy *= 180.0;
+    float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
+    perspective_.setIdentity();
+    perspective_ *= LibMatrix::Mat4::perspective(fovy, aspect, 2.0, 2.0 + diameter);
+
+    program_.start();
+
     std::vector<GLint> attrib_locations;
     attrib_locations.push_back(program_["position"].location());
     attrib_locations.push_back(program_["normal"].location());
     attrib_locations.push_back(program_["texcoord"].location());
     mesh_.set_attrib_locations(attrib_locations);
-
-    program_.start();
 
     currentFrame_ = 0;
     rotation_ = LibMatrix::vec3();
@@ -170,12 +230,15 @@ SceneTexture::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;
-    LibMatrix::mat4 model_view_proj(canvas_.projection());
-
-    model_view.translate(0.0f, 0.0f, -5.0f);
+    model_view.translate(-centerVec_.x(), -centerVec_.y(), -(centerVec_.z() + 2.0 + radius_));
     model_view.rotate(rotation_.x(), 1.0f, 0.0f, 0.0f);
     model_view.rotate(rotation_.y(), 0.0f, 1.0f, 0.0f);
     model_view.rotate(rotation_.z(), 0.0f, 0.0f, 1.0f);
+    if (orientModel_)
+    {
+        model_view.rotate(orientationAngle_, orientationVec_.x(), orientationVec_.y(), orientationVec_.z());
+    }
+    LibMatrix::mat4 model_view_proj(perspective_);
     model_view_proj *= model_view.getCurrent();
 
     program_["ModelViewProjectionMatrix"] = model_view_proj;
