@@ -12,6 +12,29 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+/** 
+ * Class that holds a configuration of a GL visual.
+ */
+class GLVisualConfig {
+    public GLVisualConfig() {}
+    public GLVisualConfig(int r, int g, int b, int a, int d, int buf) {
+        red = r;
+        green = g;
+        blue = b;
+        alpha = a;
+        depth = d;
+        buffer = buf;
+    }
+
+    public int red;
+    public int green;
+    public int blue;
+    public int alpha;
+    public int depth;
+    public int buffer;
+}
+
+
 class Glmark2SurfaceView extends GLSurfaceView {
 
     public static final String LOG_TAG = "glmark2";
@@ -22,12 +45,53 @@ class Glmark2SurfaceView extends GLSurfaceView {
 
         setEGLContextClientVersion(2);
 
-        // Uncomment the commands below to get an RGBA8888 surface and config.
-        //this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        //setEGLConfigChooser(new Glmark2ConfigChooser(8, 8, 8, 8, 16, 0));
-        setEGLConfigChooser(new Glmark2ConfigChooser(5, 6, 5, 0, 16, 0));
+        setEGLConfigChooser(getConfigChooser());
 
         setRenderer(new Glmark2Renderer(this));
+    }
+
+    private EGLConfigChooser getConfigChooser() {
+        String args = mActivity.getIntent().getStringExtra("args");
+
+        String[] argv = args.split(" ");
+
+        /* Find the visual-config option argument */
+        String configString = new String();
+        boolean keepNext = false;
+        for (String arg : argv) {
+            if (keepNext) {
+                configString = arg;
+                break;
+            }
+
+            if (arg.equals("--visual-config"))
+                keepNext = true;
+        }
+
+        /* Parse the config string parameters */
+        String[] configParams = configString.split(":");
+        GLVisualConfig targetConfig = new GLVisualConfig(5, 6, 5, 0, 16, 1);
+
+        for (String param : configParams) {
+            String[] paramKeyValue = param.split("=");
+            if (paramKeyValue.length < 2)
+                continue;
+
+            if (paramKeyValue[0].equals("red") || paramKeyValue[0].equals("r"))
+                targetConfig.red = Integer.parseInt(paramKeyValue[1]);
+            else if (paramKeyValue[0].equals("green") || paramKeyValue[0].equals("g"))
+                targetConfig.green = Integer.parseInt(paramKeyValue[1]);
+            else if (paramKeyValue[0].equals("blue") || paramKeyValue[0].equals("b"))
+                targetConfig.blue = Integer.parseInt(paramKeyValue[1]);
+            else if (paramKeyValue[0].equals("alpha") || paramKeyValue[0].equals("a"))
+                targetConfig.alpha = Integer.parseInt(paramKeyValue[1]);
+            else if (paramKeyValue[0].equals("depth") || paramKeyValue[0].equals("d"))
+                targetConfig.depth = Integer.parseInt(paramKeyValue[1]);
+            else if (paramKeyValue[0].equals("buffer") || paramKeyValue[0].equals("buf"))
+                targetConfig.buffer = Integer.parseInt(paramKeyValue[1]);
+        }
+
+        return new Glmark2ConfigChooser(targetConfig);
     }
 
     /**
@@ -37,24 +101,19 @@ class Glmark2SurfaceView extends GLSurfaceView {
     private class Glmark2ConfigChooser implements EGLConfigChooser {
         private int[] mAttribList;
 
-        public Glmark2ConfigChooser(int redSize, int greenSize, int blueSize,
-                                    int alphaSize, int depthSize, int stencilSize)
+        public Glmark2ConfigChooser(GLVisualConfig targetConfig)
         {
             mAttribList = new int[] {
-                    EGL10.EGL_RED_SIZE, redSize,
-                    EGL10.EGL_GREEN_SIZE, greenSize,
-                    EGL10.EGL_BLUE_SIZE, blueSize,
-                    EGL10.EGL_ALPHA_SIZE, alphaSize,
-                    EGL10.EGL_DEPTH_SIZE, depthSize,
-                    EGL10.EGL_STENCIL_SIZE, stencilSize,
+                    EGL10.EGL_RED_SIZE, targetConfig.red,
+                    EGL10.EGL_GREEN_SIZE, targetConfig.green,
+                    EGL10.EGL_BLUE_SIZE, targetConfig.blue,
+                    EGL10.EGL_ALPHA_SIZE, targetConfig.alpha,
+                    EGL10.EGL_DEPTH_SIZE, targetConfig.depth,
+                    EGL10.EGL_BUFFER_SIZE, targetConfig.buffer,
                     EGL10.EGL_RENDERABLE_TYPE, 4, /* 4 = EGL_OPENGL_ES2_BIT */
                     EGL10.EGL_NONE };
-            mRedSize = redSize;
-            mGreenSize = greenSize;
-            mBlueSize = blueSize;
-            mAlphaSize = alphaSize;
-            mDepthSize = depthSize;
-            mStencilSize = stencilSize;
+
+            mTargetConfig = targetConfig;
        }
 
         @Override
@@ -101,32 +160,34 @@ class Glmark2SurfaceView extends GLSurfaceView {
                 throw new IllegalArgumentException("eglChooseConfig#2 failed");
             }
 
-            /*
-             * Try to find a config that matches exactly the RGBA size
-             * specified by the user and is >= for depth and stencil.
-             */
+            /* Find the best matching config. */
+            int bestScore = Integer.MIN_VALUE;
+            EGLConfig bestConfig = configs[0];
+
             for (EGLConfig config : configs) {
-                int d = findConfigAttrib(egl, display, config,
-                                         EGL10.EGL_DEPTH_SIZE, 0);
-                int s = findConfigAttrib(egl, display, config,
-                                         EGL10.EGL_STENCIL_SIZE, 0);
-                int r = findConfigAttrib(egl, display, config,
-                                         EGL10.EGL_RED_SIZE, 0);
-                int g = findConfigAttrib(egl, display, config,
-                                         EGL10.EGL_GREEN_SIZE, 0);
-                int b = findConfigAttrib(egl, display, config,
-                                         EGL10.EGL_BLUE_SIZE, 0);
-                int a = findConfigAttrib(egl, display, config,
-                                         EGL10.EGL_ALPHA_SIZE, 0);
-                if (r == mRedSize && g == mGreenSize &&
-                    b == mBlueSize && a == mAlphaSize &&
-                    d >= mDepthSize && s >= mStencilSize)
-                {
-                    return config;
+                GLVisualConfig vc = new GLVisualConfig();
+                vc.red = findConfigAttrib(egl, display, config,
+                                          EGL10.EGL_RED_SIZE, 0);
+                vc.green = findConfigAttrib(egl, display, config,
+                                            EGL10.EGL_GREEN_SIZE, 0);
+                vc.blue = findConfigAttrib(egl, display, config,
+                                           EGL10.EGL_BLUE_SIZE, 0);
+                vc.alpha = findConfigAttrib(egl, display, config,
+                                            EGL10.EGL_ALPHA_SIZE, 0);
+                vc.depth = findConfigAttrib(egl, display, config,
+                                            EGL10.EGL_DEPTH_SIZE, 0);
+                vc.buffer = findConfigAttrib(egl, display, config,
+                                             EGL10.EGL_BUFFER_SIZE, 0);
+
+                int score = Glmark2Native.scoreConfig(vc, mTargetConfig);
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestConfig = config;
                 }
             }
 
-            throw new IllegalArgumentException("No configs match exactly");
+            return bestConfig;
         }
 
         private int findConfigAttrib(EGL10 egl, EGLDisplay display, EGLConfig config,
@@ -137,12 +198,7 @@ class Glmark2SurfaceView extends GLSurfaceView {
             return value[0];
         }
 
-        protected int mRedSize;
-        protected int mGreenSize;
-        protected int mBlueSize;
-        protected int mAlphaSize;
-        protected int mDepthSize;
-        protected int mStencilSize;
+        protected GLVisualConfig mTargetConfig;
     }
 
     public Activity getActivity() {
@@ -159,22 +215,26 @@ class Glmark2Renderer implements GLSurfaceView.Renderer {
     }
 
     public void onDrawFrame(GL10 gl) {
-        if (!nativeRender())
+        if (!Glmark2Native.render())
             mView.getActivity().finish();
     }
 
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        nativeResize(width, height);
+        Glmark2Native.resize(width, height);
     }
 
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         String args = mView.getActivity().getIntent().getStringExtra("args");
-        nativeInit(mView.getActivity().getAssets(), args);
+        Glmark2Native.init(mView.getActivity().getAssets(), args);
     }
 
     private Glmark2SurfaceView mView;
-    private static native void nativeInit(AssetManager assetManager, String args);
-    private static native void nativeResize(int w, int h);
-    private static native boolean nativeRender();
-    private static native void nativeDone();
+}
+
+class Glmark2Native {
+    public static native void init(AssetManager assetManager, String args);
+    public static native void resize(int w, int h);
+    public static native boolean render();
+    public static native void done();
+    public static native int scoreConfig(GLVisualConfig vc, GLVisualConfig target);
 }
