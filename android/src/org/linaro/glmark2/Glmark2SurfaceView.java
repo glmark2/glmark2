@@ -12,6 +12,29 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+/** 
+ * Class that holds a configuration of a GL visual.
+ */
+class GLVisualConfig {
+    public GLVisualConfig() {}
+    public GLVisualConfig(int r, int g, int b, int a, int d, int buf) {
+        red = r;
+        green = g;
+        blue = b;
+        alpha = a;
+        depth = d;
+        buffer = buf;
+    }
+
+    public int red;
+    public int green;
+    public int blue;
+    public int alpha;
+    public int depth;
+    public int buffer;
+}
+
+
 class Glmark2SurfaceView extends GLSurfaceView {
 
     public static final String LOG_TAG = "glmark2";
@@ -180,4 +203,5 @@ class Glmark2Native {
     public static native void resize(int w, int h);
     public static native boolean render();
     public static native void done();
+    public static native int scoreConfig(GLVisualConfig vc, GLVisualConfig target);
 }

@@ -135,6 +135,39 @@ release_args(int argc, char **argv)
     delete[] argv;
 }
 
+/** 
+ * Converts a GLVisualConfig Java object to a GLVisualConfig C++ object.
+ * 
+ * @param env the JNIEnv
+ * @param jvc the Java VisualConfig object to convert
+ * @param vc the C++ VisualConfig object to fill
+ */
+static void
+gl_visual_config_from_jobject(JNIEnv *env, jobject jvc, GLVisualConfig &vc)
+{
+    jclass cls = env->GetObjectClass(jvc);
+    jfieldID fid;
+
+    fid = env->GetFieldID(cls, "red", "I");
+    vc.red = env->GetIntField(jvc, fid);
+
+    fid = env->GetFieldID(cls, "green", "I");
+    vc.green = env->GetIntField(jvc, fid);
+    
+    fid = env->GetFieldID(cls, "blue", "I");
+    vc.blue = env->GetIntField(jvc, fid);
+
+    fid = env->GetFieldID(cls, "alpha", "I");
+    vc.alpha = env->GetIntField(jvc, fid);
+
+    fid = env->GetFieldID(cls, "depth", "I");
+    vc.depth = env->GetIntField(jvc, fid);
+
+    fid = env->GetFieldID(cls, "buffer", "I");
+    vc.buffer = env->GetIntField(jvc, fid);
+}
+
+
 void
 Java_org_linaro_glmark2_native_init(JNIEnv* env, jclass clazz,
                                     jobject asset_manager,
@@ -237,6 +270,21 @@ Java_org_linaro_glmark2_native_render(JNIEnv* env)
     return true;
 }
 
+jint
+Java_org_linaro_glmark2_native_scoreConfig(JNIEnv* env, jclass clazz,
+                                           jobject jvc, jobject jtarget)
+{
+    static_cast<void>(clazz);
+
+    GLVisualConfig vc;
+    GLVisualConfig target;
+
+    gl_visual_config_from_jobject(env, jvc, vc);
+    gl_visual_config_from_jobject(env, jtarget, target);
+
+    return vc.match_score(target);
+}
+
 static JNINativeMethod glmark2_native_methods[] = {
     {
         "init",
@@ -257,6 +305,11 @@ static JNINativeMethod glmark2_native_methods[] = {
         "render",
         "()Z",
         reinterpret_cast<void*>(Java_org_linaro_glmark2_native_render)
+    },
+    {
+        "scoreConfig",
+        "(Lorg/linaro/glmark2/GLVisualConfig;Lorg/linaro/glmark2/GLVisualConfig;)I",
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_native_scoreConfig)
     }
 };
 
