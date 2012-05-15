@@ -51,7 +51,46 @@ class Glmark2SurfaceView extends GLSurfaceView {
     }
 
     private EGLConfigChooser getConfigChooser() {
+        String args = mActivity.getIntent().getStringExtra("args");
+
+        String[] argv = args.split(" ");
+
+        /* Find the visual-config option argument */
+        String configString = new String();
+        boolean keepNext = false;
+        for (String arg : argv) {
+            if (keepNext) {
+                configString = arg;
+                break;
+            }
+
+            if (arg.equals("--visual-config"))
+                keepNext = true;
+        }
+
+        /* Parse the config string parameters */
+        String[] configParams = configString.split(":");
         GLVisualConfig targetConfig = new GLVisualConfig(5, 6, 5, 0, 1, 1);
+
+        for (String param : configParams) {
+            String[] paramKeyValue = param.split("=");
+            if (paramKeyValue.length < 2)
+                continue;
+
+            if (paramKeyValue[0].equals("red") || paramKeyValue[0].equals("r"))
+                targetConfig.red = Integer.parseInt(paramKeyValue[1]);
+            else if (paramKeyValue[0].equals("green") || paramKeyValue[0].equals("g"))
+                targetConfig.green = Integer.parseInt(paramKeyValue[1]);
+            else if (paramKeyValue[0].equals("blue") || paramKeyValue[0].equals("b"))
+                targetConfig.blue = Integer.parseInt(paramKeyValue[1]);
+            else if (paramKeyValue[0].equals("alpha") || paramKeyValue[0].equals("a"))
+                targetConfig.alpha = Integer.parseInt(paramKeyValue[1]);
+            else if (paramKeyValue[0].equals("depth") || paramKeyValue[0].equals("d"))
+                targetConfig.depth = Integer.parseInt(paramKeyValue[1]);
+            else if (paramKeyValue[0].equals("buffer") || paramKeyValue[0].equals("buf"))
+                targetConfig.buffer = Integer.parseInt(paramKeyValue[1]);
+        }
+
         return new Glmark2ConfigChooser(targetConfig);
     }
 
