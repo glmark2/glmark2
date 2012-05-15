@@ -236,7 +236,18 @@ Model::calculate_texcoords()
              vertexIt++)
         {
             Vertex& curVertex = *vertexIt;
-            curVertex.t = vec2(fabs(curVertex.v.x()), fabs(curVertex.v.y()));
+            //
+            // Want to be using:
+            //
+            // (u,v) = (x/a - floor(x/a), y/b - floor(y/b))
+            float x(curVertex.v.x());
+            float y(curVertex.v.y());
+            vec3 diffVec = maxVec_ - minVec_;
+            float a(diffVec.x());
+            float b(diffVec.y());
+            float u(x/a - floorf(x/a));
+            float v(y/b - floorf(y/b));
+            curVertex.t = vec2(u, v);
         }
     }
 }
