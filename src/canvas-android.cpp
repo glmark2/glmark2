@@ -36,9 +36,24 @@
 bool
 CanvasAndroid::init()
 {
+    EGLint attribs[] = {
+        EGL_CONFIG_ID, 0,
+        EGL_NONE
+    };
+
+    /* Get the current EGL config */
+    EGLDisplay egl_display(eglGetCurrentDisplay());
+    EGLContext egl_context(eglGetCurrentContext());
+    EGLConfig egl_config(0);
+    EGLint num_configs;
+
+    eglQueryContext(egl_display, egl_context, EGL_CONFIG_ID, &(attribs[1]));
+
+    eglChooseConfig(egl_display, attribs, &egl_config, 1, &num_configs);
+
     resize(width_, height_);
 
-    if (!eglSwapInterval(eglGetCurrentDisplay(), 0))
+    if (!eglSwapInterval(egl_display, 0))
         Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
 
     init_gl_extensions();
@@ -49,6 +64,27 @@ CanvasAndroid::init()
     glCullFace(GL_BACK);
 
     clear();
+
+    if (Options::show_debug) {
+        int buf, red, green, blue, alpha, depth, id, native_id;
+        eglGetConfigAttrib(egl_display, egl_config, EGL_CONFIG_ID, &id);
+        eglGetConfigAttrib(egl_display, egl_config, EGL_NATIVE_VISUAL_ID, &native_id);
+        eglGetConfigAttrib(egl_display, egl_config, EGL_BUFFER_SIZE, &buf);
+        eglGetConfigAttrib(egl_display, egl_config, EGL_RED_SIZE, &red);
+        eglGetConfigAttrib(egl_display, egl_config, EGL_GREEN_SIZE, &green);
+        eglGetConfigAttrib(egl_display, egl_config, EGL_BLUE_SIZE, &blue);
+        eglGetConfigAttrib(egl_display, egl_config, EGL_ALPHA_SIZE, &alpha);
+        eglGetConfigAttrib(egl_display, egl_config, EGL_DEPTH_SIZE, &depth);
+        Log::debug("EGL chosen config ID: 0x%x Native Visual ID: 0x%x\n"
+                   "  Buffer: %d bits\n"
+                   "     Red: %d bits\n"
+                   "   Green: %d bits\n"
+                   "    Blue: %d bits\n"
+                   "   Alpha: %d bits\n"
+                   "   Depth: %d bits\n",
+                   id, native_id,
+                   buf, red, green, blue, alpha, depth);
+    }
 
     return true;
 }
