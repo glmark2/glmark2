@@ -77,11 +77,13 @@ public:
         AttribTypeCustom
     } AttribType;
 
-    Model() {}
+    Model() : gotTexcoords_(false) {}
     ~Model() {}
 
     bool load(const std::string& name);
 
+    bool needTexcoords() const { return !gotTexcoords_; }
+    void calculate_texcoords();
     void calculate_normals();
     void convert_to_mesh(Mesh &mesh);
     void convert_to_mesh(Mesh &mesh,
@@ -90,6 +92,8 @@ public:
     const LibMatrix::vec3& maxVec() const { return maxVec_; }
     static const ModelMap& find_models();
 private:
+    // If the model we loaded contained texcoord data...
+    bool gotTexcoords_;
     struct Face {
         uint32_t a, b, c;
         uint16_t face_flags;

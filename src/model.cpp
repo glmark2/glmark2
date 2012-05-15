@@ -28,6 +28,7 @@
 #include "options.h"
 #include "util.h"
 #include "float.h"
+#include "math.h"
 #include <fstream>
 #include <sstream>
 #include <memory>
@@ -219,6 +220,24 @@ Model::convert_to_mesh(Mesh &mesh,
          iter++)
     {
         append_object_to_mesh(*iter, mesh, p_pos, n_pos, t_pos, nt_pos, nb_pos);
+    }
+}
+
+void
+Model::calculate_texcoords()
+{
+    for (std::vector<Object>::iterator iter = objects_.begin();
+         iter != objects_.end();
+         iter++)
+    {
+        Object &object = *iter;
+        for (vector<Vertex>::iterator vertexIt = object.vertices.begin();
+             vertexIt != object.vertices.end();
+             vertexIt++)
+        {
+            Vertex& curVertex = *vertexIt;
+            curVertex.t = vec2(fabs(curVertex.v.x()), fabs(curVertex.v.y()));
+        }
     }
 }
 
@@ -443,6 +462,7 @@ Model::load_3ds(const std::string &filename)
                     object->vertices[i].t.y(f[1]);
                 }
                 }
+                gotTexcoords_ = true;
                 break;
 
             //----------- Skip unknow chunks ------------
