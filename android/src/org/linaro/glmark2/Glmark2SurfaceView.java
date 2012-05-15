@@ -70,7 +70,7 @@ class Glmark2SurfaceView extends GLSurfaceView {
 
         /* Parse the config string parameters */
         String[] configParams = configString.split(":");
-        GLVisualConfig targetConfig = new GLVisualConfig(5, 6, 5, 0, 1, 1);
+        GLVisualConfig targetConfig = new GLVisualConfig(5, 6, 5, 0, 16, 1);
 
         for (String param : configParams) {
             String[] paramKeyValue = param.split("=");
