@@ -249,7 +249,7 @@ SceneTexture::draw()
 {
     // Load the ModelViewProjectionMatrix uniform in the shader
     LibMatrix::Stack4 model_view;
-    model_view.translate(-centerVec_.x(), -centerVec_.y(), -(centerVec_.z() + 2.0 + radius_));
+    model_view.translate(-centerVec_.x(), -centerVec_.y(), -(centerVec_.z() + 2.5 + radius_));
     model_view.rotate(rotation_.x(), 1.0f, 0.0f, 0.0f);
     model_view.rotate(rotation_.y(), 0.0f, 1.0f, 0.0f);
     model_view.rotate(rotation_.z(), 0.0f, 0.0f, 1.0f);
