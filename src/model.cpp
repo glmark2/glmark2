@@ -36,7 +36,6 @@
 using std::string;
 using std::vector;
 using LibMatrix::vec3;
-using LibMatrix::vec2;
 using LibMatrix::uvec3;
 
 #define read_or_fail(file, dst, size) do { \
@@ -226,6 +225,13 @@ Model::convert_to_mesh(Mesh &mesh,
 void
 Model::calculate_texcoords()
 {
+    // Since the model didn't come with texcoords, and we don't actually know
+    // if it came with normals, either, we'll use positional spherical mapping
+    // to generate texcoords for the model.  See:
+    // http://www.mvps.org/directx/articles/spheremap.htm for more details.
+    vec3 centerVec = maxVec_ + minVec_;
+    centerVec *= 0.5;
+    
     for (std::vector<Object>::iterator iter = objects_.begin();
          iter != objects_.end();
          iter++)
@@ -236,18 +242,10 @@ Model::calculate_texcoords()
              vertexIt++)
         {
             Vertex& curVertex = *vertexIt;
-            //
-            // Want to be using:
-            //
-            // (u,v) = (x/a - floor(x/a), y/b - floor(y/b))
-            float x(curVertex.v.x());
-            float y(curVertex.v.y());
-            vec3 diffVec = maxVec_ - minVec_;
-            float a(diffVec.x());
-            float b(diffVec.y());
-            float u(x/a - floorf(x/a));
-            float v(y/b - floorf(y/b));
-            curVertex.t = vec2(u, v);
+            vec3 vnorm(curVertex.v - centerVec);
+            vnorm.normalize();
+            curVertex.t.x(asinf(vnorm.x()) / M_PI + 0.5);
+            curVertex.t.y(asinf(vnorm.y()) / M_PI + 0.5);
         }
     }
 }
