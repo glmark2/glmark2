@@ -187,9 +187,9 @@ SceneTexture::setup()
         orientationVec_ = vec3(1.0, 0.0, 0.0);
     }
 
-    model.calculate_normals();
     if (model.needTexcoords())
         model.calculate_texcoords();
+    model.calculate_normals();
     model.convert_to_mesh(mesh_);
     mesh_.build_vbo();
 
