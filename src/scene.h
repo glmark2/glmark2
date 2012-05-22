@@ -281,6 +281,12 @@ protected:
     Program program_;
     Mesh mesh_;
     GLuint texture_;
+    float radius_;
+    bool orientModel_;
+    float orientationAngle_;
+    LibMatrix::vec3 orientationVec_;
+    LibMatrix::mat4 perspective_;
+    LibMatrix::vec3 centerVec_;
     LibMatrix::vec3 rotation_;
     LibMatrix::vec3 rotationSpeed_;
 };

@@ -726,12 +726,12 @@ private:
 };
 
 int RenderWindowBlur::use_count = 0;
-RenderClearImage RenderWindowBlur::window_contents_(GLMARK_DATA_PATH"/textures/desktop-window.png");
+RenderClearImage RenderWindowBlur::window_contents_("desktop-window");
 int RenderWindowShadow::use_count = 0;
-RenderClearImage RenderWindowShadow::window_contents_(GLMARK_DATA_PATH"/textures/desktop-window.png");
-RenderClearImage RenderWindowShadow::shadow_h_(GLMARK_DATA_PATH"/textures/desktop-shadow.png");
-RenderClearImage RenderWindowShadow::shadow_v_(GLMARK_DATA_PATH"/textures/desktop-shadow.png");
-RenderClearImage RenderWindowShadow::shadow_corner_(GLMARK_DATA_PATH"/textures/desktop-shadow-corner.png");
+RenderClearImage RenderWindowShadow::window_contents_("desktop-window");
+RenderClearImage RenderWindowShadow::shadow_h_("desktop-shadow");
+RenderClearImage RenderWindowShadow::shadow_v_("desktop-shadow");
+RenderClearImage RenderWindowShadow::shadow_corner_("desktop-shadow-corner");
 
 /*******************************
  * SceneDesktop implementation *
@@ -748,7 +748,7 @@ struct SceneDesktopPrivate
     std::vector<RenderObject *> windows;
 
     SceneDesktopPrivate(Canvas &canvas) :
-        screen(canvas), desktop(GLMARK_DATA_PATH"/textures/effect-2d.png") {}
+        screen(canvas), desktop("effect-2d") {}
 
     ~SceneDesktopPrivate() { Util::dispose_pointer_vector(windows); }
 
@@ -809,6 +809,9 @@ SceneDesktop::setup()
     passes = Util::fromString<unsigned int>(options_["passes"].value);
     blur_radius = Util::fromString<unsigned int>(options_["blur-radius"].value);
     shadow_size = Util::fromString<unsigned int>(options_["shadow-size"].value);
+
+    // Make sure the Texture object knows where to find our images.
+    Texture::find_textures();
 
     /* Ensure we get a transparent clear color for all following operations */
     glClearColor(0.0, 0.0, 0.0, 0.0);

@@ -28,6 +28,7 @@
 #include "options.h"
 #include "util.h"
 #include "float.h"
+#include "math.h"
 #include <fstream>
 #include <sstream>
 #include <memory>
@@ -35,7 +36,6 @@
 using std::string;
 using std::vector;
 using LibMatrix::vec3;
-using LibMatrix::vec2;
 using LibMatrix::uvec3;
 
 #define read_or_fail(file, dst, size) do { \
@@ -219,6 +219,34 @@ Model::convert_to_mesh(Mesh &mesh,
          iter++)
     {
         append_object_to_mesh(*iter, mesh, p_pos, n_pos, t_pos, nt_pos, nb_pos);
+    }
+}
+
+void
+Model::calculate_texcoords()
+{
+    // Since the model didn't come with texcoords, and we don't actually know
+    // if it came with normals, either, we'll use positional spherical mapping
+    // to generate texcoords for the model.  See:
+    // http://www.mvps.org/directx/articles/spheremap.htm for more details.
+    vec3 centerVec = maxVec_ + minVec_;
+    centerVec *= 0.5;
+    
+    for (std::vector<Object>::iterator iter = objects_.begin();
+         iter != objects_.end();
+         iter++)
+    {
+        Object &object = *iter;
+        for (vector<Vertex>::iterator vertexIt = object.vertices.begin();
+             vertexIt != object.vertices.end();
+             vertexIt++)
+        {
+            Vertex& curVertex = *vertexIt;
+            vec3 vnorm(curVertex.v - centerVec);
+            vnorm.normalize();
+            curVertex.t.x(asinf(vnorm.x()) / M_PI + 0.5);
+            curVertex.t.y(asinf(vnorm.y()) / M_PI + 0.5);
+        }
     }
 }
 
@@ -443,6 +471,7 @@ Model::load_3ds(const std::string &filename)
                     object->vertices[i].t.y(f[1]);
                 }
                 }
+                gotTexcoords_ = true;
                 break;
 
             //----------- Skip unknow chunks ------------

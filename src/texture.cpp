@@ -28,6 +28,7 @@
 #include <cstdarg>
 #include <png.h>
 #include <memory>
+#include <vector>
 
 class PNGState
 {
@@ -177,9 +178,24 @@ setup_texture(GLuint *tex, ImageData &image, GLint min_filter, GLint mag_filter)
     }
 }
 
-bool
-Texture::load(const std::string &filename, GLuint *pTexture, ...)
+namespace TexturePrivate
 {
+TextureMap textureMap;
+}
+
+bool
+Texture::load(const std::string &textureName, GLuint *pTexture, ...)
+{
+    // Make sure the named texture is in the map.
+    TextureMap::const_iterator textureIt = TexturePrivate::textureMap.find(textureName);
+    if (textureIt == TexturePrivate::textureMap.end())
+    {
+        return false;
+    }
+
+    // Pull the pathname out of the descriptor and use it for the PNG load.
+    TextureDescriptor* desc = textureIt->second;
+    const std::string& filename = desc->pathname();
     ImageData image;
 
     if (!image.load_png(filename))
@@ -198,4 +214,47 @@ Texture::load(const std::string &filename, GLuint *pTexture, ...)
     va_end(ap);
 
     return true;
+}
+
+const TextureMap&
+Texture::find_textures()
+{
+    using std::vector;
+    using std::string;
+    if (!TexturePrivate::textureMap.empty())
+    {
+        return TexturePrivate::textureMap;
+    }
+    vector<string> pathVec;
+    string dataDir(GLMARK_DATA_PATH"/textures");
+    Util::list_files(dataDir, pathVec);
+    // Now that we have a list of all of the model files available to us,
+    // let's go through and pull out the names and what format they're in
+    // so the scene can decide which ones to use.
+    for(vector<string>::const_iterator pathIt = pathVec.begin();
+        pathIt != pathVec.end();
+        pathIt++)
+    {
+        const string& curPath = *pathIt;
+        string::size_type namePos(0);
+        string::size_type slashPos = curPath.rfind("/");
+        if (slashPos != string::npos)
+        {
+            // Advance to the first character after the last slash
+            namePos = slashPos + 1;
+        }
+
+        string::size_type extPos = curPath.rfind(".png");
+        if (extPos == string::npos)
+        {
+            // We can't trivially determine it's a PNG file so skip it...
+            continue;
+        }
+
+        string name(curPath, namePos, extPos - namePos);
+        TextureDescriptor* desc = new TextureDescriptor(name, curPath);
+        TexturePrivate::textureMap.insert(std::make_pair(name, desc));
+    }
+
+    return TexturePrivate::textureMap;
 }

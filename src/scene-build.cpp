@@ -132,6 +132,12 @@ SceneBuild::setup()
         orientationAngle_ = -90.0;
         orientationVec_ = vec3(1.0, 0.0, 0.0);
     }
+    else if (whichModel == "armadillo")
+    {
+        orientModel_ = true;
+        orientationAngle_ = 180.0; 
+        orientationVec_ = vec3(0.0, 1.0, 0.0);
+    }
 
     model.calculate_normals();
 

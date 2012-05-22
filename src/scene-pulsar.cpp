@@ -115,7 +115,8 @@ ScenePulsar::setup()
 
     if (options_["texture"].value == "true") {
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic-tex.frag";
-        Texture::load(GLMARK_DATA_PATH"/textures/crate-base.png", &texture_,
+        Texture::find_textures();
+        Texture::load("crate-base", &texture_,
                       GL_NEAREST, GL_NEAREST, 0);
 
     } else {
