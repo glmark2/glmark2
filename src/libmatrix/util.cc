@@ -22,21 +22,58 @@
 #include "log.h"
 #include "util.h"
 
-/**
- * Splits a string using a delimiter
- *
- * @param s the string to split
- * @param delim the delimitir to use
- * @param elems the string vector to populate
- */
-void
-Util::split(const std::string &s, char delim, std::vector<std::string> &elems)
-{
-    std::stringstream ss(s);
+using std::string;
+using std::vector;
 
-    std::string item;
-    while(std::getline(ss, item, delim))
-        elems.push_back(item);
+void
+Util::split(const string& src, char delim, vector<string>& elementVec, bool fuzzy)
+{
+    // Trivial rejection
+    if (src.empty())
+    {
+        return;
+    }
+
+    // Simple case: we want to enforce the value of 'delim' strictly 
+    if (!fuzzy)
+    {
+        std::stringstream ss(src);
+        string item;
+        while(std::getline(ss, item, delim))
+            elementVec.push_back(item);
+        return;
+    }
+
+    // Fuzzy case: Initialize our delimiter string based upon the caller's plus
+    // a space to allow for more flexibility.
+    string delimiter(" ");
+    delimiter += delim;
+    // Starting index into the string of the first token (by definition, if
+    // we're parsing a string, there is at least one token).
+    string::size_type startPos(0);
+    // string::find_first_of() looks for any character in the string provided,
+    // it is not treated as a sub-string, so regardless of where the space or
+    // comma is or how many there are, the result is the same.
+    string str(src);
+    string::size_type endPos = str.find_first_of(delimiter);
+    while (endPos != string::npos)
+    {
+        // Push back the current element starting at startPos for
+        // (endPos - startPos) characters.  std::string takes care of
+        // terminators, etc.
+        elementVec.push_back(string(str, startPos, endPos - startPos));
+        // Index of the next element after any delimiter characters.  Same
+        // caveat applies to find_first_not_of() that applies to
+        // find_first_of(); endPos tells it where to start the search. 
+        string::size_type nextPos = str.find_first_not_of(delimiter, endPos);
+        // Erase the part of the string we've already parsed.
+        str = str.erase(startPos, nextPos - startPos);
+        // Look for the next delimiter.  If there isn't one, we bail out.
+        endPos = str.find_first_of(delimiter);
+    }
+    // Regardless of whether we initially had one element or many, 'str' now
+    // only contains one.
+    elementVec.push_back(str);
 }
 
 uint64_t

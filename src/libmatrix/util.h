@@ -24,10 +24,53 @@
 #endif
 
 struct Util {
-    static void split(const std::string &s, char delim, std::vector<std::string> &elems);
+    /**
+     * split() - Splits a string into elements using a provided delimiter
+     *
+     * @s:          the string to split
+     * @delim:      the delimiter to use
+     * @elems:      the string vector to populate
+     * @fuzzy:      (optional) enable/disable strict handling of @delim
+     *
+     * Using @delim to determine field boundaries, splits @s into separate
+     * string elements.  These elements are returned in the string vector
+     * @elems.  If @fuzzy is true, then the handling of @delim allows for
+     * spaces and multiple consecutive occurences of @delim in determining
+     * field boundaries.  As long as @s is non-empty, there will be at least
+     * one element in @elems.
+     */
+    static void split(const std::string &s, char delim, std::vector<std::string> &elems, bool fuzzy = false);
+    /**
+     * get_timestamp_us() - Returns the current time in microseconds
+     */
     static uint64_t get_timestamp_us();
+    /**
+     * get_resource() - Gets an input filestream for a given file.
+     *
+     * @path:       the path to the file
+     *
+     * Returns a pointer to an input stream, which must be deleted when no
+     * longer in use.
+     */
     static std::istream *get_resource(const std::string &path);
+    /**
+     * list_files() - Get a list of the files in a given directory.
+     *
+     * @dirName:    the directory path to be listed.
+     * @fileVec:    the string vector to populate.
+     *
+     * Obtains a list of the files in @dirName, and returns them in the string
+     * vector @fileVec.
+     */
     static void list_files(const std::string& dirName, std::vector<std::string>& fileVec);
+    /**
+     * dispose_pointer_vector() - cleans up a vector of pointers
+     *
+     * @vec:        vector of pointers to objects or plain-old-data
+     *
+     * Iterates across @vec and deletes the data pointed to by each of the
+     * elements.  Clears the vector, resetting it for reuse.
+     */
     template <class T> static void dispose_pointer_vector(std::vector<T*> &vec)
     {
         for (typename std::vector<T*>::const_iterator iter = vec.begin();
@@ -39,6 +82,11 @@ struct Util {
 
         vec.clear();
     }
+    /**
+     * toString() - Converts a string to a plain-old-data type.
+     *
+     * @asString:   a string representation of plain-old-data.
+     */
     template<typename T>
     static T
     fromString(const std::string& asString)
@@ -48,7 +96,11 @@ struct Util {
         ss >> retVal;
         return retVal;
     }
-
+    /**
+     * toString() - Converts a plain-old-data type to a string.
+     *
+     * @t:      a simple value to be converted to a string
+     */
     template<typename T>
     static std::string
     toString(const T t)
@@ -57,6 +109,13 @@ struct Util {
         ss << t;
         return ss.str();
     }
+    /**
+     * appname_from_path() - get the name of an executable from an absolute path
+     *
+     * @path:   absolute path of the running application (argv[0])
+     *
+     * Returns the last portion of @path (everything after the final '/').
+     */
     static std::string
     appname_from_path(const std::string& path);
 
