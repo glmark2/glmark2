@@ -394,7 +394,7 @@ SceneIdeas::draw()
 Scene::ValidationResult
 SceneIdeas::validate()
 {
-    return Scene::ValidationSuccess;
+    return Scene::ValidationUnknown;
 }
 
 void
