@@ -53,6 +53,9 @@ class Glmark2SurfaceView extends GLSurfaceView {
     private EGLConfigChooser getConfigChooser() {
         String args = mActivity.getIntent().getStringExtra("args");
 
+        if (args == null)
+            args = "";
+
         String[] argv = args.split(" ");
 
         /* Find the visual-config option argument */
