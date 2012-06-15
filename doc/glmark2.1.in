@@ -39,6 +39,9 @@ Use a single context for all scenes
 \fB\-s\fR, \fB\-\-size\fR WxH
 Size of the output window (default: 800x600)
 .TP
+\fB\-\-fullscreen\fR
+Run in fullscreen mode (equivalent to --size -1x-1)
+.TP
 \fB\-l\fR, \fB\-\-list\-scenes\fR
 Display information about the available scenes
 and their options

@@ -56,6 +56,7 @@ static struct option long_options[] = {
     {"reuse-context", 0, 0, 0},
     {"run-forever", 0, 0, 0},
     {"size", 1, 0, 0},
+    {"fullscreen", 0, 0, 0},
     {"list-scenes", 0, 0, 0},
     {"show-all-options", 0, 0, 0},
     {"debug", 0, 0, 0},
@@ -133,6 +134,7 @@ Options::print_help()
            "      --reuse-context    Use a single context for all scenes\n"
            "                         (by default, each scene gets its own context)\n"
            "  -s, --size WxH         Size of the output window (default: 800x600)\n"
+           "      --fullscreen       Run in fullscreen mode (equivalent to --size -1x-1)\n"
            "  -l, --list-scenes      Display information about the available scenes\n"
            "                         and their options\n"
            "      --show-all-options Show all scene option values used for benchmarks\n"
@@ -181,6 +183,8 @@ Options::parse_args(int argc, char **argv)
             Options::reuse_context = true;
         else if (c == 's' || !strcmp(optname, "size"))
             parse_size(optarg, Options::size);
+        else if (!strcmp(optname, "fullscreen"))
+            Options::size = std::pair<int,int>(-1, -1);
         else if (c == 'l' || !strcmp(optname, "list-scenes"))
             Options::list_scenes = true;
         else if (!strcmp(optname, "show-all-options"))

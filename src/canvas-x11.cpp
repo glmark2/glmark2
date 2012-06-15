@@ -26,6 +26,7 @@
 #include "util.h"
 
 #include <X11/keysym.h>
+#include <X11/Xatom.h>
 #include <fstream>
 #include <sstream>
 
@@ -232,6 +233,8 @@ CanvasX11::supports_gl2()
 bool
 CanvasX11::ensure_x_window()
 {
+    static const char *win_name("glmark2 "GLMARK_VERSION);
+
     if (xwin_)
         return true;
 
@@ -272,18 +275,27 @@ CanvasX11::ensure_x_window()
     }
 
     /* set hints and properties */
-    {
-        static const char *name("glmark2 "GLMARK_VERSION);
+    if (fullscreen_) {
+        Atom atom = XInternAtom(xdpy_, "_NET_WM_STATE_FULLSCREEN", True);
+        XChangeProperty(xdpy_, xwin_,
+                        XInternAtom(xdpy_, "_NET_WM_STATE", True),
+                        XA_ATOM, 32, PropModeReplace,
+                        reinterpret_cast<unsigned char*>(&atom),  1);
+    }
+    else {
         XSizeHints sizehints;
         sizehints.min_width  = width_;
         sizehints.min_height = height_;
         sizehints.max_width  = width_;
         sizehints.max_height = height_;
         sizehints.flags = PMaxSize | PMinSize;
-        XSetNormalHints(xdpy_, xwin_, &sizehints);
-        XSetStandardProperties(xdpy_, xwin_, name, name,
-                               None, NULL, 0, &sizehints);
+
+        XSetWMProperties(xdpy_, xwin_, NULL, NULL,
+                         NULL, 0, &sizehints, NULL, NULL);
     }
+
+    /* Set the window name */
+    XStoreName(xdpy_ , xwin_,  win_name);
 
     /* Gracefully handle Window Delete event from window manager */
     Atom wmDelete = XInternAtom(xdpy_, "WM_DELETE_WINDOW", True);
@@ -295,19 +307,36 @@ CanvasX11::ensure_x_window()
 void
 CanvasX11::resize_no_viewport(int width, int height)
 {
+    bool request_fullscreen = (width == -1 || height == -1);
+
     /* Recreate an existing window only if it has actually been resized */
     if (xwin_) {
-        if (width_ != width || height_ != height) {
+        if (width_ != width || height_ != height ||
+            fullscreen_ != request_fullscreen)
+        {
             XDestroyWindow(xdpy_, xwin_);
             xwin_ = 0;
         }
-        else {
+        else
+        {
             return;
         }
     }
 
-    width_ = width;
-    height_ = height;
+    fullscreen_ = request_fullscreen;
+
+    if (fullscreen_) {
+        /* Get the screen (root window) size */
+        XWindowAttributes window_attr;
+        XGetWindowAttributes(xdpy_, RootWindow(xdpy_, DefaultScreen(xdpy_)), 
+                             &window_attr);
+        width_ = window_attr.width;
+        height_ = window_attr.height;
+    }
+    else {
+        width_ = width;
+        height_ = height;
+    }
 
     if (!ensure_x_window())
         Log::error("Error: Couldn't create X Window!\n");

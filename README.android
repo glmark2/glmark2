@@ -36,6 +36,7 @@ ignores the following:
 --frame-end
 --off-screen
 --reuse-context
+--fullscreen
 -l,--list-scenes
 
 The default visual config used on Android is:

@@ -48,7 +48,7 @@ public:
 
 protected:
     CanvasX11(int width, int height) :
-        Canvas(width, height), xwin_(0), xdpy_(0),
+        Canvas(width, height), xwin_(0), xdpy_(0), fullscreen_(false),
         gl_color_format_(0), gl_depth_format_(0),
         color_renderbuffer_(0), depth_renderbuffer_(0), fbo_(0) {}
 
@@ -120,6 +120,7 @@ private:
 
     const char *get_gl_format_str(GLenum f);
 
+    bool fullscreen_;
     GLenum gl_color_format_;
     GLenum gl_depth_format_;
     GLuint color_renderbuffer_;
