@@ -48,8 +48,10 @@ public:
 
     virtual void log_scene_result()
     {
-        Log::info("%s FPS: %u", scene_->info_string().c_str(),
-                                scene_->average_fps());
+        Log::info("%s FPS: %u FrameTime: %.3f ms\n",
+                  scene_->info_string().c_str(),
+                  scene_->average_fps(),
+                  1000.0 / scene_->average_fps());
     }
 };
 

@@ -134,8 +134,11 @@ MainLoop::log_scene_info()
 void
 MainLoop::log_scene_result()
 {
-    static const std::string format(Log::continuation_prefix + " FPS: %u\n");
-    Log::info(format.c_str(), scene_->average_fps());
+    static const std::string format_fps(Log::continuation_prefix + " FPS: %u");
+    static const std::string format_ms(Log::continuation_prefix + " FrameTime: %.3f ms\n");
+
+    Log::info(format_fps.c_str(), scene_->average_fps());
+    Log::info(format_ms.c_str(), 1000.0 / scene_->average_fps());
 }
 
 void
