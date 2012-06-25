@@ -27,6 +27,8 @@
 
 #include <cstdarg>
 #include <png.h>
+#include <cstdio>
+#include <jpeglib.h>
 #include <memory>
 #include <vector>
 
@@ -109,6 +111,193 @@ private:
     png_bytepp rows_;
 };
 
+struct JPEGErrorMgr
+{
+    struct jpeg_error_mgr pub;
+    jmp_buf jmp_buffer;
+
+    JPEGErrorMgr()
+    {
+        jpeg_std_error(&pub);
+        pub.error_exit = error_exit;
+    }
+
+    static void error_exit(j_common_ptr cinfo)
+    {
+        JPEGErrorMgr *err =
+            reinterpret_cast<JPEGErrorMgr *>(cinfo->err);
+
+        char buffer[JMSG_LENGTH_MAX];
+
+        /* Create the message */
+        (*cinfo->err->format_message)(cinfo, buffer);
+        std::string msg(std::string(buffer) + "\n");
+        Log::error(msg.c_str());
+
+        longjmp(err->jmp_buffer, 1);
+    }
+};
+
+struct JPEGIStreamSourceMgr
+{
+    static const int BUFFER_SIZE = 4096;
+    struct jpeg_source_mgr pub;
+    std::istream *is;
+    JOCTET buffer[BUFFER_SIZE];
+
+    JPEGIStreamSourceMgr(const std::string& filename) : is(0)
+    {
+        is = Util::get_resource(filename);
+
+        /* Fill in jpeg_source_mgr pub struct */
+        pub.init_source = init_source;
+        pub.fill_input_buffer = fill_input_buffer;
+        pub.skip_input_data = skip_input_data;
+        pub.resync_to_restart = jpeg_resync_to_restart; /* use default method */
+        pub.term_source = term_source;
+        pub.bytes_in_buffer = 0; /* forces fill_input_buffer on first read */
+        pub.next_input_byte = NULL; /* until buffer loaded */
+    }
+
+    ~JPEGIStreamSourceMgr()
+    {
+        delete is;
+    }
+
+    bool error()
+    {
+        return !is || (is->fail() && !is->eof());
+    }
+
+    static void init_source(j_decompress_ptr cinfo)
+    {
+        static_cast<void>(cinfo);
+    }
+
+    static boolean fill_input_buffer(j_decompress_ptr cinfo)
+    {
+        JPEGIStreamSourceMgr *src =
+            reinterpret_cast<JPEGIStreamSourceMgr *>(cinfo->src);
+
+        src->is->read(reinterpret_cast<char *>(src->buffer), BUFFER_SIZE);
+
+        src->pub.next_input_byte = src->buffer;
+        src->pub.bytes_in_buffer = src->is->gcount();
+
+        /* 
+         * If the decoder needs more data, but we have no more bytes left to
+         * read mark the end of input.
+         */
+        if (src->pub.bytes_in_buffer == 0) {
+            src->pub.bytes_in_buffer = 2;
+            src->buffer[0] = 0xFF;
+            src->buffer[0] = JPEG_EOI;
+        }
+
+        return TRUE;
+    }
+
+    static void skip_input_data(j_decompress_ptr cinfo, long num_bytes)
+    {
+        JPEGIStreamSourceMgr *src =
+            reinterpret_cast<JPEGIStreamSourceMgr *>(cinfo->src);
+
+        if (num_bytes > 0) {
+            while (num_bytes > (long) src->pub.bytes_in_buffer) {
+                num_bytes -= (long) src->pub.bytes_in_buffer;
+                (void) (*src->fill_input_buffer) (cinfo);
+            }
+            src->pub.next_input_byte += (size_t) num_bytes;
+            src->pub.bytes_in_buffer -= (size_t) num_bytes;
+        }
+    }
+
+    static void term_source(j_decompress_ptr cinfo)
+    {
+        static_cast<void>(cinfo);
+    }
+};
+
+class JPEGReader
+{
+public:
+    JPEGReader(const std::string& filename) :
+        source_mgr_(filename), jpeg_error_(false)
+    {
+        init(filename);
+    }
+
+    ~JPEGReader()
+    {
+        finish();
+    }
+
+    bool error()
+    {
+        return jpeg_error_ || source_mgr_.error();
+    }
+
+    bool nextRow(unsigned char *dst)
+    {
+        bool ret = true;
+        unsigned char *buffer[1];
+        buffer[0] = dst;
+
+        /* Set up error handling */
+        if (setjmp(error_mgr_.jmp_buffer)) {
+            jpeg_error_ = true;
+            return false;
+        }
+
+        /* While there are lines left, read next line */
+        if (cinfo_.output_scanline < cinfo_.output_height) {
+            jpeg_read_scanlines(&cinfo_, buffer, 1);
+        }
+        else {
+            jpeg_finish_decompress(&cinfo_);
+            ret = false;
+        }
+
+        return ret;
+    }
+
+    unsigned int width() const { return cinfo_.output_width; }
+    unsigned int height() const { return cinfo_.output_height; }
+    unsigned int pixelBytes() const { return cinfo_.output_components; }
+
+private:
+    void init(const std::string& filename)
+    {
+        Log::debug("Reading JPEG file %s\n", filename.c_str());
+
+        /* Initialize error manager */
+        cinfo_.err = reinterpret_cast<jpeg_error_mgr *>(&error_mgr_);
+
+        if (setjmp(error_mgr_.jmp_buffer)) {
+            jpeg_error_ = true;
+            return;
+        }
+
+        jpeg_create_decompress(&cinfo_);
+        cinfo_.src = reinterpret_cast<jpeg_source_mgr*>(&source_mgr_);
+
+        /* Read header */
+        jpeg_read_header(&cinfo_, TRUE);
+
+        jpeg_start_decompress(&cinfo_);
+    }
+
+    void finish()
+    {
+        jpeg_destroy_decompress(&cinfo_);
+    }
+
+    struct jpeg_decompress_struct cinfo_;
+    JPEGErrorMgr error_mgr_;
+    JPEGIStreamSourceMgr source_mgr_;
+    bool jpeg_error_;
+};
+
 class ImageData {
     void resize(unsigned int w, unsigned int h, unsigned int b)
     {
@@ -123,6 +312,7 @@ public:
     ImageData() : pixels(0), width(0), height(0), bpp(0) {}
     ~ImageData() { delete [] pixels; }
     bool load_png(const std::string &filename);
+    bool load_jpeg(const std::string &filename);
 
     unsigned char *pixels;
     unsigned int width;
@@ -155,6 +345,29 @@ ImageData::load_png(const std::string &filename)
     }
 
     return ret;
+}
+
+bool
+ImageData::load_jpeg(const std::string &filename)
+{
+    JPEGReader reader(filename);
+    if (reader.error())
+        return false;
+
+    resize(reader.width(), reader.height(), reader.pixelBytes());
+
+    Log::debug("    Height: %d Width: %d Bpp: %d\n", width, height, bpp);
+
+    /* 
+     * Copy the row data to the image buffer in reverse Y order, suitable
+     * for texture upload.
+     */
+    unsigned char *ptr = &pixels[bpp * width * (height - 1)];
+
+    while (reader.nextRow(ptr))
+        ptr -= bpp * width;
+
+    return !reader.error();
 }
 
 static void

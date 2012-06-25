@@ -36,12 +36,12 @@ def configure(ctx):
     ctx.check_tool('compiler_cxx')
 
     # Check required headers
-    req_headers = ['stdlib.h', 'string.h', 'unistd.h', 'fcntl.h']
+    req_headers = ['stdlib.h', 'string.h', 'unistd.h', 'fcntl.h', 'stdio.h', 'jpeglib.h']
     for header in req_headers:
-        ctx.check_cxx(header_name = header, mandatory = True)
+        ctx.check_cxx(header_name = header, auto_add_header_name = True, mandatory = True)
 
     # Check for required libs
-    req_libs = [('m', 'm')]
+    req_libs = [('m', 'm'), ('jpeg', 'jpeg')]
     for (lib, uselib) in req_libs:
         ctx.check_cxx(lib = lib, uselib_store = uselib)
 
