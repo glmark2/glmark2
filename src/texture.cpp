@@ -151,7 +151,7 @@ Texture::find_textures()
     vector<string> pathVec;
     string dataDir(GLMARK_DATA_PATH"/textures");
     Util::list_files(dataDir, pathVec);
-    // Now that we have a list of all of the model files available to us,
+    // Now that we have a list of all of the image files available to us,
     // let's go through and pull out the names and what format they're in
     // so the scene can decide which ones to use.
     for(vector<string>::const_iterator pathIt = pathVec.begin();
