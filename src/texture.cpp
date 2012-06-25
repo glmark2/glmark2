@@ -42,8 +42,7 @@ class ImageData {
 public:
     ImageData() : pixels(0), width(0), height(0), bpp(0) {}
     ~ImageData() { delete [] pixels; }
-    bool load_png(const std::string &filename);
-    bool load_jpeg(const std::string &filename);
+    bool load(ImageReader &reader);
 
     unsigned char *pixels;
     unsigned int width;
@@ -52,32 +51,8 @@ public:
 };
 
 bool
-ImageData::load_png(const std::string &filename)
+ImageData::load(ImageReader &reader)
 {
-    PNGReader reader(filename);
-    if (reader.error())
-        return false;
-
-    resize(reader.width(), reader.height(), reader.pixelBytes());
-
-    Log::debug("    Height: %d Width: %d Bpp: %d\n", width, height, bpp);
-
-    /* 
-     * Copy the row data to the image buffer in reverse Y order, suitable
-     * for texture upload.
-     */
-    unsigned char *ptr = &pixels[bpp * width * (height - 1)];
-
-    while (reader.nextRow(ptr))
-        ptr -= bpp * width;
-
-    return !reader.error();
-}
-
-bool
-ImageData::load_jpeg(const std::string &filename)
-{
-    JPEGReader reader(filename);
     if (reader.error())
         return false;
 
@@ -139,11 +114,13 @@ Texture::load(const std::string &textureName, GLuint *pTexture, ...)
     ImageData image;
 
     if (desc->filetype() == TextureDescriptor::FileTypePNG) {
-        if (!image.load_png(filename))
+        PNGReader reader(filename);
+        if (!image.load(reader))
             return false;
     }
     else if (desc->filetype() == TextureDescriptor::FileTypeJPEG) {
-        if (!image.load_jpeg(filename))
+        JPEGReader reader(filename);
+        if (!image.load(reader))
             return false;
     }
 
