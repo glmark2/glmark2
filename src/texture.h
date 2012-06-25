@@ -34,15 +34,26 @@
  */
 class TextureDescriptor
 {
-    std::string name_;
-    std::string pathname_;
-    TextureDescriptor();
 public:
-    TextureDescriptor(const std::string& name, const std::string& pathname) :
+    enum FileType {
+        FileTypeUnknown,
+        FileTypePNG,
+        FileTypeJPEG,
+    };
+
+    TextureDescriptor(const std::string& name, const std::string& pathname,
+                      FileType filetype) :
         name_(name),
-        pathname_(pathname) {}
+        pathname_(pathname),
+        filetype_(filetype) {}
     ~TextureDescriptor() {}
     const std::string& pathname() const { return pathname_; }
+    FileType filetype() const { return filetype_; }
+private:
+    std::string name_;
+    std::string pathname_;
+    FileType filetype_;
+    TextureDescriptor();
 };
 
 typedef std::map<std::string, TextureDescriptor*> TextureMap;

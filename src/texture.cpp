@@ -411,8 +411,14 @@ Texture::load(const std::string &textureName, GLuint *pTexture, ...)
     const std::string& filename = desc->pathname();
     ImageData image;
 
-    if (!image.load_png(filename))
-        return false;
+    if (desc->filetype() == TextureDescriptor::FileTypePNG) {
+        if (!image.load_png(filename))
+            return false;
+    }
+    else if (desc->filetype() == TextureDescriptor::FileTypeJPEG) {
+        if (!image.load_jpeg(filename))
+            return false;
+    }
 
     va_list ap;
     va_start(ap, pTexture);
@@ -457,15 +463,44 @@ Texture::find_textures()
             namePos = slashPos + 1;
         }
 
-        string::size_type extPos = curPath.rfind(".png");
+        // Find the position of the extension
+        string::size_type pngExtPos = curPath.rfind(".png");
+        string::size_type jpgExtPos = curPath.rfind(".jpg");
+        string::size_type extPos(string::npos);
+
+        // Select the extension that's closer to the end of the file name
+        if (pngExtPos == string::npos)
+        {
+            extPos = jpgExtPos;
+        }
+        else if (jpgExtPos == string::npos)
+        {
+            extPos = pngExtPos;
+        }
+        else
+        {
+            extPos = std::max(pngExtPos, jpgExtPos);
+        }
+
         if (extPos == string::npos)
         {
-            // We can't trivially determine it's a PNG file so skip it...
+            // We can't trivially determine it's an image file so skip it...
             continue;
         }
 
+        // Set the file type based on the extension
+        TextureDescriptor::FileType type(TextureDescriptor::FileTypeUnknown);
+        if (extPos == pngExtPos)
+        {
+            type = TextureDescriptor::FileTypePNG;
+        }
+        else if (extPos == jpgExtPos)
+        {
+            type = TextureDescriptor::FileTypeJPEG;
+        }
+
         string name(curPath, namePos, extPos - namePos);
-        TextureDescriptor* desc = new TextureDescriptor(name, curPath);
+        TextureDescriptor* desc = new TextureDescriptor(name, curPath, type);
         TexturePrivate::textureMap.insert(std::make_pair(name, desc));
     }
 
