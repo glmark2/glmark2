@@ -265,12 +265,13 @@ struct JPEGIStreamSourceMgr
             reinterpret_cast<JPEGIStreamSourceMgr *>(cinfo->src);
 
         if (num_bytes > 0) {
-            while (num_bytes > (long) src->pub.bytes_in_buffer) {
-                num_bytes -= (long) src->pub.bytes_in_buffer;
-                (void) (*src->fill_input_buffer) (cinfo);
+            size_t n = static_cast<size_t>(num_bytes);
+            while (n > src->pub.bytes_in_buffer) {
+                n -= src->pub.bytes_in_buffer;
+                (*src->fill_input_buffer)(cinfo);
             }
-            src->pub.next_input_byte += (size_t) num_bytes;
-            src->pub.bytes_in_buffer -= (size_t) num_bytes;
+            src->pub.next_input_byte += n;
+            src->pub.bytes_in_buffer -= n;
         }
     }
 
