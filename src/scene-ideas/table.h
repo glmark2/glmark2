@@ -83,7 +83,7 @@ private:
         unsigned int totalSize;
     } dataMap_;
     unsigned int bufferObjects_[2];
-    std::vector<unsigned int> indexData_;
+    std::vector<unsigned short> indexData_;
     int tableVertexIndex_;
     int paperVertexIndex_;
     int textVertexIndex_;

@@ -134,14 +134,14 @@ LetterT::LetterT()
     // Primitive state so that the draw call can issue the primitives we want.
     unsigned int curOffset(0);
     primVec_.push_back(PrimitiveState(GL_TRIANGLE_STRIP, 18, curOffset));
-    curOffset += (18 * sizeof(unsigned int));
+    curOffset += (18 * sizeof(unsigned short));
     primVec_.push_back(PrimitiveState(GL_TRIANGLE_STRIP, 7, curOffset));
-    curOffset += (7 * sizeof(unsigned int));
+    curOffset += (7 * sizeof(unsigned short));
     primVec_.push_back(PrimitiveState(GL_TRIANGLE_STRIP, 8, curOffset));
-    curOffset += (8 * sizeof(unsigned int));
+    curOffset += (8 * sizeof(unsigned short));
     primVec_.push_back(PrimitiveState(GL_LINE_STRIP, 18, curOffset));
-    curOffset += (18 * sizeof(unsigned int));
+    curOffset += (18 * sizeof(unsigned short));
     primVec_.push_back(PrimitiveState(GL_LINE_STRIP, 7, curOffset));
-    curOffset += (7 * sizeof(unsigned int));
+    curOffset += (7 * sizeof(unsigned short));
     primVec_.push_back(PrimitiveState(GL_LINE_STRIP, 8, curOffset));
 }

@@ -37,7 +37,7 @@ public:
     ~PrimitiveState() {}
     void issue() const
     {
-        glDrawElements(type_, count_, GL_UNSIGNED_INT, 
+        glDrawElements(type_, count_, GL_UNSIGNED_SHORT, 
             reinterpret_cast<const GLvoid*>(bufferOffset_));
     }
 private:
@@ -86,7 +86,7 @@ struct Character
         // Now repeat for our index data.
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, 
-            indexData_.size() * sizeof(unsigned int), &indexData_.front(), 
+            indexData_.size() * sizeof(unsigned short), &indexData_.front(), 
             GL_STATIC_DRAW);
 
         // Unbind our vertex buffer objects so that their state isn't affected
@@ -103,7 +103,7 @@ struct Character
         vertexArray_(0) {}
     unsigned int bufferObjects_[2];
     std::vector<LibMatrix::vec2> vertexData_;
-    std::vector<unsigned int> indexData_;
+    std::vector<unsigned short> indexData_;
     int vertexIndex_;
     unsigned int vertexArray_;
     std::vector<PrimitiveState> primVec_;

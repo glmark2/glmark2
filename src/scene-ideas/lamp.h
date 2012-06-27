@@ -56,7 +56,7 @@ private:
     static const std::string normalAttribName_;
     static const std::string normalMatrixName_;
     std::vector<LibMatrix::vec3> vertexData_;
-    std::vector<unsigned int> indexData_;
+    std::vector<unsigned short> indexData_;
     unsigned int bufferObjects_[2];
     bool valid_;
 };

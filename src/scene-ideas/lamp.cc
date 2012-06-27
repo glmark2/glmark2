@@ -204,7 +204,7 @@ Lamp::init()
 
     // Now repeat for our index data.
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData_.size() * sizeof(unsigned int), &indexData_.front(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData_.size() * sizeof(unsigned short), &indexData_.front(), GL_STATIC_DRAW);
 
     // We're ready to go.
     valid_ = true;
@@ -234,10 +234,10 @@ Lamp::draw(Stack4& modelview, Stack4& projection, const vec4* lightPositions)
     litProgram_[light0PositionName_] = lightPositions[0];
     litProgram_[light1PositionName_] = lightPositions[1];
     litProgram_[light2PositionName_] = lightPositions[2];
-    static const unsigned int sui(sizeof(unsigned int));
+    static const unsigned int sus(sizeof(unsigned short));
     for (unsigned int i = 0; i < 5; i++)
     {
-        glDrawElements(GL_TRIANGLE_STRIP, 26, GL_UNSIGNED_INT, reinterpret_cast<const GLvoid*>(i * 26 * sui));
+        glDrawElements(GL_TRIANGLE_STRIP, 26, GL_UNSIGNED_SHORT, reinterpret_cast<const GLvoid*>(i * 26 * sus));
     }
     glDisableVertexAttribArray(normalIndex);
     glDisableVertexAttribArray(vertexIndex);
@@ -249,7 +249,7 @@ Lamp::draw(Stack4& modelview, Stack4& projection, const vec4* lightPositions)
     glEnableVertexAttribArray(vertexIndex);
     unlitProgram_[modelviewName_] = mv;
     unlitProgram_[projectionName_] = projection.getCurrent();
-    glDrawElements(GL_TRIANGLE_FAN, 12, GL_UNSIGNED_INT, reinterpret_cast<const GLvoid*>(5 * 26 * sui));
+    glDrawElements(GL_TRIANGLE_FAN, 12, GL_UNSIGNED_SHORT, reinterpret_cast<const GLvoid*>(5 * 26 * sus));
     glDisableVertexAttribArray(vertexIndex);
     unlitProgram_.stop();
 

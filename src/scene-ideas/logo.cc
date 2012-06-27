@@ -487,7 +487,7 @@ SGILogo::init()
 
     // Now repeat for our index data.
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData_.size() * sizeof(unsigned int),
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData_.size() * sizeof(unsigned short),
                  &indexData_.front(), GL_STATIC_DRAW);
 
     // Setup our the texture that the shadow program will use...
@@ -560,7 +560,6 @@ SGILogo::drawSingleCylinder(void)
 void
 SGILogo::drawElbow(void)
 {
-    static const unsigned int sui(sizeof(unsigned int));
     unsigned int startIdx(0);
     unsigned int endIdx(6);
     if (drawStyle_ == LOGO_NORMAL)
@@ -579,8 +578,8 @@ SGILogo::drawElbow(void)
 
     for (unsigned int i = startIdx; i < endIdx; i++)
     {
-        unsigned int curOffset(i * 18 * sui);
-        glDrawElements(GL_TRIANGLE_STRIP, 18, GL_UNSIGNED_INT, 
+        unsigned int curOffset(i * 18 * sizeof(unsigned short));
+        glDrawElements(GL_TRIANGLE_STRIP, 18, GL_UNSIGNED_SHORT, 
              reinterpret_cast<const GLvoid*>(curOffset));
     }
 }

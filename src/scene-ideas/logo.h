@@ -71,7 +71,7 @@ private:
     std::vector<LibMatrix::vec3> elbowVertices_;
     std::vector<LibMatrix::vec3> elbowNormals_;
     std::vector<LibMatrix::vec3> elbowShadowVertices_;
-    std::vector<unsigned int> indexData_;
+    std::vector<unsigned short> indexData_;
     // A simple map so we know where each section of our data starts within
     // our vertex buffer object.
     struct VertexDataMap

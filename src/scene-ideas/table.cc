@@ -178,7 +178,7 @@ Table::init(void)
 
     // Now repeat for our index data.
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData_.size() * sizeof(unsigned int),
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData_.size() * sizeof(unsigned short),
                  &indexData_.front(), GL_STATIC_DRAW);
 
     // We're ready to go.
@@ -238,8 +238,8 @@ Table::draw(Stack4& modelview,
     static const unsigned int twiceRes(2 * (TABLERES_ + 1));
     for (unsigned int i = 0; i < TABLERES_; i++)
     {
-        glDrawElements(GL_TRIANGLE_STRIP, twiceRes, GL_UNSIGNED_INT,
-            reinterpret_cast<const GLvoid*>(i * twiceRes * sizeof(unsigned int)));
+        glDrawElements(GL_TRIANGLE_STRIP, twiceRes, GL_UNSIGNED_SHORT,
+            reinterpret_cast<const GLvoid*>(i * twiceRes * sizeof(unsigned short)));
     }
     glDisableVertexAttribArray(tableVertexIndex_);
     tableProgram_.stop();
@@ -340,8 +340,8 @@ Table::drawUnder(Stack4& modelview, Stack4& projection)
     static const unsigned int twiceRes(2 * (TABLERES_ + 1));
     for (unsigned int i = 0; i < TABLERES_; i++)
     {
-        glDrawElements(GL_TRIANGLE_STRIP, twiceRes, GL_UNSIGNED_INT,
-            reinterpret_cast<const GLvoid*>(i * twiceRes * sizeof(unsigned int)));
+        glDrawElements(GL_TRIANGLE_STRIP, twiceRes, GL_UNSIGNED_SHORT,
+            reinterpret_cast<const GLvoid*>(i * twiceRes * sizeof(unsigned short)));
     }
     glDisableVertexAttribArray(underVertexIndex_);
     underProgram_.stop();
