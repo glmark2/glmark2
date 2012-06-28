@@ -24,90 +24,10 @@
 #include "texture.h"
 #include "log.h"
 #include "util.h"
+#include "image-reader.h"
 
 #include <cstdarg>
-#include <png.h>
-#include <memory>
 #include <vector>
-
-class PNGState
-{
-public:
-    PNGState() :
-        png_(0),
-        info_(0),
-        rows_(0) {}
-    ~PNGState()
-    {
-        if (png_)
-        {
-            png_destroy_read_struct(&png_, &info_, 0);
-        }
-    }
-    bool gotData(const std::string& filename)
-    {
-        static const int png_transforms = PNG_TRANSFORM_STRIP_16 |
-                                          PNG_TRANSFORM_GRAY_TO_RGB |
-                                          PNG_TRANSFORM_PACKING |
-                                          PNG_TRANSFORM_EXPAND;
-
-        Log::debug("Reading PNG file %s\n", filename.c_str());
-
-        const std::auto_ptr<std::istream> is_ptr(Util::get_resource(filename));
-        if (!(*is_ptr)) {
-            Log::error("Cannot open file %s!\n", filename.c_str());
-            return false;
-        }
-
-        /* Set up all the libpng structs we need */
-        png_ = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
-        if (!png_) {
-            Log::error("Couldn't create libpng read struct\n");
-            return false;
-        }
-
-        info_ = png_create_info_struct(png_);
-        if (!info_) {
-            Log::error("Couldn't create libpng info struct\n");
-            return false;
-        }
-
-        /* Set up libpng error handling */
-        if (setjmp(png_jmpbuf(png_))) {
-            Log::error("libpng error while reading file %s\n", filename.c_str());
-            return false;
-        }
-
-        /* Read the image information and data */
-        png_set_read_fn(png_, reinterpret_cast<voidp>(is_ptr.get()), png_read_fn);
-
-        png_read_png(png_, info_, png_transforms, 0);
-
-        rows_ = png_get_rows(png_, info_);
-
-        return true;
-    }
-    unsigned int width() const { return png_get_image_width(png_, info_); }
-    unsigned int height() const { return png_get_image_height(png_, info_); }
-    unsigned int pixelBytes() const
-    {
-        if (png_get_color_type(png_, info_) == PNG_COLOR_TYPE_RGB)
-        {
-            return 3;
-        }
-        return 4;
-    }
-    const unsigned char* row(unsigned int idx) const { return rows_[idx]; }
-private:
-    static void png_read_fn(png_structp png_ptr, png_bytep data, png_size_t length)
-    {
-        std::istream *is = reinterpret_cast<std::istream*>(png_get_io_ptr(png_ptr));
-        is->read(reinterpret_cast<char *>(data), length);
-    }
-    png_structp png_;
-    png_infop info_;
-    png_bytepp rows_;
-};
 
 class ImageData {
     void resize(unsigned int w, unsigned int h, unsigned int b)
@@ -122,7 +42,7 @@ class ImageData {
 public:
     ImageData() : pixels(0), width(0), height(0), bpp(0) {}
     ~ImageData() { delete [] pixels; }
-    bool load_png(const std::string &filename);
+    bool load(ImageReader &reader);
 
     unsigned char *pixels;
     unsigned int width;
@@ -131,30 +51,25 @@ public:
 };
 
 bool
-ImageData::load_png(const std::string &filename)
+ImageData::load(ImageReader &reader)
 {
-    PNGState png;
-    bool ret = png.gotData(filename);
-    if (!ret)
-    {
-        return ret;
-    }
+    if (reader.error())
+        return false;
 
-    resize(png.width(), png.height(), png.pixelBytes());
+    resize(reader.width(), reader.height(), reader.pixelBytes());
 
     Log::debug("    Height: %d Width: %d Bpp: %d\n", width, height, bpp);
 
-    /*
-     * Copy the image data to a contiguous memory area suitable for texture
-     * upload.
+    /* 
+     * Copy the row data to the image buffer in reverse Y order, suitable
+     * for texture upload.
      */
-    for (unsigned int i = 0; i < height; i++) {
-        memcpy(&pixels[bpp * width * i],
-               png.row(height - i - 1),
-               width * bpp);
-    }
+    unsigned char *ptr = &pixels[bpp * width * (height - 1)];
 
-    return ret;
+    while (reader.nextRow(ptr))
+        ptr -= bpp * width;
+
+    return !reader.error();
 }
 
 static void
@@ -198,8 +113,16 @@ Texture::load(const std::string &textureName, GLuint *pTexture, ...)
     const std::string& filename = desc->pathname();
     ImageData image;
 
-    if (!image.load_png(filename))
-        return false;
+    if (desc->filetype() == TextureDescriptor::FileTypePNG) {
+        PNGReader reader(filename);
+        if (!image.load(reader))
+            return false;
+    }
+    else if (desc->filetype() == TextureDescriptor::FileTypeJPEG) {
+        JPEGReader reader(filename);
+        if (!image.load(reader))
+            return false;
+    }
 
     va_list ap;
     va_start(ap, pTexture);
@@ -228,7 +151,7 @@ Texture::find_textures()
     vector<string> pathVec;
     string dataDir(GLMARK_DATA_PATH"/textures");
     Util::list_files(dataDir, pathVec);
-    // Now that we have a list of all of the model files available to us,
+    // Now that we have a list of all of the image files available to us,
     // let's go through and pull out the names and what format they're in
     // so the scene can decide which ones to use.
     for(vector<string>::const_iterator pathIt = pathVec.begin();
@@ -244,15 +167,44 @@ Texture::find_textures()
             namePos = slashPos + 1;
         }
 
-        string::size_type extPos = curPath.rfind(".png");
+        // Find the position of the extension
+        string::size_type pngExtPos = curPath.rfind(".png");
+        string::size_type jpgExtPos = curPath.rfind(".jpg");
+        string::size_type extPos(string::npos);
+
+        // Select the extension that's closer to the end of the file name
+        if (pngExtPos == string::npos)
+        {
+            extPos = jpgExtPos;
+        }
+        else if (jpgExtPos == string::npos)
+        {
+            extPos = pngExtPos;
+        }
+        else
+        {
+            extPos = std::max(pngExtPos, jpgExtPos);
+        }
+
         if (extPos == string::npos)
         {
-            // We can't trivially determine it's a PNG file so skip it...
+            // We can't trivially determine it's an image file so skip it...
             continue;
         }
 
+        // Set the file type based on the extension
+        TextureDescriptor::FileType type(TextureDescriptor::FileTypeUnknown);
+        if (extPos == pngExtPos)
+        {
+            type = TextureDescriptor::FileTypePNG;
+        }
+        else if (extPos == jpgExtPos)
+        {
+            type = TextureDescriptor::FileTypeJPEG;
+        }
+
         string name(curPath, namePos, extPos - namePos);
-        TextureDescriptor* desc = new TextureDescriptor(name, curPath);
+        TextureDescriptor* desc = new TextureDescriptor(name, curPath, type);
         TexturePrivate::textureMap.insert(std::make_pair(name, desc));
     }
 
