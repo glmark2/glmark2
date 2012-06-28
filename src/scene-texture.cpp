@@ -78,6 +78,8 @@ SceneTexture::SceneTexture(Canvas &pCanvas) :
     optionDesc += "]";
     options_["texture"] = Scene::Option("texture", "crate-base",
                                         optionDesc);
+    options_["texgen"] = Scene::Option("texgen", "false",
+                                       "Whether to generate texcoords in the shader");
 }
 
 SceneTexture::~SceneTexture()
@@ -106,6 +108,7 @@ SceneTexture::setup()
     Scene::setup();
 
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
+    static const std::string vtx_shader_texgen_filename(GLMARK_DATA_PATH"/shaders/light-basic-texgen.vert");
     static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic-tex.frag");
     static const std::string frg_shader_bilinear_filename(GLMARK_DATA_PATH"/shaders/light-basic-tex-bilinear.frag");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
@@ -138,7 +141,15 @@ SceneTexture::setup()
                   min_filter, mag_filter, 0);
 
     // Load shaders
-    ShaderSource vtx_source(vtx_shader_filename);
+    bool doTexGen(options_["texgen"].value == "true");
+    ShaderSource vtx_source;
+    if (doTexGen) {
+        vtx_source.append_file(vtx_shader_texgen_filename);
+        vtx_source.add_const("PI", static_cast<float>(M_PI));
+    }
+    else {
+        vtx_source.append_file(vtx_shader_filename);
+    }
     ShaderSource frg_source;
     if (filter == "linear-shader") {
         frg_source.append_file(frg_shader_bilinear_filename);
@@ -196,7 +207,14 @@ SceneTexture::setup()
     if (model.needTexcoords())
         model.calculate_texcoords();
     model.calculate_normals();
-    model.convert_to_mesh(mesh_);
+    // Tell the converter which attributes we care about
+    std::vector<std::pair<Model::AttribType, int> > attribs;
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
+    attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeNormal, 3));
+    if (!doTexGen) {
+        attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypeTexcoord, 2));
+    }
+    model.convert_to_mesh(mesh_, attribs);
     mesh_.build_vbo();
 
     // Calculate a projection matrix that is a good fit for the model
@@ -219,7 +237,12 @@ SceneTexture::setup()
     std::vector<GLint> attrib_locations;
     attrib_locations.push_back(program_["position"].location());
     attrib_locations.push_back(program_["normal"].location());
-    attrib_locations.push_back(program_["texcoord"].location());
+    if (doTexGen) {
+        program_["CenterPoint"] = centerVec_;
+    }
+    else {
+        attrib_locations.push_back(program_["texcoord"].location());
+    }
     mesh_.set_attrib_locations(attrib_locations);
 
     currentFrame_ = 0;
