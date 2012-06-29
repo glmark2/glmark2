@@ -38,13 +38,15 @@ using LibMatrix::mat4;
 class SceneTerrainPrivate
 {
 public:
-    SceneTerrainPrivate(Canvas &canvas, const LibMatrix::vec2 &repeat_overlay) :
+    SceneTerrainPrivate(Canvas &canvas, const LibMatrix::vec2 &repeat_overlay,
+                        bool use_bloom, bool use_tilt_shift) :
         canvas(canvas), repeat_overlay(repeat_overlay),
+        use_bloom(use_bloom), use_tilt_shift(use_tilt_shift),
         terrain_renderer(0), bloom_v_renderer(0), bloom_h_renderer(0),
-        tilt_v_renderer(0), tilt_h_renderer(0), height_map_renderer(0),
-        normal_map_renderer(0), specular_map_renderer(0),
-        height_normal_chain(0), bloom_chain(0), tilt_chain(0),
-        terrain_chain(0)
+        overlay_renderer(0), tilt_v_renderer(0), tilt_h_renderer(0),
+        copy_renderer(0), height_map_renderer(0), normal_map_renderer(0),
+        specular_map_renderer(0),
+        height_normal_chain(0), bloom_chain(0), tilt_chain(0), terrain_chain(0)
     {
         init_renderers();
     }
@@ -74,42 +76,51 @@ public:
         specular_map_renderer->setup(specular_map_renderer->size(), false, false);
 
         terrain_renderer = new TerrainRenderer(screen_res, repeat_overlay);
-        terrain_renderer->setup(terrain_renderer->size(), false, true);
+        terrain_renderer->setup(terrain_renderer->size(),
+                                !use_bloom && !use_tilt_shift,
+                                true);
         terrain_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
                                         GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
         /* Bloom */
-        bloom_h_renderer = new BlurRenderer(bloom_res, 2, 4.0,
-                                            BlurRenderer::BlurDirectionHorizontal,
-                                            vec2(1.0, 1.0) / screen_res,
-                                            0.0);
-        bloom_h_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
-                                        GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-        bloom_h_renderer->setup(bloom_h_renderer->size(), false, false);
+        if (use_bloom) {
+            bloom_h_renderer = new BlurRenderer(bloom_res, 2, 4.0,
+                                                BlurRenderer::BlurDirectionHorizontal,
+                                                vec2(1.0, 1.0) / screen_res,
+                                                0.0);
+            bloom_h_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
+                                            GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+            bloom_h_renderer->setup(bloom_h_renderer->size(), false, false);
 
-        bloom_v_renderer = new BlurRenderer(bloom_res, 2, 4.0,
-                                            BlurRenderer::BlurDirectionVertical,
-                                            vec2(1.0, 1.0) / bloom_res,
-                                            0.0);
-        bloom_v_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
-                                        GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-        bloom_v_renderer->setup(bloom_v_renderer->size(), false, false);
+            bloom_v_renderer = new BlurRenderer(bloom_res, 2, 4.0,
+                                                BlurRenderer::BlurDirectionVertical,
+                                                vec2(1.0, 1.0) / bloom_res,
+                                                0.0);
+            bloom_v_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
+                                            GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+            bloom_v_renderer->setup(bloom_v_renderer->size(), false, false);
+            overlay_renderer = new OverlayRenderer(*terrain_renderer, 0.6);
+        }
 
         /* Tilt-shift */
-        tilt_h_renderer = new BlurRenderer(screen_res, 4, 2.7,
-                                           BlurRenderer::BlurDirectionHorizontal,
-                                           vec2(1.0, 1.0) / screen_res,
-                                           0.5);
-        tilt_h_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
-                                       GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-        tilt_h_renderer->setup(tilt_h_renderer->size(), false, false);
+        if (use_tilt_shift) {
+            tilt_h_renderer = new BlurRenderer(screen_res, 4, 2.7,
+                                               BlurRenderer::BlurDirectionHorizontal,
+                                               vec2(1.0, 1.0) / screen_res,
+                                               0.5);
+            tilt_h_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
+                                           GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+            tilt_h_renderer->setup(tilt_h_renderer->size(), false, false);
 
-        tilt_v_renderer = new BlurRenderer(screen_res, 4, 2.7,
-                                           BlurRenderer::BlurDirectionVertical,
-                                           vec2(1.0, 1.0) / screen_res,
-                                           0.5);
+            tilt_v_renderer = new BlurRenderer(screen_res, 4, 2.7,
+                                               BlurRenderer::BlurDirectionVertical,
+                                               vec2(1.0, 1.0) / screen_res,
+                                               0.5);
+        }
 
-        overlay_renderer = new OverlayRenderer(*terrain_renderer, 0.6);
+        /* Copy renderer */
+        if (use_bloom && !use_tilt_shift)
+            copy_renderer = new CopyRenderer(screen_res);
 
         /* Height normal chain */
         height_normal_chain = new RendererChain();
@@ -117,23 +128,37 @@ public:
         height_normal_chain->append(*normal_map_renderer);
 
         /* Bloom effect chain */
-        bloom_chain = new RendererChain();
-        bloom_chain->append(*bloom_h_renderer);
-        bloom_chain->append(*bloom_v_renderer);
-        bloom_chain->append(*overlay_renderer);
+        if (use_bloom) {
+            bloom_chain = new RendererChain();
+            bloom_chain->append(*bloom_h_renderer);
+            bloom_chain->append(*bloom_v_renderer);
+            bloom_chain->append(*overlay_renderer);
+        }
 
         /* Tilt-shift effect chain */
-        tilt_chain = new RendererChain();
-        tilt_chain->append(*tilt_h_renderer);
-        tilt_chain->append(*tilt_v_renderer);
+        if (use_tilt_shift) {
+            tilt_chain = new RendererChain();
+            tilt_chain->append(*tilt_h_renderer);
+            tilt_chain->append(*tilt_v_renderer);
+        }
 
         /* Terrain chain */
         terrain_chain = new RendererChain();
         terrain_chain->append(*terrain_renderer);
-        terrain_chain->append(*bloom_chain);
-        terrain_chain->append(*tilt_chain);
+        if (use_bloom)
+            terrain_chain->append(*bloom_chain);
+        if (use_tilt_shift)
+            terrain_chain->append(*tilt_chain);
 
-        /* 
+        /*
+         * If are just using bloom, the terrain is rendered to a texture and
+         * bloom applied on that texture. We need to "copy" that texture's
+         * contents to the screen to make the scene visible.
+         */
+        if (use_bloom && !use_tilt_shift)
+            terrain_chain->append(*copy_renderer);
+
+        /*
          * Set up renderer textures.
          */
         terrain_renderer->height_map_texture(height_map_renderer->texture());
@@ -159,10 +184,13 @@ public:
         delete overlay_renderer;
         delete tilt_v_renderer;
         delete tilt_h_renderer;
+        delete copy_renderer;
     }
 
     Canvas &canvas;
     LibMatrix::vec2 repeat_overlay;
+    bool use_bloom;
+    bool use_tilt_shift;
 
     /* Renderers */
     TerrainRenderer *terrain_renderer;
@@ -171,6 +199,7 @@ public:
     OverlayRenderer *overlay_renderer;
     BlurRenderer *tilt_v_renderer;
     BlurRenderer *tilt_h_renderer;
+    CopyRenderer *copy_renderer;
 
     SimplexNoiseRenderer *height_map_renderer;
     NormalFromHeightRenderer *normal_map_renderer;
@@ -188,6 +217,10 @@ SceneTerrain::SceneTerrain(Canvas &pCanvas) :
 {
     options_["repeat-overlay"] = Scene::Option("repeat-overlay", "6.0",
             "How many times to repeat the terrain texture on the terrain plane (per side)");
+    options_["bloom"] = Scene::Option("bloom", "true",
+                                      "Use bloom post-processing effect [true,false]");
+    options_["tilt-shift"] = Scene::Option("tilt-shift", "true",
+                                           "Use tilt-shift post-processing effect [true,false]");
 }
 
 SceneTerrain::~SceneTerrain()
@@ -219,8 +252,11 @@ SceneTerrain::setup()
     /* Parse options */
     float repeat = Util::fromString<double>(options_["repeat-overlay"].value);
     LibMatrix::vec2 repeat_overlay(repeat, repeat);
+    bool use_bloom = options_["bloom"].value == "true";
+    bool use_tilt_shift = options_["tilt-shift"].value == "true";
 
-    priv_ = new SceneTerrainPrivate(canvas_, repeat_overlay);
+    priv_ = new SceneTerrainPrivate(canvas_, repeat_overlay,
+                                    use_bloom, use_tilt_shift);
 
     /* Set up terrain rendering program */
     LibMatrix::Stack4 model;
