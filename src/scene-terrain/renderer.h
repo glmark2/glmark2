@@ -292,7 +292,7 @@ private:
 class TerrainRenderer : public BaseRenderer
 {
 public:
-    TerrainRenderer(const LibMatrix::vec2 &size);
+    TerrainRenderer(const LibMatrix::vec2 &size, const LibMatrix::vec2 &repeat_overlay);
     virtual ~TerrainRenderer();
 
     /* IRenderable Methods */

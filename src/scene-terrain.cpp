@@ -38,8 +38,8 @@ using LibMatrix::mat4;
 class SceneTerrainPrivate
 {
 public:
-    SceneTerrainPrivate(Canvas &canvas) :
-        canvas(canvas),
+    SceneTerrainPrivate(Canvas &canvas, const LibMatrix::vec2 &repeat_overlay) :
+        canvas(canvas), repeat_overlay(repeat_overlay),
         terrain_renderer(0), bloom_v_renderer(0), bloom_h_renderer(0),
         tilt_v_renderer(0), tilt_h_renderer(0), height_map_renderer(0),
         normal_map_renderer(0), specular_map_renderer(0),
@@ -73,7 +73,7 @@ public:
                                              GL_REPEAT, GL_REPEAT);
         specular_map_renderer->setup(specular_map_renderer->size(), false, false);
 
-        terrain_renderer = new TerrainRenderer(screen_res);
+        terrain_renderer = new TerrainRenderer(screen_res, repeat_overlay);
         terrain_renderer->setup(terrain_renderer->size(), false, true);
         terrain_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
                                         GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
@@ -162,6 +162,7 @@ public:
     }
 
     Canvas &canvas;
+    LibMatrix::vec2 repeat_overlay;
 
     /* Renderers */
     TerrainRenderer *terrain_renderer;
@@ -185,6 +186,8 @@ public:
 SceneTerrain::SceneTerrain(Canvas &pCanvas) :
     Scene(pCanvas, "terrain"), priv_(0)
 {
+    options_["repeat-overlay"] = Scene::Option("repeat-overlay", "6.0",
+            "How many times to repeat the terrain texture on the terrain plane (per side)");
 }
 
 SceneTerrain::~SceneTerrain()
@@ -197,7 +200,6 @@ SceneTerrain::load()
 {
     Scene::load();
 
-    priv_ = new SceneTerrainPrivate(canvas_);
     running_ = false;
 
     return true;
@@ -206,9 +208,6 @@ SceneTerrain::load()
 void
 SceneTerrain::unload()
 {
-    delete priv_;
-    priv_ = 0;
-
     Scene::unload();
 }
 
@@ -216,6 +215,12 @@ void
 SceneTerrain::setup()
 {
     Scene::setup();
+
+    /* Parse options */
+    float repeat = Util::fromString<double>(options_["repeat-overlay"].value);
+    LibMatrix::vec2 repeat_overlay(repeat, repeat);
+
+    priv_ = new SceneTerrainPrivate(canvas_, repeat_overlay);
 
     /* Set up terrain rendering program */
     LibMatrix::Stack4 model;
@@ -262,6 +267,8 @@ SceneTerrain::setup()
 void
 SceneTerrain::teardown()
 {
+    delete priv_;
+    priv_ = 0;
     Scene::teardown();
 }
 

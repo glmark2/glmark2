@@ -24,9 +24,10 @@
 #include "texture.h"
 #include "shader-source.h"
 
-TerrainRenderer::TerrainRenderer(const LibMatrix::vec2 &size) :
+TerrainRenderer::TerrainRenderer(const LibMatrix::vec2 &size,
+                                 const LibMatrix::vec2 &repeat_overlay) :
     BaseRenderer(size), height_map_tex_(0), normal_map_tex_(0),
-    specular_map_tex_(0), repeat_overlay_(6.0f, 6.0f)
+    specular_map_tex_(0), repeat_overlay_(repeat_overlay)
 {
     create_mesh();
     init_textures();
