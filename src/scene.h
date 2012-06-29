@@ -504,4 +504,24 @@ private:
     SceneIdeasPrivate* priv_;
 };
 
+class SceneTerrainPrivate;
+
+class SceneTerrain : public Scene
+{
+public:
+    SceneTerrain(Canvas &pCanvas);
+    bool load();
+    void unload();
+    void setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+
+    ~SceneTerrain();
+
+private:
+    SceneTerrainPrivate* priv_;
+};
+
 #endif

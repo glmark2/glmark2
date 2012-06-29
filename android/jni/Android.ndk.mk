@@ -54,10 +54,12 @@ LOCAL_LDLIBS := -landroid -llog -lGLESv2 -lEGL -lz
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/src \
                     $(LOCAL_PATH)/src/libmatrix \
                     $(LOCAL_PATH)/src/scene-ideas \
+                    $(LOCAL_PATH)/src/scene-terrain \
                     $(LOCAL_PATH)/src/libjpeg-turbo \
                     $(LOCAL_PATH)/src/libpng
 LOCAL_SRC_FILES := $(filter-out src/canvas% src/main.cpp, \
                      $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/*.cpp))) \
+                   $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/scene-terrain/*.cpp)) \
                    src/canvas-android.cpp
 
 include $(BUILD_SHARED_LIBRARY)
