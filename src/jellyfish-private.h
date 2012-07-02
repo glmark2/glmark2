@@ -73,14 +73,14 @@ class JellyfishPrivate
     LibMatrix::vec4 fresnelColor_;
     float fresnelPower_;
     float rotation_;
-    uint64_t currentTime_;
-    
+    float currentTime_;
+
 public:
     JellyfishPrivate();
     ~JellyfishPrivate();
-    void initialize();
+    void initialize(double time);
     void update_viewport(const LibMatrix::vec2& viewport);
-    void update_time();
+    void update_time(double time);
     void cleanup();
     void draw();
 };

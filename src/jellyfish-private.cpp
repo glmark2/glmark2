@@ -239,11 +239,10 @@ JellyfishPrivate::~JellyfishPrivate()
 }
 
 void
-JellyfishPrivate::initialize()
+JellyfishPrivate::initialize(double time)
 {
-    // We want milliseconds
-    currentTime_ = Util::get_timestamp_us() / 1000;
-    whichCaustic_ = currentTime_ * 30 % 32 + 1;
+    currentTime_ = static_cast<float>(static_cast<uint64_t>(time) % 100000000) / 1000.0;
+    whichCaustic_ = static_cast<uint64_t>(currentTime_ * 30) % 32 + 1;
     rotation_ = 0.0;
 
     // Set up program first so we can store attribute and uniform locations
@@ -350,14 +349,12 @@ JellyfishPrivate::update_viewport(const vec2& vp)
 }
 
 void
-JellyfishPrivate::update_time()
+JellyfishPrivate::update_time(double elapsed_time)
 {
-    // We want milliseconds
-    uint64_t now = Util::get_timestamp_us() / 1000;
-    float elapsed = now - currentTime_;
-    rotation_ += (2 * elapsed) / 1000.0;
-    currentTime_ = now % 100000000 / 1000;
-    whichCaustic_ = currentTime_ * 30 % 32 + 1;
+    rotation_ += (2 * elapsed_time) / 1000.0;
+    double now = Util::get_timestamp_us() / 1000000.0;
+    currentTime_ = static_cast<float>(static_cast<uint64_t>(now) % 100000000) / 1000.0;
+    whichCaustic_ = static_cast<uint64_t>(currentTime_ * 30) % 32 + 1;
 }
 
 void
@@ -382,7 +379,7 @@ void
 JellyfishPrivate::draw()
 {
     projection_.loadIdentity();
-    projection_.perspective(30, viewport_.x()/viewport_.y(), 20, 120);
+    projection_.perspective(30.0, viewport_.x()/viewport_.y(), 1.0, 1000.0);
     // We need "world", "world view projection", "world inverse transpose",
     // and "view inverse" matrix uniforms for the current shader.
     //
@@ -398,10 +395,9 @@ JellyfishPrivate::draw()
     world_.scale(5.0, 5.0, 5.0);
     world_.translate(0.0, sin(rotation_ / 10.0) * 2.5, 0.0);
     mat4 view;
-    mat4 worldViewProjection;
+    mat4 worldViewProjection(projection_.getCurrent());
     worldViewProjection *= world_.getCurrent();;
     worldViewProjection *= view;
-    worldViewProjection *= projection_.getCurrent();
     mat4 worldInverseTranspose(world_.getCurrent());
     worldInverseTranspose.inverse().transpose();
     view.inverse();

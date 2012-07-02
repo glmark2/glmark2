@@ -58,7 +58,7 @@ SceneJellyfish::setup()
 
     // Set up our private object that does all of the lifting
     priv_ = new JellyfishPrivate();
-    priv_->initialize();
+    priv_->initialize(startTime_);
 }
 
 void
@@ -72,8 +72,9 @@ void
 SceneJellyfish::update()
 {
     Scene::update();
+    double elapsed_time = lastUpdateTime_ - startTime_;
     priv_->update_viewport(LibMatrix::vec2(canvas_.width(), canvas_.height()));
-    priv_->update_time();
+    priv_->update_time(elapsed_time);
 }
 
 void
