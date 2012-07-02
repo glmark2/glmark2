@@ -204,7 +204,8 @@ JellyfishPrivate::JellyfishPrivate() :
     fresnelColor_(0.8, 0.7, 0.6, 1.1),
     fresnelPower_(1.0),
     rotation_(0.0),
-    currentTime_(0.0)
+    currentTime_(0.0),
+    lastUpdateTime_(0.0)
 {
     static const string modelFilename(GLMARK_DATA_PATH"/models/jellyfish.jobj");
     if (!load_obj(modelFilename))
@@ -241,7 +242,8 @@ JellyfishPrivate::~JellyfishPrivate()
 void
 JellyfishPrivate::initialize(double time)
 {
-    currentTime_ = static_cast<float>(static_cast<uint64_t>(time) % 100000000) / 1000.0;
+    lastUpdateTime_ = time;
+    currentTime_ = static_cast<uint64_t>(lastUpdateTime_) % 100000000 / 1000.0;
     whichCaustic_ = static_cast<uint64_t>(currentTime_ * 30) % 32 + 1;
     rotation_ = 0.0;
 
@@ -345,16 +347,24 @@ JellyfishPrivate::initialize(double time)
 void
 JellyfishPrivate::update_viewport(const vec2& vp)
 {
+    if (viewport_.x() == vp.x() && viewport_.y() == vp.y())
+    {
+        return;
+    }
     viewport_ = vp;
+    projection_.loadIdentity();
+    projection_.perspective(30.0, viewport_.x()/viewport_.y(), 20.0, 120.0);    
 }
 
 void
-JellyfishPrivate::update_time(double elapsed_time)
+JellyfishPrivate::update_time()
 {
-    rotation_ += (2 * elapsed_time) / 1000.0;
     double now = Util::get_timestamp_us() / 1000.0;
-    currentTime_ = static_cast<uint64_t>(now) % 1000000 / 1000.0;
+    double elapsedTime = now - lastUpdateTime_;
+    rotation_ += (2.0 * elapsedTime) / 1000.0;
+    currentTime_ = static_cast<uint64_t>(now) % 100000000 / 1000.0;
     whichCaustic_ = static_cast<uint64_t>(currentTime_ * 30) % 32 + 1;
+    lastUpdateTime_ = now;
 }
 
 void
@@ -378,8 +388,6 @@ JellyfishPrivate::cleanup()
 void
 JellyfishPrivate::draw()
 {
-    projection_.loadIdentity();
-    projection_.perspective(30.0, viewport_.x()/viewport_.y(), 1.0, 1000.0);
     // We need "world", "world view projection", "world inverse transpose",
     // and "view inverse" matrix uniforms for the current shader.
     //
@@ -394,18 +402,14 @@ JellyfishPrivate::draw()
     world_.rotate(sin(rotation_ / 20.0) * 30.0, 1.0, 0.0, 0.0);
     world_.scale(5.0, 5.0, 5.0);
     world_.translate(0.0, sin(rotation_ / 10.0) * 2.5, 0.0);
-    mat4 view;
     mat4 worldViewProjection(projection_.getCurrent());
     worldViewProjection *= world_.getCurrent();;
-    worldViewProjection *= view;
     mat4 worldInverseTranspose(world_.getCurrent());
     worldInverseTranspose.inverse().transpose();
-    view.inverse();
 
     // Load up the uniforms
     program_.start();
     program_["uWorld"] = world_.getCurrent();
-    program_["uViewInv"] = view;
     program_["uWorldViewProj"] = worldViewProjection;
     program_["uWorldInvTranspose"] = worldInverseTranspose;
     program_["uCurrentTime"] = static_cast<float>(currentTime_);
@@ -427,6 +431,8 @@ JellyfishPrivate::draw()
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glDisable(GL_CULL_FACE);
 
     glBindBuffer(GL_ARRAY_BUFFER, bufferObjects_[0]);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);

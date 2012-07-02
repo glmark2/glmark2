@@ -4,7 +4,6 @@ attribute vec3 aVertexColor;
 attribute vec3 aTextureCoord;
 
 uniform mat4 uWorld;
-uniform mat4 uViewInv;
 uniform mat4 uWorldViewProj;
 uniform mat4 uWorldInvTranspose;
 uniform vec3 uLightPos;
@@ -27,10 +26,10 @@ void main(void)
     float speed = uCurrentTime / 15.0;
     float offset = smoothstep(0.0, 1.0, max(0.0, -aVertexPosition.y-0.8) / 10.0);
     vec3 pos = aVertexPosition +
-        (vec3(aVertexColor.x, aVertexColor.y, aVertexColor.z)/12.0 *
-        sin(speed * 15.0 + aVertexPosition.y / 2.0) * (1.0 - offset));
-    pos = pos + (vec3(aVertexColor.x, aVertexColor.y, aVertexColor.z) / 8.0 *
-        sin(speed * 30.0 + aVertexPosition.y / 0.5) * (1.0 - offset));
+        aVertexColor.xyz / 12.0 *
+        sin(speed * 15.0 + aVertexPosition.y / 2.0) * (1.0 - offset);
+    pos = pos + aVertexColor.xyz / 8.0 *
+        sin(speed * 30.0 + aVertexPosition.y / 0.5) * (1.0 - offset);
     vec4 pos4 = vec4(pos, 1.0);
     gl_Position = uWorldViewProj * pos4; 
 
@@ -47,8 +46,8 @@ void main(void)
     vAmbient = uAmbientCol.rgb * vec3(uAmbientCol.a) * vVertexNormal.y;
 
     //fresnel
-    vec3 worldPos = (uWorld * pos4).xyz;
-    vec3 vWorldEyeVec = normalize(worldPos - uViewInv[3].xyz); 
+    vec4 worldPos = uWorld * pos4;
+    vec3 vWorldEyeVec = normalize(worldPos.xyz/worldPos.w); 
     float fresnelProduct = pow(1.0 - max(abs(dot(vVertexNormal, -vWorldEyeVec)), 0.0), uFresnelPower);
     vFresnel = uFresnelCol.rgb * vec3(uFresnelCol.a * fresnelProduct);
 
