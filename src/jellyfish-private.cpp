@@ -352,8 +352,8 @@ void
 JellyfishPrivate::update_time(double elapsed_time)
 {
     rotation_ += (2 * elapsed_time) / 1000.0;
-    double now = Util::get_timestamp_us() / 1000000.0;
-    currentTime_ = static_cast<float>(static_cast<uint64_t>(now) % 100000000) / 1000.0;
+    double now = Util::get_timestamp_us() / 1000.0;
+    currentTime_ = static_cast<uint64_t>(now) % 1000000 / 1000.0;
     whichCaustic_ = static_cast<uint64_t>(currentTime_ * 30) % 32 + 1;
 }
 
