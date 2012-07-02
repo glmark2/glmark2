@@ -4,36 +4,19 @@ attribute vec3 aVertexColor;
 attribute vec3 aTextureCoord;
 
 uniform mat4 uWorld;
-uniform mat4 uView;
 uniform mat4 uViewInv;
-uniform mat4 uWorldView;
 uniform mat4 uWorldViewProj;
 uniform mat4 uWorldInvTranspose;
-
-uniform float uNear;
-uniform float uFar;
 uniform vec3 uLightPos;
 uniform float uLightRadius;
 uniform vec4 uLightCol;
-uniform vec4 uLightSpecCol;
-uniform float uSpecPower;
 uniform vec4 uAmbientCol;
 uniform vec4 uFresnelCol;
 uniform float uFresnelPower;
-  
 uniform float uCurrentTime;
 
 varying vec2 vTextureCoord;
-varying vec3 vVertexNormal;
-varying vec3 vWorldEyeVec;
 varying vec4 vWorld;
-varying vec4 vWorldView;
-varying vec4 vWorldViewProj;
-varying vec4 vWorldInvTranspose;
-varying vec4 vViewInv;
-
-varying float vDepth;
-varying vec3 vSpecular;
 varying vec3 vDiffuse;
 varying vec3 vAmbient;
 varying vec3 vFresnel;
@@ -48,22 +31,11 @@ void main(void)
         sin(speed * 15.0 + aVertexPosition.y / 2.0) * (1.0 - offset));
     pos = pos + (vec3(aVertexColor.x, aVertexColor.y, aVertexColor.z) / 8.0 *
         sin(speed * 30.0 + aVertexPosition.y / 0.5) * (1.0 - offset));
-        vec4 pos4 = vec4(pos, 1.0);
+    vec4 pos4 = vec4(pos, 1.0);
     gl_Position = uWorldViewProj * pos4; 
 
-    //matrices
     vWorld = uWorld * pos4;
-    vWorldView = uWorldView * pos4;
-    vWorldViewProj = uWorldViewProj * pos4;
-    vWorldInvTranspose = uWorldInvTranspose * pos4;
-    vViewInv = uViewInv * pos4;
-
-    //vertex data
-    vec4 worldViewPos = uWorldViewProj * pos4; 
-    vVertexNormal = normalize((uWorldInvTranspose * vec4(aVertexNormal, 1.0)).xyz);
-
-    vec3 worldPos = (uWorld * pos4).xyz;
-    vWorldEyeVec = normalize(worldPos - uViewInv[3].xyz); 
+    vec3 vVertexNormal = normalize((uWorldInvTranspose * vec4(aVertexNormal, 1.0)).xyz);
 
     //diffuse
     vec3 lightDir = normalize(uLightPos - vWorld.xyz);
@@ -75,11 +47,11 @@ void main(void)
     vAmbient = uAmbientCol.rgb * vec3(uAmbientCol.a) * vVertexNormal.y;
 
     //fresnel
+    vec3 worldPos = (uWorld * pos4).xyz;
+    vec3 vWorldEyeVec = normalize(worldPos - uViewInv[3].xyz); 
     float fresnelProduct = pow(1.0 - max(abs(dot(vVertexNormal, -vWorldEyeVec)), 0.0), uFresnelPower);
     vFresnel = uFresnelCol.rgb * vec3(uFresnelCol.a * fresnelProduct);
 
-    //depth
-    vDepth = (vWorldViewProj.z + uNear) / uFar;
-
-    vTextureCoord = vec2(aTextureCoord[0], aTextureCoord[1]);
+    // texcoord
+    vTextureCoord = aTextureCoord.xy;
 }
