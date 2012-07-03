@@ -255,7 +255,7 @@ JellyfishPrivate::load_obj(const std::string &filename)
         }
     }
 
-    Log::info("Object populated with %u vertices %u normals %u colors %u texcoords and %u indices.\n",
+    Log::debug("Object populated with %u vertices %u normals %u colors %u texcoords and %u indices.\n",
         positions_.size(), normals_.size(), colors_.size(), texcoords_.size(), indices_.size());
     return true;
 }
@@ -335,11 +335,6 @@ JellyfishPrivate::initialize(double time)
 
     program_.start();
 
-    GLenum err = glGetError();
-    if (err != GL_NO_ERROR)
-    {
-        Log::error("We got an OpenGL error during program setup 0x%x\n", err);
-    }
     // Stash away attribute and uniform locations for handy use.
     positionLocation_ = program_["aVertexPosition"].location();
     normalLocation_ = program_["aVertexNormal"].location();
@@ -362,21 +357,11 @@ JellyfishPrivate::initialize(double time)
                     dataMap_.colorSize, &colors_.front());
     glBufferSubData(GL_ARRAY_BUFFER, dataMap_.texcoordOffset,
                     dataMap_.texcoordSize, &texcoords_.front());
-    err = glGetError();
-    if (err != GL_NO_ERROR)
-    {
-        Log::error("We got an OpenGL error during array buffer setup 0x%x\n", err);
-    }
 
     // Now repeat for our index data.
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_.size() * sizeof(unsigned short),
                  &indices_.front(), GL_STATIC_DRAW);
-    err = glGetError();
-    if (err != GL_NO_ERROR)
-    {
-        Log::error("We got an OpenGL error during element array buffer setup 0x%x\n", err);
-    }
 
     // "Unbind" our buffer objects to make sure the state is consistent.
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -406,12 +391,9 @@ JellyfishPrivate::initialize(double time)
         {
             Log::error("Caustics texture[%u] set up failed!!!\n", i);
         }
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glBindTexture(GL_TEXTURE_2D, 0);
-    }
-    err = glGetError();
-    if (err != GL_NO_ERROR)
-    {
-        Log::error("We got an OpenGL error during intialization 0x%x\n", err);
     }
 }
 
@@ -483,7 +465,7 @@ JellyfishPrivate::draw()
     program_["uWorld"] = world_.getCurrent();
     program_["uWorldViewProj"] = worldViewProjection;
     program_["uWorldInvTranspose"] = worldInverseTranspose;
-    program_["uCurrentTime"] = static_cast<float>(currentTime_);
+    program_["uCurrentTime"] = currentTime_;
     // Revisit making these constants rather than uniforms as they appear never
     // to change
     program_["uLightPos"] = lightPosition_;
@@ -520,18 +502,8 @@ JellyfishPrivate::draw()
         reinterpret_cast<const GLvoid*>(dataMap_.colorOffset));
     glVertexAttribPointer(texcoordLocation_ , 3, GL_FLOAT, GL_FALSE, 0,
         reinterpret_cast<const GLvoid*>(dataMap_.texcoordOffset));
-    GLenum err = glGetError();
-    if (err != GL_NO_ERROR)
-    {
-        Log::error("We got an OpenGL error before draw 0x%x\n", err);
-    }
 
     glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_SHORT, 0);
-    err = glGetError();
-    if (err != GL_NO_ERROR)
-    {
-        Log::error("We got an OpenGL error after draw 0x%x\n", err);
-    }
 
     glDisableVertexAttribArray(positionLocation_);
     glDisableVertexAttribArray(normalLocation_);
