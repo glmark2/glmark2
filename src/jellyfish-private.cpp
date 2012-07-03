@@ -333,8 +333,6 @@ JellyfishPrivate::initialize(double time)
         return;
     }
 
-    program_.start();
-
     // Stash away attribute and uniform locations for handy use.
     positionLocation_ = program_["aVertexPosition"].location();
     normalLocation_ = program_["aVertexNormal"].location();
@@ -486,6 +484,7 @@ JellyfishPrivate::draw()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
 
     glBindBuffer(GL_ARRAY_BUFFER, bufferObjects_[0]);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);
