@@ -36,6 +36,75 @@ using LibMatrix::vec2;
 using std::string;
 using std::vector;
 
+void
+GradientRenderer::init()
+{
+    // Program set up
+    static const string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/gradient.vert");
+    static const string frg_shader_filename(GLMARK_DATA_PATH"/shaders/gradient.frag");
+    ShaderSource vtx_source(vtx_shader_filename);
+    ShaderSource frg_source(frg_shader_filename);
+    if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
+        frg_source.str()))
+    {
+        return;
+    }
+    positionLocation_ = program_["position"].location();
+    uvLocation_ = program_["uvIn"].location();
+
+    // Set up the position data for our "quad".
+    vertices_.push_back(vec2(-1.0, -1.0));
+    vertices_.push_back(vec2(1.0, -1.0));
+    vertices_.push_back(vec2(-1.0, 1.0));
+    vertices_.push_back(vec2(1.0, 1.0));
+    uvs_.push_back(vec2(1.0, 1.0));
+    uvs_.push_back(vec2(1.0, 1.0));
+    uvs_.push_back(vec2(0.0, 0.0));
+    uvs_.push_back(vec2(0.0, 0.0));
+    uvOffset_ = vertices_.size() * sizeof(vec2);
+
+    // Set up the VBO and stash our position data in it.
+    glGenBuffers(1, &bufferObject_);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferObject_);
+    glBufferData(GL_ARRAY_BUFFER, (vertices_.size() + uvs_.size()) * sizeof(vec2),
+                 0, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices_.size() * sizeof(vec2),
+                    &vertices_.front());
+    glBufferSubData(GL_ARRAY_BUFFER, uvOffset_, uvs_.size() * sizeof(vec2),
+                    &uvs_.front());
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void
+GradientRenderer::cleanup()
+{
+    program_.stop();
+    program_.release();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glDeleteBuffers(1, &bufferObject_);
+}
+
+void
+GradientRenderer::draw()
+{
+    static const vec3 lightBlue(0.360784314, 0.584313725, 1.0);
+    static const vec3 darkBlue(0.074509804, 0.156862745, 0.619607843);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferObject_);
+    program_.start();
+    program_["color1"] = lightBlue;
+    program_["color2"] = darkBlue;
+    glEnableVertexAttribArray(positionLocation_);
+    glEnableVertexAttribArray(uvLocation_);
+    glVertexAttribPointer(positionLocation_, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(uvLocation_, 2, GL_FLOAT, GL_FALSE, 0,
+                          reinterpret_cast<GLvoid*>(uvOffset_));
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDisableVertexAttribArray(positionLocation_);
+    glDisableVertexAttribArray(uvLocation_);
+    program_.stop();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 //!
 // Parse index values from an OBJ file.
 //
@@ -247,6 +316,8 @@ JellyfishPrivate::initialize(double time)
     whichCaustic_ = static_cast<uint64_t>(currentTime_ * 30) % 32 + 1;
     rotation_ = 0.0;
 
+    gradient_.init();
+
     // Set up program first so we can store attribute and uniform locations
     // away for the 
     using std::string;
@@ -370,11 +441,6 @@ JellyfishPrivate::update_time()
 void
 JellyfishPrivate::cleanup()
 {
-    glDisableVertexAttribArray(positionLocation_);
-    glDisableVertexAttribArray(normalLocation_);
-    glDisableVertexAttribArray(colorLocation_);
-    glDisableVertexAttribArray(texcoordLocation_);
-
     program_.stop();
     program_.release();
 
@@ -383,13 +449,18 @@ JellyfishPrivate::cleanup()
 
     glDeleteTextures(33, &textureObjects_[0]);
     glDeleteBuffers(2, &bufferObjects_[0]);
+
+    gradient_.cleanup();
 }
 
 void
 JellyfishPrivate::draw()
 {
-    // We need "world", "world view projection", "world inverse transpose",
-    // and "view inverse" matrix uniforms for the current shader.
+    // "Clear" the background to the desired gradient.
+    gradient_.draw();
+
+    // We need "world", "world view projection", and "world inverse transpose"
+    // matrix uniforms for the current shader.
     //
     // NOTE: Some of this seems a bit of a no-op (e.g., multipying by and
     //       inverting identity matrices), but leave it like the original

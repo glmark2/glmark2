@@ -27,9 +27,38 @@
 #include "stack.h"
 #include "program.h"
 
+class GradientRenderer
+{
+    Program program_;
+    int positionLocation_;
+    int uvLocation_;
+    unsigned int uvOffset_;
+    unsigned int bufferObject_;
+    std::vector<LibMatrix::vec2> vertices_;
+    std::vector<LibMatrix::vec2> uvs_;
+    
+public:
+    GradientRenderer() :
+        positionLocation_(0),
+        uvLocation_(0),
+        uvOffset_(0),
+        bufferObject_(0) {}
+    ~GradientRenderer()
+    {
+        vertices_.clear();
+        uvs_.clear();
+    }
+    void init();
+    void cleanup();
+    void draw();
+};
+
 class JellyfishPrivate
 {
     bool load_obj(const std::string& filename);
+
+    // For the background gradient.
+    GradientRenderer gradient_;
 
     // Vertex data.
     std::vector<LibMatrix::vec3> positions_;
