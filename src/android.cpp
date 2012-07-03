@@ -222,6 +222,7 @@ Java_org_linaro_glmark2_native_init(JNIEnv* env, jclass clazz,
     Benchmark::register_scene(*new SceneDesktop(*g_canvas));
     Benchmark::register_scene(*new SceneBuffer(*g_canvas));
     Benchmark::register_scene(*new SceneIdeas(*g_canvas));
+    Benchmark::register_scene(*new SceneJellyfish(*g_canvas));
 
     g_benchmark_collection = new BenchmarkCollection();
     g_benchmark_collection->populate_from_options();

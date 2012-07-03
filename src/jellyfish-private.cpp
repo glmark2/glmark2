@@ -249,7 +249,7 @@ JellyfishPrivate::load_obj(const std::string &filename)
         }
         else if (definitionType == index_definition)
         {
-            unsigned short idx;
+            unsigned short idx(0);
             obj_get_index(curSrc, idx);
             indices_.push_back(idx);
         }
