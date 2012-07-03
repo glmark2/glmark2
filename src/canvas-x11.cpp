@@ -88,7 +88,7 @@ CanvasX11::visible(bool visible)
 void
 CanvasX11::clear()
 {
-    glClearColor(0.359375f, 0.58203125f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 #if USE_GL
     glClearDepth(1.0f);
 #elif USE_GLESv2
