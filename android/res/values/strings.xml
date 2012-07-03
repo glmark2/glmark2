@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">GLMark2</string>
+    <string name="title_activity_main">GLMark2</string>
+    <string name="title_activity_editor">GLMark2 Benchmark Editor</string>
+    <string name="title_activity_glmark2">GLMark2</string>
 </resources>

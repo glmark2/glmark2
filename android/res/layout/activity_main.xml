@@ -1,0 +1,24 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+    <Button android:id="@+id/runButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="Run" />
+
+    <ListView android:id="@+id/benchmarkListView"
+              android:layout_above="@id/runButton"
+              android:layout_weight="1.0"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_alignParentTop="true"
+              android:layout_marginLeft="6dip"
+              android:layout_marginRight="6dip"
+              android:layout_marginTop="6dip" 
+              android:layout_marginBottom="6dip" />
+
+
+</RelativeLayout>
