@@ -249,6 +249,19 @@ SceneTerrain::setup()
 {
     Scene::setup();
 
+    /* Ensure implementation supports vertex texture fetch */
+    GLint vertex_textures;
+    glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &vertex_textures);
+    if (vertex_textures <= 0) {
+        Log::error("SceneTerrain requires Vertex Texture Fetch support, "
+                   "but GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS is %d\n",
+                   vertex_textures);
+        currentFrame_ = 0;
+        startTime_ = Util::get_timestamp_us() / 1000000.0;
+        running_ = false;
+        return;
+    }
+
     /* Parse options */
     float repeat = Util::fromString<double>(options_["repeat-overlay"].value);
     LibMatrix::vec2 repeat_overlay(repeat, repeat);
