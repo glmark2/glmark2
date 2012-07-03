@@ -26,9 +26,9 @@ void main(void)
     float speed = uCurrentTime / 15.0;
     float offset = smoothstep(0.0, 1.0, max(0.0, -aVertexPosition.y-0.8) / 10.0);
     vec3 pos = aVertexPosition +
-        aVertexColor.xyz / 12.0 *
+        aVertexColor / 12.0 *
         sin(speed * 15.0 + aVertexPosition.y / 2.0) * (1.0 - offset);
-    pos = pos + aVertexColor.xyz / 8.0 *
+    pos = pos + aVertexColor / 8.0 *
         sin(speed * 30.0 + aVertexPosition.y / 0.5) * (1.0 - offset);
     vec4 pos4 = vec4(pos, 1.0);
     gl_Position = uWorldViewProj * pos4; 
