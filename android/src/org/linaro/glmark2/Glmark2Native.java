@@ -29,4 +29,5 @@ class Glmark2Native {
     public static native boolean render();
     public static native void done();
     public static native int scoreConfig(GLVisualConfig vc, GLVisualConfig target);
+    public static native SceneInfo[] getSceneInfo(AssetManager assetManager);
 }

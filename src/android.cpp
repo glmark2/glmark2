@@ -169,6 +169,77 @@ gl_visual_config_from_jobject(JNIEnv *env, jobject jvc, GLVisualConfig &vc)
     vc.buffer = env->GetIntField(jvc, fid);
 }
 
+/** 
+ * Creates a SceneInfo Java object from a Scene.
+ * 
+ * @param env the JNIEnv
+ */
+static jobject
+scene_info_from_scene(JNIEnv *env, Scene &scene)
+{
+    jclass cls = env->FindClass("org/linaro/glmark2/SceneInfo");
+    jmethodID constructor = env->GetMethodID(cls, "<init>", "(Ljava/lang/String;)V");
+    jmethodID add_option = env->GetMethodID(cls, "addOption", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+
+    /* Create the SceneInfo object */
+    jstring name = env->NewStringUTF(scene.name().c_str());
+    jobject scene_info = env->NewObject(cls, constructor, name);
+
+    const std::map<std::string, Scene::Option> &options = scene.options();
+
+    /* Add options to the SceneInfo object */
+    for (std::map<std::string, Scene::Option>::const_iterator opt_iter = options.begin();
+         opt_iter != options.end();
+         opt_iter++)
+    {
+        const Scene::Option &opt = opt_iter->second;
+        jstring opt_name = env->NewStringUTF(opt.name.c_str());
+        jstring opt_description = env->NewStringUTF(opt.description.c_str());
+        jstring opt_default_value = env->NewStringUTF(opt.default_value.c_str());
+
+        env->CallVoidMethod(scene_info, add_option,
+                            opt_name,
+                            opt_description,
+                            opt_default_value);
+
+        env->DeleteLocalRef(opt_name);
+        env->DeleteLocalRef(opt_description);
+        env->DeleteLocalRef(opt_default_value);
+    }
+
+    return scene_info;
+}
+
+class DummyCanvas : public Canvas {
+public:
+    DummyCanvas() : Canvas(0, 0) {}
+};
+
+/** 
+ * Creates all the available scenes and adds them to the supplied vector.
+ * 
+ * @param scenes the vector to add the scenes to
+ * @param canvas the canvas to create the scenes with
+ */
+static void
+create_and_add_scenes(std::vector<Scene*>& scenes, Canvas& canvas)
+{
+    scenes.push_back(new SceneDefaultOptions(canvas));
+    scenes.push_back(new SceneBuild(canvas));
+    scenes.push_back(new SceneTexture(canvas));
+    scenes.push_back(new SceneShading(canvas));
+    scenes.push_back(new SceneConditionals(canvas));
+    scenes.push_back(new SceneFunction(canvas));
+    scenes.push_back(new SceneLoop(canvas));
+    scenes.push_back(new SceneBump(canvas));
+    scenes.push_back(new SceneEffect2D(canvas));
+    scenes.push_back(new ScenePulsar(canvas));
+    scenes.push_back(new SceneDesktop(canvas));
+    scenes.push_back(new SceneBuffer(canvas));
+    scenes.push_back(new SceneIdeas(canvas));
+    scenes.push_back(new SceneTerrain(canvas));
+}
+
 
 void
 Java_org_linaro_glmark2_native_init(JNIEnv* env, jclass clazz,
@@ -209,20 +280,17 @@ Java_org_linaro_glmark2_native_init(JNIEnv* env, jclass clazz,
     Log::info("glmark2 %s\n", GLMARK_VERSION);
     g_canvas->print_info();
 
-    Benchmark::register_scene(*new SceneDefaultOptions(*g_canvas));
-    Benchmark::register_scene(*new SceneBuild(*g_canvas));
-    Benchmark::register_scene(*new SceneTexture(*g_canvas));
-    Benchmark::register_scene(*new SceneShading(*g_canvas));
-    Benchmark::register_scene(*new SceneConditionals(*g_canvas));
-    Benchmark::register_scene(*new SceneFunction(*g_canvas));
-    Benchmark::register_scene(*new SceneLoop(*g_canvas));
-    Benchmark::register_scene(*new SceneBump(*g_canvas));
-    Benchmark::register_scene(*new SceneEffect2D(*g_canvas));
-    Benchmark::register_scene(*new ScenePulsar(*g_canvas));
-    Benchmark::register_scene(*new SceneDesktop(*g_canvas));
-    Benchmark::register_scene(*new SceneBuffer(*g_canvas));
-    Benchmark::register_scene(*new SceneIdeas(*g_canvas));
-    Benchmark::register_scene(*new SceneTerrain(*g_canvas));
+    std::vector<Scene*> scenes;
+
+    /* Add and register scenes */
+    create_and_add_scenes(scenes, *g_canvas);
+
+    for (std::vector<Scene*>::const_iterator iter = scenes.begin();
+         iter != scenes.end();
+         iter++)
+    {
+        Benchmark::register_scene(**iter);
+    }
 
     g_benchmark_collection = new BenchmarkCollection();
     g_benchmark_collection->populate_from_options();
@@ -288,6 +356,42 @@ Java_org_linaro_glmark2_native_scoreConfig(JNIEnv* env, jclass clazz,
     return vc.match_score(target);
 }
 
+jobjectArray
+Java_org_linaro_glmark2_native_getSceneInfo(JNIEnv* env, jclass clazz,
+                                            jobject asset_manager)
+{
+    static_cast<void>(clazz);
+
+    Util::android_set_asset_manager(AAssetManager_fromJava(env, asset_manager));
+
+    std::vector<Scene*> scenes;
+    DummyCanvas canvas;
+    std::vector<jobject> si_vector;
+
+    create_and_add_scenes(scenes, canvas);
+
+    /* Create SceneInfo instances for all the scenes */
+    for (std::vector<Scene*>::const_iterator iter = scenes.begin();
+         iter != scenes.end();
+         iter++)
+    {
+        jobject si = scene_info_from_scene(env, **iter);
+        si_vector.push_back(si);
+    }
+
+    /* Create a SceneInfo[] array */
+    jclass si_cls = env->FindClass("org/linaro/glmark2/SceneInfo");
+    jobjectArray si_array = env->NewObjectArray(si_vector.size(), si_cls, 0);
+    
+    /* Populate the SceneInfo[] array */
+    for (size_t i = 0; i < si_vector.size(); i++)
+        env->SetObjectArrayElement(si_array, i, si_vector[i]);
+
+    Util::dispose_pointer_vector(scenes);
+
+    return si_array;
+}
+
 static JNINativeMethod glmark2_native_methods[] = {
     {
         "init",
@@ -313,6 +417,11 @@ static JNINativeMethod glmark2_native_methods[] = {
         "scoreConfig",
         "(Lorg/linaro/glmark2/GLVisualConfig;Lorg/linaro/glmark2/GLVisualConfig;)I",
         reinterpret_cast<void*>(Java_org_linaro_glmark2_native_scoreConfig)
+    },
+    {
+        "getSceneInfo",
+        "(Landroid/content/res/AssetManager;)[Lorg/linaro/glmark2/SceneInfo;",
+        reinterpret_cast<void*>(Java_org_linaro_glmark2_native_getSceneInfo)
     }
 };
 
