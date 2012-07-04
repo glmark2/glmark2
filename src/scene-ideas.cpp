@@ -200,7 +200,7 @@ SceneIdeasPrivate::update_projection(const mat4& proj)
 }
 
 SceneIdeas::SceneIdeas(Canvas& canvas) :
-    Scene(canvas, "ideas")
+    Scene(canvas, "ideas"), priv_(0)
 {
     options_["speed"] = Scene::Option("speed", "duration",
                                       "Time coefficient (1.0 is \"wall clock\" speed, <1.0 is slower, >1.0 is faster).  A special value of \"duration\" computes this as a function of the \"duration\" option");

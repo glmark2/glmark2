@@ -38,7 +38,8 @@ using LibMatrix::vec3;
 using std::string;
 
 SceneTexture::SceneTexture(Canvas &pCanvas) :
-    Scene(pCanvas, "texture")
+    Scene(pCanvas, "texture"), radius_(0.0),
+    orientModel_(false), orientationAngle_(0.0)
 {
     const ModelMap& modelMap = Model::find_models();
     string optionDesc("Which model to use [");
