@@ -22,7 +22,7 @@
 #include "renderer.h"
 
 BaseRenderer::BaseRenderer(const LibMatrix::vec2 &size) :
-    texture_(0), fbo_(0), depth_renderbuffer_(0),
+    texture_(0), input_texture_(0), fbo_(0), depth_renderbuffer_(0),
     min_filter_(GL_LINEAR), mag_filter_(GL_LINEAR),
     wrap_s_(GL_CLAMP_TO_EDGE), wrap_t_(GL_CLAMP_TO_EDGE)
 {
