@@ -1,11 +1,11 @@
-all_sources = bld.path.ant_glob('*.cpp')
+all_sources = bld.path.ant_glob('*.cpp scene-ideas/*.cc scene-terrain/*.cpp')
 common_sources = [f for f in all_sources if f.name.find('canvas-') == -1 and
                                             f.name.find('android') == -1 ]
 gl_sources = ['canvas-x11.cpp', 'canvas-x11-glx.cpp']
 glesv2_sources = ['canvas-x11.cpp', 'canvas-x11-egl.cpp']
 libmatrix_sources = [f for f in bld.path.ant_glob('libmatrix/*.cc')
                      if not f.name.endswith('test.cc')]
-ideas_sources = bld.path.ant_glob('scene-ideas/*.cc')
+includes = ['.', 'scene-ideas', 'scene-terrain']
 
 if bld.env.USE_GL:
     bld(
@@ -19,11 +19,11 @@ if bld.env.USE_GL:
         )
     bld(
         features     = ['cxx', 'cprogram'],
-        source       = ideas_sources + common_sources + gl_sources,
+        source       = common_sources + gl_sources,
         target       = 'glmark2',
         use          = ['x11', 'gl', 'matrix', 'libpng12'],
         lib          = ['m', 'jpeg'],
-        includes     = ['.', 'scene-ideas'],
+        includes     = includes,
         defines      = ['USE_GL', 'USE_EXCEPTIONS']
         )
 
@@ -39,10 +39,10 @@ if bld.env.USE_GLESv2:
         )
     bld(
         features     = ['cxx', 'cprogram'],
-        source       = ideas_sources + common_sources + glesv2_sources,
+        source       = common_sources + glesv2_sources,
         target       = 'glmark2-es2',
         use          = ['x11', 'egl', 'glesv2', 'matrix-es2', 'libpng12'],
         lib          = ['m', 'dl', 'jpeg'],
-        includes     = ['.', 'scene-ideas'],
+        includes     = includes,
         defines      = ['USE_GLESv2', 'USE_EXCEPTIONS']
         )
