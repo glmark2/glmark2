@@ -59,7 +59,7 @@ SceneJellyfish::setup()
 
     // Set up our private object that does all of the lifting
     priv_ = new JellyfishPrivate();
-    priv_->initialize(now);
+    priv_->initialize(now / 1000.0);
 }
 
 void
