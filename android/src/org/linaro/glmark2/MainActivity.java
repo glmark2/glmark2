@@ -29,6 +29,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.widget.BaseAdapter;
 import android.widget.ArrayAdapter;
@@ -83,6 +84,8 @@ public class MainActivity extends Activity {
                 BenchmarkItemAction.MOVEUP, BenchmarkItemAction.MOVEDOWN
         };
         final int benchmarkPos = bundle.getInt("benchmark-pos");
+        final int finalId = id;
+
         Dialog dialog;
 
         switch (id) {
@@ -92,7 +95,7 @@ public class MainActivity extends Activity {
                 builder.setItems(benchmarkActions, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int item) {
                         doBenchmarkItemAction(benchmarkPos, benchmarkActionsId[item], null);
-                        removeDialog(DIALOG_BENCHMARK_ACTIONS_ID);
+                        dismissDialog(DIALOG_BENCHMARK_ACTIONS_ID);
                     }
                 });
                 dialog = builder.create();
@@ -101,6 +104,14 @@ public class MainActivity extends Activity {
             default:
                 dialog = null;
                 break;
+        }
+
+        if (dialog != null) {
+            dialog.setOnDismissListener(new OnDismissListener() {
+                public void onDismiss(DialogInterface dialog) {
+                    removeDialog(finalId);
+                }
+            });
         }
 
         return dialog;

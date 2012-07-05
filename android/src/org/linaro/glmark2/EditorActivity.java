@@ -28,6 +28,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -122,6 +123,7 @@ public class EditorActivity extends Activity {
     protected Dialog onCreateDialog(int id, Bundle bundle) {
         final int itemPos = bundle.getInt("item-pos");
         Dialog dialog;
+        final int finalId = id;
 
         switch (id) {
             case DIALOG_SCENE_NAME_ID:
@@ -134,7 +136,7 @@ public class EditorActivity extends Activity {
                         for (EditorItem ei: getEditorItemList(sceneNames[item]))
                             adapter.add(ei);
                         adapter.notifyDataSetChanged();
-                        removeDialog(DIALOG_SCENE_NAME_ID);
+                        dismissDialog(DIALOG_SCENE_NAME_ID);
                     }
                 });
                 dialog = builder.create();
@@ -156,7 +158,7 @@ public class EditorActivity extends Activity {
                              event.getAction() == KeyEvent.ACTION_UP))
                         {
                             item.value = v.getText().toString();
-                            removeDialog(DIALOG_SCENE_OPTION_ID);
+                            dismissDialog(DIALOG_SCENE_OPTION_ID);
                         }
                         return true;
                     }
@@ -170,6 +172,14 @@ public class EditorActivity extends Activity {
             default:
                 dialog = null;
                 break;
+        }
+
+        if (dialog != null) {
+            dialog.setOnDismissListener(new OnDismissListener() {
+                public void onDismiss(DialogInterface dialog) {
+                    removeDialog(finalId);
+                }
+            });
         }
 
         return dialog;
