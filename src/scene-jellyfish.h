@@ -20,8 +20,8 @@
 //  Aleksandar Rodic - Creator and WebGL implementation 
 //  Jesse Barker - glmark2 port
 //
-#ifndef JELLYFISH_PRIVATE_
-#define JELLYFISH_PRIVATE_
+#ifndef SCENE_JELLYFISH_
+#define SCENE_JELLYFISH_
 #include <vector>
 #include "vec.h"
 #include "stack.h"
@@ -115,4 +115,4 @@ public:
     void draw();
 };
 
-#endif // JELLYFISH_PRIVATE_
+#endif // SCENE_JELLYFISH_
