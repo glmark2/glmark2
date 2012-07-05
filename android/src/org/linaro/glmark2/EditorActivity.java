@@ -166,6 +166,11 @@ public class EditorActivity extends Activity {
                 builder.setTitle(item.option.name + ": " + item.option.description);
                 dialog = builder.create();
                 ((AlertDialog)dialog).setView(input, 15, 6, 15, 6);
+                dialog.getWindow().setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN |
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
+                        );
+
                 }
                 break;
 
