@@ -1,3 +1,24 @@
+/*
+ * Copyright © 2012 Linaro Limited
+ *
+ * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
+ *
+ * glmark2 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * glmark2 is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * glmark2.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authors:
+ *  Alexandros Frantzis
+ */
 package org.linaro.glmark2;
 
 import java.util.ArrayList;
@@ -34,6 +55,7 @@ public class MainActivity extends Activity {
 
     ArrayList<String> benchmarks;
     BaseAdapter adapter;
+    SceneInfo[] sceneInfoList;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -93,9 +115,9 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** 
+    /**
      * Initialize the activity.
-     * 
+     *
      * @param savedBenchmarks a list of benchmarks to load the list with (or null)
      */
     private void init(ArrayList<String> savedBenchmarks)
@@ -108,6 +130,9 @@ public class MainActivity extends Activity {
         else {
             benchmarks = savedBenchmarks;
         }
+
+        /* Get Scene information */
+        sceneInfoList = Glmark2Native.getSceneInfo(getAssets());
 
         /* Set up the run button */
         Button button = (Button) findViewById(R.id.runButton);
@@ -128,7 +153,7 @@ public class MainActivity extends Activity {
         adapter = new BenchmarkAdapter(this, R.layout.benchmark_item, benchmarks);
         lv.setAdapter(adapter);
 
-        lv.setOnItemClickListener(new OnItemClickListener() {  
+        lv.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parentView, View childView, int position, long id) {
                 Intent intent = new Intent(MainActivity.this, EditorActivity.class);
                 String t = benchmarks.get(position);
@@ -136,6 +161,7 @@ public class MainActivity extends Activity {
                     t = "";
                 intent.putExtra("benchmark-text", t);
                 intent.putExtra("benchmark-pos", position);
+                intent.putExtra("scene-info", sceneInfoList);
                 startActivityForResult(intent, 1);
             }
         });
@@ -153,9 +179,9 @@ public class MainActivity extends Activity {
 
     }
 
-    /** 
+    /**
      * Perform an action on an listview benchmark item.
-     * 
+     *
      * @param position the position of the item in the listview
      * @param action the action to perform
      * @param data extra data needed by some actions
@@ -220,7 +246,7 @@ public class MainActivity extends Activity {
         });
     }
 
-    /** 
+    /**
      * A ListView adapter that creates item views from benchmark strings.
      */
     private class BenchmarkAdapter extends ArrayAdapter<String> {
@@ -257,5 +283,9 @@ public class MainActivity extends Activity {
             }
             return v;
         }
+    }
+
+    static {
+        System.loadLibrary("glmark2-android");
     }
 }

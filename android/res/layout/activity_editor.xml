@@ -3,16 +3,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" >
 
-    <EditText android:id="@+id/benchmarkEditorTextView"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_alignParentLeft="true"
-              android:layout_alignParentRight="true"
-              android:layout_alignParentTop="true"
-              android:gravity="top"
-              android:inputType="textMultiLine"
-              android:minLines="3">
-        <requestFocus/>
-    </EditText>
+    <Button android:id="@+id/saveButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="Save" />
 
+    <ListView android:id="@+id/editorListView"
+              android:layout_above="@id/saveButton"
+              android:layout_weight="1.0"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_alignParentTop="true"
+              android:layout_marginLeft="6dip"
+              android:layout_marginRight="6dip"
+              android:layout_marginTop="6dip" 
+              android:layout_marginBottom="6dip" />
 </RelativeLayout>

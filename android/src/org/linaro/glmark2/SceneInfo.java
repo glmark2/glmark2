@@ -26,7 +26,7 @@ import android.os.Parcel;
 import java.util.ArrayList;
 
 class SceneInfo implements Parcelable {
-    class Option {
+    static class Option {
         String name;
         String description;
         String defaultValue;

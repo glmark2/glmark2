@@ -11,9 +11,6 @@
     <TextView android:id="@+id/title"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:ellipsize="marquee"
-              android:fadingEdge="horizontal"
-              android:singleLine="true"
               android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView android:id="@+id/summary"
@@ -21,7 +18,6 @@
               android:layout_height="wrap_content"
               android:layout_alignLeft="@id/title"
               android:layout_below="@id/title"
-              android:maxLines="4"
               android:textAppearance="?android:attr/textAppearanceSmall" />
 
 </RelativeLayout>
