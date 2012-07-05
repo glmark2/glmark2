@@ -624,7 +624,10 @@ obj_get_values(const string& source, uvec3& v)
 bool
 Model::load_obj(const std::string &filename)
 {
-    std::ifstream inputFile(filename.c_str());
+    Log::debug("Loading model from obj file '%s'\n", filename.c_str());
+
+    const std::auto_ptr<std::istream> input_file_ptr(Util::get_resource(filename));
+    std::istream& inputFile(*input_file_ptr);
     if (!inputFile)
     {
         Log::error("Failed to open '%s'\n", filename.c_str());
