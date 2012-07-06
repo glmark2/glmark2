@@ -75,6 +75,17 @@ public class EditorActivity extends Activity {
         if (benchmarkText.isEmpty())
             benchmarkText = sceneNames[0];
 
+        /* Set up the run button */
+        Button runButton = (Button) findViewById(R.id.runButton);
+        runButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(EditorActivity.this, Glmark2Activity.class);
+                String args = "-b " + getBenchmarkDescriptionText();
+                intent.putExtra("args", args);
+                startActivity(intent);
+            }
+        });
+
         /* Set up the save button */
         Button button = (Button) findViewById(R.id.saveButton);
         button.setOnClickListener(new View.OnClickListener() {

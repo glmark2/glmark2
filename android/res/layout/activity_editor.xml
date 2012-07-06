@@ -3,14 +3,30 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" >
 
-    <Button android:id="@+id/saveButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:text="Save" />
+    <LinearLayout android:id="@+id/buttonLinearLayout" 
+                  android:layout_width="match_parent" 
+                  android:layout_height="wrap_content" 
+                  android:layout_alignParentBottom="true">
+
+        <Button android:id="@+id/runButton"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:layout_alignParentBottom="true"
+                android:text="Run" />
+
+        <Button android:id="@+id/saveButton"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:layout_alignParentBottom="true"
+                android:text="Save" />
+
+    </LinearLayout>
+
 
     <ListView android:id="@+id/editorListView"
-              android:layout_above="@id/saveButton"
+              android:layout_above="@id/buttonLinearLayout"
               android:layout_weight="1.0"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
