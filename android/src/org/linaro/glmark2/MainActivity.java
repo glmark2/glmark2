@@ -161,7 +161,7 @@ public class MainActivity extends Activity {
 
         /* Set up the benchmark list view */
         ListView lv = (ListView) findViewById(R.id.benchmarkListView);
-        adapter = new BenchmarkAdapter(this, R.layout.benchmark_item, benchmarks);
+        adapter = new BenchmarkAdapter(this, R.layout.list_item, benchmarks);
         lv.setAdapter(adapter);
 
         lv.setOnItemClickListener(new OnItemClickListener() {
@@ -274,7 +274,7 @@ public class MainActivity extends Activity {
             View v = convertView;
             if (v == null) {
                 LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                v = vi.inflate(R.layout.benchmark_item, null);
+                v = vi.inflate(R.layout.list_item, null);
             }
 
             /* Split the benchmark into its scene name and its options */

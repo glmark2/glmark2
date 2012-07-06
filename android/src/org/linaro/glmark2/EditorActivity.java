@@ -106,7 +106,7 @@ public class EditorActivity extends Activity {
 
         /* Set up list view */
         ListView lv = (ListView) findViewById(R.id.editorListView);
-        adapter = new EditorItemAdapter(this, R.layout.benchmark_item,
+        adapter = new EditorItemAdapter(this, R.layout.list_item,
                                         getEditorItemList(benchmarkText));
         lv.setAdapter(adapter);
 
@@ -465,7 +465,7 @@ public class EditorActivity extends Activity {
             View v = convertView;
             if (v == null) {
                 LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                v = vi.inflate(R.layout.benchmark_item, null);
+                v = vi.inflate(R.layout.list_item, null);
             }
 
             EditorItem item = items.get(position);
@@ -486,7 +486,7 @@ public class EditorActivity extends Activity {
             View v = convertView;
             if (v == null) {
                 LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                v = vi.inflate(R.layout.benchmark_item, null);
+                v = vi.inflate(R.layout.list_item, null);
             }
 
             EditorItem item = items.get(position);
