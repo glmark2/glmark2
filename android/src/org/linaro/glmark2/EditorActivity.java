@@ -56,6 +56,11 @@ public class EditorActivity extends Activity {
     public static final int DIALOG_SCENE_NAME_ID = 0;
     public static final int DIALOG_SCENE_OPTION_ID = 1;
 
+    public static final int ITEM_POSITION_SCENE_NAME_HEADER = 0;
+    public static final int ITEM_POSITION_SCENE_NAME = 1;
+    public static final int ITEM_POSITION_SCENE_OPTION_HEADER = 2;
+    public static final int ITEM_POSITION_SCENE_OPTION = 3;
+
     private EditorItemAdapter adapter;
     private ArrayList<SceneInfo> sceneInfoList;
     private String[] sceneNames;
@@ -110,9 +115,9 @@ public class EditorActivity extends Activity {
                 Bundle bundle = new Bundle();
                 bundle.putInt("item-pos", position);
                 /* Show the right dialog, depending on the clicked list position */
-                if (position == 0)
+                if (position == ITEM_POSITION_SCENE_NAME)
                     showDialog(DIALOG_SCENE_NAME_ID, bundle);
-                else
+                else if (position >= ITEM_POSITION_SCENE_OPTION)
                     showDialog(DIALOG_SCENE_OPTION_ID, bundle);
             }
         });
@@ -120,7 +125,7 @@ public class EditorActivity extends Activity {
         lv.setOnItemLongClickListener(new OnItemLongClickListener() {
             public boolean onItemLongClick(AdapterView<?> parentView, View childView, int position, long id) {
                 /* Reset the value of the long-clicked option */
-                if (position > 0) {
+                if (position >= ITEM_POSITION_SCENE_OPTION) {
                     EditorItem item = adapter.getItem(position);
                     item.value = null;
                     adapter.notifyDataSetChanged();
@@ -238,6 +243,9 @@ public class EditorActivity extends Activity {
         for (int i = 0; i < adapter.getCount(); i++) {
             /* Convert each list item to a proper string representation */
             EditorItem item = adapter.getItem(i);
+            if (item == null)
+                continue;
+
             String s = "";
 
             /*
@@ -304,11 +312,17 @@ public class EditorActivity extends Activity {
 
         ArrayList<EditorItem> l = new ArrayList<EditorItem>();
 
+        /* Append null item for Scene header */
+        l.add(null);
+
+        /* Append scene name item */
+        l.add(new EditorItem(null, sceneInfo.name));
+
+        /* Append null item for Options header */
+        l.add(null);
+
         /* Append items to the list */
         if (!sceneInfo.name.equals("__custom__")) {
-            /* Append scene name item */
-            l.add(new EditorItem(null, sceneInfo.name));
-
             /* Append scene option items */
             for (SceneInfo.Option opt: sceneInfo.options)
                 l.add(new EditorItem(opt, getOptionValue(benchArray, opt.name)));
@@ -317,9 +331,6 @@ public class EditorActivity extends Activity {
             String desc = new String(benchDesc);
             if (desc.startsWith("__custom__"))
                 desc = "";
-
-            /* Append scene name item */
-            l.add(new EditorItem(null, sceneInfo.name));
 
             /* Append scene option items (only one for __custom__) */
             for (SceneInfo.Option opt: sceneInfo.options)
@@ -381,9 +392,10 @@ public class EditorActivity extends Activity {
      * A ListView adapter that creates list item views from EditorItems
      */
     private class EditorItemAdapter extends ArrayAdapter<EditorItem> {
-        static final int VIEW_TYPE_SCENE_NAME = 0;
-        static final int VIEW_TYPE_SCENE_OPTION = 1;
-        static final int VIEW_TYPE_COUNT = 2;
+        static final int VIEW_TYPE_HEADER = 0;
+        static final int VIEW_TYPE_SCENE_NAME = 1;
+        static final int VIEW_TYPE_SCENE_OPTION = 2;
+        static final int VIEW_TYPE_COUNT = 3;
 
         public ArrayList<EditorItem> items;
 
@@ -395,11 +407,19 @@ public class EditorActivity extends Activity {
         }
 
         @Override
+        public boolean isEnabled(int position) {
+            return position == ITEM_POSITION_SCENE_NAME ||
+                   position >= ITEM_POSITION_SCENE_OPTION;
+        }
+
+        @Override
         public int getItemViewType(int position) {
-            if (position == 0)
+            if (position == ITEM_POSITION_SCENE_NAME)
                 return VIEW_TYPE_SCENE_NAME;
-            else
+            else if (position >= ITEM_POSITION_SCENE_OPTION)
                 return VIEW_TYPE_SCENE_OPTION;
+            else
+                return VIEW_TYPE_HEADER;
         }
 
         @Override
@@ -409,10 +429,35 @@ public class EditorActivity extends Activity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            if (position == 0)
-                return getViewScene(position, convertView);
-            else
-                return getViewOption(position, convertView);
+            int viewType = getItemViewType(position);
+            View v = null;
+
+            if (viewType == VIEW_TYPE_HEADER)
+                v = getViewHeader(position, convertView);
+            else if (viewType == VIEW_TYPE_SCENE_NAME)
+                v = getViewScene(position, convertView);
+            else if (viewType == VIEW_TYPE_SCENE_OPTION)
+                v = getViewOption(position, convertView);
+
+            return v;
+        }
+
+        private View getViewHeader(int position, View convertView) {
+            /* Get the view/widget to use */
+            View v = convertView;
+            if (v == null) {
+                LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                v = vi.inflate(R.layout.list_header, null);
+            }
+
+            TextView tv = (TextView) v;
+
+            if (position == ITEM_POSITION_SCENE_NAME_HEADER)
+                tv.setText("Scene");
+            else if (position == ITEM_POSITION_SCENE_OPTION_HEADER)
+                tv.setText("Options");
+
+            return tv;
         }
 
         private View getViewScene(int position, View convertView) {
