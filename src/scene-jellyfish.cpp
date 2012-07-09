@@ -57,16 +57,17 @@ SceneJellyfish::unload()
 void
 SceneJellyfish::setup()
 {
-    // Core Scene state
     Scene::setup();
-    uint64_t now = Util::get_timestamp_us();
-    startTime_ = now / 1000000.0;
-    lastUpdateTime_ = startTime_;
-    running_ = true;
 
     // Set up our private object that does all of the lifting
     priv_ = new JellyfishPrivate();
-    priv_->initialize(now / 1000.0);
+    priv_->initialize();
+
+    // Set core scene timing after actual initialization so we don't measure
+    // set up time.
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
+    running_ = true;
 }
 
 void
@@ -382,9 +383,9 @@ JellyfishPrivate::~JellyfishPrivate()
 }
 
 void
-JellyfishPrivate::initialize(double time)
+JellyfishPrivate::initialize()
 {
-    lastUpdateTime_ = time;
+    lastUpdateTime_ = Util::get_timestamp_us() / 1000.0;
     currentTime_ = static_cast<uint64_t>(lastUpdateTime_) % 100000000 / 1000.0;
     whichCaustic_ = static_cast<uint64_t>(currentTime_ * 30) % 32 + 1;
     rotation_ = 0.0;

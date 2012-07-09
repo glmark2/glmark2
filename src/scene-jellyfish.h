@@ -108,7 +108,7 @@ class JellyfishPrivate
 public:
     JellyfishPrivate();
     ~JellyfishPrivate();
-    void initialize(double time);
+    void initialize();
     void update_viewport(const LibMatrix::vec2& viewport);
     void update_time();
     void cleanup();
