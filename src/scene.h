@@ -524,4 +524,19 @@ private:
     SceneTerrainPrivate* priv_;
 };
 
+class JellyfishPrivate;
+class SceneJellyfish : public Scene
+{
+    JellyfishPrivate* priv_;
+public:
+    SceneJellyfish(Canvas &pCanvas);
+    ~SceneJellyfish();
+    bool load();
+    void unload();
+    void setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+};
 #endif
