@@ -22,6 +22,8 @@
 package org.linaro.glmark2;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -352,6 +354,13 @@ public class EditorActivity extends Activity {
 
         for (Parcelable p: getIntent().getParcelableArrayExtra("scene-info"))
             l.add((SceneInfo)p);
+
+        /* Sort SceneInfo list by name */
+        Collections.sort(l, new Comparator<SceneInfo>() {
+            public int compare(SceneInfo s1, SceneInfo s2) {
+                return s1.name.compareTo(s2.name);
+            }
+        });
 
         /* Add the "__custom__" SceneInfo */
         l.add(customSceneInfo);
