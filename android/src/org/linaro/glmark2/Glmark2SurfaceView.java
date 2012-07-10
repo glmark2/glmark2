@@ -1,9 +1,7 @@
-
 package org.linaro.glmark2;
 
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
-import android.content.res.AssetManager;
 import android.app.Activity;
 import android.util.Log;
 
@@ -11,29 +9,6 @@ import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
-/** 
- * Class that holds a configuration of a GL visual.
- */
-class GLVisualConfig {
-    public GLVisualConfig() {}
-    public GLVisualConfig(int r, int g, int b, int a, int d, int buf) {
-        red = r;
-        green = g;
-        blue = b;
-        alpha = a;
-        depth = d;
-        buffer = buf;
-    }
-
-    public int red;
-    public int green;
-    public int blue;
-    public int alpha;
-    public int depth;
-    public int buffer;
-}
-
 
 class Glmark2SurfaceView extends GLSurfaceView {
 
@@ -232,12 +207,4 @@ class Glmark2Renderer implements GLSurfaceView.Renderer {
     }
 
     private Glmark2SurfaceView mView;
-}
-
-class Glmark2Native {
-    public static native void init(AssetManager assetManager, String args);
-    public static native void resize(int w, int h);
-    public static native boolean render();
-    public static native void done();
-    public static native int scoreConfig(GLVisualConfig vc, GLVisualConfig target);
 }
