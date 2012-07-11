@@ -32,7 +32,7 @@
 #include "shader-source.h"
 
 SceneJellyfish::SceneJellyfish(Canvas& canvas) :
-    Scene(canvas, "jellyfish")
+    Scene(canvas, "jellyfish"), priv_(0)
 {
 
 }
