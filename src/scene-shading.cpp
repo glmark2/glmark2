@@ -43,7 +43,7 @@ SceneShading::SceneShading(Canvas &pCanvas) :
     orientModel_(false)
 {
     const ModelMap& modelMap = Model::find_models();
-    std::string optionDesc("Which model to use [");
+    std::string optionValues;
     for (ModelMap::const_iterator modelIt = modelMap.begin();
          modelIt != modelMap.end();
          modelIt++)
@@ -51,19 +51,19 @@ SceneShading::SceneShading(Canvas &pCanvas) :
         static bool doSeparator(false);
         if (doSeparator)
         {
-            optionDesc += ", ";
+            optionValues += ",";
         }
         const std::string& curName = modelIt->first;
-        optionDesc += curName;
+        optionValues += curName;
         doSeparator = true;
     }
-    optionDesc += "]";
     options_["shading"] = Scene::Option("shading", "gouraud",
-                                        "[gouraud, blinn-phong-inf, phong]");
+                                        "Which shading method to use",
+                                        "gouraud,blinn-phong-inf,phong");
     options_["num-lights"] = Scene::Option("num-lights", "1",
             "The number of lights applied to the scene (phong only)");
-    options_["model"] = Scene::Option("model", "cat",
-                                      optionDesc);
+    options_["model"] = Scene::Option("model", "cat", "Which model to use",
+                                      optionValues);
 }
 
 SceneShading::~SceneShading()

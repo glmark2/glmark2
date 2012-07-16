@@ -218,9 +218,11 @@ SceneTerrain::SceneTerrain(Canvas &pCanvas) :
     options_["repeat-overlay"] = Scene::Option("repeat-overlay", "6.0",
             "How many times to repeat the terrain texture on the terrain plane (per side)");
     options_["bloom"] = Scene::Option("bloom", "true",
-                                      "Use bloom post-processing effect [true,false]");
+                                      "Use bloom post-processing effect",
+                                      "false,true");
     options_["tilt-shift"] = Scene::Option("tilt-shift", "true",
-                                           "Use tilt-shift post-processing effect [true,false]");
+                                           "Use tilt-shift post-processing effect",
+                                           "false,true");
 }
 
 SceneTerrain::~SceneTerrain()

@@ -42,15 +42,17 @@ SceneLoop::SceneLoop(Canvas &pCanvas) :
     options_["fragment-steps"] = Scene::Option("fragment-steps", "1",
             "The number of computational steps in the fragment shader");
     options_["fragment-loop"] = Scene::Option("fragment-function", "true",
-            "Whether to execute the steps in the vertex shader using a for loop");
+            "Whether to execute the steps in the vertex shader using a for loop", "false,true");
     options_["vertex-steps"] = Scene::Option("vertex-steps", "1",
             "The number of computational steps in the vertex shader");
     options_["vertex-loop"] = Scene::Option("vertex-function", "true",
-            "Whether to execute the steps in the vertex shader using a for loop");
+            "Whether to execute the steps in the vertex shader using a for loop", "false,true");
     options_["vertex-uniform"] = Scene::Option("vertex-uniform", "true",
-            "Whether to use a uniform in the vertex shader for the number of loop iterations to perform (i.e. vertex-steps)");
+            "Whether to use a uniform in the vertex shader for the number of loop iterations to perform (i.e. vertex-steps)",
+            "false,true");
     options_["fragment-uniform"] = Scene::Option("fragment-uniform", "true",
-            "Whether to use a uniform in the fragment shader for the number of loop iterations to perform (i.e. fragment-steps)");
+            "Whether to use a uniform in the fragment shader for the number of loop iterations to perform (i.e. fragment-steps)",
+            "false,true");
 }
 
 SceneLoop::~SceneLoop()

@@ -759,8 +759,8 @@ SceneDesktop::SceneDesktop(Canvas &canvas) :
     Scene(canvas, "desktop")
 {
     priv_ = new SceneDesktopPrivate(canvas);
-    options_["effect"] = Scene::Option("effect", "blur",
-                                       "the effect to use [blur]");
+    options_["effect"] = Scene::Option("effect", "blur", "The effect to use",
+                                       "blur,shadow");
     options_["windows"] = Scene::Option("windows", "4",
                                         "the number of windows");
     options_["window-size"] = Scene::Option("window-size", "0.35",
@@ -770,7 +770,8 @@ SceneDesktop::SceneDesktop(Canvas &canvas) :
     options_["blur-radius"] = Scene::Option("blur-radius", "5",
                                             "the blur effect radius (in pixels)");
     options_["separable"] = Scene::Option("separable", "true",
-                                          "use separable convolution for the blur effect");
+                                          "use separable convolution for the blur effect",
+                                          "false,true");
     options_["shadow-size"] = Scene::Option("shadow-size", "20",
                                             "the size of the shadow (in pixels)");
 }

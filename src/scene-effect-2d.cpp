@@ -41,7 +41,8 @@ SceneEffect2D::SceneEffect2D(Canvas &pCanvas) :
         "0,0,0;0,1,0;0,0,0",
         "The convolution kernel matrix to use [format: \"a,b,c...;d,e,f...\"");;
     options_["normalize"] = Scene::Option("normalize", "true",
-        "Whether to normalize the supplied convolution kernel matrix [true,false]");
+        "Whether to normalize the supplied convolution kernel matrix",
+        "false,true");
 }
 
 SceneEffect2D::~SceneEffect2D()

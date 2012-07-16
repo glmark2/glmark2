@@ -46,9 +46,12 @@ ScenePulsar::ScenePulsar(Canvas &pCanvas) :
     texture_(0)
 {
     options_["quads"] = Scene::Option("quads", "5", "Number of quads to render");
-    options_["texture"] = Scene::Option("texture", "false", "Enable texturing");
-    options_["light"] = Scene::Option("light", "false", "Enable lighting");
-    options_["random"] = Scene::Option("random", "false", "Enable random rotation speeds");
+    options_["texture"] = Scene::Option("texture", "false", "Enable texturing",
+                                        "false,true");
+    options_["light"] = Scene::Option("light", "false", "Enable lighting",
+                                      "false,true");
+    options_["random"] = Scene::Option("random", "false", "Enable random rotation speeds",
+                                       "false,true");
 }
 
 ScenePulsar::~ScenePulsar()

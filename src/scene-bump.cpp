@@ -35,7 +35,8 @@ SceneBump::SceneBump(Canvas &pCanvas) :
     texture_(0), rotation_(0.0f), rotationSpeed_(0.0f)
 {
     options_["bump-render"] = Scene::Option("bump-render", "off",
-                                            "How to render bumps [off, normals, normals-tangent, height, high-poly]");
+                                            "How to render bumps",
+                                            "off,normals,normals-tangent,height,high-poly");
 }
 
 SceneBump::~SceneBump()
