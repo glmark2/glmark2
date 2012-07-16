@@ -99,6 +99,22 @@ list_scenes()
                       opt.name.c_str(),
                       opt.description.c_str(),
                       opt.default_value.c_str());
+
+            /* Display list of acceptable values (if defined) */
+            if (opt.acceptable_values.size() > 0) {
+                Log::info("    Acceptable Values: ");
+                for (vector<string>::const_iterator val_iter = opt.acceptable_values.begin();
+                     val_iter != opt.acceptable_values.end();
+                     val_iter++)
+                {
+                    std::string format_value(Log::continuation_prefix + "%s");
+                    if (val_iter + 1 != opt.acceptable_values.end())
+                        format_value += ",";
+                    else
+                        format_value += "\n";
+                    Log::info(format_value.c_str(), val_iter->c_str());
+                }
+            }
         }
     }
 }
