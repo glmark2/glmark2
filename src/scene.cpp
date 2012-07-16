@@ -33,6 +33,13 @@ using std::stringstream;
 using std::string;
 using std::map;
 
+Scene::Option::Option(const std::string &nam, const std::string &val, const std::string &desc,
+                      const std::string &values) :
+name(nam), value(val), default_value(val), description(desc), set(false)
+{
+    Util::split(values, ',', acceptable_values);
+}
+
 Scene::Scene(Canvas &pCanvas, const string &name) :
     canvas_(pCanvas), name_(name),
     startTime_(0), lastUpdateTime_(0), currentFrame_(0),
