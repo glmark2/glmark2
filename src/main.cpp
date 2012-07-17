@@ -101,7 +101,7 @@ list_scenes()
                       opt.default_value.c_str());
 
             /* Display list of acceptable values (if defined) */
-            if (opt.acceptable_values.size() > 0) {
+            if (!opt.acceptable_values.empty()) {
                 Log::info("    Acceptable Values: ");
                 for (vector<string>::const_iterator val_iter = opt.acceptable_values.begin();
                      val_iter != opt.acceptable_values.end();
