@@ -28,6 +28,7 @@
 #include "util.h"
 #include <sstream>
 #include <cmath>
+#include <algorithm>
 
 using std::stringstream;
 using std::string;
@@ -151,6 +152,14 @@ Scene::set_option(const string &opt, const string &val)
     if (iter == options_.end())
         return false;
 
+    std::vector<std::string> &values(iter->second.acceptable_values);
+
+    if (!values.empty() && 
+        std::find(values.begin(), values.end(), val) == values.end())
+    {
+            return false;
+    }
+
     iter->second.value = val;
     iter->second.set = true;
 
@@ -178,6 +187,14 @@ Scene::set_option_default(const string &opt, const string &val)
 
     if (iter == options_.end())
         return false;
+
+    std::vector<std::string> &values(iter->second.acceptable_values);
+
+    if (!values.empty() && 
+        std::find(values.begin(), values.end(), val) == values.end())
+    {
+            return false;
+    }
 
     iter->second.default_value = val;
 
