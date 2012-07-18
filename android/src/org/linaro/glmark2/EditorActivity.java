@@ -183,6 +183,7 @@ public class EditorActivity extends Activity {
                              event.getAction() == KeyEvent.ACTION_UP))
                         {
                             item.value = v.getText().toString();
+                            adapter.notifyDataSetChanged();
                             dismissDialog(DIALOG_SCENE_OPTION_TEXT_ID);
                         }
                         return true;
