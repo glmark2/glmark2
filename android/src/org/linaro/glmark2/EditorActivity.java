@@ -56,7 +56,8 @@ import android.widget.TextView.OnEditorActionListener;
 
 public class EditorActivity extends Activity {
     public static final int DIALOG_SCENE_NAME_ID = 0;
-    public static final int DIALOG_SCENE_OPTION_ID = 1;
+    public static final int DIALOG_SCENE_OPTION_TEXT_ID = 1;
+    public static final int DIALOG_SCENE_OPTION_LIST_ID = 2;
 
     public static final int ITEM_POSITION_SCENE_NAME_HEADER = 0;
     public static final int ITEM_POSITION_SCENE_NAME = 1;
@@ -117,10 +118,16 @@ public class EditorActivity extends Activity {
                 Bundle bundle = new Bundle();
                 bundle.putInt("item-pos", position);
                 /* Show the right dialog, depending on the clicked list position */
-                if (position == ITEM_POSITION_SCENE_NAME)
+                if (position == ITEM_POSITION_SCENE_NAME) {
                     showDialog(DIALOG_SCENE_NAME_ID, bundle);
-                else if (position >= ITEM_POSITION_SCENE_OPTION)
-                    showDialog(DIALOG_SCENE_OPTION_ID, bundle);
+                }
+                else if (position >= ITEM_POSITION_SCENE_OPTION) {
+                    String[] values = adapter.getItem(position).option.acceptableValues;
+                    if (values.length == 0)
+                        showDialog(DIALOG_SCENE_OPTION_TEXT_ID, bundle);
+                    else
+                        showDialog(DIALOG_SCENE_OPTION_LIST_ID, bundle);
+                }
             }
         });
 
@@ -161,7 +168,7 @@ public class EditorActivity extends Activity {
                 }
                 break;
 
-            case DIALOG_SCENE_OPTION_ID:
+            case DIALOG_SCENE_OPTION_TEXT_ID:
                 {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 final EditorItem item = adapter.getItem(itemPos);
@@ -176,7 +183,7 @@ public class EditorActivity extends Activity {
                              event.getAction() == KeyEvent.ACTION_UP))
                         {
                             item.value = v.getText().toString();
-                            dismissDialog(DIALOG_SCENE_OPTION_ID);
+                            dismissDialog(DIALOG_SCENE_OPTION_TEXT_ID);
                         }
                         return true;
                     }
@@ -189,6 +196,24 @@ public class EditorActivity extends Activity {
                         WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
                         );
 
+                }
+                break;
+
+            case DIALOG_SCENE_OPTION_LIST_ID:
+                {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                final EditorItem item = adapter.getItem(itemPos);
+                builder.setTitle(item.option.name + ": " + item.option.description);
+
+                builder.setItems(item.option.acceptableValues, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int index) {
+                        item.value = item.option.acceptableValues[index];
+                        adapter.notifyDataSetChanged();
+                        dismissDialog(DIALOG_SCENE_OPTION_LIST_ID);
+                    }
+                });
+
+                dialog = builder.create();
                 }
                 break;
 
@@ -350,7 +375,7 @@ public class EditorActivity extends Activity {
     private ArrayList<SceneInfo> getSceneInfoList() {
         ArrayList<SceneInfo> l = new ArrayList<SceneInfo>();
         SceneInfo customSceneInfo = new SceneInfo("__custom__");
-        customSceneInfo.addOption("__custom__", "Custom benchmark string", "");
+        customSceneInfo.addOption("__custom__", "Custom benchmark string", "", new String[0]);
 
         for (Parcelable p: getIntent().getParcelableArrayExtra("scene-info"))
             l.add((SceneInfo)p);
