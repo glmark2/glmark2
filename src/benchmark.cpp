@@ -144,7 +144,18 @@ Benchmark::load_options()
          iter != options_.end();
          iter++)
     {
-        scene_.set_option(iter->first, iter->second);
+        if (!scene_.set_option(iter->first, iter->second)) {
+            map<string, Scene::Option>::const_iterator opt_iter = scene_.options().find(iter->first);
+
+            if (opt_iter == scene_.options().end()) {
+                Log::info("Warning: Scene '%s' doesn't accept option '%s'\n",
+                          scene_.name().c_str(), iter->first.c_str());
+            }
+            else {
+                Log::info("Warning: Scene '%s' doesn't accept value '%s' for option '%s'\n",
+                          scene_.name().c_str(), iter->second.c_str(), iter->first.c_str());
+            }
+        }
     }
 }
 

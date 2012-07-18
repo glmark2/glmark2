@@ -28,10 +28,18 @@
 #include "util.h"
 #include <sstream>
 #include <cmath>
+#include <algorithm>
 
 using std::stringstream;
 using std::string;
 using std::map;
+
+Scene::Option::Option(const std::string &nam, const std::string &val, const std::string &desc,
+                      const std::string &values) :
+name(nam), value(val), default_value(val), description(desc), set(false)
+{
+    Util::split(values, ',', acceptable_values);
+}
 
 Scene::Scene(Canvas &pCanvas, const string &name) :
     canvas_(pCanvas), name_(name),
@@ -48,7 +56,8 @@ Scene::Scene(Canvas &pCanvas, const string &name) :
                                                    "The precision values for the fragment shader (\"int,float,sampler2d,samplercube\")");
     /* FPS options */
     options_["show-fps"] = Scene::Option("show-fps", "false",
-                                         "Show live FPS counter");
+                                         "Show live FPS counter",
+                                         "false,true");
     options_["fps-pos"] = Scene::Option("fps-pos", "-1.0,-1.0",
                                          "The position on screen where to show FPS");
     options_["fps-size"] = Scene::Option("fps-size", "0.03",
@@ -143,6 +152,14 @@ Scene::set_option(const string &opt, const string &val)
     if (iter == options_.end())
         return false;
 
+    std::vector<std::string> &values(iter->second.acceptable_values);
+
+    if (!values.empty() && 
+        std::find(values.begin(), values.end(), val) == values.end())
+    {
+            return false;
+    }
+
     iter->second.value = val;
     iter->second.set = true;
 
@@ -170,6 +187,14 @@ Scene::set_option_default(const string &opt, const string &val)
 
     if (iter == options_.end())
         return false;
+
+    std::vector<std::string> &values(iter->second.acceptable_values);
+
+    if (!values.empty() && 
+        std::find(values.begin(), values.end(), val) == values.end())
+    {
+            return false;
+    }
 
     iter->second.default_value = val;
 

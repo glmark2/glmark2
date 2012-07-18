@@ -303,9 +303,11 @@ SceneBuffer::SceneBuffer(Canvas &pCanvas) :
 {
     priv_ = new SceneBufferPrivate();
     options_["interleave"] = Scene::Option("interleave", "false",
-                                           "Whether to interleave vertex attribute data [true,false]");
+                                           "Whether to interleave vertex attribute data",
+                                           "false,true");
     options_["update-method"] = Scene::Option("update-method", "map",
-                                              "[map,subdata]");
+                                              "Which method to use to update vertex data",
+                                              "map,subdata");
     options_["update-fraction"] = Scene::Option("update-fraction", "1.0",
                                                 "The fraction of the mesh length that is updated at every iteration (0.0-1.0)");
     options_["update-dispersion"] = Scene::Option("update-dispersion", "0.0",
@@ -315,7 +317,8 @@ SceneBuffer::SceneBuffer(Canvas &pCanvas) :
     options_["rows"] = Scene::Option("rows", "20",
                                       "The number of mesh subdisivisions width-wise");
     options_["buffer-usage"] = Scene::Option("buffer-usage", "static",
-                                      "How the buffer will be used [static,stream,dynamic]");
+                                             "How the buffer will be used",
+                                             "static,stream,dynamic");
 }
 
 SceneBuffer::~SceneBuffer()

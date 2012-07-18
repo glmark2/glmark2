@@ -42,7 +42,7 @@ SceneTexture::SceneTexture(Canvas &pCanvas) :
     orientModel_(false), orientationAngle_(0.0)
 {
     const ModelMap& modelMap = Model::find_models();
-    string optionDesc("Which model to use [");
+    string optionValues;
     for (ModelMap::const_iterator modelIt = modelMap.begin();
          modelIt != modelMap.end();
          modelIt++)
@@ -50,18 +50,18 @@ SceneTexture::SceneTexture(Canvas &pCanvas) :
         static bool doSeparator(false);
         if (doSeparator)
         {
-            optionDesc += ", ";
+            optionValues += ",";
         }
         const std::string& curName = modelIt->first;
-        optionDesc += curName;
+        optionValues += curName;
         doSeparator = true;
     }
-    optionDesc += "]";
-    options_["model"] = Scene::Option("model", "cube",
-                                      optionDesc);
+    options_["model"] = Scene::Option("model", "cube", "Which model to use",
+                                      optionValues);
     options_["texture-filter"] = Scene::Option("texture-filter", "nearest",
-                                               "[nearest, linear, linear-shader, mipmap]");
-    optionDesc = "Which texture to use [";
+                                               "The texture filter to use",
+                                               "nearest,linear,linear-shader,mipmap");
+    optionValues = "";
     const TextureMap& textureMap = Texture::find_textures();
     for (TextureMap::const_iterator textureIt = textureMap.begin();
          textureIt != textureMap.end();
@@ -70,17 +70,17 @@ SceneTexture::SceneTexture(Canvas &pCanvas) :
         static bool doSeparator(false);
         if (doSeparator)
         {
-            optionDesc += ", ";
+            optionValues += ",";
         }
         const std::string& curName = textureIt->first;
-        optionDesc += curName;
+        optionValues += curName;
         doSeparator = true;
     }
-    optionDesc += "]";
-    options_["texture"] = Scene::Option("texture", "crate-base",
-                                        optionDesc);
+    options_["texture"] = Scene::Option("texture", "crate-base", "Which texture to use",
+                                        optionValues);
     options_["texgen"] = Scene::Option("texgen", "false",
-                                       "Whether to generate texcoords in the shader");
+                                       "Whether to generate texcoords in the shader",
+                                       "false,true");
 }
 
 SceneTexture::~SceneTexture()

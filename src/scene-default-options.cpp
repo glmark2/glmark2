@@ -21,6 +21,7 @@
  */
 #include "scene.h"
 #include "benchmark.h"
+#include "log.h"
 
 void
 SceneDefaultOptions::setup()
@@ -35,7 +36,18 @@ SceneDefaultOptions::setup()
              scene_iter != scenes.end();
              scene_iter++)
         {
-            scene_iter->second->set_option_default(iter->first, iter->second);
+            Scene &scene(*(scene_iter->second));
+
+            /* 
+             * Display warning only if the option value is unsupported, not if
+             * the scene doesn't support the option at all.
+             */
+            if (!scene.set_option_default(iter->first, iter->second) &&
+                scene.options().find(iter->first) != scene.options().end())
+            {
+                Log::info("Warning: Scene '%s' doesn't accept default value '%s' for option '%s'\n",
+                          scene.name().c_str(), iter->second.c_str(), iter->first.c_str());
+            }
         }
     }
 }

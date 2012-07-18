@@ -37,6 +37,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <vector>
 #include "canvas.h"
 
 /**
@@ -51,13 +52,15 @@ public:
      * Scene options.
      */
     struct Option {
-        Option(const std::string &nam, const std::string &val, const std::string &desc) :
-            name(nam), value(val), default_value(val), description(desc), set(false) {}
+        Option(const std::string &nam, const std::string &val, const std::string &desc,
+               const std::string &values = "");
+
         Option() {}
         std::string name;
         std::string value;
         std::string default_value;
         std::string description;
+        std::vector<std::string> acceptable_values;
         bool set;
     };
 

@@ -43,15 +43,15 @@ SceneFunction::SceneFunction(Canvas &pCanvas) :
     options_["fragment-steps"] = Scene::Option("fragment-steps", "1",
             "The number of computational steps in the fragment shader");
     options_["fragment-function"] = Scene::Option("fragment-function", "true",
-            "Whether each computational step includes a function call");
+            "Whether each computational step includes a function call", "false,true");
     options_["vertex-steps"] = Scene::Option("vertex-steps", "1",
             "The number of computational steps in the vertex shader");
     options_["vertex-function"] = Scene::Option("vertex-function", "true",
-            "Whether each computational step includes an if-else clause");
+            "Whether each computational step includes an if-else clause", "false,true");
     options_["vertex-complexity"] = Scene::Option("vertex-complexity", "low",
-            "The complexity of each computational step in the vertex shader");
+            "The complexity of each computational step in the vertex shader", "low,medium");
     options_["fragment-complexity"] = Scene::Option("fragment-complexity", "low",
-            "The complexity of each computational step in the fragment shader");
+            "The complexity of each computational step in the fragment shader", "low,medium");
 }
 
 SceneFunction::~SceneFunction()

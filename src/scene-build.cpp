@@ -36,7 +36,7 @@ SceneBuild::SceneBuild(Canvas &pCanvas) :
     orientModel_(false)
 {
     const ModelMap& modelMap = Model::find_models();
-    std::string optionDesc("Which model to use [");
+    std::string optionValues;
     for (ModelMap::const_iterator modelIt = modelMap.begin();
          modelIt != modelMap.end();
          modelIt++)
@@ -44,19 +44,20 @@ SceneBuild::SceneBuild(Canvas &pCanvas) :
         static bool doSeparator(false);
         if (doSeparator)
         {
-            optionDesc += ", ";
+            optionValues += ",";
         }
         const std::string& curName = modelIt->first;
-        optionDesc += curName;
+        optionValues += curName;
         doSeparator = true;
     }
-    optionDesc += "]";
     options_["use-vbo"] = Scene::Option("use-vbo", "true",
-                                        "Whether to use VBOs for rendering [true,false]");
+                                        "Whether to use VBOs for rendering",
+                                        "false,true");
     options_["interleave"] = Scene::Option("interleave", "false",
-                                           "Whether to interleave vertex attribute data [true,false]");
-    options_["model"] = Scene::Option("model", "horse",
-                                      optionDesc);
+                                           "Whether to interleave vertex attribute data",
+                                           "false,true");
+    options_["model"] = Scene::Option("model", "horse", "Which model to use",
+                                      optionValues);
 }
 
 SceneBuild::~SceneBuild()

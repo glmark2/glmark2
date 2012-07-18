@@ -42,11 +42,11 @@ SceneConditionals::SceneConditionals(Canvas &pCanvas) :
     options_["fragment-steps"] = Scene::Option("fragment-steps", "1",
             "The number of computational steps in the fragment shader");
     options_["fragment-conditionals"] = Scene::Option("fragment-conditionals", "true",
-            "Whether each computational step includes an if-else clause");
+            "Whether each computational step includes an if-else clause", "false,true");
     options_["vertex-steps"] = Scene::Option("vertex-steps", "1",
             "The number of computational steps in the vertex shader");
     options_["vertex-conditionals"] = Scene::Option("vertex-conditionals", "true",
-            "Whether each computational step includes an if-else clause");
+            "Whether each computational step includes an if-else clause", "false,true");
 }
 
 SceneConditionals::~SceneConditionals()
