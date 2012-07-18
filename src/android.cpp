@@ -179,7 +179,7 @@ scene_info_from_scene(JNIEnv *env, Scene &scene)
 {
     jclass cls = env->FindClass("org/linaro/glmark2/SceneInfo");
     jmethodID constructor = env->GetMethodID(cls, "<init>", "(Ljava/lang/String;)V");
-    jmethodID add_option = env->GetMethodID(cls, "addOption", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+    jmethodID add_option = env->GetMethodID(cls, "addOption", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V");
 
     /* Create the SceneInfo object */
     jstring name = env->NewStringUTF(scene.name().c_str());
@@ -197,14 +197,27 @@ scene_info_from_scene(JNIEnv *env, Scene &scene)
         jstring opt_description = env->NewStringUTF(opt.description.c_str());
         jstring opt_default_value = env->NewStringUTF(opt.default_value.c_str());
 
+        /* Create and populate the acceptable values array */
+        jclass string_cls = env->FindClass("java/lang/String");
+        jobjectArray opt_acceptable_values = env->NewObjectArray(opt.acceptable_values.size(),
+                                                                 string_cls, 0);
+        
+        for (size_t i = 0; i < opt.acceptable_values.size(); i++) {
+            jstring opt_value = env->NewStringUTF(opt.acceptable_values[i].c_str());
+            env->SetObjectArrayElement(opt_acceptable_values, i, opt_value);
+            env->DeleteLocalRef(opt_value);
+        }
+
         env->CallVoidMethod(scene_info, add_option,
                             opt_name,
                             opt_description,
-                            opt_default_value);
+                            opt_default_value,
+                            opt_acceptable_values);
 
         env->DeleteLocalRef(opt_name);
         env->DeleteLocalRef(opt_description);
         env->DeleteLocalRef(opt_default_value);
+        env->DeleteLocalRef(opt_acceptable_values);
     }
 
     return scene_info;

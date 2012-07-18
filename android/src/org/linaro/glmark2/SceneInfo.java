@@ -30,6 +30,7 @@ class SceneInfo implements Parcelable {
         String name;
         String description;
         String defaultValue;
+        String[] acceptableValues;
     }
 
     public SceneInfo(String name) {
@@ -37,11 +38,14 @@ class SceneInfo implements Parcelable {
         this.options = new ArrayList<Option>();
     }
 
-    public void addOption(String name, String description, String defaultValue) {
+    public void addOption(String name, String description, String defaultValue,
+                          String[] acceptableValues)
+    {
         Option opt = new Option();
         opt.name = name;
         opt.description = description;
         opt.defaultValue = defaultValue;
+        opt.acceptableValues = acceptableValues;
         this.options.add(opt);
     }
 
@@ -71,6 +75,7 @@ class SceneInfo implements Parcelable {
             out.writeString(opt.name);
             out.writeString(opt.description);
             out.writeString(opt.defaultValue);
+            out.writeStringArray(opt.acceptableValues);
         }
     }
 
@@ -84,6 +89,7 @@ class SceneInfo implements Parcelable {
             opt.name = in.readString();
             opt.description = in.readString();
             opt.defaultValue = in.readString();
+            opt.acceptableValues = in.createStringArray();
             options.add(opt);
         }
     }

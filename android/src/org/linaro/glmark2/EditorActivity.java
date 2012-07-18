@@ -350,7 +350,7 @@ public class EditorActivity extends Activity {
     private ArrayList<SceneInfo> getSceneInfoList() {
         ArrayList<SceneInfo> l = new ArrayList<SceneInfo>();
         SceneInfo customSceneInfo = new SceneInfo("__custom__");
-        customSceneInfo.addOption("__custom__", "Custom benchmark string", "");
+        customSceneInfo.addOption("__custom__", "Custom benchmark string", "", new String[0]);
 
         for (Parcelable p: getIntent().getParcelableArrayExtra("scene-info"))
             l.add((SceneInfo)p);
