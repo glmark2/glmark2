@@ -4,4 +4,6 @@
     <string name="title_activity_main">GLMark2</string>
     <string name="title_activity_editor">GLMark2 Benchmark Editor</string>
     <string name="title_activity_glmark2">GLMark2</string>
+    <string name="runButtonText">Run</string>
+    <string name="saveButtonText">Save</string>
 </resources>
