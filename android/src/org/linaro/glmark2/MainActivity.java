@@ -22,6 +22,7 @@
 package org.linaro.glmark2;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.io.*;
 
 import android.os.Bundle;
@@ -59,6 +60,7 @@ public class MainActivity extends Activity {
     public static final int DIALOG_ERROR_ID = 0;
     public static final int DIALOG_BENCHMARK_ACTIONS_ID = 1;
     public static final int DIALOG_SAVE_LIST_ID = 2;
+    public static final int DIALOG_LOAD_LIST_ID = 3;
 
     /**
      * The supported benchmark item actions.
@@ -154,6 +156,36 @@ public class MainActivity extends Activity {
                 }
                 break;
 
+            case DIALOG_LOAD_LIST_ID:
+                {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Load list");
+                final String[] savedLists = getSavedLists();
+
+                builder.setItems(savedLists, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int index) {
+                        String desc = savedLists[index];
+                        String filename = "";
+                        boolean external = false;
+
+                        if (desc.startsWith("internal/")) {
+                            filename = desc.replace("internal/", "");
+                            external = false;
+                        }
+                        else if (desc.startsWith("external/")) {
+                            filename = desc.replace("external/", "");
+                            external = true;
+                        }
+                            
+                        loadBenchmarkList(filename, external);
+                        dismissDialog(DIALOG_LOAD_LIST_ID);
+                    }
+                });
+
+                dialog = builder.create();
+                }
+                break;
+
             default:
                 dialog = null;
                 break;
@@ -187,6 +219,7 @@ public class MainActivity extends Activity {
                 ret = true;
                 break;
             case R.id.load_benchmark_list:
+                showDialog(DIALOG_LOAD_LIST_ID);
                 ret = true;
                 break;
             case R.id.about:
@@ -359,6 +392,35 @@ public class MainActivity extends Activity {
         return f;
     }
 
+    /** 
+     * Gets the saved benchmark lists.
+     * 
+     * Each list name is prefixed with either "internal/" or "external/"
+     * to denote in which storage area it is saved in.
+     * 
+     * @return an array containing the saved list names
+     */
+    private String[] getSavedLists() {
+        File externalPath = getSavedListPath(true);
+        File internalPath = getSavedListPath(false);
+        ArrayList<String> lists = new ArrayList<String>();
+
+        if (externalPath != null && externalPath.isDirectory()) {
+            for (File f: externalPath.listFiles())
+                lists.add("external/" + f.getName());
+        }
+
+        if (internalPath != null && internalPath.isDirectory()) {
+            for (File f: internalPath.listFiles())
+                lists.add("internal/" + f.getName());
+        }
+
+        Collections.sort(lists);
+
+        String[] a = new String[0];
+        return lists.toArray(a);
+    }
+
     private void saveBenchmarkList(String listName, boolean external) {
         try {
             File listPath = getSavedListPath(external);
@@ -382,6 +444,45 @@ public class MainActivity extends Activity {
             bundle.putString("detail", ex.getMessage());
             showDialog(DIALOG_ERROR_ID, bundle);
         }
+    }
+
+    /** 
+     * Loads a benchmark list from a file.
+     * 
+     * @param listName the list filename
+     * @param external whether the file is stored in external storage
+     */
+    private void loadBenchmarkList(String listName, boolean external) {
+        try {
+            /* Get the list file path */
+            File listPath = getSavedListPath(external);
+            if (listPath == null)
+                throw new Exception("External storage not present");
+
+            File f = new File(listPath, listName);
+
+            ArrayList<String> newBenchmarks = new ArrayList<String>();
+
+            /* Read benchmarks from file */
+            BufferedReader reader = new BufferedReader(new FileReader(f));
+            String line = null;
+
+            while ((line = reader.readLine()) != null)
+                newBenchmarks.add(line);
+
+            /* If everything went well, replace current benchmarks */
+            benchmarks.clear();
+            benchmarks.addAll(newBenchmarks);
+            benchmarks.add("Add benchmark...");
+        }
+        catch (Exception ex) {
+            Bundle bundle = new Bundle();
+            bundle.putString("message", "Cannot load list from file " + listName);
+            bundle.putString("detail", ex.getMessage());
+            showDialog(DIALOG_ERROR_ID, bundle);
+        }
+                        
+        adapter.notifyDataSetChanged();
     }
 
     /**
