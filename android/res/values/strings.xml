@@ -6,4 +6,8 @@
     <string name="title_activity_glmark2">GLMark2</string>
     <string name="runButtonText">Run</string>
     <string name="saveButtonText">Save</string>
+
+    <string name="saveMainOptionsText">Save list</string>
+    <string name="loadMainOptionsText">Load list</string>
+    <string name="aboutMainOptionsText">About</string>
 </resources>

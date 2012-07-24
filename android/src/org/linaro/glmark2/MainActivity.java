@@ -37,6 +37,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Button;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
@@ -115,6 +118,35 @@ public class MainActivity extends Activity {
         }
 
         return dialog;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_options_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        boolean ret = true;
+
+        switch (item.getItemId()) {
+            case R.id.save_benchmark_list:
+                ret = true;
+                break;
+            case R.id.load_benchmark_list:
+                ret = true;
+                break;
+            case R.id.about:
+                ret = true;
+                break;
+            default:
+                ret = super.onOptionsItemSelected(item);
+                break;
+        }
+
+        return ret;
     }
 
     @Override
