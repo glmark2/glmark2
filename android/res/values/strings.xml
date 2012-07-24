@@ -10,4 +10,6 @@
     <string name="saveMainOptionsText">Save list</string>
     <string name="loadMainOptionsText">Load list</string>
     <string name="aboutMainOptionsText">About</string>
+
+    <string name="externalSaveDialogText">Save to external storage</string>
 </resources>

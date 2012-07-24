@@ -22,8 +22,10 @@
 package org.linaro.glmark2;
 
 import java.util.ArrayList;
+import java.io.*;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -36,19 +38,27 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.CheckBox;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.util.Log;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView;
+import android.widget.TextView.OnEditorActionListener;
 
 public class MainActivity extends Activity {
-    public static final int DIALOG_BENCHMARK_ACTIONS_ID = 0;
+    public static final int DIALOG_ERROR_ID = 0;
+    public static final int DIALOG_BENCHMARK_ACTIONS_ID = 1;
+    public static final int DIALOG_SAVE_LIST_ID = 2;
 
     /**
      * The supported benchmark item actions.
@@ -86,13 +96,25 @@ public class MainActivity extends Activity {
                 BenchmarkItemAction.DELETE, BenchmarkItemAction.CLONE,
                 BenchmarkItemAction.MOVEUP, BenchmarkItemAction.MOVEDOWN
         };
-        final int benchmarkPos = bundle.getInt("benchmark-pos");
         final int finalId = id;
 
         Dialog dialog;
 
         switch (id) {
+            case DIALOG_ERROR_ID:
+                {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(bundle.getString("message") + ": " +
+                                   bundle.getString("detail"));
+                builder.setCancelable(false);
+                builder.setPositiveButton("OK", null);
+                dialog = builder.create();
+                }
+                break;
+
             case DIALOG_BENCHMARK_ACTIONS_ID:
+                {
+                final int benchmarkPos = bundle.getInt("benchmark-pos");
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Pick an action");
                 builder.setItems(benchmarkActions, new DialogInterface.OnClickListener() {
@@ -102,6 +124,34 @@ public class MainActivity extends Activity {
                     }
                 });
                 dialog = builder.create();
+                }
+                break;
+
+            case DIALOG_SAVE_LIST_ID:
+                {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                View layout = getLayoutInflater().inflate(R.layout.save_dialog, null);
+                final EditText input = (EditText) layout.findViewById(R.id.listName);
+                final CheckBox checkBox = (CheckBox) layout.findViewById(R.id.external);
+
+                input.setOnEditorActionListener(new OnEditorActionListener() {
+                    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                        if (actionId == EditorInfo.IME_ACTION_DONE ||
+                            (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER &&
+                             event.getAction() == KeyEvent.ACTION_UP))
+                        {
+                            saveBenchmarkList(v.getText().toString(), checkBox.isChecked());
+                            dismissDialog(DIALOG_SAVE_LIST_ID);
+                        }
+                        return true;
+                    }
+                });
+
+                builder.setTitle("Save list as");
+                builder.setView(layout);
+
+                dialog = builder.create();
+                }
                 break;
 
             default:
@@ -133,6 +183,7 @@ public class MainActivity extends Activity {
 
         switch (item.getItemId()) {
             case R.id.save_benchmark_list:
+                showDialog(DIALOG_SAVE_LIST_ID);
                 ret = true;
                 break;
             case R.id.load_benchmark_list:
@@ -287,6 +338,50 @@ public class MainActivity extends Activity {
                 lv.smoothScrollToPosition(finalScrollPosition);
             }
         });
+    }
+
+    private File getSavedListPath(boolean external) {
+        File f = null;
+
+        if (external) {
+            String state = Environment.getExternalStorageState();
+            if (!Environment.MEDIA_MOUNTED.equals(state))
+                return null;
+            f = getExternalFilesDir(null);
+        }
+        else {
+            f = getFilesDir();
+        }
+
+        if (f != null)
+            f = new File(f, "lists");
+
+        return f;
+    }
+
+    private void saveBenchmarkList(String listName, boolean external) {
+        try {
+            File listPath = getSavedListPath(external);
+            if (listPath == null)
+                throw new Exception("External storage not present");
+
+            listPath.mkdirs();
+
+            File f = new File(listPath, listName);
+
+            BufferedWriter out = new BufferedWriter(new FileWriter(f));
+            for (int i = 0; i < benchmarks.size() - 1; i++) {
+                out.write(benchmarks.get(i));
+                out.newLine();
+            }
+            out.close();
+        }
+        catch (Exception ex) {
+            Bundle bundle = new Bundle();
+            bundle.putString("message", "Cannot save list to file " + listName);
+            bundle.putString("detail", ex.getMessage());
+            showDialog(DIALOG_ERROR_ID, bundle);
+        }
     }
 
     /**
