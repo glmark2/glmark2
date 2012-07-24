@@ -154,6 +154,10 @@ public class MainActivity extends Activity {
                 builder.setView(layout);
 
                 dialog = builder.create();
+                dialog.getWindow().setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN |
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
+                        );
                 }
                 break;
 
