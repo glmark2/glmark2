@@ -8,6 +8,10 @@
           android:title="@string/loadMainOptionsText"
           android:icon="@drawable/menu_load" />
 
+    <item android:id="@+id/delete_benchmark_list"
+          android:title="@string/deleteMainOptionsText"
+          android:icon="@drawable/menu_delete" />
+
     <item android:id="@+id/about"
           android:title="@string/aboutMainOptionsText"
           android:icon="@drawable/menu_about" />

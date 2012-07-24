@@ -61,6 +61,7 @@ public class MainActivity extends Activity {
     public static final int DIALOG_BENCHMARK_ACTIONS_ID = 1;
     public static final int DIALOG_SAVE_LIST_ID = 2;
     public static final int DIALOG_LOAD_LIST_ID = 3;
+    public static final int DIALOG_DELETE_LIST_ID = 4;
 
     /**
      * The supported benchmark item actions.
@@ -157,9 +158,13 @@ public class MainActivity extends Activity {
                 break;
 
             case DIALOG_LOAD_LIST_ID:
+            case DIALOG_DELETE_LIST_ID:
                 {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Load list");
+                if (id == DIALOG_LOAD_LIST_ID)
+                    builder.setTitle("Load list");
+                else
+                    builder.setTitle("Delete list");
                 final String[] savedLists = getSavedLists();
 
                 builder.setItems(savedLists, new DialogInterface.OnClickListener() {
@@ -177,8 +182,12 @@ public class MainActivity extends Activity {
                             external = true;
                         }
                             
-                        loadBenchmarkList(filename, external);
-                        dismissDialog(DIALOG_LOAD_LIST_ID);
+                        if (finalId == DIALOG_LOAD_LIST_ID)
+                            loadBenchmarkList(filename, external);
+                        else
+                            deleteBenchmarkList(filename, external);
+
+                        dismissDialog(finalId);
                     }
                 });
 
@@ -220,6 +229,10 @@ public class MainActivity extends Activity {
                 break;
             case R.id.load_benchmark_list:
                 showDialog(DIALOG_LOAD_LIST_ID);
+                ret = true;
+                break;
+            case R.id.delete_benchmark_list:
+                showDialog(DIALOG_DELETE_LIST_ID);
                 ret = true;
                 break;
             case R.id.about:
@@ -483,6 +496,30 @@ public class MainActivity extends Activity {
         }
                         
         adapter.notifyDataSetChanged();
+    }
+
+    /** 
+     * Delete a benchmark list file.
+     * 
+     * @param listName the list filename
+     * @param external whether the file is stored in external storage
+     */
+    private void deleteBenchmarkList(String listName, boolean external) {
+        try {
+            /* Get the list file path */
+            File listPath = getSavedListPath(external);
+            if (listPath == null)
+                throw new Exception("External storage not present");
+
+            File f = new File(listPath, listName);
+            f.delete();
+        }
+        catch (Exception ex) {
+            Bundle bundle = new Bundle();
+            bundle.putString("message", "Cannot delete list " + listName);
+            bundle.putString("detail", ex.getMessage());
+            showDialog(DIALOG_ERROR_ID, bundle);
+        }
     }
 
     /**
