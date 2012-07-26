@@ -246,6 +246,7 @@ public class MainActivity extends Activity {
                 ret = true;
                 break;
             case R.id.about:
+                startActivity(new Intent(MainActivity.this, AboutActivity.class));
                 ret = true;
                 break;
             default:
