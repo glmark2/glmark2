@@ -348,7 +348,12 @@ JellyfishPrivate::JellyfishPrivate() :
     fresnelPower_(1.0),
     rotation_(0.0),
     currentTime_(0.0),
-    lastUpdateTime_(0.0)
+    lastUpdateTime_(0.0),
+    cullFace_(0),
+    depthTest_(0),
+    blend_(0),
+    blendFuncSrc_(0),
+    blendFuncDst_(0)
 {
     static const string modelFilename(GLMARK_DATA_PATH"/models/jellyfish.jobj");
     if (!load_obj(modelFilename))
@@ -467,6 +472,18 @@ JellyfishPrivate::initialize()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+
+    // Save the GL state we are changing so we can restore it later.
+    cullFace_ = glIsEnabled(GL_CULL_FACE);
+    depthTest_ = glIsEnabled(GL_DEPTH_TEST);
+    blend_ = glIsEnabled(GL_BLEND);
+    glGetIntegerv(GL_BLEND_SRC_RGB, &blendFuncSrc_);
+    glGetIntegerv(GL_BLEND_DST_RGB, &blendFuncDst_);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
 }
 
 void
@@ -495,6 +512,21 @@ JellyfishPrivate::update_time()
 void
 JellyfishPrivate::cleanup()
 {
+    // Restore the GL state we changed for the scene.
+    glBlendFunc(blendFuncSrc_, blendFuncDst_);
+    if (GL_FALSE == blend_)
+    {
+        glDisable(GL_BLEND);
+    }
+    if (GL_TRUE == cullFace_)
+    {
+        glEnable(GL_CULL_FACE);
+    }
+    if (GL_TRUE == depthTest_)
+    {
+        glEnable(GL_DEPTH_TEST);
+    }
+
     program_.stop();
     program_.release();
 
@@ -553,12 +585,6 @@ JellyfishPrivate::draw()
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, textureObjects_[whichCaustic_]);
     program_["uSampler1"] = 1;
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
 
     glBindBuffer(GL_ARRAY_BUFFER, bufferObjects_[0]);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects_[1]);

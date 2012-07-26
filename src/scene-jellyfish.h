@@ -104,6 +104,12 @@ class JellyfishPrivate
     float rotation_;
     float currentTime_;
     double lastUpdateTime_;
+    // GL state we plan to override, so we can restore it cleanly.
+    unsigned int cullFace_;
+    unsigned int depthTest_;
+    unsigned int blend_;
+    int blendFuncSrc_;
+    int blendFuncDst_;
 
 public:
     JellyfishPrivate();
