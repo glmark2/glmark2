@@ -3,6 +3,7 @@
     <string name="app_name">GLMark2</string>
     <string name="title_activity_main">GLMark2</string>
     <string name="title_activity_editor">GLMark2 Benchmark Editor</string>
+    <string name="title_activity_preferences">GLMark2 Settings</string>
     <string name="title_activity_glmark2">GLMark2</string>
     <string name="runButtonText">Run</string>
     <string name="saveButtonText">Save</string>
@@ -10,7 +11,11 @@
     <string name="saveMainOptionsText">Save list</string>
     <string name="loadMainOptionsText">Load list</string>
     <string name="deleteMainOptionsText">Delete list</string>
+    <string name="settingsMainOptionsText">Settings</string>
     <string name="aboutMainOptionsText">About</string>
 
     <string name="externalSaveDialogText">Save to external storage</string>
+
+    <string name="runForeverPreferenceTitle">Run forever</string>
+    <string name="runForeverPreferenceSummary">Run indefinitely, looping from the last benchmark back to the first</string>
 </resources>

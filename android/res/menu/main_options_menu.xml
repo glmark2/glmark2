@@ -12,6 +12,10 @@
           android:title="@string/deleteMainOptionsText"
           android:icon="@drawable/menu_delete" />
 
+    <item android:id="@+id/settings"
+          android:title="@string/settingsMainOptionsText"
+          android:icon="@drawable/menu_settings" />
+
     <item android:id="@+id/about"
           android:title="@string/aboutMainOptionsText"
           android:icon="@drawable/menu_about" />

@@ -34,6 +34,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.widget.BaseAdapter;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -239,6 +241,10 @@ public class MainActivity extends Activity {
                 showDialog(DIALOG_DELETE_LIST_ID);
                 ret = true;
                 break;
+            case R.id.settings:
+                startActivity(new Intent(MainActivity.this, MainPreferencesActivity.class));
+                ret = true;
+                break;
             case R.id.about:
                 ret = true;
                 break;
@@ -282,10 +288,13 @@ public class MainActivity extends Activity {
         Button button = (Button) findViewById(R.id.runButton);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
                 Intent intent = new Intent(MainActivity.this, Glmark2Activity.class);
                 String args = "";
                 for (int i = 0; i < benchmarks.size() - 1; i++)
                     args += "-b " + benchmarks.get(i) + " ";
+                if (prefs.getBoolean("run_forever", false))
+                    args += "--run-forever ";
                 if (!args.isEmpty())
                     intent.putExtra("args", args);
                 startActivity(intent);
