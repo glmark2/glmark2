@@ -19,6 +19,7 @@
  * Authors:
  *  Alexandros Frantzis
  */
+#include <stdint.h>
 #include <vector>
 
 #include "mesh.h"

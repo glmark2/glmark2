@@ -29,7 +29,7 @@
 #include "mat.h"
 #include "gl-visual-config.h"
 
-#include <sys/types.h>
+#include <stdint.h>
 #include <string>
 #include <stdio.h>
 #include <cmath>

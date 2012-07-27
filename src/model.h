@@ -24,6 +24,7 @@
 #ifndef GLMARK2_MODEL_H_
 #define GLMARK2_MODEL_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 #include <map>
