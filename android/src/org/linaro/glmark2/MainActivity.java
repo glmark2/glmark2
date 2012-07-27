@@ -31,21 +31,36 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.widget.BaseAdapter;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.CheckBox;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.util.Log;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView;
+import android.widget.TextView.OnEditorActionListener;
 
 public class MainActivity extends Activity {
-    public static final int DIALOG_BENCHMARK_ACTIONS_ID = 0;
+    public static final int DIALOG_ERROR_ID = 0;
+    public static final int DIALOG_BENCHMARK_ACTIONS_ID = 1;
+    public static final int DIALOG_SAVE_LIST_ID = 2;
+    public static final int DIALOG_LOAD_LIST_ID = 3;
+    public static final int DIALOG_DELETE_LIST_ID = 4;
 
     /**
      * The supported benchmark item actions.
@@ -54,9 +69,9 @@ public class MainActivity extends Activity {
         EDIT, DELETE, CLONE, MOVEUP, MOVEDOWN
     }
 
-    ArrayList<String> benchmarks;
     BaseAdapter adapter;
     SceneInfo[] sceneInfoList;
+    BenchmarkListManager benchmarkListManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -73,7 +88,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putStringArrayList("benchmarks", benchmarks);
+        outState.putStringArrayList("benchmarks", benchmarkListManager.getBenchmarkList());
     }
 
     @Override
@@ -83,13 +98,25 @@ public class MainActivity extends Activity {
                 BenchmarkItemAction.DELETE, BenchmarkItemAction.CLONE,
                 BenchmarkItemAction.MOVEUP, BenchmarkItemAction.MOVEDOWN
         };
-        final int benchmarkPos = bundle.getInt("benchmark-pos");
         final int finalId = id;
 
         Dialog dialog;
 
         switch (id) {
+            case DIALOG_ERROR_ID:
+                {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(bundle.getString("message") + ": " +
+                                   bundle.getString("detail"));
+                builder.setCancelable(false);
+                builder.setPositiveButton("OK", null);
+                dialog = builder.create();
+                }
+                break;
+
             case DIALOG_BENCHMARK_ACTIONS_ID:
+                {
+                final int benchmarkPos = bundle.getInt("benchmark-pos");
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Pick an action");
                 builder.setItems(benchmarkActions, new DialogInterface.OnClickListener() {
@@ -99,6 +126,100 @@ public class MainActivity extends Activity {
                     }
                 });
                 dialog = builder.create();
+                }
+                break;
+
+            case DIALOG_SAVE_LIST_ID:
+                {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                View layout = getLayoutInflater().inflate(R.layout.save_dialog, null);
+                final EditText input = (EditText) layout.findViewById(R.id.listName);
+                final CheckBox checkBox = (CheckBox) layout.findViewById(R.id.external);
+
+                input.setOnEditorActionListener(new OnEditorActionListener() {
+                    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                        if (actionId == EditorInfo.IME_ACTION_DONE ||
+                            (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER &&
+                             event.getAction() == KeyEvent.ACTION_UP))
+                        {
+                            String listName = v.getText().toString();
+                            try {
+                                benchmarkListManager.saveBenchmarkList(listName,
+                                                                       checkBox.isChecked());
+                            }
+                            catch (Exception ex) {
+                                Bundle bundle = new Bundle();
+                                bundle.putString("message", "Cannot save list to file " + listName);
+                                bundle.putString("detail", ex.getMessage());
+                                showDialog(DIALOG_ERROR_ID, bundle);
+                            }
+                            dismissDialog(DIALOG_SAVE_LIST_ID);
+                        }
+                        return true;
+                    }
+                });
+
+                builder.setTitle("Save list as");
+                builder.setView(layout);
+
+                dialog = builder.create();
+                dialog.getWindow().setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN |
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
+                        );
+                }
+                break;
+
+            case DIALOG_LOAD_LIST_ID:
+            case DIALOG_DELETE_LIST_ID:
+                {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                if (id == DIALOG_LOAD_LIST_ID)
+                    builder.setTitle("Load list");
+                else
+                    builder.setTitle("Delete list");
+                final String[] savedLists = benchmarkListManager.getSavedLists();
+
+                builder.setItems(savedLists, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int index) {
+                        String desc = savedLists[index];
+                        String filename = "";
+                        boolean external = false;
+
+                        if (desc.startsWith("internal/")) {
+                            filename = desc.replace("internal/", "");
+                            external = false;
+                        }
+                        else if (desc.startsWith("external/")) {
+                            filename = desc.replace("external/", "");
+                            external = true;
+                        }
+                            
+                        try {
+                            if (finalId == DIALOG_LOAD_LIST_ID) {
+                                benchmarkListManager.loadBenchmarkList(filename, external);
+                                adapter.notifyDataSetChanged();
+                            }
+                            else {
+                                benchmarkListManager.deleteBenchmarkList(filename, external);
+                            }
+
+                        }
+                        catch (Exception ex) {
+                            Bundle bundle = new Bundle();
+                            if (finalId == DIALOG_LOAD_LIST_ID)
+                                bundle.putString("message", "Cannot load list " + desc);
+                            else
+                                bundle.putString("message", "Cannot delete list " + desc);
+                            bundle.putString("detail", ex.getMessage());
+                            showDialog(DIALOG_ERROR_ID, bundle);
+                        }
+                        dismissDialog(finalId);
+                    }
+                });
+
+                dialog = builder.create();
+                }
                 break;
 
             default:
@@ -118,6 +239,46 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_options_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        boolean ret = true;
+
+        switch (item.getItemId()) {
+            case R.id.save_benchmark_list:
+                showDialog(DIALOG_SAVE_LIST_ID);
+                ret = true;
+                break;
+            case R.id.load_benchmark_list:
+                showDialog(DIALOG_LOAD_LIST_ID);
+                ret = true;
+                break;
+            case R.id.delete_benchmark_list:
+                showDialog(DIALOG_DELETE_LIST_ID);
+                ret = true;
+                break;
+            case R.id.settings:
+                startActivity(new Intent(MainActivity.this, MainPreferencesActivity.class));
+                ret = true;
+                break;
+            case R.id.about:
+                startActivity(new Intent(MainActivity.this, AboutActivity.class));
+                ret = true;
+                break;
+            default:
+                ret = super.onOptionsItemSelected(item);
+                break;
+        }
+
+        return ret;
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             String benchmarkText = data.getStringExtra("benchmark-text");
@@ -133,14 +294,9 @@ public class MainActivity extends Activity {
      */
     private void init(ArrayList<String> savedBenchmarks)
     {
-        /* Fill in the benchmark list */
-        if (savedBenchmarks == null) {
-            benchmarks = new ArrayList<String>();
-            benchmarks.add("Add benchmark...");
-        }
-        else {
-            benchmarks = savedBenchmarks;
-        }
+        /* Initialize benchmark list manager */
+        benchmarkListManager = new BenchmarkListManager(this, savedBenchmarks);
+        final ArrayList<String> benchmarks = benchmarkListManager.getBenchmarkList();
 
         /* Get Scene information */
         sceneInfoList = Glmark2Native.getSceneInfo(getAssets());
@@ -149,10 +305,13 @@ public class MainActivity extends Activity {
         Button button = (Button) findViewById(R.id.runButton);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
                 Intent intent = new Intent(MainActivity.this, Glmark2Activity.class);
                 String args = "";
                 for (int i = 0; i < benchmarks.size() - 1; i++)
                     args += "-b " + benchmarks.get(i) + " ";
+                if (prefs.getBoolean("run_forever", false))
+                    args += "--run-forever ";
                 if (!args.isEmpty())
                     intent.putExtra("args", args);
                 startActivity(intent);
@@ -200,6 +359,7 @@ public class MainActivity extends Activity {
     private void doBenchmarkItemAction(int position, BenchmarkItemAction action, String data)
     {
         int scrollPosition = position;
+        final ArrayList<String> benchmarks = benchmarkListManager.getBenchmarkList();
 
         switch(action) {
             case EDIT:
