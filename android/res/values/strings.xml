@@ -21,6 +21,8 @@
 
     <string name="runForeverPreferenceTitle">Run forever</string>
     <string name="runForeverPreferenceSummary">Run indefinitely, looping from the last benchmark back to the first</string>
+    <string name="logDebugPreferenceTitle">Log debug messages</string>
+    <string name="logDebugPreferenceSummary">Display debug messages in the log</string>
 
     <string name="about_name_version_format">GLMark2 %1$s</string>
     <string name="about_description">OpenGL (ES) 2.0 benchmark suite</string>

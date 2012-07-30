@@ -316,6 +316,8 @@ public class MainActivity extends Activity {
                     args += "-b " + benchmarks.get(i) + " ";
                 if (prefs.getBoolean("run_forever", false))
                     args += "--run-forever ";
+                if (prefs.getBoolean("log_debug", false))
+                    args += "--debug ";
                 if (!args.isEmpty())
                     intent.putExtra("args", args);
                 startActivity(intent);
