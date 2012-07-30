@@ -36,7 +36,7 @@ def configure(ctx):
     ctx.check_tool('compiler_cxx')
 
     # Check required headers
-    req_headers = ['stdlib.h', 'string.h', 'stdint.h', 'stdio.h', 'jpeglib.h']
+    req_headers = ['stdlib.h', 'string.h', 'unistd.h', 'stdint.h', 'stdio.h', 'jpeglib.h']
     for header in req_headers:
         ctx.check_cxx(header_name = header, auto_add_header_name = True, mandatory = True)
 

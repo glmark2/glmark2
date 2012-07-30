@@ -14,14 +14,17 @@
 #define LOG_H_
 
 #include <string>
+#include <iostream>
 
 class Log
 {
 public:
-    static void init(const std::string& appname, bool do_debug = false)
+    static void init(const std::string& appname, bool do_debug = false,
+                     std::ostream *extra_out = 0)
     {
         appname_ = appname;
         do_debug_ = do_debug;
+        extra_out_ = extra_out;
     }
     // Emit an informational message
     static void info(const char *fmt, ...);
@@ -41,6 +44,8 @@ private:
     static std::string appname_;
     // Indicates whether debug level messages should generate any output
     static bool do_debug_;
+    // Extra stream to output log messages to
+    static std::ostream *extra_out_;
 };
 
 #endif /* LOG_H_ */
