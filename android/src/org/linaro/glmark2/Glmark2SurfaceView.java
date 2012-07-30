@@ -1,5 +1,7 @@
 package org.linaro.glmark2;
 
+import java.io.File;
+
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.app.Activity;
@@ -203,7 +205,8 @@ class Glmark2Renderer implements GLSurfaceView.Renderer {
 
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         String args = mView.getActivity().getIntent().getStringExtra("args");
-        Glmark2Native.init(mView.getActivity().getAssets(), args);
+        File f = new File(mView.getActivity().getFilesDir(), "last_run.log");
+        Glmark2Native.init(mView.getActivity().getAssets(), args, f.getAbsolutePath());
     }
 
     private Glmark2SurfaceView mView;

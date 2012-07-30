@@ -24,7 +24,8 @@ package org.linaro.glmark2;
 import android.content.res.AssetManager;
 
 class Glmark2Native {
-    public static native void init(AssetManager assetManager, String args);
+    public static native void init(AssetManager assetManager, String args,
+                                   String logFilePath);
     public static native void resize(int w, int h);
     public static native boolean render();
     public static native void done();
