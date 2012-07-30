@@ -266,6 +266,10 @@ public class MainActivity extends Activity {
                 startActivity(new Intent(MainActivity.this, MainPreferencesActivity.class));
                 ret = true;
                 break;
+            case R.id.results:
+                startActivity(new Intent(MainActivity.this, ResultsActivity.class));
+                ret = true;
+                break;
             case R.id.about:
                 startActivity(new Intent(MainActivity.this, AboutActivity.class));
                 ret = true;

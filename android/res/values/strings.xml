@@ -5,6 +5,7 @@
     <string name="title_activity_editor">GLMark2 Benchmark Editor</string>
     <string name="title_activity_preferences">GLMark2 Settings</string>
     <string name="title_activity_about">About GLMark2</string>
+    <string name="title_activity_results">GLMark2 Results</string>
     <string name="title_activity_glmark2">GLMark2</string>
     <string name="runButtonText">Run</string>
     <string name="saveButtonText">Save</string>
@@ -13,6 +14,7 @@
     <string name="loadMainOptionsText">Load list</string>
     <string name="deleteMainOptionsText">Delete list</string>
     <string name="settingsMainOptionsText">Settings</string>
+    <string name="resultsMainOptionsText">Last results</string>
     <string name="aboutMainOptionsText">About</string>
 
     <string name="externalSaveDialogText">Save to external storage</string>
