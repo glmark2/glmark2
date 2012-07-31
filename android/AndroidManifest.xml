@@ -19,7 +19,6 @@
         </activity>
         <activity android:label="@string/title_activity_glmark2"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-                  android:launchMode="singleTask"
                   android:screenOrientation="nosensor"
                   android:process=":glmark2"
                   android:name="org.linaro.glmark2.Glmark2Activity">
