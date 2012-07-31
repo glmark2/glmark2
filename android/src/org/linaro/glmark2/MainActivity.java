@@ -330,7 +330,11 @@ public class MainActivity extends Activity {
                     args += "--debug ";
                 if (!args.isEmpty())
                     intent.putExtra("args", args);
-                startActivityForResult(intent, ACTIVITY_GLMARK2_REQUEST_CODE);
+                
+                if (prefs.getBoolean("show_results", true))
+                    startActivityForResult(intent, ACTIVITY_GLMARK2_REQUEST_CODE);
+                else
+                    startActivity(intent);
             }
         });
 
