@@ -62,6 +62,9 @@ public class MainActivity extends Activity {
     public static final int DIALOG_LOAD_LIST_ID = 3;
     public static final int DIALOG_DELETE_LIST_ID = 4;
 
+    public static final int ACTIVITY_GLMARK2_REQUEST_CODE = 1;
+    public static final int ACTIVITY_EDITOR_REQUEST_CODE = 2;
+
     /**
      * The supported benchmark item actions.
      */
@@ -266,6 +269,10 @@ public class MainActivity extends Activity {
                 startActivity(new Intent(MainActivity.this, MainPreferencesActivity.class));
                 ret = true;
                 break;
+            case R.id.results:
+                startActivity(new Intent(MainActivity.this, ResultsActivity.class));
+                ret = true;
+                break;
             case R.id.about:
                 startActivity(new Intent(MainActivity.this, AboutActivity.class));
                 ret = true;
@@ -280,7 +287,14 @@ public class MainActivity extends Activity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
+        if (requestCode == ACTIVITY_GLMARK2_REQUEST_CODE)
+        {
+            startActivity(new Intent(this, ResultsActivity.class));
+            return;
+        }
+        else if (requestCode == ACTIVITY_EDITOR_REQUEST_CODE &&
+                 resultCode == RESULT_OK)
+        {
             String benchmarkText = data.getStringExtra("benchmark-text");
             int benchmarkPos = data.getIntExtra("benchmark-pos", 0);
             doBenchmarkItemAction(benchmarkPos, BenchmarkItemAction.EDIT, benchmarkText);
@@ -312,9 +326,15 @@ public class MainActivity extends Activity {
                     args += "-b " + benchmarks.get(i) + " ";
                 if (prefs.getBoolean("run_forever", false))
                     args += "--run-forever ";
+                if (prefs.getBoolean("log_debug", false))
+                    args += "--debug ";
                 if (!args.isEmpty())
                     intent.putExtra("args", args);
-                startActivity(intent);
+                
+                if (prefs.getBoolean("show_results", true))
+                    startActivityForResult(intent, ACTIVITY_GLMARK2_REQUEST_CODE);
+                else
+                    startActivity(intent);
             }
         });
 
@@ -332,7 +352,7 @@ public class MainActivity extends Activity {
                 intent.putExtra("benchmark-text", t);
                 intent.putExtra("benchmark-pos", position);
                 intent.putExtra("scene-info", sceneInfoList);
-                startActivityForResult(intent, 1);
+                startActivityForResult(intent, ACTIVITY_EDITOR_REQUEST_CODE);
             }
         });
 

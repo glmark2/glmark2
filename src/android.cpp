@@ -37,6 +37,7 @@
 static Canvas *g_canvas;
 static MainLoop *g_loop;
 static BenchmarkCollection *g_benchmark_collection;
+static std::ostream *g_log_extra;
 
 class MainLoopAndroid : public MainLoop
 {
@@ -258,7 +259,8 @@ create_and_add_scenes(std::vector<Scene*>& scenes, Canvas& canvas)
 void
 Java_org_linaro_glmark2_native_init(JNIEnv* env, jclass clazz,
                                     jobject asset_manager,
-                                    jstring args)
+                                    jstring args,
+                                    jstring log_file)
 {
     static_cast<void>(clazz);
     static const std::string arguments_file("/data/glmark2/args");
@@ -282,10 +284,17 @@ Java_org_linaro_glmark2_native_init(JNIEnv* env, jclass clazz,
     Options::parse_args(argc, argv);
     release_args(argc, argv);
 
+    /* Get the log file path and open the log file */
+    const char *log_file_c_str = env->GetStringUTFChars(log_file, 0);
+    if (log_file_c_str) {
+        g_log_extra = new std::ofstream(log_file_c_str, std::ios::binary);
+        env->ReleaseStringUTFChars(log_file, log_file_c_str);
+    }
+
     /* Force reuse of EGL/GL context */
     Options::reuse_context = true;
 
-    Log::init("glmark2", Options::show_debug);
+    Log::init("glmark2", Options::show_debug, g_log_extra);
     Util::android_set_asset_manager(AAssetManager_fromJava(env, asset_manager));
 
     g_canvas = new CanvasAndroid(100, 100);
@@ -340,6 +349,7 @@ Java_org_linaro_glmark2_native_done(JNIEnv* env)
     delete g_loop;
     delete g_benchmark_collection;
     delete g_canvas;
+    delete g_log_extra;
 }
 
 jboolean
@@ -409,7 +419,7 @@ Java_org_linaro_glmark2_native_getSceneInfo(JNIEnv* env, jclass clazz,
 static JNINativeMethod glmark2_native_methods[] = {
     {
         "init",
-        "(Landroid/content/res/AssetManager;Ljava/lang/String;)V",
+        "(Landroid/content/res/AssetManager;Ljava/lang/String;Ljava/lang/String;)V",
         reinterpret_cast<void*>(Java_org_linaro_glmark2_native_init)
     },
     {

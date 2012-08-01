@@ -4,4 +4,12 @@
                         android:title="@string/runForeverPreferenceTitle"
                         android:summary="@string/runForeverPreferenceSummary"
                         android:defaultValue="false" />
+    <CheckBoxPreference android:key="log_debug"
+                        android:title="@string/logDebugPreferenceTitle"
+                        android:summary="@string/logDebugPreferenceSummary"
+                        android:defaultValue="false" />
+    <CheckBoxPreference android:key="show_results"
+                        android:title="@string/showResultsPreferenceTitle"
+                        android:summary="@string/showResultsPreferenceSummary"
+                        android:defaultValue="true" />
 </PreferenceScreen>

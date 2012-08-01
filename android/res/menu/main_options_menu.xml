@@ -16,6 +16,10 @@
           android:title="@string/settingsMainOptionsText"
           android:icon="@drawable/menu_settings" />
 
+    <item android:id="@+id/results"
+          android:title="@string/resultsMainOptionsText"
+          android:icon="@drawable/menu_results" />
+
     <item android:id="@+id/about"
           android:title="@string/aboutMainOptionsText"
           android:icon="@drawable/menu_about" />
