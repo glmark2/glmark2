@@ -12,6 +12,7 @@ VERSION = '2012.07'
 APPNAME = 'glmark2'
 
 def options(opt):
+    opt.tool_options('gnu_dirs')
     opt.tool_options('compiler_cc')
     opt.tool_options('compiler_cxx')
 
@@ -24,7 +25,7 @@ def options(opt):
     opt.add_option('--no-opt', action='store_false', dest = 'opt',
                    default = True, help='disable compiler optimizations')
     opt.add_option('--data-path', action='store', dest = 'data_path',
-                   help='the path to install the data to')
+                   help='path to main data (also see --data(root)dir)')
     opt.add_option('--extras-path', action='store', dest = 'extras_path',
                    help='path to additional data (models, shaders, textures)')
 
@@ -32,6 +33,7 @@ def configure(ctx):
     if not Options.options.gl and not Options.options.glesv2:
         ctx.fatal("You must configure using at least one of --enable-gl, --enable-glesv2")
 
+    ctx.check_tool('gnu_dirs')
     ctx.check_tool('compiler_cc')
     ctx.check_tool('compiler_cxx')
 
@@ -74,17 +76,19 @@ def configure(ctx):
     if Options.options.debug:
         ctx.env.prepend_value('CXXFLAGS', '-g')
 
-    if Options.options.data_path is None:
-        Options.options.data_path = os.path.join(ctx.env.PREFIX, 'share/glmark2')
-
     ctx.env.HAVE_EXTRAS = False
     if Options.options.extras_path is not None:
         ctx.env.HAVE_EXTRAS = True
         ctx.env.append_unique('GLMARK_EXTRAS_PATH', Options.options.extras_path)
         ctx.env.append_unique('DEFINES', 'GLMARK_EXTRAS_PATH="%s"' % Options.options.extras_path)
 
-    ctx.env.append_unique('GLMARK_DATA_PATH', Options.options.data_path)
-    ctx.env.append_unique('DEFINES', 'GLMARK_DATA_PATH="%s"' % Options.options.data_path)
+    if Options.options.data_path is not None:
+        data_path = Options.options.data_path 
+    else:
+        data_path = os.path.join(ctx.env.DATADIR, 'glmark2')
+
+    ctx.env.append_unique('GLMARK_DATA_PATH', data_path)
+    ctx.env.append_unique('DEFINES', 'GLMARK_DATA_PATH="%s"' % data_path)
     ctx.env.append_unique('DEFINES', 'GLMARK_VERSION="%s"' % VERSION)
     ctx.env.GLMARK2_VERSION = VERSION
 
@@ -92,7 +96,7 @@ def configure(ctx):
     ctx.env.USE_GLESv2 = Options.options.glesv2
 
     ctx.msg("Prefix", ctx.env.PREFIX, color = 'PINK')
-    ctx.msg("Data path", Options.options.data_path, color = 'PINK')
+    ctx.msg("Data path", data_path, color = 'PINK')
     ctx.msg("Including extras", "Yes" if ctx.env.HAVE_EXTRAS else "No",
             color = 'PINK');
     if ctx.env.HAVE_EXTRAS:

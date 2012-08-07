@@ -6,7 +6,7 @@ if bld.env.USE_GL:
         APPNAME = 'GLMARK2',
         appname = 'glmark2',
         appversion = bld.env.GLMARK2_VERSION,
-        install_path = '${PREFIX}/share/man/man1'
+        install_path = '${MANDIR}/man1'
     )
 
 if bld.env.USE_GLESv2:
@@ -17,5 +17,5 @@ if bld.env.USE_GLESv2:
         APPNAME = 'GLMARK2-ES2',
         appname = 'glmark2-es2',
         appversion = bld.env.GLMARK2_VERSION,
-        install_path = '${PREFIX}/share/man/man1'
+        install_path = '${MANDIR}/man1'
     )
