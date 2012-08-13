@@ -323,7 +323,7 @@ public class MainActivity extends Activity {
                 Intent intent = new Intent(MainActivity.this, Glmark2Activity.class);
                 String args = "";
                 for (int i = 0; i < benchmarks.size() - 1; i++)
-                    args += "-b " + benchmarks.get(i) + " ";
+                    args += "-b \"" + benchmarks.get(i) + "\" ";
                 if (prefs.getBoolean("run_forever", false))
                     args += "--run-forever ";
                 if (prefs.getBoolean("log_debug", false))

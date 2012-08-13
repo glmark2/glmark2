@@ -88,7 +88,7 @@ public class EditorActivity extends Activity {
         runButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(EditorActivity.this, Glmark2Activity.class);
-                String args = "-b " + getBenchmarkDescriptionText();
+                String args = "-b \"" + getBenchmarkDescriptionText() + "\"";
                 intent.putExtra("args", args);
                 startActivity(intent);
             }
