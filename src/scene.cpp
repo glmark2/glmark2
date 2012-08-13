@@ -38,7 +38,7 @@ Scene::Option::Option(const std::string &nam, const std::string &val, const std:
                       const std::string &values) :
 name(nam), value(val), default_value(val), description(desc), set(false)
 {
-    Util::split(values, ',', acceptable_values);
+    Util::split(values, ',', acceptable_values, Util::SplitModeNormal);
 }
 
 Scene::Scene(Canvas &pCanvas, const string &name) :

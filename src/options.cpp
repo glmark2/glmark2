@@ -74,7 +74,7 @@ static void
 parse_size(const std::string &str, std::pair<int,int> &size)
 {
     std::vector<std::string> d;
-    Util::split(str, 'x', d);
+    Util::split(str, 'x', d, Util::SplitModeNormal);
 
     size.first = Util::fromString<int>(d[0]);
 

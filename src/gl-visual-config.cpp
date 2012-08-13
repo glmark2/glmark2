@@ -30,7 +30,7 @@ GLVisualConfig::GLVisualConfig(const std::string &s) :
 {
     std::vector<std::string> elems;
 
-    Util::split(s, ':', elems);
+    Util::split(s, ':', elems, Util::SplitModeNormal);
 
     for (std::vector<std::string>::const_iterator iter = elems.begin();
          iter != elems.end();
@@ -38,7 +38,7 @@ GLVisualConfig::GLVisualConfig(const std::string &s) :
     {
         std::vector<std::string> opt;
 
-        Util::split(*iter, '=', opt);
+        Util::split(*iter, '=', opt, Util::SplitModeNormal);
         if (opt.size() == 2) {
             if (opt[0] == "r" || opt[0] == "red")
                 red = Util::fromString<int>(opt[1]);

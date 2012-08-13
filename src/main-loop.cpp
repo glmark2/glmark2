@@ -252,7 +252,7 @@ MainLoopDecoration::vec2_from_pos_string(const std::string &s)
 {
     LibMatrix::vec2 v(0.0, 0.0);
     std::vector<std::string> elems;
-    Util::split(s, ',', elems);
+    Util::split(s, ',', elems, Util::SplitModeNormal);
 
     if (elems.size() > 0)
         v.x(Util::fromString<float>(elems[0]));

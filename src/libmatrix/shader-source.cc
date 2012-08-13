@@ -589,7 +589,7 @@ ShaderSource::Precision::Precision(const std::string& precision_values) :
 {
     std::vector<std::string> elems;
 
-    Util::split(precision_values, ',', elems);
+    Util::split(precision_values, ',', elems, Util::SplitModeNormal);
 
     for (size_t i = 0; i < elems.size() && i < 4; i++) {
         const std::string& pstr(elems[i]);

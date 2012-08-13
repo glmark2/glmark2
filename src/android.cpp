@@ -101,7 +101,7 @@ get_args_from_file(const std::string &arguments_file, int &argc, char **&argv)
         std::string line;
         while (getline(ifs, line)) {
             if (!line.empty())
-                Util::split(line, ' ', arguments);
+                Util::split(line, ' ', arguments, Util::SplitModeQuoted);
         }
     }
 
@@ -118,7 +118,7 @@ static void
 get_args_from_string(const std::string &args_str, int &argc, char **&argv)
 {
     std::vector<std::string> arguments;
-    Util::split(args_str, ' ', arguments);
+    Util::split(args_str, ' ', arguments, Util::SplitModeQuoted);
 
     arg_vector_to_argv(arguments, argc, argv);
 }

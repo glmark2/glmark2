@@ -9,6 +9,7 @@ TESTSRCS = $(TESTDIR)/options.cc \
            $(TESTDIR)/inverse_test.cc \
            $(TESTDIR)/transpose_test.cc \
            $(TESTDIR)/shader_source_test.cc \
+           $(TESTDIR)/util_split_test.cc \
            $(TESTDIR)/libmatrix_test.cc
 TESTOBJS = $(TESTSRCS:.cc=.o)
 
@@ -32,6 +33,7 @@ $(TESTDIR)/const_vec_test.o: $(TESTDIR)/const_vec_test.cc $(TESTDIR)/const_vec_t
 $(TESTDIR)/inverse_test.o: $(TESTDIR)/inverse_test.cc $(TESTDIR)/inverse_test.h $(TESTDIR)/libmatrix_test.h mat.h
 $(TESTDIR)/transpose_test.o: $(TESTDIR)/transpose_test.cc $(TESTDIR)/transpose_test.h $(TESTDIR)/libmatrix_test.h mat.h
 $(TESTDIR)/shader_source_test.o: $(TESTDIR)/shader_source_test.cc $(TESTDIR)/shader_source_test.h $(TESTDIR)/libmatrix_test.h shader-source.h
+$(TESTDIR)/util_split_test.o: $(TESTDIR)/util_split_test.cc $(TESTDIR)/util_split_test.h $(TESTDIR)/libmatrix_test.h util.h
 $(TESTDIR)/libmatrix_test: $(TESTOBJS) libmatrix.a
 	$(CXX) -o $@ $^
 run_tests: $(LIBMATRIX_TESTS)

@@ -194,7 +194,7 @@ parse_matrix(const std::string &str, std::vector<float> &matrix,
     std::vector<std::string> rows;
     unsigned int w = UINT_MAX;
 
-    Util::split(str, ';', rows);
+    Util::split(str, ';', rows, Util::SplitModeNormal);
 
     Log::debug("Parsing kernel matrix:\n");
     static const std::string format("%f ");
@@ -206,7 +206,7 @@ parse_matrix(const std::string &str, std::vector<float> &matrix,
          iter++)
     {
         std::vector<std::string> elems;
-        Util::split(*iter, ',', elems);
+        Util::split(*iter, ',', elems, Util::SplitModeNormal);
 
         if (w != UINT_MAX && elems.size() != w) {
             Log::error("Matrix row %u contains %u elements, whereas previous"

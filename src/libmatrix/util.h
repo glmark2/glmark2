@@ -25,21 +25,33 @@
 
 struct Util {
     /**
+     * How to perform the split() operation
+     */
+    enum SplitMode {
+        /** Normal split operation */
+        SplitModeNormal,
+        /** Allow for spaces and multiple consecutive occurences of the delimiter */
+        SplitModeFuzzy,
+        /** Take into account bash-like quoting and escaping rules */
+        SplitModeQuoted
+    };
+
+    /**
      * split() - Splits a string into elements using a provided delimiter
      *
      * @s:          the string to split
      * @delim:      the delimiter to use
      * @elems:      the string vector to populate
-     * @fuzzy:      (optional) enable/disable strict handling of @delim
+     * @mode:       the SplitMode to use
      *
      * Using @delim to determine field boundaries, splits @s into separate
      * string elements.  These elements are returned in the string vector
-     * @elems.  If @fuzzy is true, then the handling of @delim allows for
-     * spaces and multiple consecutive occurences of @delim in determining
-     * field boundaries.  As long as @s is non-empty, there will be at least
-     * one element in @elems.
+     * @elems. As long as @s is non-empty, there will be at least one
+     * element in @elems.
      */
-    static void split(const std::string &s, char delim, std::vector<std::string> &elems, bool fuzzy = false);
+    static void split(const std::string& src, char delim,
+                      std::vector<std::string>& elems,
+                      Util::SplitMode mode);
     /**
      * get_timestamp_us() - Returns the current time in microseconds
      */

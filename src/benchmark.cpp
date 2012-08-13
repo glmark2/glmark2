@@ -35,7 +35,7 @@ get_scene_from_description(const string &s)
 {
     vector<string> elems;
 
-    Util::split(s, ':', elems);
+    Util::split(s, ':', elems, Util::SplitModeNormal);
 
     const string &name = !elems.empty() ? elems[0] : "";
 
@@ -48,7 +48,7 @@ get_options_from_description(const string &s)
     vector<Benchmark::OptionPair> options;
     vector<string> elems;
 
-    Util::split(s, ':', elems);
+    Util::split(s, ':', elems, Util::SplitModeNormal);
 
     for (vector<string>::const_iterator iter = elems.begin() + 1;
          iter != elems.end();
@@ -56,7 +56,7 @@ get_options_from_description(const string &s)
     {
         vector<string> opt;
 
-        Util::split(*iter, '=', opt);
+        Util::split(*iter, '=', opt, Util::SplitModeNormal);
         if (opt.size() == 2)
             options.push_back(Benchmark::OptionPair(opt[0], opt[1]));
         else

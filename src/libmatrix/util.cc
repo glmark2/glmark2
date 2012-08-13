@@ -25,25 +25,102 @@
 using std::string;
 using std::vector;
 
-void
-Util::split(const string& src, char delim, vector<string>& elementVec, bool fuzzy)
+/*
+ * State machine for bash-like quoted string escaping:
+ *
+ *         \
+ *    -----------> +---------+
+ *    | ---------- | Escaped |
+ *    | |  *,ESC   +---------+
+ *    | |
+ *    | v      '
+ * +--------+ ---> +--------------+ -----
+ * | Normal | <--- | SingleQuoted |     | *, ESC
+ * +--------+  '   +--------------+ <----
+ *    | ^
+ *    | |
+ *    | |  "       +--------------+ ----
+ *    | ---------- | DoubleQuoted |    | *, ESC
+ *    -----------> +--------------+ <---
+ *         "             | ^
+ *                     \ | | *, ESC
+ *                       v |
+ *             +---------------------+
+ *             | DoubleQuotedEscaped |
+ *             +---------------------+
+ *
+ * ESC: Mark character as Escaped
+ */
+static void
+fill_escape_vector(const string &str, vector<bool> &esc_vec)
 {
-    // Trivial rejection
-    if (src.empty())
-    {
-        return;
-    }
+    enum State {
+        StateNormal,
+        StateEscaped,
+        StateDoubleQuoted,
+        StateDoubleQuotedEscaped,
+        StateSingleQuoted
+    };
 
-    // Simple case: we want to enforce the value of 'delim' strictly 
-    if (!fuzzy)
-    {
-        std::stringstream ss(src);
-        string item;
-        while(std::getline(ss, item, delim))
-            elementVec.push_back(item);
-        return;
-    }
+    State state = StateNormal;
 
+    for (string::const_iterator iter = str.begin();
+         iter != str.end();
+         iter++)
+    {
+        const char c(*iter);
+        bool esc = false;
+
+        switch (state) {
+            case StateNormal:
+                if (c == '"')
+                    state = StateDoubleQuoted;
+                else if (c == '\\')
+                    state = StateEscaped;
+                else if (c == '\'')
+                    state = StateSingleQuoted;
+                break;
+            case StateEscaped:
+                esc = true;
+                state = StateNormal;
+                break;
+            case StateDoubleQuoted:
+                if (c == '"')
+                    state = StateNormal;
+                else if (c == '\\')
+                    state = StateDoubleQuotedEscaped;
+                else
+                    esc = true;
+                break;
+            case StateDoubleQuotedEscaped:
+                esc = true;
+                state = StateDoubleQuoted;
+                break;
+            case StateSingleQuoted:
+                if (c == '\'')
+                    state = StateNormal;
+                else
+                    esc = true;
+            default:
+                break;
+        }
+
+        esc_vec.push_back(esc);
+    }
+}
+
+static void
+split_normal(const string& src, char delim, vector<string>& elementVec)
+{
+    std::stringstream ss(src);
+    string item;
+    while(std::getline(ss, item, delim))
+        elementVec.push_back(item);
+}
+
+static void
+split_fuzzy(const string& src, char delim, vector<string>& elementVec)
+{
     // Fuzzy case: Initialize our delimiter string based upon the caller's plus
     // a space to allow for more flexibility.
     string delimiter(" ");
@@ -74,6 +151,70 @@ Util::split(const string& src, char delim, vector<string>& elementVec, bool fuzz
     // Regardless of whether we initially had one element or many, 'str' now
     // only contains one.
     elementVec.push_back(str);
+}
+
+static void
+split_quoted(const string& src, char delim, vector<string>& elementVec)
+{
+    std::stringstream ss;
+    vector<bool> escVec;
+
+    /* Mark characters in the string as escaped or not */
+    fill_escape_vector(src, escVec);
+
+    /* Sanity check... */
+    if (src.length() != escVec.size())
+        return;
+
+    for (vector<bool>::const_iterator iter = escVec.begin();
+         iter != escVec.end();
+         iter++)
+    {
+        bool escaped = static_cast<bool>(*iter);
+        char c = src[iter - escVec.begin()];
+
+        /* Output all characters, except unescaped ",\,' */
+        if ((c != '"' && c != '\\' && c != '\'') || escaped) {
+            /* If we reach an unescaped delimiter character, do a split */
+            if (c == delim && !escaped) {
+                elementVec.push_back(ss.str());
+                ss.str("");
+                ss.clear();
+            }
+            else {
+                ss << c;
+            }
+        }
+
+    }
+
+    /* Handle final element, delimited by end of string */
+    const string &finalElement(ss.str());
+    if (!finalElement.empty())
+        elementVec.push_back(finalElement);
+}
+
+void
+Util::split(const string& src, char delim, vector<string>& elementVec,
+            Util::SplitMode mode)
+{
+    // Trivial rejection
+    if (src.empty())
+    {
+        return;
+    }
+
+    switch (mode)
+    {
+        case Util::SplitModeNormal:
+            return split_normal(src, delim, elementVec);
+        case Util::SplitModeFuzzy:
+            return split_fuzzy(src, delim, elementVec);
+        case Util::SplitModeQuoted:
+            return split_quoted(src, delim, elementVec);
+        default:
+            break;
+    }
 }
 
 uint64_t
