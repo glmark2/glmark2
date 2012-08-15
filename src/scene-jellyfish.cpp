@@ -54,10 +54,11 @@ SceneJellyfish::unload()
 {
 }
 
-void
+bool
 SceneJellyfish::setup()
 {
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
 
     // Set up our private object that does all of the lifting
     priv_ = new JellyfishPrivate();
@@ -68,6 +69,8 @@ SceneJellyfish::setup()
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
     running_ = true;
+
+    return true;
 }
 
 void

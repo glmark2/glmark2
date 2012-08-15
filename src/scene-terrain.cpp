@@ -261,17 +261,11 @@ SceneTerrain::unload()
     Scene::unload();
 }
 
-void
+bool
 SceneTerrain::setup()
 {
-    Scene::setup();
-
-    if (!supported(true)) {
-        currentFrame_ = 0;
-        startTime_ = Util::get_timestamp_us() / 1000000.0;
-        running_ = false;
-        return;
-    }
+    if (!Scene::setup())
+        return false;
 
     /* Parse options */
     float repeat = Util::fromString<double>(options_["repeat-overlay"].value);
@@ -322,6 +316,8 @@ SceneTerrain::setup()
     currentFrame_ = 0;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     running_ = true;
+
+    return true;
 }
 
 void

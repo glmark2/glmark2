@@ -93,7 +93,7 @@ Scene::unload()
 {
 }
 
-void
+bool
 Scene::setup()
 {
     duration_ = Util::fromString<double>(options_["duration"].value);
@@ -108,6 +108,12 @@ Scene::setup()
             ShaderSource::ShaderTypeFragment
             );
 
+    currentFrame_ = 0;
+    running_ = false;
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
+
+    return supported(true);
 }
 
 void

@@ -103,10 +103,11 @@ SceneTexture::unload()
     mesh_.reset();
 }
 
-void
+bool
 SceneTexture::setup()
 {
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
 
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
     static const std::string vtx_shader_texgen_filename(GLMARK_DATA_PATH"/shaders/light-basic-texgen.vert");
@@ -138,8 +139,8 @@ SceneTexture::setup()
     }
 
     const string& whichTexture(options_["texture"].value);
-    Texture::load(whichTexture, &texture_,
-                  min_filter, mag_filter, 0);
+    if (!Texture::load(whichTexture, &texture_, min_filter, mag_filter, 0))
+        return false;
 
     // Load shaders
     bool doTexGen(options_["texgen"].value == "true");
@@ -168,14 +169,14 @@ SceneTexture::setup()
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
-        return;
+        return false;
     }
 
     Model model;
     const string& whichModel(options_["model"].value);
     bool modelLoaded = model.load(whichModel);
     if(!modelLoaded)
-        return;
+        return false;
 
     // Now that we're successfully loaded, there are a few quirks about
     // some of the known models that we need to account for.  The draw
@@ -251,6 +252,8 @@ SceneTexture::setup()
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 void

@@ -132,10 +132,11 @@ get_fragment_shader_source(const string& frg_file, unsigned int lights)
     return source.str();
 }
 
-void
+bool
 SceneShading::setup()
 {
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
 
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     static const LibMatrix::vec4 materialDiffuse(0.0f, 0.0f, 1.0f, 1.0f);
@@ -181,7 +182,7 @@ SceneShading::setup()
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
-        return;
+        return false;
     }
 
     Model model;
@@ -189,7 +190,7 @@ SceneShading::setup()
     bool modelLoaded = model.load(whichModel);
 
     if(!modelLoaded)
-        return;
+        return false;
 
     // Now that we're successfully loaded, there are a few quirks about
     // some of the known models that we need to account for.  The draw
@@ -257,6 +258,8 @@ SceneShading::setup()
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 void

@@ -58,6 +58,7 @@ public:
     void update_time();
     void update_projection(const mat4& proj);
     void draw();
+    bool valid() { return valid_; }
 
 private:
     void postIdle();
@@ -223,12 +224,17 @@ SceneIdeas::unload()
 {
 }
 
-void
+bool
 SceneIdeas::setup()
 {
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
+
     priv_ = new SceneIdeasPrivate();
     priv_->initialize(options_);
+    if (!priv_->valid())
+        return false;
+
     priv_->update_projection(canvas_.projection());
 
     // Core Scene state
@@ -236,6 +242,8 @@ SceneIdeas::setup()
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 void

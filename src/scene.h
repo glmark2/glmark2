@@ -104,9 +104,12 @@ public:
      * This method also prepares a scene for a benchmark run.
      * It should be called just before running a scene/benchmark.
      *
-     * @return the operation status
+     * The base Scene::setup() method also checks whether a scene
+     * configuration is supported by calling ::supported(true).
+     *
+     * @return whether setting the scene up succeeded
      */
-    virtual void setup();
+    virtual bool setup();
 
     /**
      * Performs option-dependent resource unloading.
@@ -241,7 +244,7 @@ class SceneDefaultOptions : public Scene
 public:
     SceneDefaultOptions(Canvas &pCanvas) : Scene(pCanvas, "") {}
     bool set_option(const std::string &opt, const std::string &val);
-    void setup();
+    bool setup();
 
 private:
     std::list<std::pair<std::string, std::string> > defaultOptions_;
@@ -253,7 +256,7 @@ public:
     SceneBuild(Canvas &pCanvas);
     bool load();
     void unload();
-    void setup();
+    bool setup();
     void teardown();
     void update();
     void draw();
@@ -281,7 +284,7 @@ public:
     SceneTexture(Canvas &pCanvas);
     bool load();
     void unload();
-    void setup();
+    bool setup();
     void teardown();
     void update();
     void draw();
@@ -309,7 +312,7 @@ public:
     SceneShading(Canvas &pCanvas);
     bool load();
     void unload();
-    void setup();
+    bool setup();
     void teardown();
     void update();
     void draw();
@@ -336,7 +339,7 @@ public:
     SceneGrid(Canvas &pCanvas, const std::string &name);
     virtual bool load();
     virtual void unload();
-    virtual void setup();
+    virtual bool setup();
     virtual void teardown();
     virtual void update();
     virtual void draw();
@@ -355,7 +358,7 @@ class SceneConditionals : public SceneGrid
 {
 public:
     SceneConditionals(Canvas &pCanvas);
-    void setup();
+    bool setup();
     ValidationResult validate();
 
     ~SceneConditionals();
@@ -365,7 +368,7 @@ class SceneFunction : public SceneGrid
 {
 public:
     SceneFunction(Canvas &pCanvas);
-    void setup();
+    bool setup();
     ValidationResult validate();
 
     ~SceneFunction();
@@ -375,7 +378,7 @@ class SceneLoop : public SceneGrid
 {
 public:
     SceneLoop(Canvas &pCanvas);
-    void setup();
+    bool setup();
     ValidationResult validate();
 
     ~SceneLoop();
@@ -387,7 +390,7 @@ public:
     SceneBump(Canvas &pCanvas);
     bool load();
     void unload();
-    void setup();
+    bool setup();
     void teardown();
     void update();
     void draw();
@@ -402,10 +405,10 @@ protected:
     float rotation_;
     float rotationSpeed_;
 private:
-    void setup_model_plain(const std::string &type);
-    void setup_model_normals();
-    void setup_model_normals_tangent();
-    void setup_model_height();
+    bool setup_model_plain(const std::string &type);
+    bool setup_model_normals();
+    bool setup_model_normals_tangent();
+    bool setup_model_height();
 };
 
 class SceneEffect2D : public Scene
@@ -414,7 +417,7 @@ public:
     SceneEffect2D(Canvas &pCanvas);
     bool load();
     void unload();
-    void setup();
+    bool setup();
     void teardown();
     void update();
     void draw();
@@ -435,7 +438,7 @@ public:
     ScenePulsar(Canvas &pCanvas);
     bool load();
     void unload();
-    void setup();
+    bool setup();
     void teardown();
     void update();
     void draw();
@@ -464,7 +467,7 @@ public:
     SceneDesktop(Canvas &canvas);
     bool load();
     void unload();
-    void setup();
+    bool setup();
     void teardown();
     void update();
     void draw();
@@ -485,7 +488,7 @@ public:
     bool supported(bool show_errors);
     bool load();
     void unload();
-    void setup();
+    bool setup();
     void teardown();
     void update();
     void draw();
@@ -505,7 +508,7 @@ public:
     SceneIdeas(Canvas &pCanvas);
     bool load();
     void unload();
-    void setup();
+    bool setup();
     void teardown();
     void update();
     void draw();
@@ -526,7 +529,7 @@ public:
     bool supported(bool show_errors);
     bool load();
     void unload();
-    void setup();
+    bool setup();
     void teardown();
     void update();
     void draw();
@@ -547,7 +550,7 @@ public:
     ~SceneJellyfish();
     bool load();
     void unload();
-    void setup();
+    bool setup();
     void teardown();
     void update();
     void draw();

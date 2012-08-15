@@ -80,12 +80,13 @@ SceneBuild::unload()
     mesh_.reset();
 }
 
-void
+bool
 SceneBuild::setup()
 {
     using LibMatrix::vec3;
 
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
 
     /* Set up shaders */
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
@@ -102,7 +103,7 @@ SceneBuild::setup()
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
-        return;
+        return false;
     }
 
     Model model;
@@ -110,7 +111,7 @@ SceneBuild::setup()
     bool modelLoaded = model.load(whichModel);
 
     if(!modelLoaded)
-        return;
+        return false;
 
     // Now that we're successfully loaded, there are a few quirks about
     // some of the known models that we need to account for.  The draw
@@ -187,6 +188,8 @@ SceneBuild::setup()
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 void

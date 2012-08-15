@@ -116,10 +116,11 @@ get_fragment_shader_source(int steps, bool function, std::string &complexity)
     return source.str();
 }
 
-void
+bool
 SceneFunction::setup()
 {
-    SceneGrid::setup();
+    if (!SceneGrid::setup())
+        return false;
 
     /* Parse options */
     bool vtx_function = options_["vertex-function"].value == "true";
@@ -136,7 +137,7 @@ SceneFunction::setup()
                                                       frg_complexity));
 
     if (!Scene::load_shaders_from_strings(program_, vtx_shader, frg_shader))
-        return;
+        return false;
 
     program_.start();
 
@@ -147,6 +148,8 @@ SceneFunction::setup()
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 Scene::ValidationResult
