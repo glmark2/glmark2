@@ -74,6 +74,15 @@ public:
     };
 
     /**
+     * Checks whether this scene (in its current configuration) is supported.
+     *
+     * @param show_errors whether to log errors about unsupported features
+     *
+     * @return whether the scene is supported
+     */
+    virtual bool supported(bool show_errors);
+
+    /**
      * Performs option-independent resource loading and configuration.
      *
      * It should be safe to call ::load() (and the corresponding ::unload())
@@ -473,6 +482,7 @@ class SceneBuffer : public Scene
 {
 public:
     SceneBuffer(Canvas &canvas);
+    bool supported(bool show_errors);
     bool load();
     void unload();
     void setup();
@@ -513,6 +523,7 @@ class SceneTerrain : public Scene
 {
 public:
     SceneTerrain(Canvas &pCanvas);
+    bool supported(bool show_errors);
     bool load();
     void unload();
     void setup();

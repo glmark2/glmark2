@@ -76,6 +76,13 @@ Scene::~Scene()
 }
 
 bool
+Scene::supported(bool show_errors)
+{
+    static_cast<void>(show_errors);
+    return true;
+}
+
+bool
 Scene::load()
 {
     return true;
