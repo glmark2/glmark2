@@ -42,6 +42,7 @@ void
 MainLoop::reset()
 {
     scene_ = 0;
+    scene_setup_status_ = SceneSetupStatusUnknown;
     score_ = 0;
     benchmarks_run_ = 0;
     bench_iter_ = benchmarks_.begin();
@@ -83,6 +84,15 @@ MainLoop::step()
                 canvas_.reset();
             before_scene_setup();
             scene_ = &(*bench_iter_)->setup_scene();
+            if (!scene_->running()) {
+                if (!scene_->supported(false))
+                    scene_setup_status_ = SceneSetupStatusUnsupported;
+                else
+                    scene_setup_status_ = SceneSetupStatusFailure;
+            }
+            else {
+                scene_setup_status_ = SceneSetupStatusSuccess;
+            }
             after_scene_setup();
             log_scene_info();
         }
@@ -102,12 +112,14 @@ MainLoop::step()
      * in draw() may have changed the state.
      */
     if (!scene_->running() || should_quit) {
-        score_ += scene_->average_fps();
+        if (scene_setup_status_ == SceneSetupStatusSuccess) {
+            score_ += scene_->average_fps();
+            benchmarks_run_++;
+        }
         log_scene_result();
         (*bench_iter_)->teardown_scene();
         scene_ = 0;
         next_benchmark();
-        benchmarks_run_++;
     }
 
     return !should_quit;
