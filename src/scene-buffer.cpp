@@ -327,6 +327,22 @@ SceneBuffer::~SceneBuffer()
 }
 
 bool
+SceneBuffer::supported(bool show_errors)
+{
+    if (options_["update-method"].value != "subdata" &&
+        (GLExtensions::MapBuffer == 0 || GLExtensions::UnmapBuffer == 0))
+    {
+        if (show_errors) {
+            Log::error("Requested MapBuffer VBO update method but GL_OES_mapbuffer"
+                       " is not supported!\n");
+        }
+        return false;
+    }
+
+    return true;
+}
+
+bool
 SceneBuffer::load()
 {
     running_ = false;
@@ -339,14 +355,14 @@ SceneBuffer::unload()
 {
 }
 
-void
+bool
 SceneBuffer::setup()
 {
     using LibMatrix::vec3;
 
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
 
-    bool should_run = true;
     bool interleave = (options_["interleave"].value == "true");
     Mesh::VBOUpdateMethod update_method;
     Mesh::VBOUsage usage;
@@ -374,13 +390,6 @@ SceneBuffer::setup()
     nlength = Util::fromString<size_t>(options_["columns"].value);
     nwidth = Util::fromString<size_t>(options_["rows"].value);
 
-    if (update_method == Mesh::VBOUpdateMethodMap &&
-        (GLExtensions::MapBuffer == 0 || GLExtensions::UnmapBuffer == 0))
-    {
-        Log::error("Requested MapBuffer VBO update method but GL_OES_mapbuffer"
-                   " is not supported!\n");
-        should_run = false;
-    }
 
     priv_->wave = new WaveMesh(5.0, 2.0, nlength, nwidth,
                                update_fraction * (1.0 - update_dispersion + 0.0001),
@@ -397,9 +406,11 @@ SceneBuffer::setup()
     glDisable(GL_CULL_FACE);
 
     currentFrame_ = 0;
-    running_ = should_run;
+    running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 void

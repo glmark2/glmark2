@@ -792,10 +792,11 @@ SceneDesktop::unload()
 {
 }
 
-void
+bool
 SceneDesktop::setup()
 {
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
 
     /* Parse the options */
     unsigned int windows(0);
@@ -868,6 +869,8 @@ SceneDesktop::setup()
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 void

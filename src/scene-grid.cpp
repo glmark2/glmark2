@@ -53,10 +53,11 @@ SceneGrid::unload()
 {
 }
 
-void
+bool
 SceneGrid::setup()
 {
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
 
     int grid_size(Util::fromString<int>(options_["grid-size"].value));
     double grid_length(Util::fromString<double>(options_["grid-length"].value));
@@ -78,6 +79,8 @@ SceneGrid::setup()
 
     currentFrame_ = 0;
     rotation_ = 0.0f;
+
+    return true;
 }
 
 void

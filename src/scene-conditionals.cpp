@@ -89,10 +89,11 @@ get_fragment_shader_source(int steps, bool conditionals)
     return source.str();
 }
 
-void
+bool
 SceneConditionals::setup()
 {
-    SceneGrid::setup();
+    if (!SceneGrid::setup())
+        return false;
 
     /* Parse options */
     bool vtx_conditionals = options_["vertex-conditionals"].value == "true";
@@ -104,7 +105,7 @@ SceneConditionals::setup()
     std::string frg_shader(get_fragment_shader_source(frg_steps, frg_conditionals));
 
     if (!Scene::load_shaders_from_strings(program_, vtx_shader, frg_shader))
-        return;
+        return false;
 
     program_.start();
 
@@ -115,6 +116,8 @@ SceneConditionals::setup()
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 Scene::ValidationResult

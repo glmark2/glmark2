@@ -110,10 +110,11 @@ get_vertex_shader_source(int steps, bool loop, bool uniform)
 }
 
 
-void
+bool
 SceneLoop::setup()
 {
-    SceneGrid::setup();
+    if (!SceneGrid::setup())
+        return false;
 
     /* Parse options */
     bool vtx_loop = options_["vertex-loop"].value == "true";
@@ -130,7 +131,7 @@ SceneLoop::setup()
                                                       frg_uniform));
 
     if (!Scene::load_shaders_from_strings(program_, vtx_shader, frg_shader))
-        return;
+        return false;
 
     program_.start();
 
@@ -144,6 +145,8 @@ SceneLoop::setup()
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 Scene::ValidationResult

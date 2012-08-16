@@ -295,10 +295,11 @@ SceneEffect2D::unload()
     glDeleteTextures(1, &texture_);
 }
 
-void
+bool
 SceneEffect2D::setup()
 {
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
 
     Texture::find_textures();
 
@@ -312,7 +313,7 @@ SceneEffect2D::setup()
     if (!parse_matrix(options_["kernel"].value, kernel,
                       kernel_width, kernel_height))
     {
-        return;
+        return false;
     }
 
     /* Normalize the kernel matrix if needed */
@@ -330,12 +331,12 @@ SceneEffect2D::setup()
                                                          kernel_height));
 
     if (frg_source.str().empty())
-        return;
+        return false;
 
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
-        return;
+        return false;
     }
 
     std::vector<int> vertex_format;
@@ -358,6 +359,8 @@ SceneEffect2D::setup()
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 void

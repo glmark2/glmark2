@@ -231,6 +231,21 @@ SceneTerrain::~SceneTerrain()
 }
 
 bool
+SceneTerrain::supported(bool show_errors)
+{
+    GLint vertex_textures;
+    glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &vertex_textures);
+
+    if (show_errors && vertex_textures <= 0) {
+        Log::error("SceneTerrain requires Vertex Texture Fetch support, "
+                   "but GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS is %d\n",
+                   vertex_textures);
+    }
+    
+    return vertex_textures > 0;
+}
+
+bool
 SceneTerrain::load()
 {
     Scene::load();
@@ -246,23 +261,11 @@ SceneTerrain::unload()
     Scene::unload();
 }
 
-void
+bool
 SceneTerrain::setup()
 {
-    Scene::setup();
-
-    /* Ensure implementation supports vertex texture fetch */
-    GLint vertex_textures;
-    glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &vertex_textures);
-    if (vertex_textures <= 0) {
-        Log::error("SceneTerrain requires Vertex Texture Fetch support, "
-                   "but GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS is %d\n",
-                   vertex_textures);
-        currentFrame_ = 0;
-        startTime_ = Util::get_timestamp_us() / 1000000.0;
-        running_ = false;
-        return;
-    }
+    if (!Scene::setup())
+        return false;
 
     /* Parse options */
     float repeat = Util::fromString<double>(options_["repeat-overlay"].value);
@@ -313,6 +316,8 @@ SceneTerrain::setup()
     currentFrame_ = 0;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     running_ = true;
+
+    return true;
 }
 
 void

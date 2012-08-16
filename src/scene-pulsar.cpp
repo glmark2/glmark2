@@ -73,10 +73,11 @@ ScenePulsar::unload()
 {
 }
 
-void
+bool
 ScenePulsar::setup()
 {
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
 
     // Disable back-face culling
     glDisable(GL_CULL_FACE);
@@ -119,8 +120,8 @@ ScenePulsar::setup()
     if (options_["texture"].value == "true") {
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic-tex.frag";
         Texture::find_textures();
-        Texture::load("crate-base", &texture_,
-                      GL_NEAREST, GL_NEAREST, 0);
+        if (!Texture::load("crate-base", &texture_, GL_NEAREST, GL_NEAREST, 0))
+            return false;
 
     } else {
         frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.frag";
@@ -136,7 +137,7 @@ ScenePulsar::setup()
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
-        return;
+        return false;
     }
 
     create_and_setup_mesh();
@@ -148,6 +149,8 @@ ScenePulsar::setup()
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 void

@@ -58,7 +58,7 @@ SceneBump::unload()
 {
 }
 
-void
+bool
 SceneBump::setup_model_plain(const std::string &type)
 {
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-poly.vert");
@@ -78,7 +78,7 @@ SceneBump::setup_model_plain(const std::string &type)
                                 high_poly_filename : low_poly_filename;
 
     if(!model.load(poly_filename))
-        return;
+        return false;
 
     model.calculate_normals();
 
@@ -100,16 +100,18 @@ SceneBump::setup_model_plain(const std::string &type)
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
-        return;
+        return false;
     }
 
     std::vector<GLint> attrib_locations;
     attrib_locations.push_back(program_["position"].location());
     attrib_locations.push_back(program_["normal"].location());
     mesh_.set_attrib_locations(attrib_locations);
+
+    return true;
 }
 
-void
+bool
 SceneBump::setup_model_normals()
 {
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals.vert");
@@ -118,7 +120,7 @@ SceneBump::setup_model_normals()
     Model model;
 
     if(!model.load("asteroid-low"))
-        return;
+        return false;
 
     /* Calculate the half vector */
     LibMatrix::vec3 halfVector(lightPosition.x(), lightPosition.y(), lightPosition.z());
@@ -147,7 +149,7 @@ SceneBump::setup_model_normals()
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
-        return;
+        return false;
     }
 
     std::vector<GLint> attrib_locations;
@@ -155,11 +157,16 @@ SceneBump::setup_model_normals()
     attrib_locations.push_back(program_["texcoord"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    Texture::load("asteroid-normal-map", &texture_,
-                  GL_NEAREST, GL_NEAREST, 0);
+    if (!Texture::load("asteroid-normal-map", &texture_,
+                       GL_NEAREST, GL_NEAREST, 0))
+    {
+        return false;
+    }
+
+    return true;
 }
 
-void
+bool
 SceneBump::setup_model_normals_tangent()
 {
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals-tangent.vert");
@@ -168,7 +175,7 @@ SceneBump::setup_model_normals_tangent()
     Model model;
 
     if(!model.load("asteroid-low"))
-        return;
+        return false;
 
     model.calculate_normals();
 
@@ -197,7 +204,7 @@ SceneBump::setup_model_normals_tangent()
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
-        return;
+        return false;
     }
 
     std::vector<GLint> attrib_locations;
@@ -207,11 +214,16 @@ SceneBump::setup_model_normals_tangent()
     attrib_locations.push_back(program_["tangent"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    Texture::load("asteroid-normal-map-tangent", &texture_,
-                  GL_NEAREST, GL_NEAREST, 0);
+    if (!Texture::load("asteroid-normal-map-tangent", &texture_,
+                       GL_NEAREST, GL_NEAREST, 0))
+    {
+        return false;
+    }
+
+    return true;
 }
 
-void
+bool
 SceneBump::setup_model_height()
 {
     static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-height.vert");
@@ -220,7 +232,7 @@ SceneBump::setup_model_height()
     Model model;
 
     if(!model.load("asteroid-low"))
-        return;
+        return false;
 
     model.calculate_normals();
 
@@ -251,7 +263,7 @@ SceneBump::setup_model_height()
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))
     {
-        return;
+        return false;
     }
 
     std::vector<GLint> attrib_locations;
@@ -261,27 +273,38 @@ SceneBump::setup_model_height()
     attrib_locations.push_back(program_["tangent"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    Texture::load("asteroid-height-map", &texture_,
-                  GL_NEAREST, GL_NEAREST, 0);
+    if (!Texture::load("asteroid-height-map", &texture_,
+                       GL_NEAREST, GL_NEAREST, 0))
+    {
+        return false;
+    }
+
+    return true;
 }
 
-void
+bool
 SceneBump::setup()
 {
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
 
     const std::string &bump_render = options_["bump-render"].value;
     Texture::find_textures();
     Model::find_models();
-    if (bump_render == "normals")
-        setup_model_normals();
-    else if (bump_render == "normals-tangent")
-        setup_model_normals_tangent();
-    else if (bump_render == "height")
-        setup_model_height();
-    else if (bump_render == "off" || bump_render == "high-poly")
-        setup_model_plain(bump_render);
 
+    bool setup_succeeded = false;
+
+    if (bump_render == "normals")
+        setup_succeeded = setup_model_normals();
+    else if (bump_render == "normals-tangent")
+        setup_succeeded = setup_model_normals_tangent();
+    else if (bump_render == "height")
+        setup_succeeded = setup_model_height();
+    else if (bump_render == "off" || bump_render == "high-poly")
+        setup_succeeded = setup_model_plain(bump_render);
+
+    if (!setup_succeeded)
+        return false;
 
     mesh_.build_vbo();
 
@@ -296,6 +319,8 @@ SceneBump::setup()
     running_ = true;
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 void

@@ -48,7 +48,7 @@ public:
         vertices_.clear();
         uvs_.clear();
     }
-    void init();
+    bool init();
     void cleanup();
     void draw();
 };
@@ -114,7 +114,7 @@ class JellyfishPrivate
 public:
     JellyfishPrivate();
     ~JellyfishPrivate();
-    void initialize();
+    bool initialize();
     void update_viewport(const LibMatrix::vec2& viewport);
     void update_time();
     void cleanup();

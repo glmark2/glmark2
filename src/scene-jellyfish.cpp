@@ -54,20 +54,24 @@ SceneJellyfish::unload()
 {
 }
 
-void
+bool
 SceneJellyfish::setup()
 {
-    Scene::setup();
+    if (!Scene::setup())
+        return false;
 
     // Set up our private object that does all of the lifting
     priv_ = new JellyfishPrivate();
-    priv_->initialize();
+    if (!priv_->initialize())
+        return false;
 
     // Set core scene timing after actual initialization so we don't measure
     // set up time.
     startTime_ = Util::get_timestamp_us() / 1000000.0;
     lastUpdateTime_ = startTime_;
     running_ = true;
+
+    return true;
 }
 
 void
@@ -107,7 +111,7 @@ using LibMatrix::vec2;
 using std::string;
 using std::vector;
 
-void
+bool
 GradientRenderer::init()
 {
     // Program set up
@@ -118,7 +122,7 @@ GradientRenderer::init()
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
         frg_source.str()))
     {
-        return;
+        return false;
     }
     positionLocation_ = program_["position"].location();
     uvLocation_ = program_["uvIn"].location();
@@ -144,6 +148,8 @@ GradientRenderer::init()
     glBufferSubData(GL_ARRAY_BUFFER, uvOffset_, uvs_.size() * sizeof(vec2),
                     &uvs_.front());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    return true;
 }
 
 void
@@ -355,10 +361,24 @@ JellyfishPrivate::JellyfishPrivate() :
     blendFuncSrc_(0),
     blendFuncDst_(0)
 {
+}
+
+JellyfishPrivate::~JellyfishPrivate()
+{
+    positions_.clear();
+    normals_.clear();
+    colors_.clear();
+    texcoords_.clear();
+    indices_.clear();
+}
+
+bool
+JellyfishPrivate::initialize()
+{
     static const string modelFilename(GLMARK_DATA_PATH"/models/jellyfish.jobj");
     if (!load_obj(modelFilename))
     {
-        return;
+        return false;
     }
 
     // Now that we've setup the vertex data, we can setup the map of how
@@ -376,26 +396,16 @@ JellyfishPrivate::JellyfishPrivate() :
     dataMap_.texcoordOffset = dataMap_.colorOffset + dataMap_.colorSize;
     dataMap_.texcoordSize = texcoords_.size() * sv3;
     dataMap_.totalSize += dataMap_.texcoordSize;
-}
 
-JellyfishPrivate::~JellyfishPrivate()
-{
-    positions_.clear();
-    normals_.clear();
-    colors_.clear();
-    texcoords_.clear();
-    indices_.clear();
-}
-
-void
-JellyfishPrivate::initialize()
-{
     lastUpdateTime_ = Util::get_timestamp_us() / 1000.0;
     currentTime_ = static_cast<uint64_t>(lastUpdateTime_) % 100000000 / 1000.0;
     whichCaustic_ = static_cast<uint64_t>(currentTime_ * 30) % 32 + 1;
     rotation_ = 0.0;
 
-    gradient_.init();
+    if (!gradient_.init())
+    {
+        return false;
+    }
 
     // Set up program first so we can store attribute and uniform locations
     // away for the 
@@ -409,7 +419,7 @@ JellyfishPrivate::initialize()
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
         frg_source.str()))
     {
-        return;
+        return false;
     }
 
     // Stash away attribute and uniform locations for handy use.
@@ -452,6 +462,7 @@ JellyfishPrivate::initialize()
     if (!gotTex || textureObjects_[0] == 0)
     {
         Log::error("Jellyfish texture set up failed!!!\n");
+        return false;
     }
     glBindTexture(GL_TEXTURE_2D, 0);
     // Then, the caustics textures
@@ -467,6 +478,7 @@ JellyfishPrivate::initialize()
         if (!gotTex || textureObjects_[i] == 0)
         {
             Log::error("Caustics texture[%u] set up failed!!!\n", i);
+            return false;
         }
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -484,6 +496,8 @@ JellyfishPrivate::initialize()
     glEnable(GL_BLEND);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
+
+    return true;
 }
 
 void

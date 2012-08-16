@@ -23,7 +23,7 @@
 #include "benchmark.h"
 #include "log.h"
 
-void
+bool
 SceneDefaultOptions::setup()
 {
     const std::map<std::string, Scene *> &scenes = Benchmark::scenes();
@@ -50,6 +50,8 @@ SceneDefaultOptions::setup()
             }
         }
     }
+
+    return true;
 }
 
 bool
