@@ -84,12 +84,19 @@ public:
     virtual void log_scene_result();
 
 protected:
+    enum SceneSetupStatus {
+        SceneSetupStatusUnknown,
+        SceneSetupStatusSuccess,
+        SceneSetupStatusFailure,
+        SceneSetupStatusUnsupported
+    };
     void next_benchmark();
     Canvas &canvas_;
     Scene *scene_;
     const std::vector<Benchmark *> &benchmarks_;
     unsigned int score_;
     unsigned int benchmarks_run_;
+    SceneSetupStatus scene_setup_status_;
 
     std::vector<Benchmark *>::const_iterator bench_iter_;
 };

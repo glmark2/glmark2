@@ -42,6 +42,7 @@ void
 MainLoop::reset()
 {
     scene_ = 0;
+    scene_setup_status_ = SceneSetupStatusUnknown;
     score_ = 0;
     benchmarks_run_ = 0;
     bench_iter_ = benchmarks_.begin();
@@ -83,6 +84,15 @@ MainLoop::step()
                 canvas_.reset();
             before_scene_setup();
             scene_ = &(*bench_iter_)->setup_scene();
+            if (!scene_->running()) {
+                if (!scene_->supported(false))
+                    scene_setup_status_ = SceneSetupStatusUnsupported;
+                else
+                    scene_setup_status_ = SceneSetupStatusFailure;
+            }
+            else {
+                scene_setup_status_ = SceneSetupStatusSuccess;
+            }
             after_scene_setup();
             log_scene_info();
         }
@@ -102,12 +112,14 @@ MainLoop::step()
      * in draw() may have changed the state.
      */
     if (!scene_->running() || should_quit) {
-        score_ += scene_->average_fps();
+        if (scene_setup_status_ == SceneSetupStatusSuccess) {
+            score_ += scene_->average_fps();
+            benchmarks_run_++;
+        }
         log_scene_result();
         (*bench_iter_)->teardown_scene();
         scene_ = 0;
         next_benchmark();
-        benchmarks_run_++;
     }
 
     return !should_quit;
@@ -134,11 +146,23 @@ MainLoop::log_scene_info()
 void
 MainLoop::log_scene_result()
 {
-    static const std::string format_fps(Log::continuation_prefix + " FPS: %u");
-    static const std::string format_ms(Log::continuation_prefix + " FrameTime: %.3f ms\n");
+    static const std::string format_fps(Log::continuation_prefix +
+                                        " FPS: %u FrameTime: %.3f ms\n");
+    static const std::string format_unsupported(Log::continuation_prefix +
+                                                " Unsupported\n");
+    static const std::string format_fail(Log::continuation_prefix +
+                                         " Set up failed\n");
 
-    Log::info(format_fps.c_str(), scene_->average_fps());
-    Log::info(format_ms.c_str(), 1000.0 / scene_->average_fps());
+    if (scene_setup_status_ == SceneSetupStatusSuccess) {
+        Log::info(format_fps.c_str(), scene_->average_fps(),
+                                      1000.0 / scene_->average_fps());
+    }
+    else if (scene_setup_status_ == SceneSetupStatusUnsupported) {
+        Log::info(format_unsupported.c_str());
+    }
+    else {
+        Log::info(format_fail.c_str());
+    }
 }
 
 void

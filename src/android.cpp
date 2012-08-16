@@ -49,10 +49,20 @@ public:
 
     virtual void log_scene_result()
     {
-        Log::info("%s FPS: %u FrameTime: %.3f ms\n",
-                  scene_->info_string().c_str(),
-                  scene_->average_fps(),
-                  1000.0 / scene_->average_fps());
+        if (scene_setup_status_ == SceneSetupStatusSuccess) {
+            Log::info("%s FPS: %u FrameTime: %.3f ms\n",
+                      scene_->info_string().c_str(),
+                      scene_->average_fps(),
+                      1000.0 / scene_->average_fps());
+        }
+        else if (scene_setup_status_ == SceneSetupStatusUnsupported) {
+            Log::info("%s Unsupported\n",
+                      scene_->info_string().c_str());
+        }
+        else {
+            Log::info("%s Set up failed\n",
+                      scene_->info_string().c_str());
+        }
     }
 };
 
@@ -66,8 +76,20 @@ public:
 
     virtual void log_scene_result()
     {
-        Log::info("%s FPS: %u", scene_->info_string().c_str(),
-                                scene_->average_fps());
+        if (scene_setup_status_ == SceneSetupStatusSuccess) {
+            Log::info("%s FPS: %u FrameTime: %.3f ms\n",
+                      scene_->info_string().c_str(),
+                      scene_->average_fps(),
+                      1000.0 / scene_->average_fps());
+        }
+        else if (scene_setup_status_ == SceneSetupStatusUnsupported) {
+            Log::info("%s Unsupported\n",
+                      scene_->info_string().c_str());
+        }
+        else {
+            Log::info("%s Set up failed\n",
+                      scene_->info_string().c_str());
+        }
     }
 };
 
