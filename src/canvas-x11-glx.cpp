@@ -28,6 +28,7 @@
 
 static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT_;
 static PFNGLXSWAPINTERVALMESAPROC glXSwapIntervalMESA_;
+static PFNGLXGETSWAPINTERVALMESAPROC glXGetSwapIntervalMESA_;
 
 /*********************
  * Protected methods *
@@ -60,11 +61,23 @@ CanvasX11GLX::make_current()
         return false;
     }
 
-    if ((!glXSwapIntervalEXT_ || glXSwapIntervalEXT_(xdpy_, xwin_, 0)) &&
-        (!glXSwapIntervalMESA_ || glXSwapIntervalMESA_(0)))
-    {
-        Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
+    unsigned int desired_swap(0);
+    unsigned int actual_swap(-1);
+    if (glXSwapIntervalEXT_) {
+        glXSwapIntervalEXT_(xdpy_, xwin_, desired_swap);
+        glXQueryDrawable(xdpy_, xwin_, GLX_SWAP_INTERVAL_EXT, &actual_swap);
+        if (actual_swap == desired_swap)
+            return true;
     }
+
+    if (glXSwapIntervalMESA_) {
+        glXSwapIntervalMESA_(desired_swap);
+        actual_swap = glXGetSwapIntervalMESA_();
+        if (actual_swap == desired_swap)
+            return true;
+    }
+
+    Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
 
     return true;
 }
@@ -129,6 +142,12 @@ CanvasX11GLX::init_extensions()
             reinterpret_cast<PFNGLXSWAPINTERVALMESAPROC>(
                 glXGetProcAddress(
                     reinterpret_cast<const GLubyte *>("glXSwapIntervalMESA")
+                )
+            );
+        glXGetSwapIntervalMESA_ =
+            reinterpret_cast<PFNGLXGETSWAPINTERVALMESAPROC>(
+                glXGetProcAddress(
+                    reinterpret_cast<const GLubyte *>("glXGetSwapIntervalMESA")
                 )
             );
     }
