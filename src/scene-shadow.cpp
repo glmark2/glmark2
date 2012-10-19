@@ -21,6 +21,9 @@
 //
 #include "scene.h"
 #include "util.h"
+#include "log.h"
+
+using std::string;
 
 class ShadowPrivate
 {
@@ -40,7 +43,19 @@ SceneShadow::~SceneShadow()
 bool
 SceneShadow::supported(bool show_errors)
 {
-    return show_errors;
+    static const string oes_depth_texture("GL_OES_depth_texture");
+    static const string arb_depth_texture("GL_ARB_depth_texture");
+    if (!GLExtensions::support(oes_depth_texture) &&
+        !GLExtensions::support(arb_depth_texture))
+    {
+        if (show_errors)
+        {
+            Log::error("We do not have the depth texture extension!!!\n");
+        }
+
+        return false;
+    }
+    return true;
 }
 
 bool
@@ -58,8 +73,11 @@ SceneShadow::unload()
 bool
 SceneShadow::setup()
 {
-    if (!Scene::setup())
+    // If the scene isn't supported, don't bother to go through setup.
+    if (!supported(false) || !Scene::setup())
+    {
         return false;
+    }
 
     priv_ = new ShadowPrivate();
     // Set core scene timing after actual initialization so we don't measure
