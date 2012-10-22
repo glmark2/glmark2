@@ -36,9 +36,120 @@ using LibMatrix::vec3;
 
 static const vec4 lightPosition(0.0f, 3.0f, 2.0f, 1.0f);
 
+//
+// To create a shadow map, we need a framebuffer object set up for a 
+// depth-only pass.  The render target can then be bound as a texture,
+// and the depth values sampled from that texture can be used in the
+// distance-from-light computations when rendering the shadow on the
+// ground below the rendered object.
+//
+class DepthRenderTarget
+{
+    Program program_;
+    unsigned int canvas_width_;
+    unsigned int canvas_height_;
+    unsigned int width_;
+    unsigned int height_;
+    unsigned int tex_;
+    unsigned int fbo_;
+public:
+    DepthRenderTarget() :
+        canvas_width_(0),
+        canvas_height_(0),
+        width_(0),
+        height_(0),
+        tex_(0),
+        fbo_(0) {}
+    ~DepthRenderTarget() {}
+    bool setup(unsigned int width, unsigned int height);
+    void teardown();
+    void enable(const mat4& mvp);
+    void disable();
+    unsigned int depthTexture() { return tex_; }
+    Program& program() { return program_; }
+};
+
+bool
+DepthRenderTarget::setup(unsigned int width, unsigned int height)
+{
+    canvas_width_ = width;
+    canvas_height_ = height;
+    width_ = canvas_width_ * 2;
+    height_ = canvas_height_ * 2;
+
+    static const string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/depth.vert");
+    static const string frg_shader_filename(GLMARK_DATA_PATH"/shaders/depth.frag");
+
+    ShaderSource vtx_source(vtx_shader_filename);
+    ShaderSource frg_source(frg_shader_filename);
+
+    if (!Scene::load_shaders_from_strings(program_, vtx_source.str(), frg_source.str())) {
+        return false;
+    }
+
+    glGenTextures(1, &tex_);
+    glBindTexture(GL_TEXTURE_2D, tex_);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width_, height_, 0,
+                 GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glGenFramebuffers(1, &fbo_);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+                           tex_, 0);
+    unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        Log::error("DepthRenderState::setup: glCheckFramebufferStatus failed (0x%x)\n", status);
+        return false;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return true;
+}
+
+void
+DepthRenderTarget::teardown()
+{
+    program_.stop();
+    program_.release();
+    if (tex_) {
+        glDeleteTextures(1, &tex_);
+        tex_ = 0;
+    }
+    if (fbo_) {
+        glDeleteFramebuffers(1, &fbo_);
+        fbo_ = 0;
+    }
+}
+
+void
+DepthRenderTarget::enable(const mat4& mvp)
+{
+    program_.start();
+    program_["ModelViewProjectionMatrix"] = mvp;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+                           tex_, 0);
+    glViewport(0, 0, width_, height_);
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void DepthRenderTarget::disable()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, canvas_width_, canvas_height_);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+}
+
 class ShadowPrivate
 {
     Canvas& canvas_;
+    DepthRenderTarget depthTarget_;
     Program program_;
     Stack4 modelview_;
     Stack4 projection_;
@@ -125,6 +236,11 @@ ShadowPrivate::setup(map<string, Scene::Option>& options)
     float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
     projection_.perspective(fovy, aspect, 2.0, 2.0 + diameter);
 
+    if (!depthTarget_.setup(canvas_.width(), canvas_.height())) {
+        Log::error("Failed to set up the render target for the depth pass\n");
+        return false;
+    }
+
     return true;
 }
 
@@ -132,6 +248,7 @@ ShadowPrivate::setup(map<string, Scene::Option>& options)
 void
 ShadowPrivate::teardown()
 {
+    depthTarget_.teardown();
     program_.stop();
     program_.release();
     mesh_.reset();
@@ -146,11 +263,40 @@ ShadowPrivate::update(double elapsedTime)
 void
 ShadowPrivate::draw()
 {
+    // To perform the depth pass, set up the model-view transformation so
+    // that we're looking at the horse from the light position.  That will
+    // give us the appropriate view for the shadow.
+    modelview_.push();
+    modelview_.loadIdentity();
+    modelview_.lookAt(lightPosition.x(), lightPosition.y(), lightPosition.z(),
+                      0.0, 0.0, 0.0,
+                      0.0, 1.0, 0.0);
+    modelview_.rotate(rotation_, 0.0f, 1.0f, 0.0f);
+    mat4 mvp(projection_.getCurrent());
+    mvp *= modelview_.getCurrent();
+    modelview_.pop();
+
+    // Enable the depth render target with our transformation and render.
+    depthTarget_.enable(mvp);
+    vector<GLint> attrib_locations;
+    attrib_locations.push_back(depthTarget_.program()["position"].location());
+    attrib_locations.push_back(depthTarget_.program()["normal"].location());
+    mesh_.set_attrib_locations(attrib_locations);
+    if (useVbo_) {
+        mesh_.render_vbo();
+    }
+    else {
+        mesh_.render_array();
+    }
+    depthTarget_.disable();
+
+    // TODO: Ground rendering using the above generated texture...
+
     // Draw the "normal" view of the horse
     modelview_.push();
     modelview_.translate(-centerVec_.x(), -centerVec_.y(), -(centerVec_.z() + 2.0 + radius_));
     modelview_.rotate(rotation_, 0.0f, 1.0f, 0.0f);
-    mat4 mvp(projection_.getCurrent());
+    mvp = projection_.getCurrent();
     mvp *= modelview_.getCurrent();
 
     program_.start();
@@ -161,7 +307,7 @@ ShadowPrivate::draw()
     LibMatrix::mat4 normal_matrix(modelview_.getCurrent());
     normal_matrix.inverse().transpose();
     program_["NormalMatrix"] = normal_matrix;
-    vector<GLint> attrib_locations;
+    attrib_locations.clear();
     attrib_locations.push_back(program_["position"].location());
     attrib_locations.push_back(program_["normal"].location());
     mesh_.set_attrib_locations(attrib_locations);
