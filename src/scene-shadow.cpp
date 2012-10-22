@@ -33,6 +33,7 @@ using LibMatrix::Stack4;
 using LibMatrix::mat4;
 using LibMatrix::vec4;
 using LibMatrix::vec3;
+using LibMatrix::vec2;
 
 static const vec4 lightPosition(0.0f, 3.0f, 2.0f, 1.0f);
 
@@ -65,7 +66,7 @@ public:
     void teardown();
     void enable(const mat4& mvp);
     void disable();
-    unsigned int depthTexture() { return tex_; }
+    unsigned int texture() { return tex_; }
     Program& program() { return program_; }
 };
 
@@ -146,10 +147,130 @@ void DepthRenderTarget::disable()
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
+//
+// The actual shadow pass is really just a quad projected into the scene
+// with the horse's shadow cast upon it.  In the vertex stage, we compute
+// a texture coordinate for the depth texture look-up by transforming the
+// current vertex position using a matrix describing the light's view point.
+// In the fragment stage, that coordinate is perspective corrected, and
+// used to sample the depth texture.  If the depth value for that fragment
+// (effectively the distance from the light to the object at that point)
+// is less than the Z component of that coordinate (effectively the distance
+// from the light to the ground at that point) then that location is in shadow.
+//
+class GroundRenderer
+{
+    Program program_;
+    Stack4 light_;
+    Stack4 modelview_;
+    mat4 projection_;
+    int positionLocation_;
+    unsigned int bufferObject_;
+    unsigned int texture_;
+    vector<vec2> vertices_;
+    vector<vec2> texcoords_;
+    
+public:
+    GroundRenderer() :
+        positionLocation_(0),
+        bufferObject_(0) {}
+    ~GroundRenderer() {}
+    bool setup(const mat4& projection, unsigned int texture);
+    void teardown();
+    void draw();
+};
+
+bool
+GroundRenderer::setup(const mat4& projection, unsigned int texture)
+{
+    projection_ = projection;
+    texture_ = texture;
+
+    // Program set up
+    static const vec4 materialDiffuse(0.3f, 0.3f, 0.3f, 1.0f);
+    static const string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/shadow.vert");
+    static const string frg_shader_filename(GLMARK_DATA_PATH"/shaders/shadow.frag");
+    ShaderSource vtx_source(vtx_shader_filename);
+    ShaderSource frg_source(frg_shader_filename);
+
+    vtx_source.add_const("MaterialDiffuse", materialDiffuse);
+
+    if (!Scene::load_shaders_from_strings(program_, vtx_source.str(), frg_source.str())) {
+        return false;
+    }
+    positionLocation_ = program_["position"].location();
+
+    // Set up the position data for our "quad".
+    vertices_.push_back(vec2(-1.0, -1.0));
+    vertices_.push_back(vec2(1.0, -1.0));
+    vertices_.push_back(vec2(-1.0, 1.0));
+    vertices_.push_back(vec2(1.0, 1.0));
+
+    // Set up the VBO and stash our position data in it.
+    glGenBuffers(1, &bufferObject_);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferObject_);
+    glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(vec2),
+                 &vertices_.front(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // Initialize the light stack with a bias matrix that will convert
+    // values in the range of [-1, 1] to [0, 1)].
+    light_.translate(0.5, 0.5, 0.5);
+    light_.scale(0.5, 0.5, 0.5);
+    light_ *= projection_;
+    light_.lookAt(lightPosition.x(), lightPosition.y(), lightPosition.z(),
+                  0.0, 0.0, 0.0,
+                  0.0, 1.0, 0.0);
+
+    return true;
+}
+
+void
+GroundRenderer::teardown()
+{
+    program_.stop();
+    program_.release();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glDeleteBuffers(1, &bufferObject_);
+    bufferObject_ = 0;
+    texture_= 0;
+    vertices_.clear();
+}
+
+void
+GroundRenderer::draw()
+{
+    // Need to add uniforms for the shadow texture, and transformation to
+    // "lay the quad down".
+    modelview_.push();
+    modelview_.translate(projection_[0][3], projection_[1][3] - 0.8, projection_[2][3] - 0.5);
+    modelview_.rotate(-85.0, 1.0, 0.0, 0.0);
+    modelview_.scale(2.0, 2.0, 2.0);
+    mat4 mvp(projection_);
+    mvp *= modelview_.getCurrent();
+
+    glBindBuffer(GL_ARRAY_BUFFER, bufferObject_);
+    program_.start();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture_);
+    program_["ShadowMap"] = 0;
+    program_["LightMatrix"] = light_.getCurrent();
+    program_["ModelViewProjectionMatrix"] = mvp;
+
+    glEnableVertexAttribArray(positionLocation_);
+    glVertexAttribPointer(positionLocation_, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDisableVertexAttribArray(positionLocation_);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    modelview_.pop();
+}
+
 class ShadowPrivate
 {
     Canvas& canvas_;
     DepthRenderTarget depthTarget_;
+    GroundRenderer ground_;
     Program program_;
     Stack4 modelview_;
     Stack4 projection_;
@@ -234,10 +355,15 @@ ShadowPrivate::setup(map<string, Scene::Option>& options)
     fovy /= M_PI;
     fovy *= 180.0;
     float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
-    projection_.perspective(fovy, aspect, 2.0, 2.0 + diameter);
+    projection_.perspective(fovy, aspect, 2.0, 50.0);
 
     if (!depthTarget_.setup(canvas_.width(), canvas_.height())) {
         Log::error("Failed to set up the render target for the depth pass\n");
+        return false;
+    }
+
+    if (!ground_.setup(projection_.getCurrent(), depthTarget_.texture())) {
+        Log::error("Failed to set up the ground renderer\n");
         return false;
     }
 
@@ -249,6 +375,7 @@ void
 ShadowPrivate::teardown()
 {
     depthTarget_.teardown();
+    ground_.teardown();
     program_.stop();
     program_.release();
     mesh_.reset();
@@ -290,7 +417,8 @@ ShadowPrivate::draw()
     }
     depthTarget_.disable();
 
-    // TODO: Ground rendering using the above generated texture...
+    // Ground rendering using the above generated texture...
+    ground_.draw();
 
     // Draw the "normal" view of the horse
     modelview_.push();
