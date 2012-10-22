@@ -161,7 +161,7 @@ void DepthRenderTarget::disable()
 class GroundRenderer
 {
     Program program_;
-    Stack4 light_;
+    mat4 light_;
     Stack4 modelview_;
     mat4 projection_;
     int positionLocation_;
@@ -213,14 +213,15 @@ GroundRenderer::setup(const mat4& projection, unsigned int texture)
                  &vertices_.front(), GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    // Initialize the light stack with a bias matrix that will convert
-    // values in the range of [-1, 1] to [0, 1)].
-    light_.translate(0.5, 0.5, 0.5);
-    light_.scale(0.5, 0.5, 0.5);
+    // Set up the light matrix with a bias that will convert values
+    // in the range of [-1, 1] to [0, 1)], then add in the projection
+    // and the "look at" matrix from the light position.
+    light_ *= LibMatrix::Mat4::translate(0.5, 0.5, 0.5);
+    light_ *= LibMatrix::Mat4::scale(0.5, 0.5, 0.5);
     light_ *= projection_;
-    light_.lookAt(lightPosition.x(), lightPosition.y(), lightPosition.z(),
-                  0.0, 0.0, 0.0,
-                  0.0, 1.0, 0.0);
+    light_ *= LibMatrix::Mat4::lookAt(lightPosition.x(), lightPosition.y(), lightPosition.z(),
+                                      0.0, 0.0, 0.0,
+                                      0.0, 1.0, 0.0);
 
     return true;
 }
@@ -254,7 +255,7 @@ GroundRenderer::draw()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture_);
     program_["ShadowMap"] = 0;
-    program_["LightMatrix"] = light_.getCurrent();
+    program_["LightMatrix"] = light_;
     program_["ModelViewProjectionMatrix"] = mvp;
 
     glEnableVertexAttribArray(positionLocation_);
