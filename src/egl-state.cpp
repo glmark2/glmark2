@@ -25,6 +25,7 @@
 #include "limits.h"
 #include <iomanip>
 #include <sstream>
+#include <X11/X.h> // for the Native visual type definitions
 
 using std::vector;
 using std::string;
@@ -184,24 +185,27 @@ void
 EglConfig::print() const
 {
     std::ostringstream s;
-    s << std::setw(5) << "0x" << std::hex << configID_;
-    s << "  " << std::dec << bufferSize_ << "  ";
+    s.setf(std::ios::showbase);
+    s.fill(' ');
+    s << std::setw(7) << std::hex << configID_;
+    s << std::setw(4) << std::dec << bufferSize_;
     if (bufferType_ == EGL_RGB_BUFFER)
     {
-        s << "rgb";
-        s << "  " << redSize_;
-        s << "  " << greenSize_;
-        s << "  " << blueSize_;
+        s << std::setw(5) << "rgb";
+        s << std::setw(3) << redSize_;
+        s << std::setw(3) << greenSize_;
+        s << std::setw(3) << blueSize_;
     }
     else
     {
-        s << "lum";
-        s << "  " << luminanceSize_;
-        s << "          ";
+        s << std::setw(5) << "lum";
+        s << std::setw(3) << luminanceSize_;
+        s << std::setw(3) << 0;
+        s << std::setw(3) << 0;
     }
-    s << "  " << alphaSize_;
-    s << "  " << std::setw(2) << depthSize_;
-    s << " " << std::setw(2) << stencilSize_;
+    s << std::setw(3) << alphaSize_;
+    s << std::setw(4) << depthSize_;
+    s << std::setw(3) << stencilSize_;
     string caveat("None");
     switch (caveat_)
     {
@@ -215,7 +219,7 @@ EglConfig::print() const
             // Initialized to none.
             break;
     }
-    s << "   " << caveat;
+    s << std::setw(7) << caveat;
     string doNative(nativeRenderable_ ? "true" : "false");
     s << std::setw(7) << doNative;
     string visType("tc");
@@ -230,17 +234,18 @@ EglConfig::print() const
             visType = string("ci");
             break;
         case TrueColor:
+        case EGL_NONE:
             // Initialized to TrueColor
             break;
         case DirectColor:
             visType = string("dc");
             break;
     }
-    s << " " << std::setw(2) << visType;
-    s << std::setw(3) << "0x" << std::hex << nativeID_;
-    s << std::setw(5) << "0x" << std::hex << surfaceType_;
-    s << std::dec << std::setw(4) << sampleBuffers_;
-    s << std::dec << std::setw(3) << samples_;
+    s << std::setw(3) << visType;
+    s << std::setw(5) << std::hex << nativeID_;
+    s << std::setw(8) << std::hex << surfaceType_;
+    s << std::setw(4) << std::dec << sampleBuffers_;
+    s << std::setw(3) << std::dec << samples_;
     Log::debug("%s\n", s.str().c_str());
 }
 
