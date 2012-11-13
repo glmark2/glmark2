@@ -70,6 +70,9 @@ CanvasX11::init()
     if (!xdpy_)
         return false;
 
+    if (!init_gl_winsys())
+        return false;
+
     resize_no_viewport(width_, height_);
 
     if (!xwin_)
