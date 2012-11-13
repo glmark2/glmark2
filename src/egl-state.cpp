@@ -1,0 +1,550 @@
+//
+// Copyright © 2012 Linaro Limited
+//
+// This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
+//
+// glmark2 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// glmark2 is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+// details.
+//
+// You should have received a copy of the GNU General Public License along with
+// glmark2.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Authors:
+//  Jesse Barker
+//
+#include "egl-state.h"
+#include "log.h"
+#include "options.h"
+#include "limits.h"
+#include <iomanip>
+#include <sstream>
+
+using std::vector;
+using std::string;
+
+EglConfig::EglConfig(EGLDisplay dpy, EGLConfig config) :
+    handle_(config),
+    bufferSize_(0),
+    redSize_(0),
+    greenSize_(0),
+    blueSize_(0),
+    luminanceSize_(0),
+    alphaSize_(0),
+    alphaMaskSize_(0),
+    bufferType_(EGL_RGB_BUFFER),
+    caveat_(0),
+    configID_(0),
+    depthSize_(0),
+    nativeID_(0),
+    nativeType_(0),
+    nativeRenderable_(false),
+    sampleBuffers_(0),
+    samples_(0),
+    stencilSize_(0),
+    surfaceType_(0),
+    xparentType_(0),
+    xparentRedValue_(0),
+    xparentGreenValue_(0),
+    xparentBlueValue_(0)
+{
+    vector<string> badAttribVec;
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_CONFIG_ID, &configID_))
+    {
+        badAttribVec.push_back("EGL_CONFIG_ID");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_CONFIG_CAVEAT, &caveat_))
+    {
+        badAttribVec.push_back("EGL_CONFIG_CAVEAT");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_COLOR_BUFFER_TYPE, &bufferType_))
+    {
+        badAttribVec.push_back("EGL_COLOR_BUFFER_TYPE");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_BUFFER_SIZE, &bufferSize_))
+    {
+        badAttribVec.push_back("EGL_BUFFER_SIZE");
+    }
+
+    if (bufferType_ == EGL_RGB_BUFFER)
+    {
+        if (!eglGetConfigAttrib(dpy, handle_, EGL_RED_SIZE, &redSize_))
+        {
+            badAttribVec.push_back("EGL_RED_SIZE");
+        }
+        if (!eglGetConfigAttrib(dpy, handle_, EGL_GREEN_SIZE, &greenSize_))
+        {
+            badAttribVec.push_back("EGL_GREEN_SIZE");
+        }
+        if (!eglGetConfigAttrib(dpy, handle_, EGL_BLUE_SIZE, &blueSize_))
+        {
+            badAttribVec.push_back("EGL_BLUE_SIZE");
+        }
+    }
+    else
+    {
+        if (!eglGetConfigAttrib(dpy, handle_, EGL_LUMINANCE_SIZE, &luminanceSize_))
+        {
+            badAttribVec.push_back("EGL_LUMINANCE_SIZE");
+        }
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_ALPHA_SIZE, &alphaSize_))
+    {
+        badAttribVec.push_back("EGL_ALPHA_SIZE");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_DEPTH_SIZE, &depthSize_))
+    {
+        badAttribVec.push_back("EGL_DEPTH_SIZE");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_STENCIL_SIZE, &stencilSize_))
+    {
+        badAttribVec.push_back("EGL_STENCIL_SIZE");
+    }
+    EGLint doNative(EGL_FALSE);
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_NATIVE_RENDERABLE, &doNative))
+    {
+        badAttribVec.push_back("EGL_NATIVE_RENDERABLE");
+    }
+    if (doNative == EGL_TRUE)
+    {
+        nativeRenderable_ = true;
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_NATIVE_VISUAL_TYPE, &nativeType_))
+    {
+        badAttribVec.push_back("EGL_NATIVE_VISUAL_TYPE");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_NATIVE_VISUAL_ID, &nativeID_))
+    {
+        badAttribVec.push_back("EGL_NATIVE_VISUAL_ID");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_SURFACE_TYPE, &surfaceType_))
+    {
+        badAttribVec.push_back("EGL_SURFACE_TYPE");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_SAMPLE_BUFFERS, &sampleBuffers_))
+    {
+        badAttribVec.push_back("EGL_SAMPLE_BUFFERS");
+    }
+    if (sampleBuffers_)
+    {
+        if (!eglGetConfigAttrib(dpy, handle_, EGL_SAMPLES, &samples_))
+        {
+            badAttribVec.push_back("EGL_SAMPLES");
+        }        
+    }    
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_TRANSPARENT_TYPE, &xparentType_))
+    {
+        badAttribVec.push_back("EGL_TRANSPARENT_TYPE");
+    }
+    //if (xparentType_ != EGL_NONE)
+    {
+        if (!eglGetConfigAttrib(dpy, handle_, EGL_TRANSPARENT_RED_VALUE, &xparentRedValue_))
+        {
+            badAttribVec.push_back("EGL_TRANSPARENT_RED_VALUE");
+        }
+        if (!eglGetConfigAttrib(dpy, handle_, EGL_TRANSPARENT_GREEN_VALUE, &xparentGreenValue_))
+        {
+            badAttribVec.push_back("EGL_TRANSPARENT_GREEN_VALUE");
+        }
+        if (!eglGetConfigAttrib(dpy, handle_, EGL_TRANSPARENT_BLUE_VALUE, &xparentBlueValue_))
+        {
+            badAttribVec.push_back("EGL_TRANSPARENT_BLUE_VALUE");
+        }
+    }
+
+    if (!badAttribVec.empty())
+    {
+        Log::error("Failed to get the following config attributes for config 0x%x:\n",
+                    config);
+        for (vector<string>::const_iterator attribIt = badAttribVec.begin();
+             attribIt != badAttribVec.end();
+             attribIt++)
+        {
+            Log::error("%s\n", attribIt->c_str());
+        }
+    }
+}
+
+void
+EglConfig::print_header()
+{
+    Log::debug("\n");
+    Log::debug("    cfg buf  rgb  colorbuffer dp st config native support surface sample\n");
+    Log::debug("     id  sz  lum  r  g  b  a  th cl caveat render type id   type  buf ns\n");
+    Log::debug("------------------------------------------------------------------------\n");
+}
+
+void
+EglConfig::print() const
+{
+    std::ostringstream s;
+    s << std::setw(5) << "0x" << std::hex << configID_;
+    s << "  " << std::dec << bufferSize_ << "  ";
+    if (bufferType_ == EGL_RGB_BUFFER)
+    {
+        s << "rgb";
+        s << "  " << redSize_;
+        s << "  " << greenSize_;
+        s << "  " << blueSize_;
+    }
+    else
+    {
+        s << "lum";
+        s << "  " << luminanceSize_;
+        s << "          ";
+    }
+    s << "  " << alphaSize_;
+    s << "  " << std::setw(2) << depthSize_;
+    s << " " << std::setw(2) << stencilSize_;
+    string caveat("None");
+    switch (caveat_)
+    {
+        case EGL_SLOW_CONFIG:
+            caveat = string("Slow");
+            break;
+        case EGL_NON_CONFORMANT_CONFIG:
+            caveat = string("Ncon");
+            break;
+        case EGL_NONE:
+            // Initialized to none.
+            break;
+    }
+    s << "   " << caveat;
+    string doNative(nativeRenderable_ ? "true" : "false");
+    s << std::setw(7) << doNative;
+    string visType("tc");
+    switch (nativeType_)
+    {
+        case StaticGray:
+        case GrayScale:
+        case StaticColor:
+        case PseudoColor:
+            // OpenGL ES doesn't support these, and we do not expect to see
+            // them in the modern era, but...
+            visType = string("ci");
+            break;
+        case TrueColor:
+            // Initialized to TrueColor
+            break;
+        case DirectColor:
+            visType = string("dc");
+            break;
+    }
+    s << " " << std::setw(2) << visType;
+    s << std::setw(3) << "0x" << std::hex << nativeID_;
+    s << std::setw(5) << "0x" << std::hex << surfaceType_;
+    s << std::dec << std::setw(4) << sampleBuffers_;
+    s << std::dec << std::setw(3) << samples_;
+    Log::debug("%s\n", s.str().c_str());
+}
+
+
+bool
+EGLState::init_display(EGLNativeDisplayType native_display, GLVisualConfig& visual_config)
+{
+    native_display_ = native_display;
+    visual_config_ = visual_config;
+
+    return gotValidDisplay();
+}
+
+bool
+EGLState::init_surface(EGLNativeWindowType native_window)
+{
+    native_window_ = reinterpret_cast<EGLNativeWindowType>(native_window);
+
+    return gotValidSurface();
+}
+
+void
+EGLState::swap()
+{
+    eglSwapBuffers(egl_display_, egl_surface_);
+}
+
+bool
+EGLState::gotValidDisplay()
+{
+    if (egl_display_)
+        return true;
+
+    egl_display_ = eglGetDisplay(native_display_);
+    if (!egl_display_) {
+        Log::error("eglGetDisplay() failed with error: 0x%x\n", eglGetError());
+        return false;
+    }
+    int egl_major(-1);
+    int egl_minor(-1);
+    if (!eglInitialize(egl_display_, &egl_major, &egl_minor)) {
+        Log::error("eglInitialize() failed with error: 0x%x\n", eglGetError());
+        egl_display_ = 0;
+        return false;
+    }
+
+    Log::info("Using display %p with EGL version %d.%d\n", egl_display_, egl_major, egl_minor);
+    Log::info("EGL Version \"%s\"\n", eglQueryString(egl_display_, EGL_VERSION));
+    Log::info("EGL Vendor \"%s\"\n", eglQueryString(egl_display_, EGL_VENDOR));
+    Log::info("EGL Extensions \"%s\"\n", eglQueryString(egl_display_, EGL_EXTENSIONS));
+
+#if USE_GLESv2
+    EGLenum apiType(EGL_OPENGL_ES_API);
+#elif USE_GL
+    EGLenum apiType(EGL_OPENGL_API);
+#endif
+    if (!eglBindAPI(apiType)) {
+        Log::error("Failed to bind api EGL_OPENGL_ES_API\n");
+        return false;
+    }
+
+    return true;
+}
+
+void
+EGLState::get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config)
+{
+    eglGetConfigAttrib(egl_display_, config, EGL_BUFFER_SIZE, &visual_config.buffer);
+    eglGetConfigAttrib(egl_display_, config, EGL_RED_SIZE, &visual_config.red);
+    eglGetConfigAttrib(egl_display_, config, EGL_GREEN_SIZE, &visual_config.green);
+    eglGetConfigAttrib(egl_display_, config, EGL_BLUE_SIZE, &visual_config.blue);
+    eglGetConfigAttrib(egl_display_, config, EGL_ALPHA_SIZE, &visual_config.alpha);
+    eglGetConfigAttrib(egl_display_, config, EGL_DEPTH_SIZE, &visual_config.depth);
+}
+
+EGLConfig
+EGLState::select_best_config(std::vector<EGLConfig>& configs)
+{
+    int best_score(INT_MIN);
+    EGLConfig best_config(0);
+
+    /*
+     * Go through all the configs and choose the one with the best score,
+     * i.e., the one better matching the requested config.
+     */
+    for (std::vector<EGLConfig>::const_iterator iter = configs.begin();
+         iter != configs.end();
+         iter++)
+    {
+        const EGLConfig config(*iter);
+        GLVisualConfig vc;
+        int score;
+
+        get_glvisualconfig(config, vc);
+
+        score = vc.match_score(visual_config_);
+
+        if (score > best_score) {
+            best_score = score;
+            best_config = config;
+        }
+    }
+
+    return best_config;
+}
+
+bool
+EGLState::gotValidConfig()
+{
+    if (egl_config_)
+        return true;
+
+    if (!gotValidDisplay())
+        return false;
+
+    const EGLint config_attribs[] = {
+        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+        EGL_RED_SIZE, 1,
+        EGL_GREEN_SIZE, 1,
+        EGL_BLUE_SIZE, 1,
+        EGL_ALPHA_SIZE, 1,
+        EGL_DEPTH_SIZE, 1,
+#if USE_GLESv2
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+#elif USE_GL
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+#endif
+        EGL_NONE
+    };
+
+    // Find out how many configs match the attributes.
+    EGLint num_configs(0);
+    if (!eglChooseConfig(egl_display_, config_attribs, 0, 0, &num_configs)) {
+        Log::error("eglChooseConfig() (count query) failed with error: %d\n",
+                   eglGetError());
+        return false;
+    }
+
+    if (num_configs == 0) {
+        Log::error("eglChooseConfig() didn't return any configs\n");
+        return false;
+    }
+
+    // Get all the matching configs
+    vector<EGLConfig> configs(num_configs);
+    if (!eglChooseConfig(egl_display_, config_attribs, &configs.front(),
+                         num_configs, &num_configs))
+    {
+        Log::error("eglChooseConfig() failed with error: %d\n",
+                     eglGetError());
+        return false;
+    }
+
+    // Select the best matching config
+    egl_config_ = select_best_config(configs);
+    get_glvisualconfig(egl_config_, visual_config_);
+
+    vector<EglConfig> configVec;
+    for (vector<EGLConfig>::const_iterator configIt = configs.begin();
+         configIt != configs.end();
+         configIt++)
+    {
+        EglConfig cfg(egl_display_, *configIt);
+        configVec.push_back(cfg);
+        if (*configIt == egl_config_) {
+            best_config_ = cfg;
+        }
+    } 
+
+    // Print out the config information, and let the user know the decision
+    // about the "best" one with respect to the options.
+    unsigned int lineNumber(0);
+    Log::debug("Got %u suitable EGLConfigs:\n", num_configs);
+    for (vector<EglConfig>::const_iterator configIt = configVec.begin();
+         configIt != configVec.end();
+         configIt++, lineNumber++)
+    {
+        if (!(lineNumber % 32))
+        {
+            configIt->print_header();
+        }
+        configIt->print();
+    }
+    Log::debug("\n");
+    Log::debug("Best EGLConfig ID: 0x%x\n", best_config_.configID());
+
+    return true;
+}
+
+bool
+EGLState::gotValidSurface()
+{
+    if (egl_surface_)
+        return true;
+
+    if (!gotValidDisplay())
+        return false;
+
+    if (!gotValidConfig())
+        return false;
+
+    egl_surface_ = eglCreateWindowSurface(egl_display_, egl_config_, native_window_, 0);
+    if (!egl_surface_) {
+        Log::error("eglCreateWindowSurface failed with error: 0x%x\n", eglGetError());
+        return false;
+    }
+
+    return true;
+}
+
+bool
+EGLState::gotValidContext()
+{
+    if (egl_context_)
+        return true;
+
+    if (!gotValidDisplay())
+        return false;
+
+    if (!gotValidConfig())
+        return false;
+
+    static const EGLint context_attribs[] = {
+#ifdef USE_GLESv2
+        EGL_CONTEXT_CLIENT_VERSION, 2,
+#endif
+        EGL_NONE
+    };
+
+    egl_context_ = eglCreateContext(egl_display_, egl_config_,
+                                    EGL_NO_CONTEXT, context_attribs);
+    if (!egl_context_) {
+        Log::error("eglCreateContext() failed with error: 0x%x\n",
+                   eglGetError());
+        return false;
+    }
+
+    return true;
+}
+
+bool
+EGLState::valid()
+{
+    if (!gotValidDisplay())
+        return false;
+
+    if (!gotValidConfig())
+        return false;
+
+    if (!gotValidSurface())
+        return false;
+
+    if (!gotValidContext())
+        return false;
+
+    if (egl_context_ == eglGetCurrentContext())
+        return true;
+
+    if (!eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_)) {
+        Log::error("eglMakeCurrent failed with error: 0x%x\n", eglGetError());
+        return false;
+    }
+
+    if (!eglSwapInterval(egl_display_, 0)) {
+        Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
+    }
+
+    return true;
+}
+
+bool
+EGLState::gotNativeConfig(int& vid)
+{
+    if (!gotValidConfig())
+        return false;
+
+    EGLint native_id;
+    if (!eglGetConfigAttrib(egl_display_, egl_config_, EGL_NATIVE_VISUAL_ID,
+        &native_id))
+    {
+        Log::debug("Failed to get native visual id for EGLConfig 0x%x\n", egl_config_);
+        return false;
+    }
+
+    vid = native_id;
+    return true;
+}
+
+bool
+EGLState::reset()
+{
+    if (!gotValidDisplay()) {
+        return false;
+    }
+
+    if (!egl_context_) {
+        return true;
+    }
+
+    if (EGL_FALSE == eglDestroyContext(egl_display_, egl_context_)) {
+        Log::debug("eglDestroyContext failed with error: 0x%x\n", eglGetError());
+    }
+
+    egl_context_ = 0;
+
+    return true;
+}
