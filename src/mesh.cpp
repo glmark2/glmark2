@@ -543,6 +543,8 @@ void
 Mesh::render_array()
 {
     for (size_t i = 0; i < vertex_format_.size(); i++) {
+        if (attrib_locations_[i] < 0)
+            continue;
         glEnableVertexAttribArray(attrib_locations_[i]);
         glVertexAttribPointer(attrib_locations_[i], vertex_format_[i].first,
                               GL_FLOAT, GL_FALSE, vertex_stride_,
@@ -552,6 +554,8 @@ Mesh::render_array()
     glDrawArrays(GL_TRIANGLES, 0, vertices_.size());
 
     for (size_t i = 0; i < vertex_format_.size(); i++) {
+        if (attrib_locations_[i] < 0)
+            continue;
         glDisableVertexAttribArray(attrib_locations_[i]);
     }
 }
@@ -566,6 +570,8 @@ void
 Mesh::render_vbo()
 {
     for (size_t i = 0; i < vertex_format_.size(); i++) {
+        if (attrib_locations_[i] < 0)
+            continue;
         glEnableVertexAttribArray(attrib_locations_[i]);
         glBindBuffer(GL_ARRAY_BUFFER, vbos_[i]);
         glVertexAttribPointer(attrib_locations_[i], vertex_format_[i].first,
@@ -576,6 +582,8 @@ Mesh::render_vbo()
     glDrawArrays(GL_TRIANGLES, 0, vertices_.size());
 
     for (size_t i = 0; i < vertex_format_.size(); i++) {
+        if (attrib_locations_[i] < 0)
+            continue;
         glDisableVertexAttribArray(attrib_locations_[i]);
     }
 }
