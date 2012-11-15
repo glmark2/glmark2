@@ -25,7 +25,6 @@
 #include "limits.h"
 #include <iomanip>
 #include <sstream>
-#include <X11/X.h> // for the Native visual type definitions
 
 using std::vector;
 using std::string;
@@ -177,7 +176,7 @@ EglConfig::print_header()
 {
     Log::debug("\n");
     Log::debug("    cfg buf  rgb  colorbuffer dp st config native support surface sample\n");
-    Log::debug("     id  sz  lum  r  g  b  a  th cl caveat render type id   type  buf ns\n");
+    Log::debug("     id  sz  lum  r  g  b  a  th cl caveat render  visid    type  buf ns\n");
     Log::debug("------------------------------------------------------------------------\n");
 }
 
@@ -222,27 +221,7 @@ EglConfig::print() const
     s << std::setw(7) << caveat;
     string doNative(nativeRenderable_ ? "true" : "false");
     s << std::setw(7) << doNative;
-    string visType("tc");
-    switch (nativeType_)
-    {
-        case StaticGray:
-        case GrayScale:
-        case StaticColor:
-        case PseudoColor:
-            // OpenGL ES doesn't support these, and we do not expect to see
-            // them in the modern era, but...
-            visType = string("ci");
-            break;
-        case TrueColor:
-        case EGL_NONE:
-            // Initialized to TrueColor
-            break;
-        case DirectColor:
-            visType = string("dc");
-            break;
-    }
-    s << std::setw(3) << visType;
-    s << std::setw(5) << std::hex << nativeID_;
+    s << std::setw(8) << std::hex << nativeID_;
     s << std::setw(8) << std::hex << surfaceType_;
     s << std::setw(4) << std::dec << sampleBuffers_;
     s << std::setw(3) << std::dec << samples_;
@@ -291,11 +270,6 @@ EGLState::gotValidDisplay()
         egl_display_ = 0;
         return false;
     }
-
-    Log::info("Using display %p with EGL version %d.%d\n", egl_display_, egl_major, egl_minor);
-    Log::info("EGL Version \"%s\"\n", eglQueryString(egl_display_, EGL_VERSION));
-    Log::info("EGL Vendor \"%s\"\n", eglQueryString(egl_display_, EGL_VENDOR));
-    Log::info("EGL Extensions \"%s\"\n", eglQueryString(egl_display_, EGL_EXTENSIONS));
 
 #if USE_GLESv2
     EGLenum apiType(EGL_OPENGL_ES_API);
@@ -362,12 +336,11 @@ EGLState::gotValidConfig()
         return false;
 
     const EGLint config_attribs[] = {
-        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-        EGL_RED_SIZE, 1,
-        EGL_GREEN_SIZE, 1,
-        EGL_BLUE_SIZE, 1,
-        EGL_ALPHA_SIZE, 1,
-        EGL_DEPTH_SIZE, 1,
+        EGL_RED_SIZE, visual_config_.red,
+        EGL_GREEN_SIZE, visual_config_.green,
+        EGL_BLUE_SIZE, visual_config_.blue,
+        EGL_ALPHA_SIZE, visual_config_.alpha,
+        EGL_DEPTH_SIZE, visual_config_.depth,
 #if USE_GLESv2
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 #elif USE_GL
@@ -401,7 +374,6 @@ EGLState::gotValidConfig()
 
     // Select the best matching config
     egl_config_ = select_best_config(configs);
-    get_glvisualconfig(egl_config_, visual_config_);
 
     vector<EglConfig> configVec;
     for (vector<EGLConfig>::const_iterator configIt = configs.begin();
