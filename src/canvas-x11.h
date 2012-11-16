@@ -64,6 +64,15 @@ protected:
     virtual XVisualInfo *get_xvisualinfo() = 0;
 
     /**
+     * Initializes window system interfaces for GL rendering.
+     *
+     * This method should be implemented in derived classes.
+     *
+     * @return whether the operation succeeded
+     */
+    virtual bool init_gl_winsys() = 0;
+
+    /**
      * Makes the canvas the current target for GL rendering.
      *
      * This method should be implemented in derived classes.

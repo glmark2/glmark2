@@ -18,14 +18,13 @@
  *
  * Authors:
  *  Alexandros Frantzis (glmark2)
+ *  Jesse Barker
  */
 #ifndef GLMARK2_CANVAS_X11_EGL_H_
 #define GLMARK2_CANVAS_X11_EGL_H_
 
 #include "canvas-x11.h"
-
-#include <EGL/egl.h>
-#include <vector>
+#include "egl-state.h"
 
 /**
  * Canvas for rendering to an X11 window using EGL.
@@ -34,32 +33,20 @@ class CanvasX11EGL : public CanvasX11
 {
 public:
     CanvasX11EGL(int width, int height) :
-        CanvasX11(width, height), egl_display_(EGL_NO_DISPLAY),
-        egl_surface_(EGL_NO_SURFACE), egl_config_(0),
-        egl_context_(EGL_NO_CONTEXT) {}
+        CanvasX11(width, height) {}
     ~CanvasX11EGL() {}
 
 protected:
     XVisualInfo *get_xvisualinfo();
     bool make_current();
     bool reset_context();
-    void swap_buffers() { eglSwapBuffers(egl_display_, egl_surface_); }
+    void swap_buffers();
     void get_glvisualconfig(GLVisualConfig &visual_config);
+    bool init_gl_winsys();
 
 private:
-    bool ensure_egl_display();
-    bool ensure_egl_config();
-    bool ensure_egl_context();
-    bool ensure_egl_surface();
     void init_gl_extensions();
-    void get_glvisualconfig_egl(EGLConfig config, GLVisualConfig &visual_config);
-    EGLConfig select_best_config(std::vector<EGLConfig> configs);
-
-    EGLDisplay egl_display_;
-    EGLSurface egl_surface_;
-    EGLConfig egl_config_;
-    EGLContext egl_context_;
+    EGLState egl_;
 };
 
 #endif
-
