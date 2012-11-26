@@ -1,3 +1,9 @@
+glmark2 2012.11 (20121126)
+==========================
+
+* Add a shadow mapping benchmark (scene 'shadow').
+* Consolidate EGL interactions into a separate state object.
+
 glmark2 2012.08 (20120817)
 ==========================
 
