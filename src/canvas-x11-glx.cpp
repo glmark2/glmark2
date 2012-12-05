@@ -171,6 +171,7 @@ CanvasX11GLX::ensure_glx_fbconfig()
         GLX_BLUE_SIZE, visual_config_.blue,
         GLX_ALPHA_SIZE, visual_config_.alpha,
         GLX_DEPTH_SIZE, visual_config_.depth,
+        GLX_STENCIL_SIZE, visual_config_.stencil,
         GLX_BUFFER_SIZE, visual_config_.buffer,
         GLX_DOUBLEBUFFER, True,
         None
@@ -270,6 +271,7 @@ CanvasX11GLX::get_glvisualconfig_glx(const GLXFBConfig config, GLVisualConfig &v
     glXGetFBConfigAttrib(xdpy_, config, GLX_BLUE_SIZE, &visual_config.blue);
     glXGetFBConfigAttrib(xdpy_, config, GLX_ALPHA_SIZE, &visual_config.alpha);
     glXGetFBConfigAttrib(xdpy_, config, GLX_DEPTH_SIZE, &visual_config.depth);
+    glXGetFBConfigAttrib(xdpy_, config, GLX_STENCIL_SIZE, &visual_config.stencil);
 }
 
 GLXFBConfig

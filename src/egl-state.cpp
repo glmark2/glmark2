@@ -342,6 +342,7 @@ EGLState::get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config)
     eglGetConfigAttrib(egl_display_, config, EGL_BLUE_SIZE, &visual_config.blue);
     eglGetConfigAttrib(egl_display_, config, EGL_ALPHA_SIZE, &visual_config.alpha);
     eglGetConfigAttrib(egl_display_, config, EGL_DEPTH_SIZE, &visual_config.depth);
+    eglGetConfigAttrib(egl_display_, config, EGL_STENCIL_SIZE, &visual_config.stencil);
 }
 
 EGLConfig
@@ -390,6 +391,7 @@ EGLState::gotValidConfig()
         EGL_BLUE_SIZE, visual_config_.blue,
         EGL_ALPHA_SIZE, visual_config_.alpha,
         EGL_DEPTH_SIZE, visual_config_.depth,
+        EGL_STENCIL_SIZE, visual_config_.stencil,
 #if USE_GLESv2
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 #elif USE_GL
