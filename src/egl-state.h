@@ -37,12 +37,24 @@ class EglConfig
     EGLint luminanceSize_;
     EGLint alphaSize_;
     EGLint alphaMaskSize_;
+    bool bindTexRGB_;
+    bool bindTexRGBA_;
     EGLint bufferType_;
     // Base config attributes
     EGLint caveat_;
     EGLint configID_;
+    EGLint conformant_;
     // Depth buffer
     EGLint depthSize_;
+    // Framebuffer level
+    EGLint level_;
+    // Pbuffers
+    EGLint pbufferWidth_;
+    EGLint pbufferHeight_;
+    EGLint pbufferPixels_;
+    // Swap interval
+    EGLint minSwapInterval_;
+    EGLint maxSwapInterval_;
     // Native window system attributes.
     EGLint nativeID_;
     EGLint nativeType_;
@@ -69,10 +81,19 @@ public:
         luminanceSize_(0),
         alphaSize_(0),
         alphaMaskSize_(0),
+        bindTexRGB_(false),
+        bindTexRGBA_(false),
         bufferType_(EGL_RGB_BUFFER),
         caveat_(0),
         configID_(0),
+        conformant_(0),
         depthSize_(0),
+        level_(0),
+        pbufferWidth_(0),
+        pbufferHeight_(0),
+        pbufferPixels_(0),
+        minSwapInterval_(0),
+        maxSwapInterval_(0),
         nativeID_(0),
         nativeType_(0),
         nativeRenderable_(false),
