@@ -38,10 +38,19 @@ EglConfig::EglConfig(EGLDisplay dpy, EGLConfig config) :
     luminanceSize_(0),
     alphaSize_(0),
     alphaMaskSize_(0),
+    bindTexRGB_(false),
+    bindTexRGBA_(false),
     bufferType_(EGL_RGB_BUFFER),
     caveat_(0),
     configID_(0),
+    conformant_(0),
     depthSize_(0),
+    level_(0),
+    pbufferWidth_(0),
+    pbufferHeight_(0),
+    pbufferPixels_(0),
+    minSwapInterval_(0),
+    maxSwapInterval_(0),
     nativeID_(0),
     nativeType_(0),
     nativeRenderable_(false),
@@ -62,6 +71,10 @@ EglConfig::EglConfig(EGLDisplay dpy, EGLConfig config) :
     if (!eglGetConfigAttrib(dpy, handle_, EGL_CONFIG_CAVEAT, &caveat_))
     {
         badAttribVec.push_back("EGL_CONFIG_CAVEAT");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_CONFORMANT, &conformant_))
+    {
+        badAttribVec.push_back("EGL_CONFORMANT");
     }
     if (!eglGetConfigAttrib(dpy, handle_, EGL_COLOR_BUFFER_TYPE, &bufferType_))
     {
@@ -98,6 +111,10 @@ EglConfig::EglConfig(EGLDisplay dpy, EGLConfig config) :
     {
         badAttribVec.push_back("EGL_ALPHA_SIZE");
     }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_ALPHA_MASK_SIZE, &alphaMaskSize_))
+    {
+        badAttribVec.push_back("EGL_ALPHA_MASK_SIZE");
+    }
     if (!eglGetConfigAttrib(dpy, handle_, EGL_DEPTH_SIZE, &depthSize_))
     {
         badAttribVec.push_back("EGL_DEPTH_SIZE");
@@ -106,15 +123,47 @@ EglConfig::EglConfig(EGLDisplay dpy, EGLConfig config) :
     {
         badAttribVec.push_back("EGL_STENCIL_SIZE");
     }
+    EGLint doBind(EGL_FALSE);
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_BIND_TO_TEXTURE_RGB, &doBind))
+    {
+        badAttribVec.push_back("EGL_BIND_TO_TEXTURE_RGB");
+    }
+    bindTexRGB_ = (doBind == EGL_TRUE);
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_BIND_TO_TEXTURE_RGBA, &doBind))
+    {
+        badAttribVec.push_back("EGL_BIND_TO_TEXTURE_RGBA");
+    }
+    bindTexRGBA_ = (doBind == EGL_TRUE);
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_LEVEL, &level_))
+    {
+        badAttribVec.push_back("EGL_LEVEL");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_MAX_PBUFFER_WIDTH, &pbufferWidth_))
+    {
+        badAttribVec.push_back("EGL_MAX_PBUFFER_WIDTH");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_MAX_PBUFFER_HEIGHT, &pbufferHeight_))
+    {
+        badAttribVec.push_back("EGL_MAX_PBUFFER_HEIGHT");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_MAX_PBUFFER_PIXELS, &pbufferPixels_))
+    {
+        badAttribVec.push_back("EGL_MAX_PBUFFER_PIXELS");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_MIN_SWAP_INTERVAL, &minSwapInterval_))
+    {
+        badAttribVec.push_back("EGL_MIN_SWAP_INTERVAL");
+    }
+    if (!eglGetConfigAttrib(dpy, handle_, EGL_MAX_SWAP_INTERVAL, &maxSwapInterval_))
+    {
+        badAttribVec.push_back("EGL_MAX_SWAP_INTERVAL");
+    }
     EGLint doNative(EGL_FALSE);
     if (!eglGetConfigAttrib(dpy, handle_, EGL_NATIVE_RENDERABLE, &doNative))
     {
         badAttribVec.push_back("EGL_NATIVE_RENDERABLE");
     }
-    if (doNative == EGL_TRUE)
-    {
-        nativeRenderable_ = true;
-    }
+    nativeRenderable_ = (doNative == EGL_TRUE);
     if (!eglGetConfigAttrib(dpy, handle_, EGL_NATIVE_VISUAL_TYPE, &nativeType_))
     {
         badAttribVec.push_back("EGL_NATIVE_VISUAL_TYPE");
@@ -293,6 +342,7 @@ EGLState::get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config)
     eglGetConfigAttrib(egl_display_, config, EGL_BLUE_SIZE, &visual_config.blue);
     eglGetConfigAttrib(egl_display_, config, EGL_ALPHA_SIZE, &visual_config.alpha);
     eglGetConfigAttrib(egl_display_, config, EGL_DEPTH_SIZE, &visual_config.depth);
+    eglGetConfigAttrib(egl_display_, config, EGL_STENCIL_SIZE, &visual_config.stencil);
 }
 
 EGLConfig
@@ -341,6 +391,7 @@ EGLState::gotValidConfig()
         EGL_BLUE_SIZE, visual_config_.blue,
         EGL_ALPHA_SIZE, visual_config_.alpha,
         EGL_DEPTH_SIZE, visual_config_.depth,
+        EGL_STENCIL_SIZE, visual_config_.stencil,
 #if USE_GLESv2
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 #elif USE_GL

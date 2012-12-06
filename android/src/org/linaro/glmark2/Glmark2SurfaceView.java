@@ -50,7 +50,7 @@ class Glmark2SurfaceView extends GLSurfaceView {
 
         /* Parse the config string parameters */
         String[] configParams = configString.split(":");
-        GLVisualConfig targetConfig = new GLVisualConfig(5, 6, 5, 0, 16, 1);
+        GLVisualConfig targetConfig = new GLVisualConfig(5, 6, 5, 0, 16, 0, 1);
 
         for (String param : configParams) {
             String[] paramKeyValue = param.split("=");
@@ -67,6 +67,8 @@ class Glmark2SurfaceView extends GLSurfaceView {
                 targetConfig.alpha = Integer.parseInt(paramKeyValue[1]);
             else if (paramKeyValue[0].equals("depth") || paramKeyValue[0].equals("d"))
                 targetConfig.depth = Integer.parseInt(paramKeyValue[1]);
+            else if (paramKeyValue[0].equals("stencil") || paramKeyValue[0].equals("s"))
+                targetConfig.stencil = Integer.parseInt(paramKeyValue[1]);
             else if (paramKeyValue[0].equals("buffer") || paramKeyValue[0].equals("buf"))
                 targetConfig.buffer = Integer.parseInt(paramKeyValue[1]);
         }
@@ -89,6 +91,7 @@ class Glmark2SurfaceView extends GLSurfaceView {
                     EGL10.EGL_BLUE_SIZE, targetConfig.blue,
                     EGL10.EGL_ALPHA_SIZE, targetConfig.alpha,
                     EGL10.EGL_DEPTH_SIZE, targetConfig.depth,
+                    EGL10.EGL_STENCIL_SIZE, targetConfig.stencil,
                     EGL10.EGL_BUFFER_SIZE, targetConfig.buffer,
                     EGL10.EGL_RENDERABLE_TYPE, 4, /* 4 = EGL_OPENGL_ES2_BIT */
                     EGL10.EGL_NONE };
@@ -156,6 +159,8 @@ class Glmark2SurfaceView extends GLSurfaceView {
                                             EGL10.EGL_ALPHA_SIZE, 0);
                 vc.depth = findConfigAttrib(egl, display, config,
                                             EGL10.EGL_DEPTH_SIZE, 0);
+                vc.stencil = findConfigAttrib(egl, display, config,
+                                            EGL10.EGL_STENCIL_SIZE, 0);
                 vc.buffer = findConfigAttrib(egl, display, config,
                                              EGL10.EGL_BUFFER_SIZE, 0);
 

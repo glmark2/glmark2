@@ -26,12 +26,13 @@ package org.linaro.glmark2;
  */
 class GLVisualConfig {
     public GLVisualConfig() {}
-    public GLVisualConfig(int r, int g, int b, int a, int d, int buf) {
+    public GLVisualConfig(int r, int g, int b, int a, int d, int s, int buf) {
         red = r;
         green = g;
         blue = b;
         alpha = a;
         depth = d;
+        stencil = s;
         buffer = buf;
     }
 
@@ -40,5 +41,6 @@ class GLVisualConfig {
     public int blue;
     public int alpha;
     public int depth;
+    public int stencil;
     public int buffer;
 }
