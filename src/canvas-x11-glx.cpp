@@ -201,7 +201,7 @@ CanvasX11GLX::ensure_glx_fbconfig()
     XFree(fbc);
 
     if (Options::show_debug) {
-        int buf, red, green, blue, alpha, depth, id, native_id;
+        int buf, red, green, blue, alpha, depth, stencil, id, native_id;
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_FBCONFIG_ID, &id);
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_VISUAL_ID, &native_id);
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_BUFFER_SIZE, &buf);
@@ -210,15 +210,17 @@ CanvasX11GLX::ensure_glx_fbconfig()
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_BLUE_SIZE, &blue);
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_ALPHA_SIZE, &alpha);
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_DEPTH_SIZE, &depth);
+        glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_STENCIL_SIZE, &stencil);
         Log::debug("GLX chosen config ID: 0x%x Native Visual ID: 0x%x\n"
                    "  Buffer: %d bits\n"
                    "     Red: %d bits\n"
                    "   Green: %d bits\n"
                    "    Blue: %d bits\n"
                    "   Alpha: %d bits\n"
-                   "   Depth: %d bits\n",
+                   "   Depth: %d bits\n"
+                   " Stencil: %d bits\n",
                    id, native_id,
-                   buf, red, green, blue, alpha, depth);
+                   buf, red, green, blue, alpha, depth, stencil);
     }
 
 
