@@ -249,10 +249,13 @@ DRMState::reset()
 void
 DRMState::page_flip_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void* data)
 {
-    Log::debug("page_flip_handler called on fd %d for frame %u at %u sec, %u usec\n",
-               fd, frame, sec, usec);
     unsigned int* waiting = reinterpret_cast<unsigned int*>(data);
     *waiting = 0;
+    // Deal with unused parameters
+    static_cast<void>(fd);
+    static_cast<void>(frame);
+    static_cast<void>(sec);
+    static_cast<void>(usec);
 }
 
 void
