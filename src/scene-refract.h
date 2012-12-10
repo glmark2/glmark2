@@ -34,12 +34,17 @@
 //
 class DistanceRenderTarget
 {
+    enum
+    {
+        DEPTH = 0,
+        COLOR
+    };
     Program program_;
     unsigned int canvas_width_;
     unsigned int canvas_height_;
     unsigned int width_;
     unsigned int height_;
-    unsigned int tex_;
+    unsigned int tex_[2];
     unsigned int fbo_;
 public:
     DistanceRenderTarget() :
@@ -47,14 +52,17 @@ public:
         canvas_height_(0),
         width_(0),
         height_(0),
-        tex_(0),
-        fbo_(0) {}
+        fbo_(0)
+    {
+        tex_[DEPTH] = tex_[COLOR] = 0;
+    }
     ~DistanceRenderTarget() {}
     bool setup(unsigned int width, unsigned int height);
     void teardown();
     void enable(const LibMatrix::mat4& mvp);
     void disable();
-    unsigned int texture() { return tex_; }
+    unsigned int depthTexture() { return tex_[DEPTH]; }
+    unsigned int colorTexture() { return tex_[COLOR]; }
     Program& program() { return program_; }
 };
 
@@ -65,6 +73,7 @@ class RefractPrivate
     Program program_;
     LibMatrix::Stack4 modelview_;
     LibMatrix::Stack4 projection_;
+    LibMatrix::mat4 light_;
     Mesh mesh_;
     LibMatrix::vec3 centerVec_;
     bool orientModel_;

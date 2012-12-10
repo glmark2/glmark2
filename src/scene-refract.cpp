@@ -33,7 +33,7 @@ using LibMatrix::mat4;
 using LibMatrix::vec4;
 using LibMatrix::vec3;
 
-static const vec4 lightPosition(0.0f, 3.0f, 2.0f, 1.0f);
+static const vec4 lightPosition(1.0f, 1.0f, 2.0f, 1.0f);
 
 //
 // Public interfaces
@@ -193,20 +193,29 @@ DistanceRenderTarget::setup(unsigned int width, unsigned int height)
         return false;
     }
 
-    glGenTextures(1, &tex_);
-    glBindTexture(GL_TEXTURE_2D, tex_);
+    glGenTextures(2, &tex_[0]);
+    glBindTexture(GL_TEXTURE_2D, tex_[DEPTH]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width_, height_, 0,
                  GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
+    glBindTexture(GL_TEXTURE_2D, tex_[COLOR]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glGenFramebuffers(1, &fbo_);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
-                           tex_, 0);
+                           tex_[DEPTH], 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                           tex_[COLOR], 0);
     unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         Log::error("DepthRenderState::setup: glCheckFramebufferStatus failed (0x%x)\n", status);
@@ -223,8 +232,8 @@ DistanceRenderTarget::teardown()
     program_.stop();
     program_.release();
     if (tex_) {
-        glDeleteTextures(1, &tex_);
-        tex_ = 0;
+        glDeleteTextures(2, &tex_[0]);
+        tex_[DEPTH] = tex_[COLOR] = 0;
     }
     if (fbo_) {
         glDeleteFramebuffers(1, &fbo_);
@@ -239,17 +248,17 @@ DistanceRenderTarget::enable(const mat4& mvp)
     program_["ModelViewProjectionMatrix"] = mvp;
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
-                           tex_, 0);
+                           tex_[DEPTH], 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                           tex_[COLOR], 0);
     glViewport(0, 0, width_, height_);
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    glClear(GL_DEPTH_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 }
 
 void DistanceRenderTarget::disable()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, canvas_width_, canvas_height_);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
 bool
@@ -258,8 +267,8 @@ RefractPrivate::setup(map<string, Scene::Option>& options)
     // Program object setup
     static const string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-refract.vert");
     static const string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-refract.frag");
-    static const vec4 materialDiffuse(0.0f, 0.0f, 0.0f, 0.0f);
-    static const vec4 lightColor(1.0, 1.0, 1.0, 1.0);
+    static const vec4 materialDiffuse(1.0f, 1.0f, 1.0f, 0.0f);
+    static const vec4 lightColor(0.4, 0.4, 0.4, 1.0);
 
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source(frg_shader_filename);
@@ -344,7 +353,17 @@ RefractPrivate::setup(map<string, Scene::Option>& options)
     fovy /= M_PI;
     fovy *= 180.0;
     float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
-    projection_.perspective(fovy, aspect, 2.0, 50.0);
+    projection_.perspective(fovy, aspect, 2.0, 2.0 + diameter);
+
+    // Set up the light matrix with a bias that will convert values
+    // in the range of [-1, 1] to [0, 1)], then add in the projection
+    // and the "look at" matrix from the light position.
+    light_ *= LibMatrix::Mat4::translate(0.5, 0.5, 0.5);
+    light_ *= LibMatrix::Mat4::scale(0.5, 0.5, 0.5);
+    light_ *= projection_.getCurrent();
+    light_ *= LibMatrix::Mat4::lookAt(lightPosition.x(), lightPosition.y(), lightPosition.z(),
+                                      0.0, 0.0, 0.0,
+                                      0.0, 1.0, 0.0);
 
     if (!depthTarget_.setup(canvas_.width(), canvas_.height())) {
         Log::error("Failed to set up the render target for the depth pass\n");
@@ -385,6 +404,7 @@ RefractPrivate::draw()
     modelview_.pop();
 
     // Enable the depth render target with our transformation and render.
+    glCullFace(GL_FRONT);
     depthTarget_.enable(mvp);
     vector<GLint> attrib_locations;
     attrib_locations.push_back(depthTarget_.program()["position"].location());
@@ -397,6 +417,7 @@ RefractPrivate::draw()
         mesh_.render_array();
     }
     depthTarget_.disable();
+    glCullFace(GL_BACK);
 
     // Ground rendering using the above generated texture...
     //ground_.draw();
@@ -410,15 +431,23 @@ RefractPrivate::draw()
 
     program_.start();
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture_);
+    glBindTexture(GL_TEXTURE_2D, depthTarget_.depthTexture());
     program_["DistanceMap"] = 0;
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, depthTarget_.colorTexture());
+    program_["NormalMap"] = 1;
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, texture_);
+    program_["ImageMap"] = 2;
+    // Load both the modelview*projection as well as the modelview matrix itself
     program_["ModelViewProjectionMatrix"] = mvp;
-
+    program_["ModelViewMatrix"] = modelview_.getCurrent();
     // Load the NormalMatrix uniform in the shader. The NormalMatrix is the
     // inverse transpose of the model view matrix.
     mat4 normal_matrix(modelview_.getCurrent());
     normal_matrix.inverse().transpose();
     program_["NormalMatrix"] = normal_matrix;
+    program_["LightMatrix"] = light_;
     attrib_locations.clear();
     attrib_locations.push_back(program_["position"].location());
     attrib_locations.push_back(program_["normal"].location());
