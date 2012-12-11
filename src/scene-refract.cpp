@@ -253,12 +253,16 @@ DistanceRenderTarget::enable(const mat4& mvp)
                            tex_[COLOR], 0);
     glViewport(0, 0, width_, height_);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    glCullFace(GL_FRONT);
+    glDepthFunc(GL_GREATER);
 }
 
 void DistanceRenderTarget::disable()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, canvas_width_, canvas_height_);
+    glCullFace(GL_BACK);
+    glDepthFunc(GL_LEQUAL);
 }
 
 bool
@@ -408,7 +412,6 @@ RefractPrivate::draw()
     modelview_.pop();
 
     // Enable the depth render target with our transformation and render.
-    glCullFace(GL_FRONT);
     depthTarget_.enable(mvp);
     vector<GLint> attrib_locations;
     attrib_locations.push_back(depthTarget_.program()["position"].location());
@@ -421,10 +424,6 @@ RefractPrivate::draw()
         mesh_.render_array();
     }
     depthTarget_.disable();
-    glCullFace(GL_BACK);
-
-    // Ground rendering using the above generated texture...
-    //ground_.draw();
 
     // Draw the "normal" view of the horse
     modelview_.push();
