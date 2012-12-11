@@ -202,7 +202,7 @@ DistanceRenderTarget::setup(unsigned int width, unsigned int height)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width_, height_, 0,
                  GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
     glBindTexture(GL_TEXTURE_2D, tex_[COLOR]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -399,6 +399,10 @@ RefractPrivate::draw()
                       0.0, 0.0, 0.0,
                       0.0, 1.0, 0.0);
     modelview_.rotate(rotation_, 0.0f, 1.0f, 0.0f);
+    if (orientModel_)
+    {
+        modelview_.rotate(orientationAngle_, orientationVec_.x(), orientationVec_.y(), orientationVec_.z());
+    }
     mat4 mvp(projection_.getCurrent());
     mvp *= modelview_.getCurrent();
     modelview_.pop();
@@ -426,6 +430,10 @@ RefractPrivate::draw()
     modelview_.push();
     modelview_.translate(-centerVec_.x(), -centerVec_.y(), -(centerVec_.z() + 2.0 + radius_));
     modelview_.rotate(rotation_, 0.0f, 1.0f, 0.0f);
+    if (orientModel_)
+    {
+        modelview_.rotate(orientationAngle_, orientationVec_.x(), orientationVec_.y(), orientationVec_.z());
+    }
     mvp = projection_.getCurrent();
     mvp *= modelview_.getCurrent();
 
