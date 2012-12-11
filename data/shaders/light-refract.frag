@@ -22,7 +22,7 @@ void main()
     vec2 normcoord = (MapCoord.st + front_refraction.st + point_five) * point_five;
     vec4 back_normal = texture2D(NormalMap, normcoord);
     // Now refract again, using the minus normal from the lookup.
-    vec3 back_refraction = refract(front_refraction, back_normal.xyz, 1.5);
+    vec3 back_refraction = refract(front_refraction, back_normal.xyz, 1.0);
     vec2 imagecoord = (normcoord + back_refraction.st + point_five) * point_five;
     vec4 texel = texture2D(ImageMap, imagecoord);
     // Add in a specular component
