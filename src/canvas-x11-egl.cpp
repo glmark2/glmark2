@@ -34,8 +34,7 @@
 bool
 CanvasX11EGL::init_gl_winsys()
 {
-    egl_.init_display(reinterpret_cast<EGLNativeDisplayType>(xdpy_),
-                      visual_config_);
+    egl_.init_display(xdpy_, visual_config_);
     return true;
 }
 
@@ -68,7 +67,7 @@ CanvasX11EGL::get_xvisualinfo()
 bool
 CanvasX11EGL::make_current()
 {
-    egl_.init_surface(reinterpret_cast<EGLNativeWindowType>(xwin_));
+    egl_.init_surface(xwin_);
     if (!egl_.valid()) {
         Log::error("CanvasX11EGL: Invalid EGL state\n");
         return false;
