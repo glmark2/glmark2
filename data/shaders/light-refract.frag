@@ -13,23 +13,29 @@ void main()
     const float matShininess = 100.0;
     const vec2 point_five = vec2(0.5);
     // Need the normalized eye direction and surface normal vectors to
-    // compute the refraction vector through the "front" surface of the object.
+    // compute the transmitted vector through the "front" surface of the object.
     vec3 eye_direction = normalize(-vertex_position.xyz);
     vec3 normalized_normal = normalize(vertex_normal);
-    vec3 front_refraction = refract(eye_direction, normalized_normal, 1.5);
-    // Offset the base map coordinate by the refaction vector, and re-normalize
-    // to texture coordinate space [0, 1].
-    vec4 mc_perspective = MapCoord / MapCoord.w;
-    vec4 distance_value = texture2D(DistanceMap, mc_perspective.st);
-    float frontToBack = distance_value.z - mc_perspective.z;
-    vec3 back_position = (front_refraction - vertex_position) + frontToBack;
-    vec2 normcoord = (mc_perspective.st + front_refraction.st + point_five) * point_five;
+    vec3 front_refraction = refract(eye_direction, normalized_normal, 1.45);
+    // Find our best distance approximation through the object so we can
+    // project the transmitted vector to the back of the object to find
+    // the exit point.
+    vec3 mc_perspective = (MapCoord.xyz / MapCoord.w) + front_refraction;
+    vec2 dcoord = mc_perspective.st * point_five + point_five;
+    vec4 distance_value = texture2D(DistanceMap, dcoord);
+    vec3 back_position = vertex_position.xyz + front_refraction * distance_value.z;
+    // Use the exit point to index the map of back-side normals, and use the
+    // back-side position and normal to find the transmitted vector out of the
+    // object.
+    vec2 normcoord = back_position.st * point_five + point_five;
     vec3 back_normal = texture2D(NormalMap, normcoord).xyz;
-    // Now refract again, using the normal from the lookup.
-    vec3 back_refraction = refract(back_position, back_normal.xyz, 1.0);
-    vec2 imagecoord = (normcoord + back_refraction.st + point_five) * point_five;
+    vec3 back_refraction = refract(back_position, back_normal, 1.0);
+    // Use the transmitted vector from the exit point to determine where
+    // the vector would intersect the environment (in this case a background
+    // image.
+    vec2 imagecoord = back_refraction.st * point_five + point_five;
     vec4 texel = texture2D(ImageMap, imagecoord);
-    // Add in a specular component
+    // Add in specular reflection, and we have our fragment value.
     vec3 light_direction = normalize(vertex_position.xyz/vertex_position.w -
                                      LightSourcePosition.xyz/LightSourcePosition.w);
     vec3 reflection = reflect(light_direction, normalized_normal);

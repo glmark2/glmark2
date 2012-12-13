@@ -203,11 +203,12 @@ DistanceRenderTarget::setup(unsigned int width, unsigned int height)
                  GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
     glBindTexture(GL_TEXTURE_2D, tex_[COLOR]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glGenFramebuffers(1, &fbo_);
@@ -254,7 +255,6 @@ DistanceRenderTarget::enable(const mat4& mvp)
     glViewport(0, 0, width_, height_);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glCullFace(GL_FRONT);
-    glDepthFunc(GL_GREATER);
 }
 
 void DistanceRenderTarget::disable()
@@ -262,7 +262,6 @@ void DistanceRenderTarget::disable()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, canvas_width_, canvas_height_);
     glCullFace(GL_BACK);
-    glDepthFunc(GL_LEQUAL);
 }
 
 bool
@@ -271,7 +270,6 @@ RefractPrivate::setup(map<string, Scene::Option>& options)
     // Program object setup
     static const string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-refract.vert");
     static const string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-refract.frag");
-    static const vec4 materialDiffuse(1.0f, 1.0f, 1.0f, 0.0f);
     static const vec4 lightColor(0.4, 0.4, 0.4, 1.0);
 
     ShaderSource vtx_source(vtx_shader_filename);
@@ -279,7 +277,6 @@ RefractPrivate::setup(map<string, Scene::Option>& options)
 
     frg_source.add_const("LightColor", lightColor);
     frg_source.add_const("LightSourcePosition", lightPosition);
-    frg_source.add_const("MaterialDiffuse", materialDiffuse);
 
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(), frg_source.str())) {
         return false;
