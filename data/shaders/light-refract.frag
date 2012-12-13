@@ -19,10 +19,14 @@ void main()
     vec3 front_refraction = refract(eye_direction, normalized_normal, 1.5);
     // Offset the base map coordinate by the refaction vector, and re-normalize
     // to texture coordinate space [0, 1].
-    vec2 normcoord = (MapCoord.st + front_refraction.st + point_five) * point_five;
-    vec4 back_normal = texture2D(NormalMap, normcoord);
-    // Now refract again, using the minus normal from the lookup.
-    vec3 back_refraction = refract(front_refraction, back_normal.xyz, 1.0);
+    vec4 mc_perspective = MapCoord / MapCoord.w;
+    vec4 distance_value = texture2D(DistanceMap, mc_perspective.st);
+    float frontToBack = distance_value.z - mc_perspective.z;
+    vec3 back_position = (front_refraction - vertex_position) + frontToBack;
+    vec2 normcoord = (mc_perspective.st + front_refraction.st + point_five) * point_five;
+    vec3 back_normal = texture2D(NormalMap, normcoord).xyz;
+    // Now refract again, using the normal from the lookup.
+    vec3 back_refraction = refract(back_position, back_normal.xyz, 1.0);
     vec2 imagecoord = (normcoord + back_refraction.st + point_five) * point_five;
     vec4 texel = texture2D(ImageMap, imagecoord);
     // Add in a specular component
