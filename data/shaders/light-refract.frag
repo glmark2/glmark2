@@ -16,7 +16,7 @@ void main()
     // compute the transmitted vector through the "front" surface of the object.
     vec3 eye_direction = normalize(-vertex_position.xyz);
     vec3 normalized_normal = normalize(vertex_normal);
-    vec3 front_refraction = refract(eye_direction, normalized_normal, 1.45);
+    vec3 front_refraction = refract(eye_direction, normalized_normal, RefractiveIndex);
     // Find our best distance approximation through the object so we can
     // project the transmitted vector to the back of the object to find
     // the exit point.

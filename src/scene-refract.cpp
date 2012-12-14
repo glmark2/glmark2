@@ -77,6 +77,8 @@ SceneRefract::SceneRefract(Canvas& canvas) :
     }
     options_["texture"] = Scene::Option("texture", "nasa1", "Which texture to use",
                                         optionValues);
+    options_["index"] = Scene::Option("index", "1.2",
+                                      "Index of refraction of the medium to simulate");
     options_["use-vbo"] = Scene::Option("use-vbo", "true",
                                         "Whether to use VBOs for rendering",
                                         "false,true");
@@ -277,6 +279,8 @@ RefractPrivate::setup(map<string, Scene::Option>& options)
 
     frg_source.add_const("LightColor", lightColor);
     frg_source.add_const("LightSourcePosition", lightPosition);
+    float refractive_index(Util::fromString<float>(options["index"].value));
+    frg_source.add_const("RefractiveIndex", refractive_index);
 
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(), frg_source.str())) {
         return false;
