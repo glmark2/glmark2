@@ -87,11 +87,6 @@ SceneRefract::SceneRefract(Canvas& canvas) :
                                            "false,true");
 }
 
-SceneRefract::~SceneRefract()
-{
-    delete priv_;
-}
-
 bool
 SceneRefract::supported(bool show_errors)
 {
@@ -150,6 +145,7 @@ SceneRefract::teardown()
 {
     // Add scene-specific teardown here
     priv_->teardown();
+    delete priv_;
     Scene::teardown();
 }
 

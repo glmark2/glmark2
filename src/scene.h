@@ -580,7 +580,6 @@ class SceneRefract : public Scene
     RefractPrivate* priv_;
 public:
     SceneRefract(Canvas& canvas);
-    ~SceneRefract();
     bool supported(bool show_errors);
     bool load();
     void unload();
