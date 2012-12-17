@@ -563,7 +563,6 @@ class SceneShadow : public Scene
     ShadowPrivate* priv_;
 public:
     SceneShadow(Canvas& canvas);
-    ~SceneShadow();
     bool supported(bool show_errors);
     bool load();
     void unload();

@@ -463,11 +463,6 @@ SceneShadow::SceneShadow(Canvas& canvas) :
                                            "false,true");
 }
 
-SceneShadow::~SceneShadow()
-{
-    delete priv_;
-}
-
 bool
 SceneShadow::supported(bool show_errors)
 {
@@ -526,6 +521,7 @@ SceneShadow::teardown()
 {
     // Add scene-specific teardown here
     priv_->teardown();
+    delete priv_;
     Scene::teardown();
 }
 
