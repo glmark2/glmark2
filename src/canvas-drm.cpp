@@ -284,7 +284,6 @@ DRMState::do_flip()
 
     fd_set fds;
     FD_ZERO(&fds);
-    FD_SET(0, &fds);
     FD_SET(fd_, &fds);
     drmEventContext evCtx;
     evCtx.version = DRM_EVENT_CONTEXT_VERSION;
@@ -302,14 +301,6 @@ DRMState::do_flip()
                 gbm_surface_release_buffer(surface_, bo_);
                 bo_ = next;
             }
-            return;
-        }
-        else if (status == 0) {
-            Log::info("Timeout in select\n");
-            return;
-        }
-        else if (FD_ISSET(0, &fds)) {
-            Log::info("User interrupt received\n");
             return;
         }
         drmHandleEvent(fd_, &evCtx);
