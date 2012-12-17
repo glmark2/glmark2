@@ -44,6 +44,8 @@ class DRMState
     static void page_flip_handler(int fd, unsigned int frame, unsigned int sec,
                                   unsigned int usec, void* data);
     static void fb_destroy_callback(gbm_bo* bo, void* data);
+    static void quit_handler(int signum);
+    static bool should_quit_;
     DRMFBState* fb_get_from_bo(gbm_bo* bo);
     bool init_gbm();
     int fd_;
@@ -73,6 +75,7 @@ public:
     bool init();
     bool reset();
     void do_flip();
+    bool should_quit() const { return should_quit_; }
     gbm_device* device() const { return dev_; }
     gbm_surface* surface() const { return surface_; }
     unsigned int mode_width() const
@@ -124,9 +127,6 @@ private:
 
     void resize_no_viewport(int width, int height);
     void init_gl_extensions();
-
-    static void quit_handler(int signum);
-    static bool should_quit_;
 };
 
 #endif

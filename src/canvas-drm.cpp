@@ -223,6 +223,8 @@ DRMState::init()
         return false;
     }
 
+    signal(SIGINT, &DRMState::quit_handler);
+
     return true;
 }
 
@@ -246,6 +248,15 @@ DRMState::reset()
     return true;
 }
 
+
+bool DRMState::should_quit_ = false;
+
+void
+DRMState::quit_handler(int signo)
+{
+    Log::debug("Got SIGINT (%d).\n", signo);
+    should_quit_ = true;
+}
 void
 DRMState::page_flip_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void* data)
 {
@@ -282,7 +293,15 @@ DRMState::do_flip()
     while (waiting) {
         status = select(fd_ + 1, &fds, 0, 0, 0);
         if (status < 0) {
-            Log::error("Error in select: %d\n", status);
+            // Most of the time, select() will return an error because the
+            // user pressed Ctrl-C.  So, only print out a message in debug
+            // mode, and just check for the likely condition and release
+            // the current buffer object before getting out.
+            Log::debug("Error in select\n");
+            if (should_quit()) {
+                gbm_surface_release_buffer(surface_, bo_);
+                bo_ = next;
+            }
             return;
         }
         else if (status == 0) {
@@ -344,7 +363,9 @@ DRMState::cleanup()
 bool
 CanvasDRM::init()
 {
-    signal(SIGINT, &CanvasDRM::quit_handler);
+    Log::info("NOTE: The DRM canvas is still experimental and its behavior\n");
+    Log::info("      is subject to change as GBM and modesetting behavior\n");
+    Log::info("      evolves\n");
 
     if (!drm_.init()) {
         Log::error("Failed to initialize the DRM canvas\n");
@@ -460,7 +481,7 @@ CanvasDRM::write_to_file(std::string &filename)
 bool
 CanvasDRM::should_quit()
 {
-    return should_quit_;
+    return drm_.should_quit();
 }
 
 void
@@ -572,12 +593,4 @@ CanvasDRM::resize_no_viewport(int width, int height)
     projection_ =
         LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
                                      1.0, 1024.0);
-}
-
-bool CanvasDRM::should_quit_ = false;
-
-void
-CanvasDRM::quit_handler(int /* signum */)
-{
-    should_quit_ = true;
 }
