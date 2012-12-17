@@ -574,4 +574,20 @@ public:
     ValidationResult validate();
 };
 
+class RefractPrivate;
+class SceneRefract : public Scene
+{
+    RefractPrivate* priv_;
+public:
+    SceneRefract(Canvas& canvas);
+    bool supported(bool show_errors);
+    bool load();
+    void unload();
+    bool setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+};
+
 #endif
