@@ -20,6 +20,11 @@ def options(opt):
                    default = False, help='build using OpenGL 2.0')
     opt.add_option('--enable-glesv2', action='store_true', dest = 'glesv2',
                    default = False, help='build using OpenGL ES 2.0')
+    opt.add_option('--enable-gl-drm', action='store_true', dest = 'gl_drm',
+                   default = False, help='build using OpenGL 2.0 without X')
+    opt.add_option('--enable-glesv2-drm', action='store_true',
+                   dest = 'glesv2_drm',
+                   default = False, help='build using OpenGL ES 2.0 without X')
     opt.add_option('--no-debug', action='store_false', dest = 'debug',
                    default = True, help='disable compiler debug information')
     opt.add_option('--no-opt', action='store_false', dest = 'opt',
@@ -30,8 +35,10 @@ def options(opt):
                    help='path to additional data (models, shaders, textures)')
 
 def configure(ctx):
-    if not Options.options.gl and not Options.options.glesv2:
-        ctx.fatal("You must configure using at least one of --enable-gl, --enable-glesv2")
+    if not Options.options.gl and not Options.options.glesv2 and \
+       not Options.options.gl_drm and not Options.options.glesv2_drm:
+        ctx.fatal("You must configure using at least one of --enable-gl, " +
+                  "--enable-glesv2, --enable-gl-drm, --enable-glesv2-drm")
 
     ctx.check_tool('gnu_dirs')
     ctx.check_tool('compiler_cc')
@@ -54,15 +61,22 @@ def configure(ctx):
                       uselib = uselib, mandatory = True)
 
     # Check required packages
-    req_pkgs = [('x11', 'x11'), ('libpng12', 'libpng12')]
+    req_pkgs = [('libpng12', 'libpng12')]
     for (pkg, uselib) in req_pkgs:
         ctx.check_cfg(package = pkg, uselib_store = uselib,
                       args = '--cflags --libs', mandatory = True)
 
     # Check optional packages
-    opt_pkgs = [('gl', 'gl', Options.options.gl),
-                ('egl', 'egl', Options.options.glesv2),
-                ('glesv2', 'glesv2', Options.options.glesv2)]
+    opt_pkgs = [('x11', 'x11', Options.options.gl or Options.options.glesv2),
+                ('gl', 'gl', Options.options.gl or Options.options.gl_drm),
+                ('egl', 'egl', Options.options.glesv2 or
+                               Options.options.glesv2_drm),
+                ('glesv2', 'glesv2', Options.options.glesv2 or
+                                     Options.options.glesv2_drm),
+                ('libdrm','drm', Options.options.gl_drm or
+                                 Options.options.glesv2_drm),
+                ('gbm','gbm', Options.options.gl_drm or
+                              Options.options.glesv2_drm)]
     for (pkg, uselib, mandatory) in opt_pkgs:
         ctx.check_cfg(package = pkg, uselib_store = uselib,
                       args = '--cflags --libs', mandatory = mandatory)
@@ -94,6 +108,8 @@ def configure(ctx):
 
     ctx.env.USE_GL = Options.options.gl
     ctx.env.USE_GLESv2 = Options.options.glesv2
+    ctx.env.USE_GL_DRM = Options.options.gl_drm
+    ctx.env.USE_GLESv2_DRM = Options.options.glesv2_drm
 
     ctx.msg("Prefix", ctx.env.PREFIX, color = 'PINK')
     ctx.msg("Data path", data_path, color = 'PINK')
@@ -101,9 +117,13 @@ def configure(ctx):
             color = 'PINK');
     if ctx.env.HAVE_EXTRAS:
         ctx.msg("Extras path", Options.options.extras_path, color = 'PINK')
-    ctx.msg("Building GL2 version", "Yes" if ctx.env.USE_GL else "No",
+    ctx.msg("Building X11 GL2 version", "Yes" if ctx.env.USE_GL else "No",
             color = 'PINK')
-    ctx.msg("Building GLESv2 version", "Yes" if ctx.env.USE_GLESv2 else "No",
+    ctx.msg("Building X11 GLESv2 version", "Yes" if ctx.env.USE_GLESv2 else "No",
+            color = 'PINK')
+    ctx.msg("Building DRM GL2 version", "Yes" if ctx.env.USE_GL_DRM else "No",
+            color = 'PINK')
+    ctx.msg("Building DRM GLESv2 version", "Yes" if ctx.env.USE_GLESv2_DRM else "No",
             color = 'PINK')
 
 def build(ctx):

@@ -35,7 +35,9 @@
 #include <iostream>
 #include <fstream>
 
-#if USE_GL
+#if USE_DRM
+#include "canvas-drm.h"
+#elif USE_GL
 #include "canvas-x11-glx.h"
 #elif USE_GLESv2
 #include "canvas-x11-egl.h"
@@ -180,7 +182,9 @@ main(int argc, char *argv[])
     }
 
     // Create the canvas
-#if USE_GL
+#if USE_DRM
+    CanvasDRM canvas(Options::size.first, Options::size.second);
+#elif USE_GL
     CanvasX11GLX canvas(Options::size.first, Options::size.second);
 #elif USE_GLESv2
     CanvasX11EGL canvas(Options::size.first, Options::size.second);
