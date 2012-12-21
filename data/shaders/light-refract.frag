@@ -29,7 +29,7 @@ void main()
     // object.
     vec2 normcoord = back_position.st * point_five + point_five;
     vec3 back_normal = texture2D(NormalMap, normcoord).xyz;
-    vec3 back_refraction = refract(back_position, back_normal, 1.0);
+    vec3 back_refraction = refract(back_position, back_normal, 1.0/RefractiveIndex);
     // Use the transmitted vector from the exit point to determine where
     // the vector would intersect the environment (in this case a background
     // image.
