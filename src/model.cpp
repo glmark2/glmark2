@@ -35,6 +35,7 @@
 
 using std::string;
 using std::vector;
+using LibMatrix::vec2;
 using LibMatrix::vec3;
 using LibMatrix::uvec3;
 
@@ -501,25 +502,54 @@ Model::load_3ds(const std::string &filename)
 }
 
 /**
- * Parse vec3 values from an OBJ file.
+ * Parse 2-element vertex attribute from an OBJ file.
  *
  * @param source the source line to parse
  * @param v the vec3 to populate
  */
 static void
-obj_get_values(const string& source, vec3& v)
+obj_get_attrib(const string& source, vec2& v)
 {
-    // Skip the definition type...
-    string::size_type endPos = source.find(" ");
+    // Find the first value...
     string::size_type startPos(0);
+    string::size_type endPos = source.find(" ", startPos);
     if (endPos == string::npos)
     {
         Log::error("Bad element '%s'\n", source.c_str());
         return;
     }
-    // Find the first value...
+    string::size_type numChars(endPos - startPos);
+    string xs(source, startPos, numChars);
+    float x = Util::fromString<float>(xs);
+    // And the second value (there might be a third, but we don't care)...
     startPos = endPos + 1;
     endPos = source.find(" ", startPos);
+    if (endPos == string::npos)
+    {
+        numChars = endPos;
+    }
+    else
+    {
+        numChars = endPos - startPos;
+    }
+    string ys(source, startPos, endPos - startPos);
+    float y = Util::fromString<float>(ys);
+    v.x(x);
+    v.y(y);
+}
+
+/**
+ * Parse 3-element vertex attribute from an OBJ file.
+ *
+ * @param source the source line to parse
+ * @param v the vec3 to populate
+ */
+static void
+obj_get_attrib(const string& source, vec3& v)
+{
+    // Find the first value...
+    string::size_type startPos(0);
+    string::size_type endPos = source.find(" ", startPos);
     if (endPos == string::npos)
     {
         Log::error("Bad element '%s'\n", source.c_str());
@@ -557,26 +587,84 @@ obj_get_values(const string& source, vec3& v)
     v.z(z);
 }
 
+struct ObjFace
+{
+    ObjFace() : which(0) {}
+    uvec3 v;
+    uvec3 t;
+    uvec3 n;
+    unsigned int which;
+};
+
+static const unsigned int OBJ_FACE_V = 0x1;
+static const unsigned int OBJ_FACE_T = 0x2;
+static const unsigned int OBJ_FACE_N = 0x4;
+
+
+static void
+obj_face_get_index(const string& tuple, unsigned int& which,
+    unsigned int& v, unsigned int& t, unsigned int& n)
+{
+    // If we've been called at all, we at least have a position index.
+    // (any '/' in tuple will terminate parsing and give us the right value)
+    which = OBJ_FACE_V;
+    v = Util::fromString<unsigned int>(tuple);
+
+    // Here we need to see if we've got index separators indicating
+    // we'll have more than one index type.  If not, we're done.
+    string::size_type slashPos = tuple.find("/");
+    if (slashPos == string::npos)
+    {
+        return;
+    }
+
+    Log::debug("obj_face_get_index: got multi-index face description\n");
+
+    // If we have a second slash, then we definitely have a normal index.
+    // We can then check for a texcoord index.
+    string::size_type tsPos = slashPos + 1;
+    string::size_type slash2Pos = tuple.find("/", tsPos);
+    string::size_type tsLen = string::npos;
+    if (slash2Pos != string::npos)
+    {
+        // At this point, we know we at least have a normal index
+        Log::debug("obj_face_get_index: got normal index\n");
+        which |= OBJ_FACE_N;
+        string::size_type nsPos = slash2Pos + 1;
+        string ns(tuple, nsPos, string::npos);
+        n = Util::fromString<unsigned int>(ns);
+
+        // Let's see if there's a texcoord index
+        tsLen = slash2Pos - slashPos;
+        if (tsLen == 1)
+        {
+            // Only a position apart, so there's no texcoord, only a
+            // normal.
+            return;
+        }    
+    }
+
+    Log::debug("obj_face_get_index: got texcoord index\n");
+    which |= OBJ_FACE_T;
+    string ts(tuple, tsPos, tsLen);
+    t = Util::fromString<unsigned int>(ts);
+    return;
+}
+
 /**
- * Parse uvec3 values from an OBJ file.
+ * Parse a face description from an OBJ file.
+ * Faces always specify position, but optionally can also contain separate
+ * indices for texcoords and normals.
  *
  * @param source the source line to parse
  * @param v the uvec3 to populate
  */
 static void
-obj_get_values(const string& source, uvec3& v)
+obj_get_face(const string& source, ObjFace& f)
 {
-    // Skip the definition type...
-    string::size_type endPos = source.find(" ");
-    string::size_type startPos(0);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
     // Find the first value...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
+    string::size_type startPos(0);
+    string::size_type endPos = source.find(" ", startPos);
     if (endPos == string::npos)
     {
         Log::error("Bad element '%s'\n", source.c_str());
@@ -584,7 +672,12 @@ obj_get_values(const string& source, uvec3& v)
     }
     string::size_type numChars(endPos - startPos);
     string xs(source, startPos, numChars);
-    unsigned int x = Util::fromString<unsigned int>(xs);
+    unsigned int which(0);
+    unsigned int vx(0);
+    unsigned int tx(0);
+    unsigned int nx(0);
+    obj_face_get_index(xs, which, vx, tx, nx);
+
     // Then the second value...
     startPos = endPos+1;
     endPos = source.find(" ", startPos);
@@ -595,7 +688,11 @@ obj_get_values(const string& source, uvec3& v)
     }
     numChars = endPos - startPos;
     string ys(source, startPos, numChars);
-    unsigned int y = Util::fromString<unsigned int>(ys);
+    unsigned int vy(0);
+    unsigned int ty(0);
+    unsigned int ny(0);
+    obj_face_get_index(ys, which, vy, ty, ny);
+
     // And the third value (there might be a fourth, but we don't care)...
     startPos = endPos + 1;
     endPos = source.find(" ", startPos);
@@ -608,10 +705,21 @@ obj_get_values(const string& source, uvec3& v)
         numChars = endPos - startPos;
     }
     string zs(source, startPos, numChars);
-    unsigned int z = Util::fromString<unsigned int>(zs);
-    v.x(x);
-    v.y(y);
-    v.z(z);
+    unsigned int vz(0);
+    unsigned int tz(0);
+    unsigned int nz(0);
+    obj_face_get_index(zs, which, vz, tz, nz);
+
+    f.which = which;
+    f.v = uvec3(vx, vy, vz);
+    if (which & OBJ_FACE_T)
+    {
+        f.t = uvec3(tx, ty, tz);
+    }
+    if (which & OBJ_FACE_N)
+    {
+        f.n = uvec3(nx, ny, nz);
+    }
 }
 
 /**
@@ -641,14 +749,16 @@ Model::load_obj(const std::string &filename)
         sourceVec.push_back(curLine);
     }
 
-    // Give ourselves an object to populate.
-    objects_.push_back(Object(filename));
-    Object& object(objects_.back());
-
+    static const string object_definition("o");
     static const string vertex_definition("v");
     static const string normal_definition("vn");
     static const string texcoord_definition("vt");
     static const string face_definition("f");
+    vector<vec3> positions;
+    vector<vec3> normals;
+    vector<vec2> texcoords;
+    vector<ObjFace> faces;
+    string name;
     for (vector<string>::const_iterator lineIt = sourceVec.begin();
          lineIt != sourceVec.end();
          lineIt++)
@@ -660,41 +770,114 @@ Model::load_obj(const std::string &filename)
         string::size_type startPos(0);
         string::size_type spacePos = curSrc.find(" ", startPos);
         string definitionType(curSrc, startPos, spacePos - startPos);
+        string definition(curSrc, spacePos + 1, string::npos);
+//         Log::debug("Current definition: %s %s\n", definitionType.c_str(),
+//             definition.c_str());
         if (definitionType == vertex_definition)
         {
-            Vertex v;
-            obj_get_values(curSrc, v.v);
-            object.vertices.push_back(v);
+            vec3 p;
+            obj_get_attrib(definition, p);
+            positions.push_back(p);
+//             Log::debug("Got position (%f, %f, %f)\n", p.x(), p.y(), p.z());
         }
         else if (definitionType == normal_definition)
         {
-            // If we encounter an OBJ model with normals, we can update this
-            // to update object.vertices.n directly
-            Log::debug("We got a normal...\n");
+            vec3 n;
+            obj_get_attrib(definition, n);
+            normals.push_back(n);
+//             Log::debug("Got normal (%f, %f, %f)\n", n.x(), n.y(), n.z());
         }
         else if (definitionType == texcoord_definition)
         {
-            // If we encounter an OBJ model with normals, we can update this
-            // to update object.vertices.t directly
-            Log::debug("We got a texcoord...\n");
+            vec2 t;
+            obj_get_attrib(definition, t);
+            texcoords.push_back(t);
+//             Log::debug("Got texcoord (%f, %f)\n", t.x(), t.y());
         }
         else if (definitionType == face_definition)
         {
-            uvec3 v;
-            obj_get_values(curSrc, v);
-            Face f;
-            // OBJ models index from '1'.
-            f.a = v.x() - 1;
-            f.b = v.y() - 1;
-            f.c = v.z() - 1;
-            object.faces.push_back(f);
+            ObjFace f;
+            obj_get_face(definition, f);
+            faces.push_back(f);
+#if 0
+            switch (f.which & (OBJ_FACE_V | OBJ_FACE_T | OBJ_FACE_N))
+            {
+                case OBJ_FACE_V:
+                    Log::debug("Got face %u %u %u\n", f.v.x(), f.v.y(), f.v.z());
+                    break;
+                case (OBJ_FACE_V + OBJ_FACE_T):
+                    Log::debug("Got face %u/%u %u/%u %u/%u\n",
+                        f.v.x(), f.t.x(), f.v.y(), f.t.y(), f.v.z(), f.t.z());
+                    break;
+                case (OBJ_FACE_V + OBJ_FACE_N):
+                    Log::debug("Got face %u//%u %u//%u %u//%u\n",
+                        f.v.x(), f.n.x(), f.v.y(), f.n.y(), f.v.z(), f.n.z());
+                    break;
+                case (OBJ_FACE_V + OBJ_FACE_T + OBJ_FACE_N):
+                    Log::debug("Got face %u/%u/%u %u/%u/%u %u/%u/%u\n",
+                        f.v.x(), f.t.x(), f.n.x(), f.v.y(), f.t.y(), f.n.y(),
+                        f.v.z(), f.t.z(), f.n.z());
+                    break;
+                default:
+                    Log::error("Got unknown face!!!!\n");
+                    break;
+            }
+#endif
+        }
+        else if (definitionType == object_definition)
+        {
+            name = definition;
         }
     }
+
+    // Give ourselves an object to populate.
+    objects_.push_back(Object(name));
+    Object& object(objects_.back());
+
+    if (!texcoords.empty())
+    {
+        gotTexcoords_ = true;
+    }
+    if (!normals.empty())
+    {
+        gotNormals_ = true;
+    }
+    unsigned int numVertices = positions.size();
+    object.vertices.reserve(numVertices);
+    for (unsigned int i = 0; i < numVertices; i++)
+    {
+        Vertex v;
+        v.v = positions[i];
+        if (gotTexcoords_)
+        {
+            v.t = texcoords[i];
+        }
+        if (gotNormals_)
+        {
+            v.n = normals[i];
+        }
+        object.vertices.push_back(v);
+    }
+    // XXXFIXME - need to update this to represent texcoord and normal
+    //            indices
+    unsigned int numFaces = faces.size();
+    object.faces.reserve(numFaces);
+    for (unsigned int i = 0; i < numFaces; i++)
+    {
+        Face f;
+        ObjFace& curObjFace = faces[i];
+        // OBJ models index from '1'.
+        f.a = curObjFace.v.x() - 1;
+        f.b = curObjFace.v.y() - 1;
+        f.c = curObjFace.v.z() - 1;
+        object.faces.push_back(f);
+    }
+
     // Compute bounding box for perspective projection
     compute_bounding_box(object);
 
-    Log::debug("Object populated with %u vertices and %u faces.\n",
-        object.vertices.size(), object.faces.size());
+    Log::debug("Object name: %s Vertex count: %u Face count: %u\n",
+        object.name.c_str(), object.vertices.size(), object.faces.size());
     return true;
 }
 
