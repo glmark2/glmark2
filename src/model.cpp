@@ -226,6 +226,9 @@ Model::convert_to_mesh(Mesh &mesh,
 void
 Model::calculate_texcoords()
 {
+    if (gotTexcoords_)
+        return;
+
     // Since the model didn't come with texcoords, and we don't actually know
     // if it came with normals, either, we'll use positional spherical mapping
     // to generate texcoords for the model.  See:
@@ -249,6 +252,8 @@ Model::calculate_texcoords()
             curVertex.t.y(asinf(vnorm.y()) / M_PI + 0.5);
         }
     }
+
+    gotTexcoords_ = true;
 }
 
 /**
@@ -257,6 +262,9 @@ Model::calculate_texcoords()
 void
 Model::calculate_normals()
 {
+    if (gotNormals_)
+        return;
+
     LibMatrix::vec3 n;
 
     for (std::vector<Object>::iterator iter = objects_.begin();
@@ -319,8 +327,9 @@ Model::calculate_normals()
             v.nt.normalize();
             v.nb.normalize();
         }
-
     }
+
+    gotNormals_ = true;
 }
 
 /**
