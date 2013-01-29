@@ -114,9 +114,9 @@ Model::append_object_to_mesh(const Object &object, Mesh &mesh,
     for(size_t i = 0; i < 3 * face_count; i += 3)
     {
         const Face &face = object.faces[i / 3];
-        const Vertex &a = object.vertices[face.a];
-        const Vertex &b = object.vertices[face.b];
-        const Vertex &c = object.vertices[face.c];
+        const Vertex &a = object.vertices[face.v.x()];
+        const Vertex &b = object.vertices[face.v.y()];
+        const Vertex &c = object.vertices[face.v.z()];
 
         mesh.next_vertex();
         if (p_pos >= 0)
@@ -270,9 +270,9 @@ Model::calculate_normals()
              f_iter++)
         {
             const Face &face = *f_iter;
-            Vertex &a = object.vertices[face.a];
-            Vertex &b = object.vertices[face.b];
-            Vertex &c = object.vertices[face.c];
+            Vertex &a = object.vertices[face.v.x()];
+            Vertex &b = object.vertices[face.v.y()];
+            Vertex &c = object.vertices[face.v.z()];
 
             /* Calculate normal */
             n = LibMatrix::vec3::cross(b.v - a.v, c.v - a.v);
@@ -426,9 +426,10 @@ Model::load_3ds(const std::string &filename)
                 for (uint16_t i = 0; i < qty; i++) {
                     float f[3];
                     read_or_fail(input_file, f, sizeof(float) * 3);
-                    object->vertices[i].v.x(f[0]);
-                    object->vertices[i].v.y(f[1]);
-                    object->vertices[i].v.z(f[2]);
+                    vec3& vertex = object->vertices[i].v;
+                    vertex.x(f[0]);
+                    vertex.y(f[1]);
+                    vertex.z(f[2]);
                 }
                 }
                 break;
@@ -446,10 +447,12 @@ Model::load_3ds(const std::string &filename)
                 read_or_fail(input_file, &qty, sizeof(uint16_t));
                 object->faces.resize(qty);
                 for (uint16_t i = 0; i < qty; i++) {
-                    read_or_fail(input_file, &object->faces[i].a, sizeof(uint16_t));
-                    read_or_fail(input_file, &object->faces[i].b, sizeof(uint16_t));
-                    read_or_fail(input_file, &object->faces[i].c, sizeof(uint16_t));
-                    read_or_fail(input_file, &object->faces[i].face_flags, sizeof(uint16_t));
+                    uint16_t f[4];
+                    read_or_fail(input_file, f, sizeof(uint16_t) * 4);
+                    uvec3& face = object->faces[i].v;
+                    face.x(f[0]);
+                    face.y(f[1]);
+                    face.z(f[2]);
                 }
                 }
                 break;
@@ -468,8 +471,9 @@ Model::load_3ds(const std::string &filename)
                 for (uint16_t i = 0; i < qty; i++) {
                     float f[2];
                     read_or_fail(input_file, f, sizeof(float) * 2);
-                    object->vertices[i].t.x(f[0]);
-                    object->vertices[i].t.y(f[1]);
+                    vec2& texcoord = object->vertices[i].t;
+                    texcoord.x(f[0]);
+                    texcoord.y(f[1]);
                 }
                 }
                 gotTexcoords_ = true;
@@ -501,14 +505,19 @@ Model::load_3ds(const std::string &filename)
     return true;
 }
 
+
+const unsigned int Model::Face::OBJ_FACE_V = 0x1;
+const unsigned int Model::Face::OBJ_FACE_T = 0x2;
+const unsigned int Model::Face::OBJ_FACE_N = 0x4;
+
 /**
  * Parse 2-element vertex attribute from an OBJ file.
  *
  * @param source the source line to parse
  * @param v the vec3 to populate
  */
-static void
-obj_get_attrib(const string& source, vec2& v)
+void
+Model::obj_get_attrib(const string& source, vec2& v)
 {
     // Find the first value...
     string::size_type startPos(0);
@@ -544,8 +553,8 @@ obj_get_attrib(const string& source, vec2& v)
  * @param source the source line to parse
  * @param v the vec3 to populate
  */
-static void
-obj_get_attrib(const string& source, vec3& v)
+void
+Model::obj_get_attrib(const string& source, vec3& v)
 {
     // Find the first value...
     string::size_type startPos(0);
@@ -587,27 +596,14 @@ obj_get_attrib(const string& source, vec3& v)
     v.z(z);
 }
 
-struct ObjFace
-{
-    ObjFace() : which(0) {}
-    uvec3 v;
-    uvec3 t;
-    uvec3 n;
-    unsigned int which;
-};
 
-static const unsigned int OBJ_FACE_V = 0x1;
-static const unsigned int OBJ_FACE_T = 0x2;
-static const unsigned int OBJ_FACE_N = 0x4;
-
-
-static void
-obj_face_get_index(const string& tuple, unsigned int& which,
+void
+Model::obj_face_get_index(const string& tuple, unsigned int& which,
     unsigned int& v, unsigned int& t, unsigned int& n)
 {
     // If we've been called at all, we at least have a position index.
     // (any '/' in tuple will terminate parsing and give us the right value)
-    which = OBJ_FACE_V;
+    which = Face::OBJ_FACE_V;
     v = Util::fromString<unsigned int>(tuple);
 
     // Here we need to see if we've got index separators indicating
@@ -629,7 +625,7 @@ obj_face_get_index(const string& tuple, unsigned int& which,
     {
         // At this point, we know we at least have a normal index
         Log::debug("obj_face_get_index: got normal index\n");
-        which |= OBJ_FACE_N;
+        which |= Face::OBJ_FACE_N;
         string::size_type nsPos = slash2Pos + 1;
         string ns(tuple, nsPos, string::npos);
         n = Util::fromString<unsigned int>(ns);
@@ -645,7 +641,7 @@ obj_face_get_index(const string& tuple, unsigned int& which,
     }
 
     Log::debug("obj_face_get_index: got texcoord index\n");
-    which |= OBJ_FACE_T;
+    which |= Face::OBJ_FACE_T;
     string ts(tuple, tsPos, tsLen);
     t = Util::fromString<unsigned int>(ts);
     return;
@@ -659,8 +655,8 @@ obj_face_get_index(const string& tuple, unsigned int& which,
  * @param source the source line to parse
  * @param v the uvec3 to populate
  */
-static void
-obj_get_face(const string& source, ObjFace& f)
+void
+Model::obj_get_face(const string& source, Face& f)
 {
     // Find the first value...
     string::size_type startPos(0);
@@ -710,15 +706,22 @@ obj_get_face(const string& source, ObjFace& f)
     unsigned int nz(0);
     obj_face_get_index(zs, which, vz, tz, nz);
 
+    // OBJ models index from '1', so subtract to re-base to '0'.
     f.which = which;
-    f.v = uvec3(vx, vy, vz);
-    if (which & OBJ_FACE_T)
+    f.v.x(vx - 1);
+    f.v.y(vy - 1);
+    f.v.z(vz - 1);
+    if (which & Face::OBJ_FACE_T)
     {
-        f.t = uvec3(tx, ty, tz);
+        f.t.x(tx - 1);
+        f.t.y(ty - 1);
+        f.t.z(tz - 1);
     }
-    if (which & OBJ_FACE_N)
+    if (which & Face::OBJ_FACE_N)
     {
-        f.n = uvec3(nx, ny, nz);
+        f.n.x(nx - 1);
+        f.n.y(ny - 1);
+        f.n.z(nz - 1);
     }
 }
 
@@ -749,6 +752,10 @@ Model::load_obj(const std::string &filename)
         sourceVec.push_back(curLine);
     }
 
+    // Give ourselves an object to populate.
+    objects_.push_back(Object(string()));
+    Object& object(objects_.back());
+
     static const string object_definition("o");
     static const string vertex_definition("v");
     static const string normal_definition("vn");
@@ -757,82 +764,47 @@ Model::load_obj(const std::string &filename)
     vector<vec3> positions;
     vector<vec3> normals;
     vector<vec2> texcoords;
-    vector<ObjFace> faces;
-    string name;
     for (vector<string>::const_iterator lineIt = sourceVec.begin();
          lineIt != sourceVec.end();
          lineIt++)
     {
         const string& curSrc = *lineIt;
         // Is it a vertex attribute, a face description, comment or other?
-        // We only care about the first two, we ignore comments, object names,
-        // group names, smoothing groups, etc.
+        // We only care about the first two, we ignore comments, group names,
+        // smoothing groups, etc.
         string::size_type startPos(0);
         string::size_type spacePos = curSrc.find(" ", startPos);
         string definitionType(curSrc, startPos, spacePos - startPos);
         string definition(curSrc, spacePos + 1, string::npos);
-//         Log::debug("Current definition: %s %s\n", definitionType.c_str(),
-//             definition.c_str());
         if (definitionType == vertex_definition)
         {
             vec3 p;
             obj_get_attrib(definition, p);
             positions.push_back(p);
-//             Log::debug("Got position (%f, %f, %f)\n", p.x(), p.y(), p.z());
         }
         else if (definitionType == normal_definition)
         {
             vec3 n;
             obj_get_attrib(definition, n);
             normals.push_back(n);
-//             Log::debug("Got normal (%f, %f, %f)\n", n.x(), n.y(), n.z());
         }
         else if (definitionType == texcoord_definition)
         {
             vec2 t;
             obj_get_attrib(definition, t);
             texcoords.push_back(t);
-//             Log::debug("Got texcoord (%f, %f)\n", t.x(), t.y());
         }
         else if (definitionType == face_definition)
         {
-            ObjFace f;
+            Face f;
             obj_get_face(definition, f);
-            faces.push_back(f);
-#if 0
-            switch (f.which & (OBJ_FACE_V | OBJ_FACE_T | OBJ_FACE_N))
-            {
-                case OBJ_FACE_V:
-                    Log::debug("Got face %u %u %u\n", f.v.x(), f.v.y(), f.v.z());
-                    break;
-                case (OBJ_FACE_V + OBJ_FACE_T):
-                    Log::debug("Got face %u/%u %u/%u %u/%u\n",
-                        f.v.x(), f.t.x(), f.v.y(), f.t.y(), f.v.z(), f.t.z());
-                    break;
-                case (OBJ_FACE_V + OBJ_FACE_N):
-                    Log::debug("Got face %u//%u %u//%u %u//%u\n",
-                        f.v.x(), f.n.x(), f.v.y(), f.n.y(), f.v.z(), f.n.z());
-                    break;
-                case (OBJ_FACE_V + OBJ_FACE_T + OBJ_FACE_N):
-                    Log::debug("Got face %u/%u/%u %u/%u/%u %u/%u/%u\n",
-                        f.v.x(), f.t.x(), f.n.x(), f.v.y(), f.t.y(), f.n.y(),
-                        f.v.z(), f.t.z(), f.n.z());
-                    break;
-                default:
-                    Log::error("Got unknown face!!!!\n");
-                    break;
-            }
-#endif
+            object.faces.push_back(f);
         }
         else if (definitionType == object_definition)
         {
-            name = definition;
+            object.name = definition;
         }
     }
-
-    // Give ourselves an object to populate.
-    objects_.push_back(Object(name));
-    Object& object(objects_.back());
 
     if (!texcoords.empty())
     {
@@ -843,41 +815,26 @@ Model::load_obj(const std::string &filename)
         gotNormals_ = true;
     }
     unsigned int numVertices = positions.size();
-    object.vertices.reserve(numVertices);
+    object.vertices.resize(numVertices);
     for (unsigned int i = 0; i < numVertices; i++)
     {
-        Vertex v;
-        v.v = positions[i];
+        Vertex& curVertex = object.vertices[i];
+        curVertex.v = positions[i];
         if (gotTexcoords_)
         {
-            v.t = texcoords[i];
+            curVertex.t = texcoords[i];
         }
         if (gotNormals_)
         {
-            v.n = normals[i];
+            curVertex.n = normals[i];
         }
-        object.vertices.push_back(v);
-    }
-    // XXXFIXME - need to update this to represent texcoord and normal
-    //            indices
-    unsigned int numFaces = faces.size();
-    object.faces.reserve(numFaces);
-    for (unsigned int i = 0; i < numFaces; i++)
-    {
-        Face f;
-        ObjFace& curObjFace = faces[i];
-        // OBJ models index from '1'.
-        f.a = curObjFace.v.x() - 1;
-        f.b = curObjFace.v.y() - 1;
-        f.c = curObjFace.v.z() - 1;
-        object.faces.push_back(f);
     }
 
     // Compute bounding box for perspective projection
     compute_bounding_box(object);
 
     Log::debug("Object name: %s Vertex count: %u Face count: %u\n",
-        object.name.c_str(), object.vertices.size(), object.faces.size());
+        object.name.empty() ? "(none)" : object.name.c_str(), object.vertices.size(), object.faces.size());
     return true;
 }
 
