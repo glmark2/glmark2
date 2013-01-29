@@ -80,7 +80,8 @@ SceneBump::setup_model_plain(const std::string &type)
     if(!model.load(poly_filename))
         return false;
 
-    model.calculate_normals();
+    if (model.needNormals())
+        model.calculate_normals();
 
     /* Tell the converter that we only care about position and normal attributes */
     std::vector<std::pair<Model::AttribType, int> > attribs;
@@ -177,7 +178,8 @@ SceneBump::setup_model_normals_tangent()
     if(!model.load("asteroid-low"))
         return false;
 
-    model.calculate_normals();
+    if (model.needNormals())
+        model.calculate_normals();
 
     /* Calculate the half vector */
     LibMatrix::vec3 halfVector(lightPosition.x(), lightPosition.y(), lightPosition.z());
@@ -234,7 +236,8 @@ SceneBump::setup_model_height()
     if(!model.load("asteroid-low"))
         return false;
 
-    model.calculate_normals();
+    if (model.needNormals())
+        model.calculate_normals();
 
     /* Calculate the half vector */
     LibMatrix::vec3 halfVector(lightPosition.x(), lightPosition.y(), lightPosition.z());

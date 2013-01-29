@@ -141,7 +141,8 @@ SceneBuild::setup()
         orientationVec_ = vec3(0.0, 1.0, 0.0);
     }
 
-    model.calculate_normals();
+    if (model.needNormals())
+        model.calculate_normals();
 
     /* Tell the converter that we only care about position and normal attributes */
     std::vector<std::pair<Model::AttribType, int> > attribs;

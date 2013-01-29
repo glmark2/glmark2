@@ -208,7 +208,9 @@ SceneTexture::setup()
 
     if (model.needTexcoords())
         model.calculate_texcoords();
-    model.calculate_normals();
+    if (model.needNormals())
+        model.calculate_normals();
+
     // Tell the converter which attributes we care about
     std::vector<std::pair<Model::AttribType, int> > attribs;
     attribs.push_back(std::pair<Model::AttribType, int>(Model::AttribTypePosition, 3));
