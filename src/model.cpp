@@ -109,50 +109,65 @@ Model::append_object_to_mesh(const Object &object, Mesh &mesh,
                              int p_pos, int n_pos, int t_pos,
                              int nt_pos, int nb_pos)
 {
-    size_t face_count = object.faces.size();
-
-    for(size_t i = 0; i < 3 * face_count; i += 3)
+    for (vector<Face>::const_iterator faceIt = object.faces.begin();
+         faceIt != object.faces.end();
+         faceIt++)
     {
-        const Face &face = object.faces[i / 3];
-        const Vertex &a = object.vertices[face.v.x()];
-        const Vertex &b = object.vertices[face.v.y()];
-        const Vertex &c = object.vertices[face.v.z()];
+        // In some model file formats (OBJ in particular), the face description
+        // may contain separate indices per-attribute.  So, we need to allow
+        // for this when adding each vertex attribute to the mesh.
+        const Face &face = *faceIt;
+        const Vertex &v1 = object.vertices[face.v.x()];
+        const Vertex &v2 = object.vertices[face.v.y()];
+        const Vertex &v3 = object.vertices[face.v.z()];
+
+        bool separate_t(face.which & Face::OBJ_FACE_T);
+
+        const Vertex &t1 = object.vertices[separate_t ? face.t.x() : face.v.x()];
+        const Vertex &t2 = object.vertices[separate_t ? face.t.y() : face.v.y()];
+        const Vertex &t3 = object.vertices[separate_t ? face.t.z() : face.v.z()];
+
+        bool separate_n(face.which & Face::OBJ_FACE_N);
+
+        const Vertex &n1 = object.vertices[separate_n ? face.n.x() : face.v.x()];
+        const Vertex &n2 = object.vertices[separate_n ? face.n.y() : face.v.y()];
+        const Vertex &n3 = object.vertices[separate_n ? face.n.z() : face.v.z()];
 
         mesh.next_vertex();
         if (p_pos >= 0)
-            mesh.set_attrib(p_pos, a.v);
+            mesh.set_attrib(p_pos, v1.v);
         if (n_pos >= 0)
-            mesh.set_attrib(n_pos, a.n);
+            mesh.set_attrib(n_pos, n1.n);
         if (t_pos >= 0)
-            mesh.set_attrib(t_pos, a.t);
+            mesh.set_attrib(t_pos, t1.t);
         if (nt_pos >= 0)
-            mesh.set_attrib(nt_pos, a.nt);
+            mesh.set_attrib(nt_pos, v1.nt);
         if (nb_pos >= 0)
-            mesh.set_attrib(nb_pos, a.nb);
+            mesh.set_attrib(nb_pos, v1.nb);
 
         mesh.next_vertex();
         if (p_pos >= 0)
-            mesh.set_attrib(p_pos, b.v);
+            mesh.set_attrib(p_pos, v2.v);
         if (n_pos >= 0)
-            mesh.set_attrib(n_pos, b.n);
+            mesh.set_attrib(n_pos, n2.n);
         if (t_pos >= 0)
-            mesh.set_attrib(t_pos, b.t);
+            mesh.set_attrib(t_pos, t2.t);
         if (nt_pos >= 0)
-            mesh.set_attrib(nt_pos, b.nt);
+            mesh.set_attrib(nt_pos, v2.nt);
         if (nb_pos >= 0)
-            mesh.set_attrib(nb_pos, b.nb);
+            mesh.set_attrib(nb_pos, v2.nb);
 
         mesh.next_vertex();
         if (p_pos >= 0)
-            mesh.set_attrib(p_pos, c.v);
+            mesh.set_attrib(p_pos, v3.v);
         if (n_pos >= 0)
-            mesh.set_attrib(n_pos, c.n);
+            mesh.set_attrib(n_pos, n3.n);
         if (t_pos >= 0)
-            mesh.set_attrib(t_pos, c.t);
+            mesh.set_attrib(t_pos, t3.t);
         if (nt_pos >= 0)
-            mesh.set_attrib(nt_pos, c.nt);
+            mesh.set_attrib(nt_pos, v3.nt);
         if (nb_pos >= 0)
-            mesh.set_attrib(nb_pos, c.nb);
+            mesh.set_attrib(nb_pos, v3.nb);
     }
 }
 
