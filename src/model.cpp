@@ -538,35 +538,19 @@ const unsigned int Model::Face::OBJ_FACE_N = 0x4;
  * Parse 2-element vertex attribute from an OBJ file.
  *
  * @param source the source line to parse
- * @param v the vec3 to populate
+ * @param v the vec2 to populate
  */
 void
 Model::obj_get_attrib(const string& source, vec2& v)
 {
+    // Our attribs are whitespace separated, so use a fuzzy split.
+    vector<string> elements;
+    Util::split(source, ' ', elements, Util::SplitModeFuzzy);
+
     // Find the first value...
-    string::size_type startPos(0);
-    string::size_type endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
-    string::size_type numChars(endPos - startPos);
-    string xs(source, startPos, numChars);
-    float x = Util::fromString<float>(xs);
+    float x = Util::fromString<float>(elements[0]);
     // And the second value (there might be a third, but we don't care)...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        numChars = endPos;
-    }
-    else
-    {
-        numChars = endPos - startPos;
-    }
-    string ys(source, startPos, endPos - startPos);
-    float y = Util::fromString<float>(ys);
+    float y = Util::fromString<float>(elements[1]);
     v.x(x);
     v.y(y);
 }
@@ -580,41 +564,16 @@ Model::obj_get_attrib(const string& source, vec2& v)
 void
 Model::obj_get_attrib(const string& source, vec3& v)
 {
+    // Our attribs are whitespace separated, so use a fuzzy split.
+    vector<string> elements;
+    Util::split(source, ' ', elements, Util::SplitModeFuzzy);
+
     // Find the first value...
-    string::size_type startPos(0);
-    string::size_type endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
-    string::size_type numChars(endPos - startPos);
-    string xs(source, startPos, numChars);
-    float x = Util::fromString<float>(xs);
+    float x = Util::fromString<float>(elements[0]);
     // Then the second value...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
-    numChars = endPos - startPos;
-    string ys(source, startPos, numChars);
-    float y = Util::fromString<float>(ys);
+    float y = Util::fromString<float>(elements[1]);
     // And the third value (there might be a fourth, but we don't care)...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        numChars = endPos;
-    }
-    else
-    {
-        numChars = endPos - startPos;
-    }
-    string zs(source, startPos, endPos - startPos);
-    float z = Util::fromString<float>(zs);
+    float z = Util::fromString<float>(elements[2]);
     v.x(x);
     v.y(y);
     v.z(z);
@@ -625,49 +584,34 @@ void
 Model::obj_face_get_index(const string& tuple, unsigned int& which,
     unsigned int& v, unsigned int& t, unsigned int& n)
 {
-    // If we've been called at all, we at least have a position index.
-    // (any '/' in tuple will terminate parsing and give us the right value)
-    which = Face::OBJ_FACE_V;
-    v = Util::fromString<unsigned int>(tuple);
+    // We can use a normal split here as syntax requires no spaces around
+    // the '/' delimiter for a face description.
+    vector<string> elements;
+    Util::split(tuple, '/', elements, Util::SplitModeNormal);
 
-    // Here we need to see if we've got index separators indicating
-    // we'll have more than one index type.  If not, we're done.
-    string::size_type slashPos = tuple.find("/");
-    if (slashPos == string::npos)
+    if (elements.empty())
     {
+        which = 0;
         return;
     }
 
-    Log::debug("obj_face_get_index: got multi-index face description\n");
+    which = Face::OBJ_FACE_V;
+    v = Util::fromString<unsigned int>(elements[0]);
 
-    // If we have a second slash, then we definitely have a normal index.
-    // We can then check for a texcoord index.
-    string::size_type tsPos = slashPos + 1;
-    string::size_type slash2Pos = tuple.find("/", tsPos);
-    string::size_type tsLen = string::npos;
-    if (slash2Pos != string::npos)
+    unsigned int num_elements = elements.size();
+
+    if (num_elements > 1 && !elements[1].empty())
     {
-        // At this point, we know we at least have a normal index
-        Log::debug("obj_face_get_index: got normal index\n");
-        which |= Face::OBJ_FACE_N;
-        string::size_type nsPos = slash2Pos + 1;
-        string ns(tuple, nsPos, string::npos);
-        n = Util::fromString<unsigned int>(ns);
-
-        // Let's see if there's a texcoord index
-        tsLen = slash2Pos - slashPos;
-        if (tsLen == 1)
-        {
-            // Only a position apart, so there's no texcoord, only a
-            // normal.
-            return;
-        }    
+        which |= Face::OBJ_FACE_T;
+        t = Util::fromString<unsigned int>(elements[1]);
     }
 
-    Log::debug("obj_face_get_index: got texcoord index\n");
-    which |= Face::OBJ_FACE_T;
-    string ts(tuple, tsPos, tsLen);
-    t = Util::fromString<unsigned int>(ts);
+    if (num_elements > 2 && !elements[2].empty())
+    {
+        which |= Face::OBJ_FACE_N;
+        n = Util::fromString<unsigned int>(elements[2]);
+    }
+
     return;
 }
 
@@ -682,55 +626,31 @@ Model::obj_face_get_index(const string& tuple, unsigned int& which,
 void
 Model::obj_get_face(const string& source, Face& f)
 {
+    // Our indices are whitespace separated, so use a fuzzy split.
+    vector<string> elements;
+    Util::split(source, ' ', elements, Util::SplitModeFuzzy);
+
     // Find the first value...
-    string::size_type startPos(0);
-    string::size_type endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
-    string::size_type numChars(endPos - startPos);
-    string xs(source, startPos, numChars);
     unsigned int which(0);
     unsigned int vx(0);
     unsigned int tx(0);
     unsigned int nx(0);
-    obj_face_get_index(xs, which, vx, tx, nx);
+    obj_face_get_index(elements[0], which, vx, tx, nx);
 
     // Then the second value...
-    startPos = endPos+1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
-    numChars = endPos - startPos;
-    string ys(source, startPos, numChars);
     unsigned int vy(0);
     unsigned int ty(0);
     unsigned int ny(0);
-    obj_face_get_index(ys, which, vy, ty, ny);
+    obj_face_get_index(elements[1], which, vy, ty, ny);
 
     // And the third value (there might be a fourth, but we don't care)...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        numChars = endPos;
-    }
-    else
-    {
-        numChars = endPos - startPos;
-    }
-    string zs(source, startPos, numChars);
     unsigned int vz(0);
     unsigned int tz(0);
     unsigned int nz(0);
-    obj_face_get_index(zs, which, vz, tz, nz);
+    obj_face_get_index(elements[2], which, vz, tz, nz);
 
-    // OBJ models index from '1', so subtract to re-base to '0'.
+    // OBJ models start absoluted indices at '1', so subtract to re-base to
+    // '0'.  We do not handle relative indexing (negative indices).  
     f.which = which;
     f.v.x(vx - 1);
     f.v.y(vy - 1);
@@ -798,8 +718,18 @@ Model::load_obj(const std::string &filename)
         // smoothing groups, etc.
         string::size_type startPos(0);
         string::size_type spacePos = curSrc.find(" ", startPos);
-        string definitionType(curSrc, startPos, spacePos - startPos);
-        string definition(curSrc, spacePos + 1, string::npos);
+        string::size_type num_chars(string::npos);
+        string definition;
+        if (spacePos != string::npos)
+        {
+            // Could be arbitrary whitespace between description type and
+            // the data
+            string::size_type defPos = curSrc.find_first_not_of(' ', spacePos);
+            definition = string(curSrc, defPos);
+            num_chars = spacePos - startPos;
+        }
+        string definitionType(curSrc, startPos, num_chars);
+
         if (definitionType == vertex_definition)
         {
             vec3 p;
