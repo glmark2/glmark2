@@ -35,6 +35,7 @@
 
 using std::string;
 using std::vector;
+using LibMatrix::vec2;
 using LibMatrix::vec3;
 using LibMatrix::uvec3;
 
@@ -108,50 +109,65 @@ Model::append_object_to_mesh(const Object &object, Mesh &mesh,
                              int p_pos, int n_pos, int t_pos,
                              int nt_pos, int nb_pos)
 {
-    size_t face_count = object.faces.size();
-
-    for(size_t i = 0; i < 3 * face_count; i += 3)
+    for (vector<Face>::const_iterator faceIt = object.faces.begin();
+         faceIt != object.faces.end();
+         faceIt++)
     {
-        const Face &face = object.faces[i / 3];
-        const Vertex &a = object.vertices[face.a];
-        const Vertex &b = object.vertices[face.b];
-        const Vertex &c = object.vertices[face.c];
+        // In some model file formats (OBJ in particular), the face description
+        // may contain separate indices per-attribute.  So, we need to allow
+        // for this when adding each vertex attribute to the mesh.
+        const Face &face = *faceIt;
+        const Vertex &v1 = object.vertices[face.v.x()];
+        const Vertex &v2 = object.vertices[face.v.y()];
+        const Vertex &v3 = object.vertices[face.v.z()];
+
+        bool separate_t(face.which & Face::OBJ_FACE_T);
+
+        const Vertex &t1 = object.vertices[separate_t ? face.t.x() : face.v.x()];
+        const Vertex &t2 = object.vertices[separate_t ? face.t.y() : face.v.y()];
+        const Vertex &t3 = object.vertices[separate_t ? face.t.z() : face.v.z()];
+
+        bool separate_n(face.which & Face::OBJ_FACE_N);
+
+        const Vertex &n1 = object.vertices[separate_n ? face.n.x() : face.v.x()];
+        const Vertex &n2 = object.vertices[separate_n ? face.n.y() : face.v.y()];
+        const Vertex &n3 = object.vertices[separate_n ? face.n.z() : face.v.z()];
 
         mesh.next_vertex();
         if (p_pos >= 0)
-            mesh.set_attrib(p_pos, a.v);
+            mesh.set_attrib(p_pos, v1.v);
         if (n_pos >= 0)
-            mesh.set_attrib(n_pos, a.n);
+            mesh.set_attrib(n_pos, n1.n);
         if (t_pos >= 0)
-            mesh.set_attrib(t_pos, a.t);
+            mesh.set_attrib(t_pos, t1.t);
         if (nt_pos >= 0)
-            mesh.set_attrib(nt_pos, a.nt);
+            mesh.set_attrib(nt_pos, v1.nt);
         if (nb_pos >= 0)
-            mesh.set_attrib(nb_pos, a.nb);
+            mesh.set_attrib(nb_pos, v1.nb);
 
         mesh.next_vertex();
         if (p_pos >= 0)
-            mesh.set_attrib(p_pos, b.v);
+            mesh.set_attrib(p_pos, v2.v);
         if (n_pos >= 0)
-            mesh.set_attrib(n_pos, b.n);
+            mesh.set_attrib(n_pos, n2.n);
         if (t_pos >= 0)
-            mesh.set_attrib(t_pos, b.t);
+            mesh.set_attrib(t_pos, t2.t);
         if (nt_pos >= 0)
-            mesh.set_attrib(nt_pos, b.nt);
+            mesh.set_attrib(nt_pos, v2.nt);
         if (nb_pos >= 0)
-            mesh.set_attrib(nb_pos, b.nb);
+            mesh.set_attrib(nb_pos, v2.nb);
 
         mesh.next_vertex();
         if (p_pos >= 0)
-            mesh.set_attrib(p_pos, c.v);
+            mesh.set_attrib(p_pos, v3.v);
         if (n_pos >= 0)
-            mesh.set_attrib(n_pos, c.n);
+            mesh.set_attrib(n_pos, n3.n);
         if (t_pos >= 0)
-            mesh.set_attrib(t_pos, c.t);
+            mesh.set_attrib(t_pos, t3.t);
         if (nt_pos >= 0)
-            mesh.set_attrib(nt_pos, c.nt);
+            mesh.set_attrib(nt_pos, v3.nt);
         if (nb_pos >= 0)
-            mesh.set_attrib(nb_pos, c.nb);
+            mesh.set_attrib(nb_pos, v3.nb);
     }
 }
 
@@ -225,6 +241,9 @@ Model::convert_to_mesh(Mesh &mesh,
 void
 Model::calculate_texcoords()
 {
+    if (gotTexcoords_)
+        return;
+
     // Since the model didn't come with texcoords, and we don't actually know
     // if it came with normals, either, we'll use positional spherical mapping
     // to generate texcoords for the model.  See:
@@ -248,6 +267,8 @@ Model::calculate_texcoords()
             curVertex.t.y(asinf(vnorm.y()) / M_PI + 0.5);
         }
     }
+
+    gotTexcoords_ = true;
 }
 
 /**
@@ -256,6 +277,9 @@ Model::calculate_texcoords()
 void
 Model::calculate_normals()
 {
+    if (gotNormals_)
+        return;
+
     LibMatrix::vec3 n;
 
     for (std::vector<Object>::iterator iter = objects_.begin();
@@ -269,9 +293,9 @@ Model::calculate_normals()
              f_iter++)
         {
             const Face &face = *f_iter;
-            Vertex &a = object.vertices[face.a];
-            Vertex &b = object.vertices[face.b];
-            Vertex &c = object.vertices[face.c];
+            Vertex &a = object.vertices[face.v.x()];
+            Vertex &b = object.vertices[face.v.y()];
+            Vertex &c = object.vertices[face.v.z()];
 
             /* Calculate normal */
             n = LibMatrix::vec3::cross(b.v - a.v, c.v - a.v);
@@ -318,8 +342,9 @@ Model::calculate_normals()
             v.nt.normalize();
             v.nb.normalize();
         }
-
     }
+
+    gotNormals_ = true;
 }
 
 /**
@@ -425,9 +450,10 @@ Model::load_3ds(const std::string &filename)
                 for (uint16_t i = 0; i < qty; i++) {
                     float f[3];
                     read_or_fail(input_file, f, sizeof(float) * 3);
-                    object->vertices[i].v.x(f[0]);
-                    object->vertices[i].v.y(f[1]);
-                    object->vertices[i].v.z(f[2]);
+                    vec3& vertex = object->vertices[i].v;
+                    vertex.x(f[0]);
+                    vertex.y(f[1]);
+                    vertex.z(f[2]);
                 }
                 }
                 break;
@@ -445,10 +471,12 @@ Model::load_3ds(const std::string &filename)
                 read_or_fail(input_file, &qty, sizeof(uint16_t));
                 object->faces.resize(qty);
                 for (uint16_t i = 0; i < qty; i++) {
-                    read_or_fail(input_file, &object->faces[i].a, sizeof(uint16_t));
-                    read_or_fail(input_file, &object->faces[i].b, sizeof(uint16_t));
-                    read_or_fail(input_file, &object->faces[i].c, sizeof(uint16_t));
-                    read_or_fail(input_file, &object->faces[i].face_flags, sizeof(uint16_t));
+                    uint16_t f[4];
+                    read_or_fail(input_file, f, sizeof(uint16_t) * 4);
+                    uvec3& face = object->faces[i].v;
+                    face.x(f[0]);
+                    face.y(f[1]);
+                    face.z(f[2]);
                 }
                 }
                 break;
@@ -467,8 +495,9 @@ Model::load_3ds(const std::string &filename)
                 for (uint16_t i = 0; i < qty; i++) {
                     float f[2];
                     read_or_fail(input_file, f, sizeof(float) * 2);
-                    object->vertices[i].t.x(f[0]);
-                    object->vertices[i].t.y(f[1]);
+                    vec2& texcoord = object->vertices[i].t;
+                    texcoord.x(f[0]);
+                    texcoord.y(f[1]);
                 }
                 }
                 gotTexcoords_ = true;
@@ -500,118 +529,144 @@ Model::load_3ds(const std::string &filename)
     return true;
 }
 
+
+const unsigned int Model::Face::OBJ_FACE_V = 0x1;
+const unsigned int Model::Face::OBJ_FACE_T = 0x2;
+const unsigned int Model::Face::OBJ_FACE_N = 0x4;
+
 /**
- * Parse vec3 values from an OBJ file.
+ * Parse 2-element vertex attribute from an OBJ file.
+ *
+ * @param source the source line to parse
+ * @param v the vec2 to populate
+ */
+void
+Model::obj_get_attrib(const string& source, vec2& v)
+{
+    // Our attribs are whitespace separated, so use a fuzzy split.
+    vector<string> elements;
+    Util::split(source, ' ', elements, Util::SplitModeFuzzy);
+
+    // Find the first value...
+    float x = Util::fromString<float>(elements[0]);
+    // And the second value (there might be a third, but we don't care)...
+    float y = Util::fromString<float>(elements[1]);
+    v.x(x);
+    v.y(y);
+}
+
+/**
+ * Parse 3-element vertex attribute from an OBJ file.
  *
  * @param source the source line to parse
  * @param v the vec3 to populate
  */
-static void
-obj_get_values(const string& source, vec3& v)
+void
+Model::obj_get_attrib(const string& source, vec3& v)
 {
-    // Skip the definition type...
-    string::size_type endPos = source.find(" ");
-    string::size_type startPos(0);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
+    // Our attribs are whitespace separated, so use a fuzzy split.
+    vector<string> elements;
+    Util::split(source, ' ', elements, Util::SplitModeFuzzy);
+
     // Find the first value...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
-    string::size_type numChars(endPos - startPos);
-    string xs(source, startPos, numChars);
-    float x = Util::fromString<float>(xs);
+    float x = Util::fromString<float>(elements[0]);
     // Then the second value...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
-    numChars = endPos - startPos;
-    string ys(source, startPos, numChars);
-    float y = Util::fromString<float>(ys);
+    float y = Util::fromString<float>(elements[1]);
     // And the third value (there might be a fourth, but we don't care)...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        numChars = endPos;
-    }
-    else
-    {
-        numChars = endPos - startPos;
-    }
-    string zs(source, startPos, endPos - startPos);
-    float z = Util::fromString<float>(zs);
+    float z = Util::fromString<float>(elements[2]);
     v.x(x);
     v.y(y);
     v.z(z);
 }
 
+
+void
+Model::obj_face_get_index(const string& tuple, unsigned int& which,
+    unsigned int& v, unsigned int& t, unsigned int& n)
+{
+    // We can use a normal split here as syntax requires no spaces around
+    // the '/' delimiter for a face description.
+    vector<string> elements;
+    Util::split(tuple, '/', elements, Util::SplitModeNormal);
+
+    if (elements.empty())
+    {
+        which = 0;
+        return;
+    }
+
+    which = Face::OBJ_FACE_V;
+    v = Util::fromString<unsigned int>(elements[0]);
+
+    unsigned int num_elements = elements.size();
+
+    if (num_elements > 1 && !elements[1].empty())
+    {
+        which |= Face::OBJ_FACE_T;
+        t = Util::fromString<unsigned int>(elements[1]);
+    }
+
+    if (num_elements > 2 && !elements[2].empty())
+    {
+        which |= Face::OBJ_FACE_N;
+        n = Util::fromString<unsigned int>(elements[2]);
+    }
+
+    return;
+}
+
 /**
- * Parse uvec3 values from an OBJ file.
+ * Parse a face description from an OBJ file.
+ * Faces always specify position, but optionally can also contain separate
+ * indices for texcoords and normals.
  *
  * @param source the source line to parse
  * @param v the uvec3 to populate
  */
-static void
-obj_get_values(const string& source, uvec3& v)
+void
+Model::obj_get_face(const string& source, Face& f)
 {
-    // Skip the definition type...
-    string::size_type endPos = source.find(" ");
-    string::size_type startPos(0);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
+    // Our indices are whitespace separated, so use a fuzzy split.
+    vector<string> elements;
+    Util::split(source, ' ', elements, Util::SplitModeFuzzy);
+
     // Find the first value...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
-    string::size_type numChars(endPos - startPos);
-    string xs(source, startPos, numChars);
-    unsigned int x = Util::fromString<unsigned int>(xs);
+    unsigned int which(0);
+    unsigned int vx(0);
+    unsigned int tx(0);
+    unsigned int nx(0);
+    obj_face_get_index(elements[0], which, vx, tx, nx);
+
     // Then the second value...
-    startPos = endPos+1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
-    {
-        Log::error("Bad element '%s'\n", source.c_str());
-        return;
-    }
-    numChars = endPos - startPos;
-    string ys(source, startPos, numChars);
-    unsigned int y = Util::fromString<unsigned int>(ys);
+    unsigned int vy(0);
+    unsigned int ty(0);
+    unsigned int ny(0);
+    obj_face_get_index(elements[1], which, vy, ty, ny);
+
     // And the third value (there might be a fourth, but we don't care)...
-    startPos = endPos + 1;
-    endPos = source.find(" ", startPos);
-    if (endPos == string::npos)
+    unsigned int vz(0);
+    unsigned int tz(0);
+    unsigned int nz(0);
+    obj_face_get_index(elements[2], which, vz, tz, nz);
+
+    // OBJ models start absoluted indices at '1', so subtract to re-base to
+    // '0'.  We do not handle relative indexing (negative indices).  
+    f.which = which;
+    f.v.x(vx - 1);
+    f.v.y(vy - 1);
+    f.v.z(vz - 1);
+    if (which & Face::OBJ_FACE_T)
     {
-        numChars = endPos;
+        f.t.x(tx - 1);
+        f.t.y(ty - 1);
+        f.t.z(tz - 1);
     }
-    else
+    if (which & Face::OBJ_FACE_N)
     {
-        numChars = endPos - startPos;
+        f.n.x(nx - 1);
+        f.n.y(ny - 1);
+        f.n.z(nz - 1);
     }
-    string zs(source, startPos, numChars);
-    unsigned int z = Util::fromString<unsigned int>(zs);
-    v.x(x);
-    v.y(y);
-    v.z(z);
 }
 
 /**
@@ -642,59 +697,98 @@ Model::load_obj(const std::string &filename)
     }
 
     // Give ourselves an object to populate.
-    objects_.push_back(Object(filename));
+    objects_.push_back(Object(string()));
     Object& object(objects_.back());
 
+    static const string object_definition("o");
     static const string vertex_definition("v");
     static const string normal_definition("vn");
     static const string texcoord_definition("vt");
     static const string face_definition("f");
+    vector<vec3> positions;
+    vector<vec3> normals;
+    vector<vec2> texcoords;
     for (vector<string>::const_iterator lineIt = sourceVec.begin();
          lineIt != sourceVec.end();
          lineIt++)
     {
         const string& curSrc = *lineIt;
         // Is it a vertex attribute, a face description, comment or other?
-        // We only care about the first two, we ignore comments, object names,
-        // group names, smoothing groups, etc.
+        // We only care about the first two, we ignore comments, group names,
+        // smoothing groups, etc.
         string::size_type startPos(0);
         string::size_type spacePos = curSrc.find(" ", startPos);
-        string definitionType(curSrc, startPos, spacePos - startPos);
+        string::size_type num_chars(string::npos);
+        string definition;
+        if (spacePos != string::npos)
+        {
+            // Could be arbitrary whitespace between description type and
+            // the data
+            string::size_type defPos = curSrc.find_first_not_of(' ', spacePos);
+            definition = string(curSrc, defPos);
+            num_chars = spacePos - startPos;
+        }
+        string definitionType(curSrc, startPos, num_chars);
+
         if (definitionType == vertex_definition)
         {
-            Vertex v;
-            obj_get_values(curSrc, v.v);
-            object.vertices.push_back(v);
+            vec3 p;
+            obj_get_attrib(definition, p);
+            positions.push_back(p);
         }
         else if (definitionType == normal_definition)
         {
-            // If we encounter an OBJ model with normals, we can update this
-            // to update object.vertices.n directly
-            Log::debug("We got a normal...\n");
+            vec3 n;
+            obj_get_attrib(definition, n);
+            normals.push_back(n);
         }
         else if (definitionType == texcoord_definition)
         {
-            // If we encounter an OBJ model with normals, we can update this
-            // to update object.vertices.t directly
-            Log::debug("We got a texcoord...\n");
+            vec2 t;
+            obj_get_attrib(definition, t);
+            texcoords.push_back(t);
         }
         else if (definitionType == face_definition)
         {
-            uvec3 v;
-            obj_get_values(curSrc, v);
             Face f;
-            // OBJ models index from '1'.
-            f.a = v.x() - 1;
-            f.b = v.y() - 1;
-            f.c = v.z() - 1;
+            obj_get_face(definition, f);
             object.faces.push_back(f);
         }
+        else if (definitionType == object_definition)
+        {
+            object.name = definition;
+        }
     }
+
+    if (!texcoords.empty())
+    {
+        gotTexcoords_ = true;
+    }
+    if (!normals.empty())
+    {
+        gotNormals_ = true;
+    }
+    unsigned int numVertices = positions.size();
+    object.vertices.resize(numVertices);
+    for (unsigned int i = 0; i < numVertices; i++)
+    {
+        Vertex& curVertex = object.vertices[i];
+        curVertex.v = positions[i];
+        if (gotTexcoords_)
+        {
+            curVertex.t = texcoords[i];
+        }
+        if (gotNormals_)
+        {
+            curVertex.n = normals[i];
+        }
+    }
+
     // Compute bounding box for perspective projection
     compute_bounding_box(object);
 
-    Log::debug("Object populated with %u vertices and %u faces.\n",
-        object.vertices.size(), object.faces.size());
+    Log::debug("Object name: %s Vertex count: %u Face count: %u\n",
+        object.name.empty() ? "(none)" : object.name.c_str(), object.vertices.size(), object.faces.size());
     return true;
 }
 

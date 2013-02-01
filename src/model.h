@@ -78,12 +78,13 @@ public:
         AttribTypeCustom
     } AttribType;
 
-    Model() : gotTexcoords_(false) {}
+    Model() : gotTexcoords_(false), gotNormals_(false) {}
     ~Model() {}
 
     bool load(const std::string& name);
 
     bool needTexcoords() const { return !gotTexcoords_; }
+    bool needNormals() const { return !gotNormals_; }
     void calculate_texcoords();
     void calculate_normals();
     void convert_to_mesh(Mesh &mesh);
@@ -93,11 +94,18 @@ public:
     const LibMatrix::vec3& maxVec() const { return maxVec_; }
     static const ModelMap& find_models();
 private:
-    // If the model we loaded contained texcoord data...
+    // If the model we loaded contained texcoord or normal data...
     bool gotTexcoords_;
+    bool gotNormals_;
+
     struct Face {
-        uint32_t a, b, c;
-        uint16_t face_flags;
+        LibMatrix::uvec3 v;
+        LibMatrix::uvec3 n;
+        LibMatrix::uvec3 t;
+        unsigned int which; // mask of which values are relevant for this face.
+        static const unsigned int OBJ_FACE_V;
+        static const unsigned int OBJ_FACE_T;
+        static const unsigned int OBJ_FACE_N;
     };
 
     struct Vertex {
@@ -120,6 +128,11 @@ private:
                                int nt_pos, int nb_pos);
     bool load_3ds(const std::string &filename);
     bool load_obj(const std::string &filename);
+    void obj_get_attrib(const std::string& description, LibMatrix::vec2& v);
+    void obj_get_attrib(const std::string& description, LibMatrix::vec3& v);
+    void obj_face_get_index(const std::string& tuple, unsigned int& which,
+        unsigned int& v, unsigned int& t, unsigned int& n);
+    void obj_get_face(const std::string& description, Face& face);
 
     // For vertices of the bounding box for this model.
     void compute_bounding_box(const Object& object);

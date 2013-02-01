@@ -322,7 +322,8 @@ RefractPrivate::setup(map<string, Scene::Option>& options)
         orientationVec_ = vec3(0.0, 1.0, 0.0);
     }
 
-    model.calculate_normals();
+    if (model.needNormals())
+        model.calculate_normals();
 
     // Mesh setup
     vector<std::pair<Model::AttribType, int> > attribs;

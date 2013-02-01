@@ -324,7 +324,8 @@ ShadowPrivate::setup(map<string, Scene::Option>& options)
         return false;
     }
 
-    model.calculate_normals();
+    if (model.needNormals())
+        model.calculate_normals();
 
     // Mesh setup
     vector<std::pair<Model::AttribType, int> > attribs;
