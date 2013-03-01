@@ -33,6 +33,34 @@ PFNGLXSWAPINTERVALMESAPROC glXSwapIntervalMESA_;
 PFNGLXGETSWAPINTERVALMESAPROC glXGetSwapIntervalMESA_;
 }
 
+/******************
+ * Public methods *
+ ******************/
+
+bool
+GLStateGLX::init_display(void* native_display, GLVisualConfig& visual_config)
+{
+    xdpy_ = (Display*)native_display;
+    visual_config_ = visual_config;
+
+    return (xdpy_ != 0);
+}
+
+bool
+GLStateGLX::init_surface(void* native_window)
+{
+    xwin_ = (Window)native_window;
+
+    return (xwin_ != 0);
+}
+
+void
+GLStateGLX::init_gl_extensions()
+{
+    GLExtensions::MapBuffer = glMapBuffer;
+    GLExtensions::UnmapBuffer = glUnmapBuffer;
+}
+
 bool
 GLStateGLX::valid()
 {
@@ -75,29 +103,6 @@ GLStateGLX::valid()
     return true;
 }
 
-bool
-GLStateGLX::init_display(void* native_display, GLVisualConfig& visual_config)
-{
-    xdpy_ = (Display*)native_display;
-    visual_config_ = visual_config;
-
-    return (xdpy_ != 0);
-}
-
-bool
-GLStateGLX::init_surface(void* native_window)
-{
-    xwin_ = (Window)native_window;
-
-    return (xwin_ != 0);
-}
-
-void
-GLStateGLX::init_gl_extensions()
-{
-    GLExtensions::MapBuffer = glMapBuffer;
-    GLExtensions::UnmapBuffer = glUnmapBuffer;
-}
 
 bool
 GLStateGLX::reset()

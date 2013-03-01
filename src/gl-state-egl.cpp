@@ -31,6 +31,10 @@
 using std::vector;
 using std::string;
 
+/****************************
+ * EGLConfig public methods *
+ ****************************/
+
 EglConfig::EglConfig(EGLDisplay dpy, EGLConfig config) :
     handle_(config),
     bufferSize_(0),
@@ -279,6 +283,9 @@ EglConfig::print() const
     Log::debug("%s\n", s.str().c_str());
 }
 
+/*****************************
+ * GLStateEGL public methods *
+ ****************************/
 
 bool
 GLStateEGL::init_display(void* native_display, GLVisualConfig& visual_config)
@@ -313,11 +320,91 @@ GLStateEGL::init_gl_extensions()
 #endif
 }
 
+bool
+GLStateEGL::valid()
+{
+    if (!gotValidDisplay())
+        return false;
+
+    if (!gotValidConfig())
+        return false;
+
+    if (!gotValidSurface())
+        return false;
+
+    if (!gotValidContext())
+        return false;
+
+    if (egl_context_ == eglGetCurrentContext())
+        return true;
+
+    if (!eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_)) {
+        Log::error("eglMakeCurrent failed with error: 0x%x\n", eglGetError());
+        return false;
+    }
+
+    if (!eglSwapInterval(egl_display_, 0)) {
+        Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
+    }
+
+    init_gl_extensions();
+
+    return true;
+}
+
+bool
+GLStateEGL::reset()
+{
+    if (!gotValidDisplay()) {
+        return false;
+    }
+
+    if (!egl_context_) {
+        return true;
+    }
+
+    if (EGL_FALSE == eglDestroyContext(egl_display_, egl_context_)) {
+        Log::debug("eglDestroyContext failed with error: 0x%x\n", eglGetError());
+    }
+
+    egl_context_ = 0;
+
+    return true;
+}
+
 void
 GLStateEGL::swap()
 {
     eglSwapBuffers(egl_display_, egl_surface_);
 }
+
+bool
+GLStateEGL::gotNativeConfig(int& vid)
+{
+    if (!gotValidConfig())
+        return false;
+
+    EGLint native_id;
+    if (!eglGetConfigAttrib(egl_display_, egl_config_, EGL_NATIVE_VISUAL_ID,
+        &native_id))
+    {
+        Log::debug("Failed to get native visual id for EGLConfig 0x%x\n", egl_config_);
+        return false;
+    }
+
+    vid = native_id;
+    return true;
+}
+
+void
+GLStateEGL::getVisualConfig(GLVisualConfig& vc)
+{
+    vc = visual_config_;
+}
+
+/******************************
+ * GLStateEGL private methods *
+ *****************************/
 
 bool
 GLStateEGL::gotValidDisplay()
@@ -527,72 +614,3 @@ GLStateEGL::gotValidContext()
     return true;
 }
 
-bool
-GLStateEGL::valid()
-{
-    if (!gotValidDisplay())
-        return false;
-
-    if (!gotValidConfig())
-        return false;
-
-    if (!gotValidSurface())
-        return false;
-
-    if (!gotValidContext())
-        return false;
-
-    if (egl_context_ == eglGetCurrentContext())
-        return true;
-
-    if (!eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_)) {
-        Log::error("eglMakeCurrent failed with error: 0x%x\n", eglGetError());
-        return false;
-    }
-
-    if (!eglSwapInterval(egl_display_, 0)) {
-        Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
-    }
-
-    init_gl_extensions();
-
-    return true;
-}
-
-bool
-GLStateEGL::gotNativeConfig(int& vid)
-{
-    if (!gotValidConfig())
-        return false;
-
-    EGLint native_id;
-    if (!eglGetConfigAttrib(egl_display_, egl_config_, EGL_NATIVE_VISUAL_ID,
-        &native_id))
-    {
-        Log::debug("Failed to get native visual id for EGLConfig 0x%x\n", egl_config_);
-        return false;
-    }
-
-    vid = native_id;
-    return true;
-}
-
-bool
-GLStateEGL::reset()
-{
-    if (!gotValidDisplay()) {
-        return false;
-    }
-
-    if (!egl_context_) {
-        return true;
-    }
-
-    if (EGL_FALSE == eglDestroyContext(egl_display_, egl_context_)) {
-        Log::debug("eglDestroyContext failed with error: 0x%x\n", eglGetError());
-    }
-
-    egl_context_ = 0;
-
-    return true;
-}

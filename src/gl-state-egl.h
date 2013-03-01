@@ -139,15 +139,15 @@ public:
         egl_context_(0),
         egl_surface_(0) {}
 
-    bool valid();
     bool init_display(void* native_display, GLVisualConfig& config_pref);
     bool init_surface(void* native_window);
     void init_gl_extensions();
+    bool valid();
     bool reset();
     void swap();
     // Performs a config search, returning a native visual ID on success
     bool gotNativeConfig(int& vid);
-    void getVisualConfig(GLVisualConfig& vc) { vc = visual_config_; }
+    void getVisualConfig(GLVisualConfig& vc);
 };
 
 #endif // GLMARK2_GL_STATE_EGL_H_
