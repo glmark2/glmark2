@@ -41,7 +41,7 @@ bool
 GLStateGLX::init_display(void* native_display, GLVisualConfig& visual_config)
 {
     xdpy_ = (Display*)native_display;
-    visual_config_ = visual_config;
+    requested_visual_config_ = visual_config;
 
     return (xdpy_ != 0);
 }
@@ -223,13 +223,13 @@ GLStateGLX::ensure_glx_fbconfig()
         GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
         GLX_RENDER_TYPE, GLX_RGBA_BIT,
         GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
-        GLX_RED_SIZE, visual_config_.red,
-        GLX_GREEN_SIZE, visual_config_.green,
-        GLX_BLUE_SIZE, visual_config_.blue,
-        GLX_ALPHA_SIZE, visual_config_.alpha,
-        GLX_DEPTH_SIZE, visual_config_.depth,
-        GLX_STENCIL_SIZE, visual_config_.stencil,
-        GLX_BUFFER_SIZE, visual_config_.buffer,
+        GLX_RED_SIZE, requested_visual_config_.red,
+        GLX_GREEN_SIZE, requested_visual_config_.green,
+        GLX_BLUE_SIZE, requested_visual_config_.blue,
+        GLX_ALPHA_SIZE, requested_visual_config_.alpha,
+        GLX_DEPTH_SIZE, requested_visual_config_.depth,
+        GLX_STENCIL_SIZE, requested_visual_config_.stencil,
+        GLX_BUFFER_SIZE, requested_visual_config_.buffer,
         GLX_DOUBLEBUFFER, True,
         None
     };
@@ -336,7 +336,7 @@ GLStateGLX::select_best_config(std::vector<GLXFBConfig> configs)
 
         get_glvisualconfig_glx(config, vc);
 
-        score = vc.match_score(visual_config_);
+        score = vc.match_score(requested_visual_config_);
 
         if (score > best_score) {
             best_score = score;

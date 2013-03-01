@@ -291,7 +291,7 @@ bool
 GLStateEGL::init_display(void* native_display, GLVisualConfig& visual_config)
 {
     native_display_ = (EGLNativeDisplayType)native_display;
-    visual_config_ = visual_config;
+    requested_visual_config_ = visual_config;
 
     return gotValidDisplay();
 }
@@ -399,7 +399,10 @@ GLStateEGL::gotNativeConfig(int& vid)
 void
 GLStateEGL::getVisualConfig(GLVisualConfig& vc)
 {
-    vc = visual_config_;
+    if (!gotValidConfig())
+        return;
+
+    get_glvisualconfig(egl_config_, vc);
 }
 
 /******************************
@@ -470,7 +473,7 @@ GLStateEGL::select_best_config(std::vector<EGLConfig>& configs)
 
         get_glvisualconfig(config, vc);
 
-        score = vc.match_score(visual_config_);
+        score = vc.match_score(requested_visual_config_);
 
         if (score > best_score) {
             best_score = score;
@@ -491,12 +494,12 @@ GLStateEGL::gotValidConfig()
         return false;
 
     const EGLint config_attribs[] = {
-        EGL_RED_SIZE, visual_config_.red,
-        EGL_GREEN_SIZE, visual_config_.green,
-        EGL_BLUE_SIZE, visual_config_.blue,
-        EGL_ALPHA_SIZE, visual_config_.alpha,
-        EGL_DEPTH_SIZE, visual_config_.depth,
-        EGL_STENCIL_SIZE, visual_config_.stencil,
+        EGL_RED_SIZE, requested_visual_config_.red,
+        EGL_GREEN_SIZE, requested_visual_config_.green,
+        EGL_BLUE_SIZE, requested_visual_config_.blue,
+        EGL_ALPHA_SIZE, requested_visual_config_.alpha,
+        EGL_DEPTH_SIZE, requested_visual_config_.depth,
+        EGL_STENCIL_SIZE, requested_visual_config_.stencil,
 #if USE_GLESv2
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 #elif USE_GL

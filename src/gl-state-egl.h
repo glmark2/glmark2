@@ -122,7 +122,7 @@ class GLStateEGL : public GLState
     EGLConfig egl_config_;
     EGLContext egl_context_;
     EGLSurface egl_surface_;
-    GLVisualConfig visual_config_;
+    GLVisualConfig requested_visual_config_;
     EglConfig best_config_;
     bool gotValidDisplay();
     bool gotValidConfig();

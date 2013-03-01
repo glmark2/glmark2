@@ -61,7 +61,7 @@ private:
     Window xwin_;
     GLXFBConfig glx_fbconfig_;
     GLXContext glx_context_;
-    GLVisualConfig visual_config_;
+    GLVisualConfig requested_visual_config_;
 };
 
 #endif /* GLMARK2_GL_STATE_GLX_H_ */
