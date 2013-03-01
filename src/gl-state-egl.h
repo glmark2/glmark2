@@ -19,11 +19,12 @@
 // Authors:
 //  Jesse Barker
 //
-#ifndef EGL_STATE_H_
-#define EGL_STATE_H_
+#ifndef GLMARK2_GL_STATE_EGL_H_
+#define GLMARK2_GL_STATE_EGL_H_
 
 #include <vector>
 #include <EGL/egl.h>
+#include "gl-state.h"
 #include "gl-visual-config.h"
 
 class EglConfig
@@ -113,7 +114,7 @@ public:
     EGLint configID() const { return configID_; }
 };
 
-class EGLState
+class GLStateEGL : public GLState
 {
     EGLNativeDisplayType native_display_;
     EGLNativeWindowType native_window_;
@@ -130,17 +131,18 @@ class EGLState
     void get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config);
     EGLConfig select_best_config(std::vector<EGLConfig>& configs);
 public:
-    EGLState() :
+    GLStateEGL() :
         native_display_(0),
         native_window_(0),
         egl_display_(0),
         egl_config_(0),
         egl_context_(0),
         egl_surface_(0) {}
-    ~EGLState() {}
+
     bool valid();
-    bool init_display(EGLNativeDisplayType native_display, GLVisualConfig& config_pref);
-    bool init_surface(EGLNativeWindowType native_window);
+    bool init_display(void* native_display, GLVisualConfig& config_pref);
+    bool init_surface(void* native_window);
+    void init_gl_extensions();
     bool reset();
     void swap();
     // Performs a config search, returning a native visual ID on success
@@ -148,4 +150,4 @@ public:
     void getVisualConfig(GLVisualConfig& vc) { vc = visual_config_; }
 };
 
-#endif // EGL_STATE_H_
+#endif // GLMARK2_GL_STATE_EGL_H_

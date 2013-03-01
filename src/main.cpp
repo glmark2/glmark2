@@ -37,11 +37,13 @@
 
 #if USE_DRM
 #include "native-state-drm.h"
+#include "gl-state-egl.h"
 #include "canvas-generic.h"
 #elif USE_GL
 #include "canvas-x11-glx.h"
 #elif USE_GLESv2
 #include "native-state-x11.h"
+#include "gl-state-egl.h"
 #include "canvas-generic.h"
 #endif
 
@@ -186,12 +188,14 @@ main(int argc, char *argv[])
     // Create the canvas
 #if USE_DRM
     NativeStateDRM drm_state;
-    CanvasGeneric canvas(drm_state, Options::size.first, Options::size.second);
+    GLStateEGL egl_state;
+    CanvasGeneric canvas(drm_state, egl_state, Options::size.first, Options::size.second);
 #elif USE_GL
     CanvasX11GLX canvas(Options::size.first, Options::size.second);
 #elif USE_GLESv2
     NativeStateX11 x11_state;
-    CanvasGeneric canvas(x11_state, Options::size.first, Options::size.second);
+    GLStateEGL egl_state;
+    CanvasGeneric canvas(x11_state, egl_state, Options::size.first, Options::size.second);
 #endif
 
     canvas.offscreen(Options::offscreen);

@@ -19,10 +19,11 @@
 // Authors:
 //  Jesse Barker
 //
-#include "egl-state.h"
+#include "gl-state-egl.h"
 #include "log.h"
 #include "options.h"
 #include "limits.h"
+#include "gl-headers.h"
 #include <iomanip>
 #include <sstream>
 
@@ -185,8 +186,8 @@ EglConfig::EglConfig(EGLDisplay dpy, EGLConfig config) :
         if (!eglGetConfigAttrib(dpy, handle_, EGL_SAMPLES, &samples_))
         {
             badAttribVec.push_back("EGL_SAMPLES");
-        }        
-    }    
+        }
+    }
     if (!eglGetConfigAttrib(dpy, handle_, EGL_TRANSPARENT_TYPE, &xparentType_))
     {
         badAttribVec.push_back("EGL_TRANSPARENT_TYPE");
@@ -279,30 +280,46 @@ EglConfig::print() const
 
 
 bool
-EGLState::init_display(EGLNativeDisplayType native_display, GLVisualConfig& visual_config)
+GLStateEGL::init_display(void* native_display, GLVisualConfig& visual_config)
 {
-    native_display_ = native_display;
+    native_display_ = (EGLNativeDisplayType)native_display;
     visual_config_ = visual_config;
 
     return gotValidDisplay();
 }
 
 bool
-EGLState::init_surface(EGLNativeWindowType native_window)
+GLStateEGL::init_surface(void* native_window)
 {
-    native_window_ = reinterpret_cast<EGLNativeWindowType>(native_window);
+    native_window_ = (EGLNativeWindowType)native_window;
 
     return gotValidSurface();
 }
 
 void
-EGLState::swap()
+GLStateEGL::init_gl_extensions()
+{
+#if USE_GLESv2
+    if (GLExtensions::support("GL_OES_mapbuffer")) {
+        GLExtensions::MapBuffer =
+            reinterpret_cast<PFNGLMAPBUFFEROESPROC>(eglGetProcAddress("glMapBufferOES"));
+        GLExtensions::UnmapBuffer =
+            reinterpret_cast<PFNGLUNMAPBUFFEROESPROC>(eglGetProcAddress("glUnmapBufferOES"));
+    }
+#elif USE_GL
+    GLExtensions::MapBuffer = glMapBuffer;
+    GLExtensions::UnmapBuffer = glUnmapBuffer;
+#endif
+}
+
+void
+GLStateEGL::swap()
 {
     eglSwapBuffers(egl_display_, egl_surface_);
 }
 
 bool
-EGLState::gotValidDisplay()
+GLStateEGL::gotValidDisplay()
 {
     if (egl_display_)
         return true;
@@ -334,7 +351,7 @@ EGLState::gotValidDisplay()
 }
 
 void
-EGLState::get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config)
+GLStateEGL::get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config)
 {
     eglGetConfigAttrib(egl_display_, config, EGL_BUFFER_SIZE, &visual_config.buffer);
     eglGetConfigAttrib(egl_display_, config, EGL_RED_SIZE, &visual_config.red);
@@ -346,7 +363,7 @@ EGLState::get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config)
 }
 
 EGLConfig
-EGLState::select_best_config(std::vector<EGLConfig>& configs)
+GLStateEGL::select_best_config(std::vector<EGLConfig>& configs)
 {
     int best_score(INT_MIN);
     EGLConfig best_config(0);
@@ -377,7 +394,7 @@ EGLState::select_best_config(std::vector<EGLConfig>& configs)
 }
 
 bool
-EGLState::gotValidConfig()
+GLStateEGL::gotValidConfig()
 {
     if (egl_config_)
         return true;
@@ -436,7 +453,7 @@ EGLState::gotValidConfig()
         if (*configIt == egl_config_) {
             best_config_ = cfg;
         }
-    } 
+    }
 
     // Print out the config information, and let the user know the decision
     // about the "best" one with respect to the options.
@@ -459,7 +476,7 @@ EGLState::gotValidConfig()
 }
 
 bool
-EGLState::gotValidSurface()
+GLStateEGL::gotValidSurface()
 {
     if (egl_surface_)
         return true;
@@ -480,7 +497,7 @@ EGLState::gotValidSurface()
 }
 
 bool
-EGLState::gotValidContext()
+GLStateEGL::gotValidContext()
 {
     if (egl_context_)
         return true;
@@ -510,7 +527,7 @@ EGLState::gotValidContext()
 }
 
 bool
-EGLState::valid()
+GLStateEGL::valid()
 {
     if (!gotValidDisplay())
         return false;
@@ -540,7 +557,7 @@ EGLState::valid()
 }
 
 bool
-EGLState::gotNativeConfig(int& vid)
+GLStateEGL::gotNativeConfig(int& vid)
 {
     if (!gotValidConfig())
         return false;
@@ -558,7 +575,7 @@ EGLState::gotNativeConfig(int& vid)
 }
 
 bool
-EGLState::reset()
+GLStateEGL::reset()
 {
     if (!gotValidDisplay()) {
         return false;

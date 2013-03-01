@@ -24,8 +24,8 @@
 #define GLMARK2_CANVAS_GENERIC_H_
 
 #include "canvas.h"
-#include "egl-state.h"
 
+class GLState;
 class NativeState;
 
 /**
@@ -34,10 +34,12 @@ class NativeState;
 class CanvasGeneric : public Canvas
 {
 public:
-    CanvasGeneric(NativeState& native_state, int width, int height) :
-        Canvas(width, height), native_state_(native_state),
-        gl_color_format_(0), gl_depth_format_(0),
-        color_renderbuffer_(0), depth_renderbuffer_(0), fbo_(0) {}
+    CanvasGeneric(NativeState& native_state, GLState& gl_state,
+                  int width, int height)
+        : Canvas(width, height),
+          native_state_(native_state), gl_state_(gl_state),
+          gl_color_format_(0), gl_depth_format_(0),
+          color_renderbuffer_(0), depth_renderbuffer_(0), fbo_(0) {}
 
     bool init();
     bool reset();
@@ -59,11 +61,10 @@ private:
     bool ensure_fbo();
     void release_fbo();
     const char *get_gl_format_str(GLenum f);
-    void init_gl_extensions();
 
     NativeState& native_state_;
+    GLState& gl_state_;
     void* native_window_;
-    EGLState gl_state_;
     GLenum gl_color_format_;
     GLenum gl_depth_format_;
     GLuint color_renderbuffer_;

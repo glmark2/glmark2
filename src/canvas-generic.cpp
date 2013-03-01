@@ -22,6 +22,7 @@
  */
 #include "canvas-generic.h"
 #include "native-state.h"
+#include "gl-state.h"
 #include "log.h"
 #include "options.h"
 #include "util.h"
@@ -39,7 +40,7 @@ CanvasGeneric::init()
     if (!native_state_.init_display())
         return false;
 
-    gl_state_.init_display((EGLNativeDisplayType)native_state_.display(), visual_config_);
+    gl_state_.init_display(native_state_.display(), visual_config_);
 
     return reset();
 }
@@ -273,14 +274,14 @@ CanvasGeneric::resize_no_viewport(int width, int height)
 bool
 CanvasGeneric::do_make_current()
 {
-    gl_state_.init_surface((EGLNativeWindowType)native_window_);
+    gl_state_.init_surface(native_window_);
 
     if (!gl_state_.valid()) {
         Log::error("CanvasGeneric: Invalid EGL state\n");
         return false;
     }
 
-    init_gl_extensions();
+    gl_state_.init_gl_extensions();
 
     if (offscreen_) {
         if (!ensure_fbo())
@@ -438,20 +439,4 @@ CanvasGeneric::get_gl_format_str(GLenum f)
     }
 
     return str;
-}
-
-void
-CanvasGeneric::init_gl_extensions()
-{
-#if USE_GLESv2
-    if (GLExtensions::support("GL_OES_mapbuffer")) {
-        GLExtensions::MapBuffer =
-            reinterpret_cast<PFNGLMAPBUFFEROESPROC>(eglGetProcAddress("glMapBufferOES"));
-        GLExtensions::UnmapBuffer =
-            reinterpret_cast<PFNGLUNMAPBUFFEROESPROC>(eglGetProcAddress("glUnmapBufferOES"));
-    }
-#elif USE_GL
-    GLExtensions::MapBuffer = glMapBuffer;
-    GLExtensions::UnmapBuffer = glUnmapBuffer;
-#endif
 }
