@@ -1,5 +1,6 @@
 /*
  * Copyright © 2010-2011 Linaro Limited
+ * Copyright © 2013 Canonical Ltd
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
@@ -17,37 +18,27 @@
  * glmark2.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Authors:
- *  Alexandros Frantzis (glmark2)
+ *  Alexandros Frantzis
  */
-#include "canvas-x11-glx.h"
+#include "gl-state-glx.h"
 #include "log.h"
 #include "options.h"
 
-#include <string>
 #include <climits>
 
-static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT_;
-static PFNGLXSWAPINTERVALMESAPROC glXSwapIntervalMESA_;
-static PFNGLXGETSWAPINTERVALMESAPROC glXGetSwapIntervalMESA_;
-
-/*********************
- * Protected methods *
- *********************/
-
-XVisualInfo *
-CanvasX11GLX::get_xvisualinfo()
+namespace
 {
-    if (!ensure_glx_fbconfig())
-        return 0;
-
-    XVisualInfo *vis_info = glXGetVisualFromFBConfig(xdpy_, glx_fbconfig_ );
-
-    return vis_info;
+PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT_;
+PFNGLXSWAPINTERVALMESAPROC glXSwapIntervalMESA_;
+PFNGLXGETSWAPINTERVALMESAPROC glXGetSwapIntervalMESA_;
 }
 
 bool
-CanvasX11GLX::make_current()
+GLStateGLX::valid()
 {
+    if (!ensure_glx_fbconfig())
+        return false;
+
     if (!ensure_glx_context())
         return false;
 
@@ -60,6 +51,8 @@ CanvasX11GLX::make_current()
         Log::error("glXMakeCurrent failed\n");
         return false;
     }
+
+    init_gl_extensions();
 
     unsigned int desired_swap(0);
     unsigned int actual_swap(-1);
@@ -82,13 +75,72 @@ CanvasX11GLX::make_current()
     return true;
 }
 
+bool
+GLStateGLX::init_display(void* native_display, GLVisualConfig& visual_config)
+{
+    xdpy_ = (Display*)native_display;
+    visual_config_ = visual_config;
+
+    return (xdpy_ != 0);
+}
+
+bool
+GLStateGLX::init_surface(void* native_window)
+{
+    xwin_ = (Window)native_window;
+
+    return (xwin_ != 0);
+}
+
 void
-CanvasX11GLX::get_glvisualconfig(GLVisualConfig &visual_config)
+GLStateGLX::init_gl_extensions()
+{
+    GLExtensions::MapBuffer = glMapBuffer;
+    GLExtensions::UnmapBuffer = glUnmapBuffer;
+}
+
+bool
+GLStateGLX::reset()
+{
+    if (glx_context_)
+    {
+        glXDestroyContext(xdpy_, glx_context_);
+        glx_context_ = 0;
+    }
+
+    return true;
+}
+
+void
+GLStateGLX::swap()
+{
+    glXSwapBuffers(xdpy_, xwin_);
+}
+
+bool
+GLStateGLX::gotNativeConfig(int& vid)
+{
+    if (!ensure_glx_fbconfig())
+        return false;
+
+    int native_id;
+    if (glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_VISUAL_ID, &native_id) != Success)
+    {
+        Log::debug("Failed to get native visual id for GLXFBConfig 0x%x\n", glx_fbconfig_);
+        return false;
+    }
+
+    vid = native_id;
+    return true;
+}
+
+void
+GLStateGLX::getVisualConfig(GLVisualConfig& vc)
 {
     if (!ensure_glx_fbconfig())
         return;
 
-    get_glvisualconfig_glx(glx_fbconfig_, visual_config);
+    get_glvisualconfig_glx(glx_fbconfig_, vc);
 }
 
 /*******************
@@ -96,7 +148,7 @@ CanvasX11GLX::get_glvisualconfig(GLVisualConfig &visual_config)
  *******************/
 
 bool
-CanvasX11GLX::check_glx_version()
+GLStateGLX::check_glx_version()
 {
     int glx_major, glx_minor;
 
@@ -111,7 +163,7 @@ CanvasX11GLX::check_glx_version()
 }
 
 void
-CanvasX11GLX::init_extensions()
+GLStateGLX::init_extensions()
 {
     /*
      * Parse the extensions we care about from the extension string.
@@ -159,7 +211,7 @@ CanvasX11GLX::init_extensions()
 }
 
 bool
-CanvasX11GLX::ensure_glx_fbconfig()
+GLStateGLX::ensure_glx_fbconfig()
 {
     static int attribs[] = {
         GLX_X_RENDERABLE, True,
@@ -227,24 +279,8 @@ CanvasX11GLX::ensure_glx_fbconfig()
     return true;
 }
 
-void
-CanvasX11GLX::init_gl_extensions()
-{
-    GLExtensions::MapBuffer = glMapBuffer;
-    GLExtensions::UnmapBuffer = glUnmapBuffer;
-}
-
 bool
-CanvasX11GLX::reset_context()
-{
-    glXDestroyContext(xdpy_, glx_context_);
-    glx_context_ = 0;
-
-    return true;
-}
-
-bool
-CanvasX11GLX::ensure_glx_context()
+GLStateGLX::ensure_glx_context()
 {
     if (glx_context_)
         return true;
@@ -259,13 +295,12 @@ CanvasX11GLX::ensure_glx_context()
         return false;
     }
 
-    init_gl_extensions();
 
     return true;
 }
 
 void
-CanvasX11GLX::get_glvisualconfig_glx(const GLXFBConfig config, GLVisualConfig &visual_config)
+GLStateGLX::get_glvisualconfig_glx(const GLXFBConfig config, GLVisualConfig &visual_config)
 {
     glXGetFBConfigAttrib(xdpy_, config, GLX_BUFFER_SIZE, &visual_config.buffer);
     glXGetFBConfigAttrib(xdpy_, config, GLX_RED_SIZE, &visual_config.red);
@@ -277,7 +312,7 @@ CanvasX11GLX::get_glvisualconfig_glx(const GLXFBConfig config, GLVisualConfig &v
 }
 
 GLXFBConfig
-CanvasX11GLX::select_best_config(std::vector<GLXFBConfig> configs)
+GLStateGLX::select_best_config(std::vector<GLXFBConfig> configs)
 {
     int best_score(INT_MIN);
     GLXFBConfig best_config(0);

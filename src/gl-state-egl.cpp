@@ -22,6 +22,7 @@
 #include "gl-state-egl.h"
 #include "log.h"
 #include "options.h"
+#include "gl-headers.h"
 #include "limits.h"
 #include "gl-headers.h"
 #include <iomanip>
@@ -552,6 +553,8 @@ GLStateEGL::valid()
     if (!eglSwapInterval(egl_display_, 0)) {
         Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
     }
+
+    init_gl_extensions();
 
     return true;
 }

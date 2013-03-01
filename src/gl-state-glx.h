@@ -1,5 +1,6 @@
 /*
  * Copyright © 2010-2011 Linaro Limited
+ * Copyright © 2013 Canonical Ltd
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
@@ -17,49 +18,50 @@
  * glmark2.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Authors:
- *  Alexandros Frantzis (glmark2)
+ *  Alexandros Frantzis
  */
-#ifndef GLMARK2_CANVAS_X11_GLX_H_
-#define GLMARK2_CANVAS_X11_GLX_H_
+#ifndef GLMARK2_GL_STATE_GLX_H_
+#define GLMARK2_GL_STATE_GLX_H_
 
-#include "canvas-x11.h"
+#include "gl-state.h"
+#include "gl-visual-config.h"
+#include "gl-headers.h"
 
+#include <vector>
+
+#include <X11/Xlib.h>
 #define GLX_GLXEXT_PROTOTYPES
 #include <GL/glx.h>
 #include <GL/glxext.h>
-#include <vector>
 
-/**
- * Canvas for rendering to an X11 window using GLX.
- */
-class CanvasX11GLX : public CanvasX11
+class GLStateGLX : public GLState
 {
 public:
-    CanvasX11GLX(int width, int height) :
-        CanvasX11(width, height), glx_fbconfig_(0), glx_context_(0) {}
-    ~CanvasX11GLX() {}
+    GLStateGLX()
+        : xdpy_(0), xwin_(0), glx_fbconfig_(0), glx_context_(0) {}
 
-protected:
-    XVisualInfo *get_xvisualinfo();
-    bool make_current();
-    bool reset_context();
-    void swap_buffers() { glXSwapBuffers(xdpy_, xwin_); }
-    void get_glvisualconfig(GLVisualConfig &visual_config);
-    bool init_gl_winsys() { return true; }
+    bool valid();
+    bool init_display(void* native_display, GLVisualConfig& config_pref);
+    bool init_surface(void* native_window);
+    void init_gl_extensions();
+    bool reset();
+    void swap();
+    bool gotNativeConfig(int& vid);
+    void getVisualConfig(GLVisualConfig& vc);
 
 private:
     bool check_glx_version();
     void init_extensions();
     bool ensure_glx_fbconfig();
     bool ensure_glx_context();
-    void init_gl_extensions();
     void get_glvisualconfig_glx(GLXFBConfig config, GLVisualConfig &visual_config);
     GLXFBConfig select_best_config(std::vector<GLXFBConfig> configs);
 
+    Display* xdpy_;
+    Window xwin_;
     GLXFBConfig glx_fbconfig_;
     GLXContext glx_context_;
-
+    GLVisualConfig visual_config_;
 };
 
-#endif
-
+#endif /* GLMARK2_GL_STATE_GLX_H_ */
