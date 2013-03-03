@@ -40,7 +40,7 @@ PFNGLXGETSWAPINTERVALMESAPROC glXGetSwapIntervalMESA_;
 bool
 GLStateGLX::init_display(void* native_display, GLVisualConfig& visual_config)
 {
-    xdpy_ = (Display*)native_display;
+    xdpy_ = reinterpret_cast<Display*>(native_display);
     requested_visual_config_ = visual_config;
 
     return (xdpy_ != 0);
@@ -49,7 +49,7 @@ GLStateGLX::init_display(void* native_display, GLVisualConfig& visual_config)
 bool
 GLStateGLX::init_surface(void* native_window)
 {
-    xwin_ = (Window)native_window;
+    xwin_ = reinterpret_cast<Window>(native_window);
 
     return (xwin_ != 0);
 }

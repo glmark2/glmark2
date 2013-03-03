@@ -290,7 +290,7 @@ EglConfig::print() const
 bool
 GLStateEGL::init_display(void* native_display, GLVisualConfig& visual_config)
 {
-    native_display_ = (EGLNativeDisplayType)native_display;
+    native_display_ = reinterpret_cast<EGLNativeDisplayType>(native_display);
     requested_visual_config_ = visual_config;
 
     return gotValidDisplay();
@@ -299,7 +299,7 @@ GLStateEGL::init_display(void* native_display, GLVisualConfig& visual_config)
 bool
 GLStateEGL::init_surface(void* native_window)
 {
-    native_window_ = (EGLNativeWindowType)native_window;
+    native_window_ = reinterpret_cast<EGLNativeWindowType>(native_window);
 
     return gotValidSurface();
 }
