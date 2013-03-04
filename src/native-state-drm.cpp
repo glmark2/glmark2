@@ -82,6 +82,20 @@ NativeStateDRM::flip()
     gbm_bo* next = gbm_surface_lock_front_buffer(surface_);
     fb_ = fb_get_from_bo(next);
     unsigned int waiting(1);
+
+    if (!crtc_set_) {
+        int status = drmModeSetCrtc(fd_, encoder_->crtc_id, fb_->fb_id, 0, 0,
+                                    &connector_->connector_id, 1, mode_);
+        if (status >= 0) {
+            crtc_set_ = true;
+            bo_ = next;
+        }
+        else {
+            Log::error("Failed to set crtc: %d\n", status);
+        }
+        return;
+    }
+
     int status = drmModePageFlip(fd_, encoder_->crtc_id, fb_->fb_id,
                                  DRM_MODE_PAGE_FLIP_EVENT, &waiting);
     if (status < 0) {

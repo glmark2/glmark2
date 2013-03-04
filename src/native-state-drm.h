@@ -44,7 +44,8 @@ public:
         dev_(0),
         surface_(0),
         bo_(0),
-        fb_(0) {}
+        fb_(0),
+        crtc_set_(false) {}
     ~NativeStateDRM() { cleanup(); }
 
     bool init_display();
@@ -84,6 +85,7 @@ private:
     gbm_surface* surface_;
     gbm_bo* bo_;
     DRMFBState* fb_;
+    bool crtc_set_;
 };
 
 #endif /* GLMARK2_NATIVE_STATE_DRM_H_ */
