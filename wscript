@@ -11,20 +11,32 @@ top = '.'
 VERSION = '2012.12'
 APPNAME = 'glmark2'
 
+FLAVORS = ['x11-gl', 'x11-glesv2', 'drm-gl', 'drm-glesv2']
+FLAVORS_STR = ", ".join(FLAVORS)
+
+def option_list_cb(option, opt, value, parser):
+    value = value.split(',')
+    setattr(parser.values, option.dest, value)
+
+def list_contains(lst, token):
+    for e in lst:
+        if token.endswith('$'):
+            if e.endswith(token[:-1]): return True
+        elif token in e: return True
+
+    return False
+
 def options(opt):
     opt.tool_options('gnu_dirs')
     opt.tool_options('compiler_cc')
     opt.tool_options('compiler_cxx')
 
-    opt.add_option('--enable-gl', action='store_true', dest = 'gl',
-                   default = False, help='build using OpenGL 2.0')
-    opt.add_option('--enable-glesv2', action='store_true', dest = 'glesv2',
-                   default = False, help='build using OpenGL ES 2.0')
-    opt.add_option('--enable-gl-drm', action='store_true', dest = 'gl_drm',
-                   default = False, help='build using OpenGL 2.0 without X')
-    opt.add_option('--enable-glesv2-drm', action='store_true',
-                   dest = 'glesv2_drm',
-                   default = False, help='build using OpenGL ES 2.0 without X')
+    opt.add_option('--with-flavors', type = 'string', action='callback',
+                   callback=option_list_cb,
+                   dest = 'flavors',
+                   help = "a list of flavors to build (%s, all)" % FLAVORS_STR)
+    opt.parser.set_default('flavors', [])
+
     opt.add_option('--no-debug', action='store_false', dest = 'debug',
                    default = True, help='disable compiler debug information')
     opt.add_option('--no-opt', action='store_false', dest = 'opt',
@@ -35,10 +47,21 @@ def options(opt):
                    help='path to additional data (models, shaders, textures)')
 
 def configure(ctx):
-    if not Options.options.gl and not Options.options.glesv2 and \
-       not Options.options.gl_drm and not Options.options.glesv2_drm:
-        ctx.fatal("You must configure using at least one of --enable-gl, " +
-                  "--enable-glesv2, --enable-gl-drm, --enable-glesv2-drm")
+    # Special 'all' flavor
+    if 'all' in Options.options.flavors:
+        Options.options.flavors = list(set(Options.options.flavors) | set(FLAVORS))
+        Options.options.flavors.remove('all')
+
+    # Ensure the flavors are valid
+    for flavor in Options.options.flavors:
+       if flavor not in FLAVORS:
+            ctx.fatal('Unknown flavor: %s. Supported flavors are %s' % (flavor, FLAVORS_STR))
+
+    if not Options.options.flavors:
+        ctx.fatal('You need to select at least one flavor. Supported flavors are %s' % FLAVORS_STR)
+
+    for flavor in FLAVORS:
+        ctx.env["FLAVOR_%s" % flavor.upper().replace('-','_')] = flavor in Options.options.flavors
 
     ctx.check_tool('gnu_dirs')
     ctx.check_tool('compiler_cc')
@@ -67,16 +90,12 @@ def configure(ctx):
                       args = '--cflags --libs', mandatory = True)
 
     # Check optional packages
-    opt_pkgs = [('x11', 'x11', Options.options.gl or Options.options.glesv2),
-                ('gl', 'gl', Options.options.gl or Options.options.gl_drm),
-                ('egl', 'egl', Options.options.glesv2 or
-                               Options.options.glesv2_drm),
-                ('glesv2', 'glesv2', Options.options.glesv2 or
-                                     Options.options.glesv2_drm),
-                ('libdrm','drm', Options.options.gl_drm or
-                                 Options.options.glesv2_drm),
-                ('gbm','gbm', Options.options.gl_drm or
-                              Options.options.glesv2_drm)]
+    opt_pkgs = [('x11', 'x11', list_contains(Options.options.flavors, 'x11')),
+                ('gl', 'gl', list_contains(Options.options.flavors, 'gl$')),
+                ('egl', 'egl', list_contains(Options.options.flavors, 'glesv2$')),
+                ('glesv2', 'glesv2', list_contains(Options.options.flavors, 'glesv2$')),
+                ('libdrm','drm', list_contains(Options.options.flavors, 'drm')),
+                ('gbm','gbm', list_contains(Options.options.flavors, 'drm'))]
     for (pkg, uselib, mandatory) in opt_pkgs:
         ctx.check_cfg(package = pkg, uselib_store = uselib,
                       args = '--cflags --libs', mandatory = mandatory)
@@ -106,25 +125,13 @@ def configure(ctx):
     ctx.env.append_unique('DEFINES', 'GLMARK_VERSION="%s"' % VERSION)
     ctx.env.GLMARK2_VERSION = VERSION
 
-    ctx.env.USE_GL = Options.options.gl
-    ctx.env.USE_GLESv2 = Options.options.glesv2
-    ctx.env.USE_GL_DRM = Options.options.gl_drm
-    ctx.env.USE_GLESv2_DRM = Options.options.glesv2_drm
-
     ctx.msg("Prefix", ctx.env.PREFIX, color = 'PINK')
     ctx.msg("Data path", data_path, color = 'PINK')
     ctx.msg("Including extras", "Yes" if ctx.env.HAVE_EXTRAS else "No",
             color = 'PINK');
     if ctx.env.HAVE_EXTRAS:
         ctx.msg("Extras path", Options.options.extras_path, color = 'PINK')
-    ctx.msg("Building X11 GL2 version", "Yes" if ctx.env.USE_GL else "No",
-            color = 'PINK')
-    ctx.msg("Building X11 GLESv2 version", "Yes" if ctx.env.USE_GLESv2 else "No",
-            color = 'PINK')
-    ctx.msg("Building DRM GL2 version", "Yes" if ctx.env.USE_GL_DRM else "No",
-            color = 'PINK')
-    ctx.msg("Building DRM GLESv2 version", "Yes" if ctx.env.USE_GLESv2_DRM else "No",
-            color = 'PINK')
+    ctx.msg("Building flavors", Options.options.flavors)
 
 def build(ctx):
     ctx.recurse('src')
