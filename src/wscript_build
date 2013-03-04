@@ -1,11 +1,12 @@
 all_sources = bld.path.ant_glob('*.cpp scene-ideas/*.cc scene-terrain/*.cpp')
 common_sources = [f for f in all_sources if f.name.find('canvas-') == -1 and
                                             f.name.find('android') == -1 and
-                                            f.name.find('egl-') == -1]
-gl_sources = ['canvas-x11.cpp', 'canvas-x11-glx.cpp']
-glesv2_sources = ['canvas-x11.cpp', 'canvas-x11-egl.cpp', 'egl-state.cpp']
-gl_drm_sources = ['canvas-drm.cpp', 'egl-state.cpp']
-glesv2_drm_sources = ['canvas-drm.cpp', 'egl-state.cpp']
+                                            f.name.find('native-state-') == -1 and
+                                            f.name.find('gl-state-') == -1]
+gl_sources = ['canvas-generic.cpp', 'native-state-x11.cpp', 'gl-state-glx.cpp']
+glesv2_sources = ['canvas-generic.cpp', 'native-state-x11.cpp', 'gl-state-egl.cpp']
+gl_drm_sources = ['canvas-generic.cpp', 'native-state-drm.cpp', 'gl-state-egl.cpp']
+glesv2_drm_sources = ['canvas-generic.cpp', 'native-state-drm.cpp', 'gl-state-egl.cpp']
 libmatrix_sources = [f for f in bld.path.ant_glob('libmatrix/*.cc')
                      if not f.name.endswith('test.cc')]
 includes = ['.', 'scene-ideas', 'scene-terrain']

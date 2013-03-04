@@ -1,5 +1,6 @@
 /*
  * Copyright © 2010-2011 Linaro Limited
+ * Copyright © 2013 Canonical Ltd
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
@@ -17,36 +18,34 @@
  * glmark2.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Authors:
- *  Alexandros Frantzis (glmark2)
- *  Jesse Barker
+ *  Alexandros Frantzis
  */
-#ifndef GLMARK2_CANVAS_X11_EGL_H_
-#define GLMARK2_CANVAS_X11_EGL_H_
+#ifndef GLMARK2_NATIVE_STATE_X11_H_
+#define GLMARK2_NATIVE_STATE_X11_H_
 
-#include "canvas-x11.h"
-#include "egl-state.h"
+#include "native-state.h"
+#include <X11/Xlib.h>
 
-/**
- * Canvas for rendering to an X11 window using EGL.
- */
-class CanvasX11EGL : public CanvasX11
+class NativeStateX11 : public NativeState
 {
 public:
-    CanvasX11EGL(int width, int height) :
-        CanvasX11(width, height) {}
-    ~CanvasX11EGL() {}
+    NativeStateX11() : xdpy_(0), xwin_(0), properties_() {}
+    ~NativeStateX11();
 
-protected:
-    XVisualInfo *get_xvisualinfo();
-    bool make_current();
-    bool reset_context();
-    void swap_buffers();
-    void get_glvisualconfig(GLVisualConfig &visual_config);
-    bool init_gl_winsys();
+    bool init_display();
+    void* display();
+    bool create_window(WindowProperties const& properties);
+    void* window(WindowProperties& properties);
+    void visible(bool v);
+    bool should_quit();
+    void flip() { }
 
 private:
-    void init_gl_extensions();
-    EGLState egl_;
+    /** The X display associated with this canvas. */
+    Display* xdpy_;
+    /** The X window associated with this canvas. */
+    Window xwin_;
+    WindowProperties properties_;
 };
 
-#endif
+#endif /* GLMARK2_NATIVE_STATE_X11_H_ */

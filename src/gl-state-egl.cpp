@@ -19,15 +19,21 @@
 // Authors:
 //  Jesse Barker
 //
-#include "egl-state.h"
+#include "gl-state-egl.h"
 #include "log.h"
 #include "options.h"
+#include "gl-headers.h"
 #include "limits.h"
+#include "gl-headers.h"
 #include <iomanip>
 #include <sstream>
 
 using std::vector;
 using std::string;
+
+/****************************
+ * EGLConfig public methods *
+ ****************************/
 
 EglConfig::EglConfig(EGLDisplay dpy, EGLConfig config) :
     handle_(config),
@@ -185,8 +191,8 @@ EglConfig::EglConfig(EGLDisplay dpy, EGLConfig config) :
         if (!eglGetConfigAttrib(dpy, handle_, EGL_SAMPLES, &samples_))
         {
             badAttribVec.push_back("EGL_SAMPLES");
-        }        
-    }    
+        }
+    }
     if (!eglGetConfigAttrib(dpy, handle_, EGL_TRANSPARENT_TYPE, &xparentType_))
     {
         badAttribVec.push_back("EGL_TRANSPARENT_TYPE");
@@ -277,18 +283,21 @@ EglConfig::print() const
     Log::debug("%s\n", s.str().c_str());
 }
 
+/*****************************
+ * GLStateEGL public methods *
+ ****************************/
 
 bool
-EGLState::init_display(EGLNativeDisplayType native_display, GLVisualConfig& visual_config)
+GLStateEGL::init_display(void* native_display, GLVisualConfig& visual_config)
 {
-    native_display_ = native_display;
-    visual_config_ = visual_config;
+    native_display_ = reinterpret_cast<EGLNativeDisplayType>(native_display);
+    requested_visual_config_ = visual_config;
 
     return gotValidDisplay();
 }
 
 bool
-EGLState::init_surface(EGLNativeWindowType native_window)
+GLStateEGL::init_surface(void* native_window)
 {
     native_window_ = reinterpret_cast<EGLNativeWindowType>(native_window);
 
@@ -296,13 +305,112 @@ EGLState::init_surface(EGLNativeWindowType native_window)
 }
 
 void
-EGLState::swap()
+GLStateEGL::init_gl_extensions()
+{
+#if USE_GLESv2
+    if (GLExtensions::support("GL_OES_mapbuffer")) {
+        GLExtensions::MapBuffer =
+            reinterpret_cast<PFNGLMAPBUFFEROESPROC>(eglGetProcAddress("glMapBufferOES"));
+        GLExtensions::UnmapBuffer =
+            reinterpret_cast<PFNGLUNMAPBUFFEROESPROC>(eglGetProcAddress("glUnmapBufferOES"));
+    }
+#elif USE_GL
+    GLExtensions::MapBuffer = glMapBuffer;
+    GLExtensions::UnmapBuffer = glUnmapBuffer;
+#endif
+}
+
+bool
+GLStateEGL::valid()
+{
+    if (!gotValidDisplay())
+        return false;
+
+    if (!gotValidConfig())
+        return false;
+
+    if (!gotValidSurface())
+        return false;
+
+    if (!gotValidContext())
+        return false;
+
+    if (egl_context_ == eglGetCurrentContext())
+        return true;
+
+    if (!eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_)) {
+        Log::error("eglMakeCurrent failed with error: 0x%x\n", eglGetError());
+        return false;
+    }
+
+    if (!eglSwapInterval(egl_display_, 0)) {
+        Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
+    }
+
+    init_gl_extensions();
+
+    return true;
+}
+
+bool
+GLStateEGL::reset()
+{
+    if (!gotValidDisplay()) {
+        return false;
+    }
+
+    if (!egl_context_) {
+        return true;
+    }
+
+    if (EGL_FALSE == eglDestroyContext(egl_display_, egl_context_)) {
+        Log::debug("eglDestroyContext failed with error: 0x%x\n", eglGetError());
+    }
+
+    egl_context_ = 0;
+
+    return true;
+}
+
+void
+GLStateEGL::swap()
 {
     eglSwapBuffers(egl_display_, egl_surface_);
 }
 
 bool
-EGLState::gotValidDisplay()
+GLStateEGL::gotNativeConfig(int& vid)
+{
+    if (!gotValidConfig())
+        return false;
+
+    EGLint native_id;
+    if (!eglGetConfigAttrib(egl_display_, egl_config_, EGL_NATIVE_VISUAL_ID,
+        &native_id))
+    {
+        Log::debug("Failed to get native visual id for EGLConfig 0x%x\n", egl_config_);
+        return false;
+    }
+
+    vid = native_id;
+    return true;
+}
+
+void
+GLStateEGL::getVisualConfig(GLVisualConfig& vc)
+{
+    if (!gotValidConfig())
+        return;
+
+    get_glvisualconfig(egl_config_, vc);
+}
+
+/******************************
+ * GLStateEGL private methods *
+ *****************************/
+
+bool
+GLStateEGL::gotValidDisplay()
 {
     if (egl_display_)
         return true;
@@ -334,7 +442,7 @@ EGLState::gotValidDisplay()
 }
 
 void
-EGLState::get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config)
+GLStateEGL::get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config)
 {
     eglGetConfigAttrib(egl_display_, config, EGL_BUFFER_SIZE, &visual_config.buffer);
     eglGetConfigAttrib(egl_display_, config, EGL_RED_SIZE, &visual_config.red);
@@ -346,7 +454,7 @@ EGLState::get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config)
 }
 
 EGLConfig
-EGLState::select_best_config(std::vector<EGLConfig>& configs)
+GLStateEGL::select_best_config(std::vector<EGLConfig>& configs)
 {
     int best_score(INT_MIN);
     EGLConfig best_config(0);
@@ -365,7 +473,7 @@ EGLState::select_best_config(std::vector<EGLConfig>& configs)
 
         get_glvisualconfig(config, vc);
 
-        score = vc.match_score(visual_config_);
+        score = vc.match_score(requested_visual_config_);
 
         if (score > best_score) {
             best_score = score;
@@ -377,7 +485,7 @@ EGLState::select_best_config(std::vector<EGLConfig>& configs)
 }
 
 bool
-EGLState::gotValidConfig()
+GLStateEGL::gotValidConfig()
 {
     if (egl_config_)
         return true;
@@ -386,12 +494,12 @@ EGLState::gotValidConfig()
         return false;
 
     const EGLint config_attribs[] = {
-        EGL_RED_SIZE, visual_config_.red,
-        EGL_GREEN_SIZE, visual_config_.green,
-        EGL_BLUE_SIZE, visual_config_.blue,
-        EGL_ALPHA_SIZE, visual_config_.alpha,
-        EGL_DEPTH_SIZE, visual_config_.depth,
-        EGL_STENCIL_SIZE, visual_config_.stencil,
+        EGL_RED_SIZE, requested_visual_config_.red,
+        EGL_GREEN_SIZE, requested_visual_config_.green,
+        EGL_BLUE_SIZE, requested_visual_config_.blue,
+        EGL_ALPHA_SIZE, requested_visual_config_.alpha,
+        EGL_DEPTH_SIZE, requested_visual_config_.depth,
+        EGL_STENCIL_SIZE, requested_visual_config_.stencil,
 #if USE_GLESv2
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 #elif USE_GL
@@ -436,7 +544,7 @@ EGLState::gotValidConfig()
         if (*configIt == egl_config_) {
             best_config_ = cfg;
         }
-    } 
+    }
 
     // Print out the config information, and let the user know the decision
     // about the "best" one with respect to the options.
@@ -459,7 +567,7 @@ EGLState::gotValidConfig()
 }
 
 bool
-EGLState::gotValidSurface()
+GLStateEGL::gotValidSurface()
 {
     if (egl_surface_)
         return true;
@@ -480,7 +588,7 @@ EGLState::gotValidSurface()
 }
 
 bool
-EGLState::gotValidContext()
+GLStateEGL::gotValidContext()
 {
     if (egl_context_)
         return true;
@@ -509,70 +617,3 @@ EGLState::gotValidContext()
     return true;
 }
 
-bool
-EGLState::valid()
-{
-    if (!gotValidDisplay())
-        return false;
-
-    if (!gotValidConfig())
-        return false;
-
-    if (!gotValidSurface())
-        return false;
-
-    if (!gotValidContext())
-        return false;
-
-    if (egl_context_ == eglGetCurrentContext())
-        return true;
-
-    if (!eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_)) {
-        Log::error("eglMakeCurrent failed with error: 0x%x\n", eglGetError());
-        return false;
-    }
-
-    if (!eglSwapInterval(egl_display_, 0)) {
-        Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
-    }
-
-    return true;
-}
-
-bool
-EGLState::gotNativeConfig(int& vid)
-{
-    if (!gotValidConfig())
-        return false;
-
-    EGLint native_id;
-    if (!eglGetConfigAttrib(egl_display_, egl_config_, EGL_NATIVE_VISUAL_ID,
-        &native_id))
-    {
-        Log::debug("Failed to get native visual id for EGLConfig 0x%x\n", egl_config_);
-        return false;
-    }
-
-    vid = native_id;
-    return true;
-}
-
-bool
-EGLState::reset()
-{
-    if (!gotValidDisplay()) {
-        return false;
-    }
-
-    if (!egl_context_) {
-        return true;
-    }
-
-    if (EGL_FALSE == eglDestroyContext(egl_display_, egl_context_)) {
-        Log::debug("eglDestroyContext failed with error: 0x%x\n", eglGetError());
-    }
-
-    egl_context_ = 0;
-
-    return true;
-}

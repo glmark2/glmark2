@@ -1,5 +1,6 @@
 /*
  * Copyright © 2010-2011 Linaro Limited
+ * Copyright © 2013 Canonical Ltd
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
@@ -17,28 +18,42 @@
  * glmark2.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Authors:
- *  Alexandros Frantzis (glmark2)
- *  Jesse Barker
+ *  Alexandros Frantzis
  */
-#include "canvas-x11.h"
+#include "canvas-generic.h"
+#include "native-state.h"
+#include "gl-state.h"
 #include "log.h"
 #include "options.h"
 #include "util.h"
 
-#include <X11/keysym.h>
-#include <X11/Xatom.h>
 #include <fstream>
 #include <sstream>
 
 /******************
  * Public methods *
  ******************/
+
 bool
-CanvasX11::reset()
+CanvasGeneric::init()
+{
+    if (!native_state_.init_display())
+        return false;
+
+    gl_state_.init_display(native_state_.display(), visual_config_);
+
+    return reset();
+}
+
+bool
+CanvasGeneric::reset()
 {
     release_fbo();
 
-    if (!reset_context())
+    if (!gl_state_.reset())
+        return false;
+
+    if (!resize_no_viewport(width_, height_))
         return false;
 
     if (!do_make_current())
@@ -63,33 +78,15 @@ CanvasX11::reset()
     return true;
 }
 
-bool
-CanvasX11::init()
-{
-    xdpy_ = XOpenDisplay(NULL);
-    if (!xdpy_)
-        return false;
-
-    if (!init_gl_winsys())
-        return false;
-
-    resize_no_viewport(width_, height_);
-
-    if (!xwin_)
-        return false;
-
-    return reset();
-}
-
 void
-CanvasX11::visible(bool visible)
+CanvasGeneric::visible(bool visible)
 {
     if (visible && !offscreen_)
-        XMapWindow(xdpy_, xwin_);
+        native_state_.visible(visible);
 }
 
 void
-CanvasX11::clear()
+CanvasGeneric::clear()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 #if USE_GL
@@ -101,7 +98,7 @@ CanvasX11::clear()
 }
 
 void
-CanvasX11::update()
+CanvasGeneric::update()
 {
     Options::FrameEnd m = Options::frame_end;
 
@@ -114,7 +111,8 @@ CanvasX11::update()
 
     switch(m) {
         case Options::FrameEndSwap:
-            swap_buffers();
+            gl_state_.swap();
+            native_state_.flip();
             break;
         case Options::FrameEndFinish:
             glFinish();
@@ -129,7 +127,7 @@ CanvasX11::update()
 }
 
 void
-CanvasX11::print_info()
+CanvasGeneric::print_info()
 {
     do_make_current();
 
@@ -144,7 +142,7 @@ CanvasX11::print_info()
 }
 
 Canvas::Pixel
-CanvasX11::read_pixel(int x, int y)
+CanvasGeneric::read_pixel(int x, int y)
 {
     uint8_t pixel[4];
 
@@ -154,7 +152,7 @@ CanvasX11::read_pixel(int x, int y)
 }
 
 void
-CanvasX11::write_to_file(std::string &filename)
+CanvasGeneric::write_to_file(std::string &filename)
 {
     char *pixels = new char[width_ * height_ * 4];
 
@@ -170,42 +168,31 @@ CanvasX11::write_to_file(std::string &filename)
 }
 
 bool
-CanvasX11::should_quit()
+CanvasGeneric::should_quit()
 {
-    XEvent event;
-
-    if (!XPending(xdpy_))
-        return false;
-
-    XNextEvent(xdpy_, &event);
-
-    if (event.type == KeyPress) {
-        if (XLookupKeysym(&event.xkey, 0) == XK_Escape)
-            return true;
-    }
-    else if (event.type == ClientMessage) {
-        /* Window Delete event from window manager */
-        return true;
-    }
-
-    return false;
+    return native_state_.should_quit();
 }
 
 void
-CanvasX11::resize(int width, int height)
+CanvasGeneric::resize(int width, int height)
 {
     resize_no_viewport(width, height);
     glViewport(0, 0, width_, height_);
 }
 
 unsigned int
-CanvasX11::fbo()
+CanvasGeneric::fbo()
 {
     return fbo_;
 }
 
+
+/*******************
+ * Private methods *
+ *******************/
+
 bool
-CanvasX11::supports_gl2()
+CanvasGeneric::supports_gl2()
 {
     std::string gl_version_str(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
     int gl_major(0);
@@ -229,120 +216,42 @@ CanvasX11::supports_gl2()
     return gl_major >= 2;
 }
 
-/*******************
- * Private methods *
- *******************/
-
 bool
-CanvasX11::ensure_x_window()
+CanvasGeneric::resize_no_viewport(int width, int height)
 {
-    static const char *win_name("glmark2 "GLMARK_VERSION);
+    bool request_fullscreen = (width == -1 && height == -1);
 
-    if (xwin_)
+    int vid;
+    if (!gl_state_.gotNativeConfig(vid))
+    {
+        Log::error("Error: Couldn't get GL visual config!\n");
+        return false;
+    }
+
+    NativeState::WindowProperties properties(width, height,
+                                             request_fullscreen, vid);
+    NativeState::WindowProperties cur_properties;
+
+    native_state_.window(cur_properties);
+
+    if ((cur_properties.fullscreen == properties.fullscreen &&
+         cur_properties.width > 0 && cur_properties.height > 0) ||
+        (cur_properties.width == properties.width &&
+         cur_properties.height == properties.height))
+    {
         return true;
+    }
 
-    if (!xdpy_) {
-        Log::error("Error: X11 Display has not been initialized!\n");
+    if (!native_state_.create_window(properties))
+    {
+        Log::error("Error: Couldn't create native window!\n");
         return false;
     }
 
-    XVisualInfo *vis_info = get_xvisualinfo();
-    if (!vis_info) {
-        Log::error("Error: Could not get a valid XVisualInfo!\n");
-        return false;
-    }
+    native_window_ = native_state_.window(cur_properties);
 
-    Log::debug("Creating XWindow W: %d H: %d VisualID: 0x%x\n",
-               width_, height_, vis_info->visualid);
-
-    /* window attributes */
-    XSetWindowAttributes attr;
-    unsigned long mask;
-    Window root = RootWindow(xdpy_, DefaultScreen(xdpy_));
-
-    attr.background_pixel = 0;
-    attr.border_pixel = 0;
-    attr.colormap = XCreateColormap(xdpy_, root, vis_info->visual, AllocNone);
-    attr.event_mask = KeyPressMask;
-    mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
-
-    xwin_ = XCreateWindow(xdpy_, root, 0, 0, width_, height_,
-                          0, vis_info->depth, InputOutput,
-                          vis_info->visual, mask, &attr);
-
-    XFree(vis_info);
-
-    if (!xwin_) {
-        Log::error("Error: XCreateWindow() failed!\n");
-        return false;
-    }
-
-    /* set hints and properties */
-    if (fullscreen_) {
-        Atom atom = XInternAtom(xdpy_, "_NET_WM_STATE_FULLSCREEN", True);
-        XChangeProperty(xdpy_, xwin_,
-                        XInternAtom(xdpy_, "_NET_WM_STATE", True),
-                        XA_ATOM, 32, PropModeReplace,
-                        reinterpret_cast<unsigned char*>(&atom),  1);
-    }
-    else {
-        XSizeHints sizehints;
-        sizehints.min_width  = width_;
-        sizehints.min_height = height_;
-        sizehints.max_width  = width_;
-        sizehints.max_height = height_;
-        sizehints.flags = PMaxSize | PMinSize;
-
-        XSetWMProperties(xdpy_, xwin_, NULL, NULL,
-                         NULL, 0, &sizehints, NULL, NULL);
-    }
-
-    /* Set the window name */
-    XStoreName(xdpy_ , xwin_,  win_name);
-
-    /* Gracefully handle Window Delete event from window manager */
-    Atom wmDelete = XInternAtom(xdpy_, "WM_DELETE_WINDOW", True);
-    XSetWMProtocols(xdpy_, xwin_, &wmDelete, 1);
-
-    return true;
-}
-
-void
-CanvasX11::resize_no_viewport(int width, int height)
-{
-    bool request_fullscreen = (width == -1 || height == -1);
-
-    /* Recreate an existing window only if it has actually been resized */
-    if (xwin_) {
-        if (width_ != width || height_ != height ||
-            fullscreen_ != request_fullscreen)
-        {
-            XDestroyWindow(xdpy_, xwin_);
-            xwin_ = 0;
-        }
-        else
-        {
-            return;
-        }
-    }
-
-    fullscreen_ = request_fullscreen;
-
-    if (fullscreen_) {
-        /* Get the screen (root window) size */
-        XWindowAttributes window_attr;
-        XGetWindowAttributes(xdpy_, RootWindow(xdpy_, DefaultScreen(xdpy_)), 
-                             &window_attr);
-        width_ = window_attr.width;
-        height_ = window_attr.height;
-    }
-    else {
-        width_ = width;
-        height_ = height;
-    }
-
-    if (!ensure_x_window())
-        Log::error("Error: Couldn't create X Window!\n");
+    width_ = cur_properties.width;
+    height_ = cur_properties.height;
 
     if (color_renderbuffer_) {
         glBindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer_);
@@ -358,13 +267,21 @@ CanvasX11::resize_no_viewport(int width, int height)
 
     projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
                                                1.0, 1024.0);
+
+    return true;
 }
 
 bool
-CanvasX11::do_make_current()
+CanvasGeneric::do_make_current()
 {
-    if (!make_current())
+    gl_state_.init_surface(native_window_);
+
+    if (!gl_state_.valid()) {
+        Log::error("CanvasGeneric: Invalid EGL state\n");
         return false;
+    }
+
+    gl_state_.init_gl_extensions();
 
     if (offscreen_) {
         if (!ensure_fbo())
@@ -377,13 +294,13 @@ CanvasX11::do_make_current()
 }
 
 bool
-CanvasX11::ensure_gl_formats()
+CanvasGeneric::ensure_gl_formats()
 {
     if (gl_color_format_ && gl_depth_format_)
         return true;
 
     GLVisualConfig vc;
-    get_glvisualconfig(vc);
+    gl_state_.getVisualConfig(vc);
 
     gl_color_format_ = 0;
     gl_depth_format_ = 0;
@@ -459,7 +376,7 @@ CanvasX11::ensure_gl_formats()
 }
 
 bool
-CanvasX11::ensure_fbo()
+CanvasGeneric::ensure_fbo()
 {
     if (!fbo_) {
         if (!ensure_gl_formats())
@@ -490,7 +407,7 @@ CanvasX11::ensure_fbo()
 }
 
 void
-CanvasX11::release_fbo()
+CanvasGeneric::release_fbo()
 {
     glDeleteFramebuffers(1, &fbo_);
     glDeleteRenderbuffers(1, &color_renderbuffer_);
@@ -504,7 +421,7 @@ CanvasX11::release_fbo()
 }
 
 const char *
-CanvasX11::get_gl_format_str(GLenum f)
+CanvasGeneric::get_gl_format_str(GLenum f)
 {
     const char *str;
 
@@ -523,4 +440,3 @@ CanvasX11::get_gl_format_str(GLenum f)
 
     return str;
 }
-

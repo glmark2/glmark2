@@ -65,7 +65,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/src \
                     $(LOCAL_PATH)/src/libjpeg-turbo \
                     $(LOCAL_PATH)/src/libpng \
                     external/zlib
-LOCAL_SRC_FILES := $(filter-out src/canvas% src/main.cpp, \
+LOCAL_SRC_FILES := $(filter-out src/canvas% src/gl-state% src/native-state% src/main.cpp, \
                      $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/*.cpp))) \
                    $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/scene-terrain/*.cpp)) \
                    src/canvas-android.cpp

@@ -35,12 +35,17 @@
 #include <iostream>
 #include <fstream>
 
+#include "canvas-generic.h"
+
 #if USE_DRM
-#include "canvas-drm.h"
+#include "native-state-drm.h"
+#include "gl-state-egl.h"
 #elif USE_GL
-#include "canvas-x11-glx.h"
+#include "native-state-x11.h"
+#include "gl-state-glx.h"
 #elif USE_GLESv2
-#include "canvas-x11-egl.h"
+#include "native-state-x11.h"
+#include "gl-state-egl.h"
 #endif
 
 using std::vector;
@@ -183,12 +188,17 @@ main(int argc, char *argv[])
 
     // Create the canvas
 #if USE_DRM
-    CanvasDRM canvas(Options::size.first, Options::size.second);
+    NativeStateDRM native_state;
+    GLStateEGL gl_state;
 #elif USE_GL
-    CanvasX11GLX canvas(Options::size.first, Options::size.second);
+    NativeStateX11 native_state;
+    GLStateGLX gl_state;
 #elif USE_GLESv2
-    CanvasX11EGL canvas(Options::size.first, Options::size.second);
+    NativeStateX11 native_state;
+    GLStateEGL gl_state;
 #endif
+
+    CanvasGeneric canvas(native_state, gl_state, Options::size.first, Options::size.second);
 
     canvas.offscreen(Options::offscreen);
 
