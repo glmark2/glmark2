@@ -15,7 +15,9 @@ FLAVORS = {
     'x11-gl' : 'glmark2',
     'x11-glesv2' : 'glmark2-es2',
     'drm-gl' : 'glmark2-drm',
-    'drm-glesv2' : 'glmark2-es2-drm'
+    'drm-glesv2' : 'glmark2-es2-drm',
+    'mir-gl' : 'glmark2-mir',
+    'mir-glesv2' : 'glmark2-es2-mir'
 }
 FLAVORS_STR = ", ".join(FLAVORS.keys())
 
@@ -101,7 +103,8 @@ def configure(ctx):
                 ('egl', 'egl', list_contains(Options.options.flavors, 'glesv2$')),
                 ('glesv2', 'glesv2', list_contains(Options.options.flavors, 'glesv2$')),
                 ('libdrm','drm', list_contains(Options.options.flavors, 'drm')),
-                ('gbm','gbm', list_contains(Options.options.flavors, 'drm'))]
+                ('gbm','gbm', list_contains(Options.options.flavors, 'drm')),
+                ('mirclient','mirclient', list_contains(Options.options.flavors, 'mir'))]
     for (pkg, uselib, mandatory) in opt_pkgs:
         ctx.check_cfg(package = pkg, uselib_store = uselib,
                       args = '--cflags --libs', mandatory = mandatory)
