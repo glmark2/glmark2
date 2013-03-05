@@ -24,7 +24,6 @@
  */
 #include "native-state-drm.h"
 #include "log.h"
-#include <csignal>
 
 /******************
  * Public methods *
@@ -42,7 +41,7 @@ NativeStateDRM::init_display()
 void*
 NativeStateDRM::display()
 {
-    return (void*)dev_;
+    return static_cast<void*>(dev_);
 }
 
 bool
@@ -62,7 +61,7 @@ NativeStateDRM::window(WindowProperties& properties)
     properties = WindowProperties(mode_->hdisplay,
                                   mode_->vdisplay,
                                   true, 0);
-    return (void*)surface_;
+    return static_cast<void*>(surface_);
 }
 
 void
@@ -292,25 +291,19 @@ NativeStateDRM::init()
     return true;
 }
 
-bool NativeStateDRM::should_quit_ = false;
+volatile std::sig_atomic_t NativeStateDRM::should_quit_(false);
 
 void
-NativeStateDRM::quit_handler(int signo)
+NativeStateDRM::quit_handler(int /*signo*/)
 {
-    Log::debug("Got SIGINT (%d).\n", signo);
     should_quit_ = true;
 }
 
 void
-NativeStateDRM::page_flip_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void* data)
+NativeStateDRM::page_flip_handler(int/*  fd */, unsigned int /* frame */, unsigned int /* sec */, unsigned int /* usec */, void* data)
 {
     unsigned int* waiting = reinterpret_cast<unsigned int*>(data);
     *waiting = 0;
-    // Deal with unused parameters
-    static_cast<void>(fd);
-    static_cast<void>(frame);
-    static_cast<void>(sec);
-    static_cast<void>(usec);
 }
 
 void

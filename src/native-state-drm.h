@@ -26,6 +26,7 @@
 #define GLMARK2_NATIVE_STATE_DRM_H_
 
 #include "native-state.h"
+#include <csignal>
 #include <cstring>
 #include <gbm.h>
 #include <drm.h>
@@ -68,7 +69,7 @@ private:
                                   unsigned int usec, void* data);
     static void fb_destroy_callback(gbm_bo* bo, void* data);
     static void quit_handler(int signum);
-    static bool should_quit_;
+    static volatile std::sig_atomic_t should_quit_;
 
     DRMFBState* fb_get_from_bo(gbm_bo* bo);
     bool init_gbm();
