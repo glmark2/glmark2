@@ -14,12 +14,6 @@ flavor_sources = {
   'drm-gl' : ['canvas-generic.cpp', 'native-state-drm.cpp', 'gl-state-egl.cpp'],
   'drm-glesv2' : ['canvas-generic.cpp', 'native-state-drm.cpp', 'gl-state-egl.cpp']
 }
-flavor_target = {
-  'x11-gl' : 'glmark2',
-  'x11-glesv2' : 'glmark2-es2',
-  'drm-gl' : 'glmark2-drm',
-  'drm-glesv2' : 'glmark2-es2-drm'
-}
 flavor_uselibs = {
   'x11-gl' : ['x11', 'gl', 'matrix-gl'],
   'x11-glesv2' : ['x11', 'egl', 'glesv2', 'matrix-glesv2'],
@@ -40,10 +34,11 @@ all_uselibs = set()
 for name in bld.env.keys():
     if name.startswith('FLAVOR_') and bld.env[name]:
         flavor = name.replace('FLAVOR_', '').lower().replace('_', '-')
+        target = bld.env[name]
         bld(
             features     = ['cxx', 'cprogram'],
             source       = common_sources + flavor_sources[flavor],
-            target       = flavor_target[flavor],
+            target       = target,
             use          = common_uselibs + flavor_uselibs[flavor],
             lib          = ['m', 'jpeg', 'dl'],
             includes     = includes,

@@ -11,8 +11,13 @@ top = '.'
 VERSION = '2012.12'
 APPNAME = 'glmark2'
 
-FLAVORS = ['x11-gl', 'x11-glesv2', 'drm-gl', 'drm-glesv2']
-FLAVORS_STR = ", ".join(FLAVORS)
+FLAVORS = {
+    'x11-gl' : 'glmark2',
+    'x11-glesv2' : 'glmark2-es2',
+    'drm-gl' : 'glmark2-drm',
+    'drm-glesv2' : 'glmark2-es2-drm'
+}
+FLAVORS_STR = ", ".join(FLAVORS.keys())
 
 def option_list_cb(option, opt, value, parser):
     value = value.split(',')
@@ -49,7 +54,7 @@ def options(opt):
 def configure(ctx):
     # Special 'all' flavor
     if 'all' in Options.options.flavors:
-        Options.options.flavors = list(set(Options.options.flavors) | set(FLAVORS))
+        Options.options.flavors = list(set(Options.options.flavors) | set(FLAVORS.keys()))
         Options.options.flavors.remove('all')
 
     # Ensure the flavors are valid
@@ -61,7 +66,8 @@ def configure(ctx):
         ctx.fatal('You need to select at least one flavor. Supported flavors are %s' % FLAVORS_STR)
 
     for flavor in FLAVORS:
-        ctx.env["FLAVOR_%s" % flavor.upper().replace('-','_')] = flavor in Options.options.flavors
+        if flavor in Options.options.flavors:
+            ctx.env["FLAVOR_%s" % flavor.upper().replace('-','_')] = FLAVORS[flavor]
 
     ctx.check_tool('gnu_dirs')
     ctx.check_tool('compiler_cc')

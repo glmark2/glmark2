@@ -1,21 +1,12 @@
-if bld.env.USE_GL:
-    bld(
-        features = 'subst',
-        source = 'glmark2.1.in',
-        target = bld.path.find_or_declare('glmark2.1'),
-        APPNAME = 'GLMARK2',
-        appname = 'glmark2',
-        appversion = bld.env.GLMARK2_VERSION,
-        install_path = '${MANDIR}/man1'
-    )
-
-if bld.env.USE_GLESv2:
-    bld(
-        features = 'subst',
-        source = 'glmark2.1.in',
-        target = bld.path.find_or_declare('glmark2-es2.1'),
-        APPNAME = 'GLMARK2-ES2',
-        appname = 'glmark2-es2',
-        appversion = bld.env.GLMARK2_VERSION,
-        install_path = '${MANDIR}/man1'
-    )
+for name in bld.env.keys():
+    if name.startswith('FLAVOR_') and bld.env[name]:
+        target = bld.env[name]
+        bld(
+            features = 'subst',
+            source = 'glmark2.1.in',
+            target = bld.path.find_or_declare('%s.1' % target),
+            APPNAME = 'GLMARK2',
+            appname = target,
+            appversion = bld.env.GLMARK2_VERSION,
+            install_path = '${MANDIR}/man1'
+        )
