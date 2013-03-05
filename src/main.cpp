@@ -41,6 +41,8 @@
 #include "native-state-x11.h"
 #elif GLMARK2_USE_DRM
 #include "native-state-drm.h"
+#elif GLMARK2_USE_MIR
+#include "native-state-mir.h"
 #endif
 
 #if GLMARK2_USE_EGL
@@ -192,6 +194,8 @@ main(int argc, char *argv[])
     NativeStateX11 native_state;
 #elif GLMARK2_USE_DRM
     NativeStateDRM native_state;
+#elif GLMARK2_USE_MIR
+    NativeStateMir native_state;
 #endif
 
 #if GLMARK2_USE_EGL
