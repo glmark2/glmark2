@@ -86,7 +86,7 @@ void*
 NativeStateMir::display()
 {
     if (mir_connection_is_valid(mir_connection_))
-        return reinterpret_cast<void*>(mir_connection_get_egl_native_display(mir_connection_));
+        return static_cast<void*>(mir_connection_get_egl_native_display(mir_connection_));
 
     return 0;
 }
@@ -151,7 +151,7 @@ NativeStateMir::window(WindowProperties& properties)
     properties = properties_;
 
     if (mir_surface_)
-        return reinterpret_cast<void*>(mir_surface_get_egl_native_window(mir_surface_));
+        return static_cast<void*>(mir_surface_get_egl_native_window(mir_surface_));
 
     return 0;
 }
