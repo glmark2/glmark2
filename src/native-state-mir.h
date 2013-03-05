@@ -24,6 +24,7 @@
 
 #include "native-state.h"
 #include <mir_client_library.h>
+#include <csignal>
 
 class NativeStateMir : public NativeState
 {
@@ -40,6 +41,9 @@ public:
     void flip() { }
 
 private:
+    static void quit_handler(int signum);
+    static volatile std::sig_atomic_t should_quit_;
+
     MirConnection* mir_connection_;
     MirSurface* mir_surface_;
     WindowProperties properties_;

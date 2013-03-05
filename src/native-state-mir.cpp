@@ -22,8 +22,6 @@
 #include "native-state-mir.h"
 #include "log.h"
 
-#include <csignal>
-
 /******************
  * Public methods *
  ******************/
@@ -50,14 +48,9 @@ null_surface_callback(MirSurface * /*obj*/, void * /*client_context*/)
 {
 }
 
-volatile std::sig_atomic_t g_should_quit = false;
-
-void signal_handler(int /*signum*/)
-{
-    g_should_quit = true;
 }
 
-}
+volatile sig_atomic_t NativeStateMir::should_quit_(false);
 
 NativeStateMir::~NativeStateMir()
 {
@@ -71,7 +64,7 @@ bool
 NativeStateMir::init_display()
 {
     struct sigaction sa;
-    sa.sa_handler = signal_handler;
+    sa.sa_handler = &NativeStateMir::quit_handler;
     sa.sa_flags = 0;
     sigemptyset(&sa.sa_mask);
 
@@ -93,9 +86,9 @@ void*
 NativeStateMir::display()
 {
     if (mir_connection_is_valid(mir_connection_))
-        return (void*)mir_connection_get_egl_native_display(mir_connection_);
-    else
-        return 0;
+        return reinterpret_cast<void*>(mir_connection_get_egl_native_display(mir_connection_));
+
+    return 0;
 }
 
 bool
@@ -156,10 +149,11 @@ void*
 NativeStateMir::window(WindowProperties& properties)
 {
     properties = properties_;
+
     if (mir_surface_)
-        return (void*)mir_surface_get_egl_native_window(mir_surface_);
-    else
-        return 0;
+        return reinterpret_cast<void*>(mir_surface_get_egl_native_window(mir_surface_));
+
+    return 0;
 }
 
 void
@@ -170,5 +164,15 @@ NativeStateMir::visible(bool /*visible*/)
 bool
 NativeStateMir::should_quit()
 {
-    return g_should_quit;
+    return should_quit_;
+}
+
+/*******************
+ * Private methods *
+ *******************/
+
+void
+NativeStateMir::quit_handler(int /*signum*/)
+{
+    should_quit_ = true;
 }
