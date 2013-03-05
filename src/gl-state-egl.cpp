@@ -307,14 +307,14 @@ GLStateEGL::init_surface(void* native_window)
 void
 GLStateEGL::init_gl_extensions()
 {
-#if USE_GLESv2
+#if GLMARK2_USE_GLESv2
     if (GLExtensions::support("GL_OES_mapbuffer")) {
         GLExtensions::MapBuffer =
             reinterpret_cast<PFNGLMAPBUFFEROESPROC>(eglGetProcAddress("glMapBufferOES"));
         GLExtensions::UnmapBuffer =
             reinterpret_cast<PFNGLUNMAPBUFFEROESPROC>(eglGetProcAddress("glUnmapBufferOES"));
     }
-#elif USE_GL
+#elif GLMARK2_USE_GL
     GLExtensions::MapBuffer = glMapBuffer;
     GLExtensions::UnmapBuffer = glUnmapBuffer;
 #endif
@@ -428,9 +428,9 @@ GLStateEGL::gotValidDisplay()
         return false;
     }
 
-#if USE_GLESv2
+#if GLMARK2_USE_GLESv2
     EGLenum apiType(EGL_OPENGL_ES_API);
-#elif USE_GL
+#elif GLMARK2_USE_GL
     EGLenum apiType(EGL_OPENGL_API);
 #endif
     if (!eglBindAPI(apiType)) {
@@ -500,9 +500,9 @@ GLStateEGL::gotValidConfig()
         EGL_ALPHA_SIZE, requested_visual_config_.alpha,
         EGL_DEPTH_SIZE, requested_visual_config_.depth,
         EGL_STENCIL_SIZE, requested_visual_config_.stencil,
-#if USE_GLESv2
+#if GLMARK2_USE_GLESv2
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-#elif USE_GL
+#elif GLMARK2_USE_GL
         EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
 #endif
         EGL_NONE
@@ -600,7 +600,7 @@ GLStateEGL::gotValidContext()
         return false;
 
     static const EGLint context_attribs[] = {
-#ifdef USE_GLESv2
+#ifdef GLMARK2_USE_GLESv2
         EGL_CONTEXT_CLIENT_VERSION, 2,
 #endif
         EGL_NONE

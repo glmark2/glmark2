@@ -89,9 +89,9 @@ void
 CanvasGeneric::clear()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-#if USE_GL
+#if GLMARK2_USE_GL
     glClearDepth(1.0f);
-#elif USE_GLESv2
+#elif GLMARK2_USE_GLESv2
     glClearDepthf(1.0f);
 #endif
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -310,7 +310,7 @@ CanvasGeneric::ensure_gl_formats()
     bool supports_depth24(false);
     bool supports_depth32(false);
 
-#if USE_GLESv2
+#if GLMARK2_USE_GLESv2
     if (GLExtensions::support("GL_ARM_rgba8"))
         supports_rgba8 = true;
 
@@ -324,7 +324,7 @@ CanvasGeneric::ensure_gl_formats()
 
     if (GLExtensions::support("GL_OES_depth32"))
         supports_depth32 = true;
-#elif USE_GL
+#elif GLMARK2_USE_GL
     supports_rgba8 = true;
     supports_rgb8 = true;
     supports_depth24 = true;

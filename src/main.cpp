@@ -37,15 +37,16 @@
 
 #include "canvas-generic.h"
 
-#if USE_DRM
+#if GLMARK2_USE_X11
+#include "native-state-x11.h"
+#elif GLMARK2_USE_DRM
 #include "native-state-drm.h"
+#endif
+
+#if GLMARK2_USE_EGL
 #include "gl-state-egl.h"
-#elif USE_GL
-#include "native-state-x11.h"
+#elif GLMARK2_USE_GLX
 #include "gl-state-glx.h"
-#elif USE_GLESv2
-#include "native-state-x11.h"
-#include "gl-state-egl.h"
 #endif
 
 using std::vector;
@@ -187,15 +188,16 @@ main(int argc, char *argv[])
     }
 
     // Create the canvas
-#if USE_DRM
+#if GLMARK2_USE_X11
+    NativeStateX11 native_state;
+#elif GLMARK2_USE_DRM
     NativeStateDRM native_state;
+#endif
+
+#if GLMARK2_USE_EGL
     GLStateEGL gl_state;
-#elif USE_GL
-    NativeStateX11 native_state;
+#elif GLMARK2_USE_GLX
     GLStateGLX gl_state;
-#elif USE_GLESv2
-    NativeStateX11 native_state;
-    GLStateEGL gl_state;
 #endif
 
     CanvasGeneric canvas(native_state, gl_state, Options::size.first, Options::size.second);
