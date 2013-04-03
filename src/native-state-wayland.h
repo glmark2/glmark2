@@ -118,12 +118,14 @@ private:
         int32_t refresh;
     };
 
+    typedef std::vector<struct my_output *> OutputsVector;
+
     struct my_display {
         wl_display *display;
         wl_registry *registry;
         wl_compositor *compositor;
         wl_shell *shell;
-        std::vector<struct my_output *> outputs;
+        OutputsVector outputs;
     } *display_;
 
     struct my_window {

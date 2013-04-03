@@ -58,9 +58,11 @@ NativeStateWayland::~NativeStateWayland()
     delete window_;
 
     wl_shell_destroy(display_->shell);
-    for (size_t i = 0; i < display_->outputs.size(); ++i) {
-        wl_output_destroy(display_->outputs.at(i)->output);
-        delete display_->outputs.at(i);
+    for (OutputsVector::iterator it = display_->outputs.begin();
+         it != display_->outputs.end(); ++it) {
+
+        wl_output_destroy((*it)->output);
+        delete *it;
     }
     wl_compositor_destroy(display_->compositor);
     wl_registry_destroy(display_->registry);
@@ -71,9 +73,8 @@ NativeStateWayland::~NativeStateWayland()
 
 void
 NativeStateWayland::registry_handle_global(void *data, struct wl_registry *registry,
-                                           uint32_t id, const char *interface, uint32_t version)
+                                           uint32_t id, const char *interface, uint32_t /*version*/)
 {
-    (void) version;
     NativeStateWayland *that = static_cast<NativeStateWayland *>(data);
     if (strcmp(interface, "wl_compositor") == 0) {
         that->display_->compositor =
@@ -100,38 +101,22 @@ NativeStateWayland::registry_handle_global(void *data, struct wl_registry *regis
 }
 
 void
-NativeStateWayland::registry_handle_global_remove(void *data, struct wl_registry *registry,
-                                                  uint32_t name)
+NativeStateWayland::registry_handle_global_remove(void */*data*/, struct wl_registry */*registry*/,
+                                                  uint32_t /*name*/)
 {
-    (void) data;
-    (void) registry;
-    (void) name;
 }
 
 void
-NativeStateWayland::output_handle_geometry(void *data, struct wl_output *wl_output,
-         int32_t x, int32_t y, int32_t physical_width, int32_t physical_height,
-         int32_t subpixel, const char *make, const char *model, int32_t transform)
+NativeStateWayland::output_handle_geometry(void * /*data*/, struct wl_output * /*wl_output*/,
+         int32_t /*x*/, int32_t /*y*/, int32_t /*physical_width*/, int32_t /*physical_height*/,
+         int32_t /*subpixel*/, const char * /*make*/, const char * /*model*/, int32_t /*transform*/)
 {
-    (void) data;
-    (void) wl_output;
-    (void) x;
-    (void) y;
-    (void) physical_width;
-    (void) physical_height;
-    (void) subpixel;
-    (void) make;
-    (void) model;
-    (void) transform;
-
 }
 
 void
-NativeStateWayland::output_handle_mode(void *data, struct wl_output *wl_output, uint32_t flags,
+NativeStateWayland::output_handle_mode(void *data, struct wl_output * /*wl_output*/, uint32_t /*flags*/,
          int32_t width, int32_t height, int32_t refresh)
 {
-    (void) wl_output;
-    (void) flags;
     struct my_output *my_output = static_cast<struct my_output *>(data);
     my_output->width = width;
     my_output->height = height;
@@ -139,26 +124,21 @@ NativeStateWayland::output_handle_mode(void *data, struct wl_output *wl_output, 
 }
 
 void
-NativeStateWayland::shell_surface_handle_ping(void *data, struct wl_shell_surface *shell_surface,
+NativeStateWayland::shell_surface_handle_ping(void * /*data*/, struct wl_shell_surface *shell_surface,
                             uint32_t serial)
 {
-    (void) data;
     wl_shell_surface_pong(shell_surface, serial);
 }
 
 void
-NativeStateWayland::shell_surface_handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
+NativeStateWayland::shell_surface_handle_popup_done(void * /*data*/, struct wl_shell_surface * /*shell_surface*/)
 {
-    (void) data;
-    (void) shell_surface;
 }
 
 void
-NativeStateWayland::shell_surface_handle_configure(void *data, struct wl_shell_surface *shell_surface,
-         uint32_t edges, int32_t width, int32_t height)
+NativeStateWayland::shell_surface_handle_configure(void *data, struct wl_shell_surface * /*shell_surface*/,
+         uint32_t /*edges*/, int32_t width, int32_t height)
 {
-    (void) shell_surface;
-    (void) edges;
     NativeStateWayland *that = static_cast<NativeStateWayland *>(data);
     that->window_->properties.width = width;
     that->window_->properties.height = height;
@@ -253,7 +233,7 @@ NativeStateWayland::window(WindowProperties &properties)
 }
 
 void
-NativeStateWayland::visible(bool/* v*/)
+NativeStateWayland::visible(bool /*v*/)
 {
 }
 
@@ -271,7 +251,7 @@ NativeStateWayland::flip()
 }
 
 void
-NativeStateWayland::quit_handler(int/* signum*/)
+NativeStateWayland::quit_handler(int /*signum*/)
 {
     should_quit_ = true;
 }
