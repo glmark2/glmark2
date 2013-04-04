@@ -24,13 +24,10 @@
 #define GLMARK2_NATIVE_STATE_WAYLAND_H_
 
 #include <vector>
-#include <csignal>
-#include <EGL/egl.h>
-
-#include "native-state.h"
 #include <wayland-client.h>
 #include <wayland-egl.h>
 
+#include "native-state.h"
 
 class NativeStateWayland : public NativeState
 {
