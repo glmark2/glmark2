@@ -43,6 +43,8 @@
 #include "native-state-drm.h"
 #elif GLMARK2_USE_MIR
 #include "native-state-mir.h"
+#elif GLMARK2_USE_WAYLAND
+#include "native-state-wayland.h"
 #endif
 
 #if GLMARK2_USE_EGL
@@ -196,6 +198,8 @@ main(int argc, char *argv[])
     NativeStateDRM native_state;
 #elif GLMARK2_USE_MIR
     NativeStateMir native_state;
+#elif GLMARK2_USE_WAYLAND
+    NativeStateWayland native_state;
 #endif
 
 #if GLMARK2_USE_EGL
