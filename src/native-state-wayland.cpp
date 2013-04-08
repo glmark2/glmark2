@@ -49,23 +49,36 @@ NativeStateWayland::NativeStateWayland() : display_(0), window_(0)
 
 NativeStateWayland::~NativeStateWayland()
 {
-    wl_shell_surface_destroy(window_->shell_surface);
-    wl_surface_destroy(window_->surface);
-    wl_egl_window_destroy(window_->native);
-    delete window_;
-
-    wl_shell_destroy(display_->shell);
-    for (OutputsVector::iterator it = display_->outputs.begin();
-         it != display_->outputs.end(); ++it) {
-
-        wl_output_destroy((*it)->output);
-        delete *it;
+    if (window_) {
+        if (window_->shell_surface)
+            wl_shell_surface_destroy(window_->shell_surface);
+        if (window_->surface)
+            wl_surface_destroy(window_->surface);
+        if (window_->native)
+            wl_egl_window_destroy(window_->native);
+        delete window_;
     }
-    wl_compositor_destroy(display_->compositor);
-    wl_registry_destroy(display_->registry);
-    wl_display_flush(display_->display);
-    wl_display_disconnect(display_->display);
-    delete display_;
+
+    if (display_) {
+        if (display_->shell)
+            wl_shell_destroy(display_->shell);
+
+        for (OutputsVector::iterator it = display_->outputs.begin();
+             it != display_->outputs.end(); ++it) {
+
+            wl_output_destroy((*it)->output);
+            delete *it;
+        }
+        if (display_->compositor)
+            wl_compositor_destroy(display_->compositor);
+        if (display_->registry)
+            wl_registry_destroy(display_->registry);
+        if (display_->display) {
+            wl_display_flush(display_->display);
+            wl_display_disconnect(display_->display);
+        }
+        delete display_;
+    }
 }
 
 void
