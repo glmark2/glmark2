@@ -146,7 +146,7 @@ PNGReader::init(const std::string& filename)
     }
 
     /* Read the image information and data */
-    png_set_read_fn(priv_->png, reinterpret_cast<voidp>(is_ptr.get()),
+    png_set_read_fn(priv_->png, reinterpret_cast<void*>(is_ptr.get()),
                     PNGReaderPrivate::png_read_fn);
 
     png_read_png(priv_->png, priv_->info, png_transforms, 0);
