@@ -116,13 +116,17 @@ NativeStateWayland::output_handle_geometry(void * /*data*/, struct wl_output * /
 
 void
 NativeStateWayland::output_handle_mode(void *data, struct wl_output * /*wl_output*/,
-                                       uint32_t /*flags*/, int32_t width, int32_t height,
+                                       uint32_t flags, int32_t width, int32_t height,
                                        int32_t refresh)
 {
-    struct my_output *my_output = static_cast<struct my_output *>(data);
-    my_output->width = width;
-    my_output->height = height;
-    my_output->refresh = refresh;
+    /* Only handle output mode events for the shell's "current" mode */
+    if (flags & WL_OUTPUT_MODE_CURRENT) {
+        struct my_output *my_output = static_cast<struct my_output *>(data);
+
+        my_output->width = width;
+        my_output->height = height;
+        my_output->refresh = refresh;
+    }
 }
 
 void
