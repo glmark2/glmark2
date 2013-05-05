@@ -3,7 +3,7 @@ common_sources = [f for f in all_sources if f.name.find('canvas-') == -1 and
                                             f.name.find('android') == -1 and
                                             f.name.find('native-state-') == -1 and
                                             f.name.find('gl-state-') == -1]
-common_uselibs = ['libpng12']
+common_uselibs = ['libpng']
 common_defines = ['USE_EXCEPTIONS']
 
 libmatrix_sources = [f for f in bld.path.ant_glob('libmatrix/*.cc')

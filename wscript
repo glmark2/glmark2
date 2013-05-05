@@ -93,11 +93,21 @@ def configure(ctx):
         ctx.check_cxx(function_name = func, header_name = header,
                       uselib = uselib, mandatory = True)
 
-    # Check required packages
-    req_pkgs = [('libpng12', 'libpng12')]
-    for (pkg, uselib) in req_pkgs:
-        ctx.check_cfg(package = pkg, uselib_store = uselib,
-                      args = '--cflags --libs', mandatory = True)
+    # Check for a supported version of libpng
+    supp_png_pkgs = (('libpng12', '1.2'), ('libpng15', '1.5'),)
+    have_png = False
+    for (pkg, atleast) in supp_png_pkgs:
+        try:
+            pkg_ver = ctx.check_cfg(package=pkg, uselib_store='libpng', atleast_version=atleast,
+                                    args = ['--cflags', '--libs'])
+        except:
+            continue
+        else:
+            have_png = True
+            break
+
+    if not have_png:
+        ctx.fatal('You need to install a supported version of libpng: ' + str(supp_png_pkgs))
 
     # Check optional packages
     opt_pkgs = [('x11', 'x11', list_contains(Options.options.flavors, 'x11')),
