@@ -33,10 +33,12 @@
 #include "util.h"
 #include "main-loop.h"
 #include "benchmark-collection.h"
+#include "scene-collection.h"
 
 static Canvas *g_canvas;
 static MainLoop *g_loop;
 static BenchmarkCollection *g_benchmark_collection;
+static SceneCollection *g_scene_collection;
 static std::ostream *g_log_extra;
 
 class MainLoopAndroid : public MainLoop
@@ -251,36 +253,6 @@ public:
     DummyCanvas() : Canvas(0, 0) {}
 };
 
-/** 
- * Creates all the available scenes and adds them to the supplied vector.
- * 
- * @param scenes the vector to add the scenes to
- * @param canvas the canvas to create the scenes with
- */
-static void
-create_and_add_scenes(std::vector<Scene*>& scenes, Canvas& canvas)
-{
-    scenes.push_back(new SceneDefaultOptions(canvas));
-    scenes.push_back(new SceneBuild(canvas));
-    scenes.push_back(new SceneTexture(canvas));
-    scenes.push_back(new SceneShading(canvas));
-    scenes.push_back(new SceneConditionals(canvas));
-    scenes.push_back(new SceneFunction(canvas));
-    scenes.push_back(new SceneLoop(canvas));
-    scenes.push_back(new SceneBump(canvas));
-    scenes.push_back(new SceneEffect2D(canvas));
-    scenes.push_back(new ScenePulsar(canvas));
-    scenes.push_back(new SceneDesktop(canvas));
-    scenes.push_back(new SceneBuffer(canvas));
-    scenes.push_back(new SceneIdeas(canvas));
-    scenes.push_back(new SceneTerrain(canvas));
-    scenes.push_back(new SceneJellyfish(canvas));
-    scenes.push_back(new SceneShadow(canvas));
-    scenes.push_back(new SceneRefract(canvas));
-    scenes.push_back(new SceneClear(canvas));
-}
-
-
 void
 Java_org_linaro_glmark2_native_init(JNIEnv* env, jclass clazz,
                                     jobject asset_manager,
@@ -328,17 +300,9 @@ Java_org_linaro_glmark2_native_init(JNIEnv* env, jclass clazz,
     Log::info("glmark2 %s\n", GLMARK_VERSION);
     g_canvas->print_info();
 
-    std::vector<Scene*> scenes;
-
     /* Add and register scenes */
-    create_and_add_scenes(scenes, *g_canvas);
-
-    for (std::vector<Scene*>::const_iterator iter = scenes.begin();
-         iter != scenes.end();
-         iter++)
-    {
-        Benchmark::register_scene(**iter);
-    }
+    g_scene_collection = new SceneCollection(*g_canvas);
+    g_scene_collection->register_scenes();
 
     g_benchmark_collection = new BenchmarkCollection();
     g_benchmark_collection->populate_from_options();
@@ -373,6 +337,7 @@ Java_org_linaro_glmark2_native_done(JNIEnv* env)
 
     delete g_loop;
     delete g_benchmark_collection;
+    delete g_scene_collection;
     delete g_canvas;
     delete g_log_extra;
 }
@@ -413,11 +378,10 @@ Java_org_linaro_glmark2_native_getSceneInfo(JNIEnv* env, jclass clazz,
 
     Util::android_set_asset_manager(AAssetManager_fromJava(env, asset_manager));
 
-    std::vector<Scene*> scenes;
     DummyCanvas canvas;
+    SceneCollection sc(canvas);
+    const std::vector<Scene*>& scenes = sc.get();
     std::vector<jobject> si_vector;
-
-    create_and_add_scenes(scenes, canvas);
 
     /* Create SceneInfo instances for all the scenes */
     for (std::vector<Scene*>::const_iterator iter = scenes.begin();
@@ -435,8 +399,6 @@ Java_org_linaro_glmark2_native_getSceneInfo(JNIEnv* env, jclass clazz,
     /* Populate the SceneInfo[] array */
     for (size_t i = 0; i < si_vector.size(); i++)
         env->SetObjectArrayElement(si_array, i, si_vector[i]);
-
-    Util::dispose_pointer_vector(scenes);
 
     return si_array;
 }
