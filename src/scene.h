@@ -589,4 +589,17 @@ public:
     ValidationResult validate();
 };
 
+class SceneClear : public Scene
+{
+public:
+    SceneClear(Canvas &pCanvas);
+    bool load();
+    void unload();
+    bool setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+};
+
 #endif

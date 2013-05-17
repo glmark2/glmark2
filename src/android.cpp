@@ -277,6 +277,7 @@ create_and_add_scenes(std::vector<Scene*>& scenes, Canvas& canvas)
     scenes.push_back(new SceneJellyfish(canvas));
     scenes.push_back(new SceneShadow(canvas));
     scenes.push_back(new SceneRefract(canvas));
+    scenes.push_back(new SceneClear(canvas));
 }
 
 
