@@ -121,14 +121,28 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_.x(), size_.y(), 0,
-                     GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
         /* Create a FBO */
         glGenFramebuffers(1, &fbo_);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               GL_TEXTURE_2D, texture_, 0);
+
+        /*
+         * Only create the texture image and attach it to the framebuffer
+         * if the size has been set.  Framebuffer completeness depends
+         * upon non-zero width and height images, and some implementations
+         * are overly aggressive in checking at attachment time rather than
+         * at draw time.
+         */ 
+        if (size_.x() != 0 && size_.y() != 0) {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_.x(), size_.y(), 0,
+                         GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                   GL_TEXTURE_2D, texture_, 0);
+            unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+            if (status != GL_FRAMEBUFFER_COMPLETE) {
+                Log::error("RenderObject::init: glCheckFramebufferStatus failed (0x%x)\n", status);
+            }
+        }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -182,9 +196,17 @@ public:
         /* Recreate the backing texture with correct size */
         if (size_.x() != size.x() || size_.y() != size.y()) {
             size_ = size;
+            /* If we're resizing the texture, we need to tell the framebuffer*/
             glBindTexture(GL_TEXTURE_2D, texture_);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_.x(), size_.y(), 0,
                          GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                   GL_TEXTURE_2D, texture_, 0);
+            unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+            if (status != GL_FRAMEBUFFER_COMPLETE) {
+                Log::error("RenderObject::size: glCheckFramebufferStatus failed (0x%x)\n", status);
+            }
             texture_contents_invalid_ = true;
         }
 
