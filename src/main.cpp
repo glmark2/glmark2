@@ -31,6 +31,7 @@
 #include "text-renderer.h"
 #include "main-loop.h"
 #include "benchmark-collection.h"
+#include "scene-collection.h"
 
 #include <iostream>
 #include <fstream>
@@ -215,10 +216,9 @@ main(int argc, char *argv[])
 
     canvas.visual_config(Options::visual_config);
 
-    vector<Scene*> scenes;
-
     // Register the scenes, so they can be looked up by name
-    add_and_register_scenes(scenes, canvas);
+    SceneCollection scenes(canvas);
+    scenes.register_scenes();
 
     if (Options::list_scenes) {
         list_scenes();
@@ -242,8 +242,6 @@ main(int argc, char *argv[])
         do_validation(canvas);
     else
         do_benchmark(canvas);
-
-    Util::dispose_pointer_vector(scenes);
 
     return 0;
 }
