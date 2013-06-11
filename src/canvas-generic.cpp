@@ -409,12 +409,18 @@ CanvasGeneric::ensure_fbo()
 void
 CanvasGeneric::release_fbo()
 {
-    glDeleteFramebuffers(1, &fbo_);
-    glDeleteRenderbuffers(1, &color_renderbuffer_);
-    glDeleteRenderbuffers(1, &depth_renderbuffer_);
-    fbo_ = 0;
-    color_renderbuffer_ = 0;
-    depth_renderbuffer_ = 0;
+    if (fbo_) {
+        glDeleteFramebuffers(1, &fbo_);
+        fbo_ = 0;
+    }
+    if (!color_renderbuffer_) {
+        glDeleteRenderbuffers(1, &color_renderbuffer_);
+        color_renderbuffer_ = 0;
+    }
+    if (!depth_renderbuffer_) {
+        glDeleteRenderbuffers(1, &depth_renderbuffer_);
+        depth_renderbuffer_ = 0;
+    }
 
     gl_color_format_ = 0;
     gl_depth_format_ = 0;
