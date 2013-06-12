@@ -176,11 +176,6 @@ SceneRefract::validate()
 bool
 DistanceRenderTarget::setup(unsigned int width, unsigned int height)
 {
-    canvas_width_ = width;
-    canvas_height_ = height;
-    width_ = canvas_width_ * 2;
-    height_ = canvas_height_ * 2;
-
     static const string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/depth.vert");
     static const string frg_shader_filename(GLMARK_DATA_PATH"/shaders/depth.frag");
 
@@ -189,6 +184,24 @@ DistanceRenderTarget::setup(unsigned int width, unsigned int height)
 
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(), frg_source.str())) {
         return false;
+    }
+
+    canvas_width_ = width;
+    canvas_height_ = height;
+    width_ = canvas_width_ * 2;
+    height_ = canvas_height_ * 2;
+
+    // If the texture will be too large for the implemnetation, we need to
+    // clamp the dimensions but maintain the aspect ratio.
+    GLint tex_size(0);
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &tex_size);
+    unsigned int max_size = static_cast<unsigned int>(tex_size);
+    if (max_size < width_ || max_size < height_) {
+        float aspect = static_cast<float>(width) / static_cast<float>(height);
+        width_ = max_size;
+        height_ = width_ / aspect;
+        Log::debug("DistanceRenderTarget::setup: original texture size (%u x %u), clamped to (%u x %u)\n",
+            canvas_width_ * 2, canvas_height_ * 2, width_, height_);
     }
 
     glGenTextures(2, &tex_[0]);
@@ -217,7 +230,7 @@ DistanceRenderTarget::setup(unsigned int width, unsigned int height)
                            tex_[COLOR], 0);
     unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
-        Log::error("DepthRenderState::setup: glCheckFramebufferStatus failed (0x%x)\n", status);
+        Log::error("DistanceRenderTarget::setup: glCheckFramebufferStatus failed (0x%x)\n", status);
         return false;
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
