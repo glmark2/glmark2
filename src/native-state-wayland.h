@@ -81,34 +81,6 @@ private:
     shell_surface_handle_popup_done(void *data,
                                     struct wl_shell_surface *shell_surface);
 
-    static void
-    keyboard_handle_keymap(void *data, struct wl_keyboard *wl_keyboard,
-                           uint32_t format, int32_t fd, uint32_t size);
-
-    static void
-    keyboard_handle_enter(void *data, struct wl_keyboard *wl_keyboard,
-                          uint32_t serial, struct wl_surface *surface,
-                          struct wl_array *keys);
-
-    static void
-    keyboard_handle_leave(void *data, struct wl_keyboard *wl_keyboard,
-                          uint32_t serial, struct wl_surface *surface);
-
-    static void
-    keyboard_handle_key(void *data, struct wl_keyboard *wl_keyboard,
-                        uint32_t serial, uint32_t time, uint32_t key,
-                        uint32_t state);
-
-    static void
-    keyboard_handle_modifiers(void *data, struct wl_keyboard *wl_keyboard,
-                              uint32_t serial, uint32_t mods_depressed,
-                              uint32_t mods_latched, uint32_t mods_locked,
-                              uint32_t group);
-
-    static void
-    seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
-                             uint32_t capabilities);
-
     struct my_output {
         wl_output *output;
         int32_t width, height;
