@@ -28,13 +28,9 @@
 #include "options.h"
 #include "log.h"
 #include "util.h"
-#include "text-renderer.h"
 #include "main-loop.h"
 #include "benchmark-collection.h"
 #include "scene-collection.h"
-
-#include <iostream>
-#include <fstream>
 
 #include "canvas-generic.h"
 
@@ -57,36 +53,6 @@
 using std::vector;
 using std::map;
 using std::string;
-
-void
-add_and_register_scenes(vector<Scene*>& scenes, Canvas& canvas)
-{
-    scenes.push_back(new SceneDefaultOptions(canvas));
-    scenes.push_back(new SceneBuild(canvas));
-    scenes.push_back(new SceneTexture(canvas));
-    scenes.push_back(new SceneShading(canvas));
-    scenes.push_back(new SceneConditionals(canvas));
-    scenes.push_back(new SceneFunction(canvas));
-    scenes.push_back(new SceneLoop(canvas));
-    scenes.push_back(new SceneBump(canvas));
-    scenes.push_back(new SceneEffect2D(canvas));
-    scenes.push_back(new ScenePulsar(canvas));
-    scenes.push_back(new SceneDesktop(canvas));
-    scenes.push_back(new SceneBuffer(canvas));
-    scenes.push_back(new SceneIdeas(canvas));
-    scenes.push_back(new SceneTerrain(canvas));
-    scenes.push_back(new SceneJellyfish(canvas));
-    scenes.push_back(new SceneShadow(canvas));
-    scenes.push_back(new SceneRefract(canvas));
-    scenes.push_back(new SceneClear(canvas));
-
-    for (vector<Scene*>::const_iterator iter = scenes.begin();
-         iter != scenes.end();
-         iter++)
-    {
-        Benchmark::register_scene(**iter);
-    }
-}
 
 static void
 list_scenes()

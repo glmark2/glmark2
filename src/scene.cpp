@@ -27,7 +27,6 @@
 #include "options.h"
 #include "util.h"
 #include <sstream>
-#include <cmath>
 #include <algorithm>
 
 using std::stringstream;

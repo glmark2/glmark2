@@ -19,7 +19,6 @@
  * Authors:
  *  Alexandros Frantzis
  */
-#include <cstdio>
 #include <png.h>
 #include <jpeglib.h>
 #include <memory>

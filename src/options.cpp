@@ -22,10 +22,8 @@
  */
 
 #include <cstring>
-#include <cstdlib>
 #include <cstdio>
 #include <getopt.h>
-#include <sstream>
 
 #include "options.h"
 #include "util.h"
