@@ -21,6 +21,7 @@
  */
 #include <png.h>
 #include <jpeglib.h>
+#include <cstring>
 #include <memory>
 
 #include "image-reader.h"
