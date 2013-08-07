@@ -38,7 +38,9 @@ const struct wl_shell_surface_listener NativeStateWayland::shell_surface_listene
 
 const struct wl_output_listener NativeStateWayland::output_listener_ = {
     NativeStateWayland::output_handle_geometry,
-    NativeStateWayland::output_handle_mode
+    NativeStateWayland::output_handle_mode,
+    NativeStateWayland::output_handle_done,
+    NativeStateWayland::output_handle_scale
 };
 
 volatile bool NativeStateWayland::should_quit_ = false;
@@ -103,7 +105,7 @@ NativeStateWayland::registry_handle_global(void *data, struct wl_registry *regis
         my_output->output =
                 static_cast<struct wl_output *>(
                     wl_registry_bind(registry,
-                                     id, &wl_output_interface, 1));
+                                     id, &wl_output_interface, 2));
         that->display_->outputs.push_back(my_output);
 
         wl_output_add_listener(my_output->output, &output_listener_, my_output);
@@ -140,6 +142,17 @@ NativeStateWayland::output_handle_mode(void *data, struct wl_output * /*wl_outpu
         my_output->height = height;
         my_output->refresh = refresh;
     }
+}
+
+void
+NativeStateWayland::output_handle_done(void * /*data*/, struct wl_output * /*wl_output*/)
+{
+}
+
+void
+NativeStateWayland::output_handle_scale(void * /*data*/, struct wl_output * /*wl_output*/,
+                                        int32_t /*factor*/)
+{
 }
 
 void

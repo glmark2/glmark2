@@ -70,6 +70,12 @@ private:
              int32_t width, int32_t height, int32_t refresh);
 
     static void
+    output_handle_done(void *data, struct wl_output *wl_output);
+
+    static void
+    output_handle_scale(void *data, struct wl_output *wl_output, int32_t factor);
+
+    static void
     shell_surface_handle_ping(void *data, struct wl_shell_surface *shell_surface,
                               uint32_t serial);
     static void
