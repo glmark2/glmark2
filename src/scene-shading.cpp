@@ -59,7 +59,7 @@ SceneShading::SceneShading(Canvas &pCanvas) :
     }
     options_["shading"] = Scene::Option("shading", "gouraud",
                                         "Which shading method to use",
-                                        "gouraud,blinn-phong-inf,phong");
+                                        "gouraud,blinn-phong-inf,phong,cel");
     options_["num-lights"] = Scene::Option("num-lights", "1",
             "The number of lights applied to the scene (phong only)");
     options_["model"] = Scene::Option("model", "cat", "Which model to use",
@@ -177,6 +177,12 @@ SceneShading::setup()
         frg_source.append(fragsource);
         frg_source.add_const("MaterialDiffuse", materialDiffuse);
         vtx_source.append_file(vtx_shader_filename);
+    }
+    else if (shading == "cel") {
+        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.vert";
+        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-cel.frag";
+        vtx_source.append_file(vtx_shader_filename);
+        frg_source.append_file(frg_shader_filename);
     }
 
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
