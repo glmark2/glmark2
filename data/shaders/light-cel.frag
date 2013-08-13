@@ -5,10 +5,10 @@ void main(void)
 {
     const vec4 OutlineColor = vec4(0.0, 0.0, 0.0, 1.0);
     const vec2 OutlineThickness = vec2(0.1, 0.4);
-    const vec4 BaseColor = vec4(0.0, 0.0, 0.3, 1.0);
+    const vec4 BaseColor = vec4(0.0, 0.3, 0.0, 1.0);
     const vec4 LightColor = vec4(1.0, 1.0, 1.0, 1.0);
-    const vec4 LightSourcePosition = vec4(2.0, 2.0, 1.0, 1.0);
-    const vec4 DiffuseColor = vec4(0.0, 0.0, 0.7, 1.0);
+    const vec4 LightSourcePosition = vec4(4.0, 3.0, 1.0, 1.0);
+    const vec4 DiffuseColor = vec4(0.0, 0.6, 0.0, 1.0);
     const vec4 SpecularColor = vec4(1.0, 1.0, 1.0, 0.7);
     const float DiffuseThreshold = 0.1;
     const float SpecularThreshold = 0.5;
