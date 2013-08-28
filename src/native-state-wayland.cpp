@@ -279,7 +279,7 @@ NativeStateWayland::should_quit()
 void
 NativeStateWayland::flip()
 {
-    int ret = wl_display_dispatch(display_->display);
+    int ret = wl_display_roundtrip(display_->display);
     should_quit_ = (ret == -1) || should_quit_;
 }
 
