@@ -49,6 +49,7 @@ private:
         benchmarks.push_back("shading:shading=gouraud");
         benchmarks.push_back("shading:shading=blinn-phong-inf");
         benchmarks.push_back("shading:shading=phong");
+        benchmarks.push_back("shading:shading=cel");
         benchmarks.push_back("bump:bump-render=high-poly");
         benchmarks.push_back("bump:bump-render=normals");
         benchmarks.push_back("bump:bump-render=height");
