@@ -413,11 +413,11 @@ CanvasGeneric::release_fbo()
         glDeleteFramebuffers(1, &fbo_);
         fbo_ = 0;
     }
-    if (!color_renderbuffer_) {
+    if (color_renderbuffer_) {
         glDeleteRenderbuffers(1, &color_renderbuffer_);
         color_renderbuffer_ = 0;
     }
-    if (!depth_renderbuffer_) {
+    if (depth_renderbuffer_) {
         glDeleteRenderbuffers(1, &depth_renderbuffer_);
         depth_renderbuffer_ = 0;
     }
