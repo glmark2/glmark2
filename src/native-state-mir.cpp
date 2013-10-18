@@ -29,25 +29,89 @@
 namespace
 {
 
-void
-connected_callback(MirConnection *connection, void *client_context)
+const MirDisplayOutput*
+find_active_output(const MirDisplayConfiguration* conf)
 {
-    MirConnection **con = static_cast<MirConnection**>(client_context);
-    *con = connection;
+    const MirDisplayOutput *output = NULL;
+
+    for (uint32_t d = 0; d < conf->num_outputs; d++)
+    {
+        const MirDisplayOutput* out = &conf->outputs[d];
+
+        if (out->used && out->connected &&
+            out->num_modes && out->current_mode < out->num_modes)
+        {
+            output = out;
+            break;
+        }
+    }
+
+    return output;
 }
 
-void
-surface_created_callback(MirSurface *surface, void *client_context)
+MirPixelFormat
+find_best_surface_format(MirConnection* connection)
 {
-    MirSurface **surf = static_cast<MirSurface**>(client_context);
-    *surf = surface;
+    static const unsigned int formats_size = 10;
+    MirPixelFormat formats[formats_size];
+    unsigned int num_valid_formats = 0;
+    MirPixelFormat best_format = mir_pixel_format_invalid;
+
+    mir_connection_get_available_surface_formats(connection,
+                                                 formats,
+                                                 formats_size,
+                                                 &num_valid_formats);
+
+    /*
+     * Surface formats come sorted in largest active bits order.
+     * Prefer opaque formats over formats with alpha, and largest
+     * formats over smaller ones.
+     */
+    for (unsigned int i = 0; i < num_valid_formats; i++)
+    {
+        if (formats[i] == mir_pixel_format_xbgr_8888 ||
+            formats[i] == mir_pixel_format_xrgb_8888 ||
+            formats[i] == mir_pixel_format_bgr_888)
+        {
+            best_format = formats[i];
+            break;
+        }
+        else if (best_format == mir_pixel_format_invalid)
+        {
+            best_format = formats[i];
+        }
+    }
+
+    return best_format;
 }
 
-void
-null_surface_callback(MirSurface * /*obj*/, void * /*client_context*/)
+class DisplayConfiguration
 {
-}
+public:
+    DisplayConfiguration(MirConnection* connection)
+        : display_config(mir_connection_create_display_config(connection))
+    {
+    }
 
+    ~DisplayConfiguration()
+    {
+        if (display_config)
+            mir_display_config_destroy(display_config);
+    }
+
+    bool is_valid()
+    {
+        return display_config != 0;
+    }
+
+    operator MirDisplayConfiguration*() const
+    {
+        return display_config;
+    }
+
+private:
+    MirDisplayConfiguration* display_config;
+};
 }
 
 volatile sig_atomic_t NativeStateMir::should_quit_(false);
@@ -55,8 +119,8 @@ volatile sig_atomic_t NativeStateMir::should_quit_(false);
 NativeStateMir::~NativeStateMir()
 {
     if (mir_surface_)
-        mir_wait_for(mir_surface_release(mir_surface_, null_surface_callback, 0));
-    if (mir_connection_is_valid(mir_connection_))
+        mir_surface_release_sync(mir_surface_);
+    if (mir_connection_)
         mir_connection_release(mir_connection_);
 }
 
@@ -71,11 +135,10 @@ NativeStateMir::init_display()
     sigaction(SIGINT, &sa, NULL);
     sigaction(SIGTERM, &sa, NULL);
 
-    mir_wait_for(mir_connect("/tmp/mir_socket", "glmark2",
-                             connected_callback, &mir_connection_));
+    mir_connection_ = mir_connect_sync(NULL, "glmark2");
 
     if (!mir_connection_is_valid(mir_connection_)) {
-        Log::error("Failed to connect to mir\n");
+        Log::error("Couldn't connect to the Mir display server\n");
         return false;
     }
 
@@ -97,7 +160,8 @@ NativeStateMir::create_window(WindowProperties const& properties)
     static const char *win_name("glmark2 "GLMARK_VERSION);
 
     if (!mir_connection_is_valid(mir_connection_)) {
-        Log::error("No connection to mir!\n");
+        Log::error("Cannot create a Mir surface without a valid connection "
+                   "to the Mir display server!\n");
         return false;
     }
 
@@ -108,7 +172,7 @@ NativeStateMir::create_window(WindowProperties const& properties)
              (properties_.width != properties.width ||
               properties_.height != properties.height)))
         {
-            mir_wait_for(mir_surface_release(mir_surface_, null_surface_callback, 0));
+            mir_surface_release_sync(mir_surface_);
             mir_surface_ = 0;
         }
         else
@@ -117,28 +181,55 @@ NativeStateMir::create_window(WindowProperties const& properties)
         }
     }
 
-    MirDisplayInfo display_info;
-    mir_connection_get_display_info(mir_connection_, &display_info);
+    uint32_t output_id = mir_display_output_id_invalid;
 
     properties_ = properties;
 
     if (properties_.fullscreen) {
-        properties_.width = display_info.width;
-        properties_.height = display_info.height;
+        DisplayConfiguration display_config(mir_connection_);
+        if (!display_config.is_valid()) {
+            Log::error("Couldn't get display configuration from the Mir display server!\n");
+            return false;
+        }
+
+        const MirDisplayOutput* active_output = find_active_output(display_config);
+        if (active_output == NULL) {
+            Log::error("Couldn't find an active output in the Mir display server!\n");
+            return false;
+        }
+
+        const MirDisplayMode* current_mode =
+            &active_output->modes[active_output->current_mode];
+
+        properties_.width = current_mode->horizontal_resolution;
+        properties_.height = current_mode->vertical_resolution;
+        output_id = active_output->output_id;
+
+        Log::debug("Making Mir surface fullscreen on output %u (%ux%u)\n",
+                   output_id, properties_.width, properties_.height);
     }
+
+    MirPixelFormat surface_format = find_best_surface_format(mir_connection_);
+    if (surface_format == mir_pixel_format_invalid) {
+        Log::error("Couldn't find a pixel format to use for the Mir surface!\n");
+        return false;
+    }
+
+    Log::debug("Using pixel format %u for the Mir surface\n", surface_format);
 
     MirSurfaceParameters surface_parameters = {
         win_name,
         properties_.width, properties_.height,
-        display_info.supported_pixel_format[0],
-        mir_buffer_usage_hardware
+        surface_format,
+        mir_buffer_usage_hardware,
+        output_id
     };
 
-    mir_wait_for(mir_surface_create(mir_connection_, &surface_parameters,
-                                    surface_created_callback, &mir_surface_));
+    mir_surface_ = mir_connection_create_surface_sync(mir_connection_,
+                                                      &surface_parameters);
 
-    if (!mir_surface_) {
-        Log::error("Failed to create mir surface!\n");
+    if (!mir_surface_ || !mir_surface_is_valid(mir_surface_)) {
+        Log::error("Failed to create Mir surface!\n");
         return false;
     }
 

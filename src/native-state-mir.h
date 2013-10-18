@@ -23,7 +23,7 @@
 #define GLMARK2_NATIVE_STATE_MIR_H_
 
 #include "native-state.h"
-#include <mir_client_library.h>
+#include <mir_toolkit/mir_client_library.h>
 #include <csignal>
 
 class NativeStateMir : public NativeState
