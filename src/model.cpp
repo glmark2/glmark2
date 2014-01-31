@@ -814,7 +814,7 @@ Model::find_models()
         return ModelPrivate::modelMap;
     }
     vector<string> pathVec;
-    string dataDir(GLMARK_DATA_PATH"/models");
+    string dataDir(Options::data_path + "/models");
     Util::list_files(dataDir, pathVec);
 #ifdef GLMARK_EXTRAS_PATH
     string extrasDir(GLMARK_EXTRAS_PATH"/models");

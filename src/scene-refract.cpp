@@ -21,6 +21,7 @@
 //
 #include "scene-refract.h"
 #include "model.h"
+#include "options.h"
 #include "texture.h"
 #include "util.h"
 #include "log.h"
@@ -178,8 +179,8 @@ SceneRefract::validate()
 bool
 DistanceRenderTarget::setup(unsigned int width, unsigned int height)
 {
-    static const string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/depth.vert");
-    static const string frg_shader_filename(GLMARK_DATA_PATH"/shaders/depth.frag");
+    static const string vtx_shader_filename(Options::data_path + "/shaders/depth.vert");
+    static const string frg_shader_filename(Options::data_path + "/shaders/depth.frag");
 
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source(frg_shader_filename);
@@ -281,8 +282,8 @@ bool
 RefractPrivate::setup(map<string, Scene::Option>& options)
 {
     // Program object setup
-    static const string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-refract.vert");
-    static const string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-refract.frag");
+    static const string vtx_shader_filename(Options::data_path + "/shaders/light-refract.vert");
+    static const string frg_shader_filename(Options::data_path + "/shaders/light-refract.frag");
     static const vec4 lightColor(0.4, 0.4, 0.4, 1.0);
 
     ShaderSource vtx_source(vtx_shader_filename);

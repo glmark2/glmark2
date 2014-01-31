@@ -19,6 +19,7 @@
  * Authors:
  *  Alexandros Frantzis
  */
+#include "options.h"
 #include "scene.h"
 #include "renderer.h"
 #include "shader-source.h"
@@ -40,8 +41,8 @@ SimplexNoiseRenderer::noise_program(bool create_new)
 
     if (!noise_program) {
         noise_program = new Program();
-        ShaderSource vtx_shader(GLMARK_DATA_PATH"/shaders/terrain-texture.vert");
-        ShaderSource frg_shader(GLMARK_DATA_PATH"/shaders/terrain-noise.frag");
+        ShaderSource vtx_shader(Options::data_path + "/shaders/terrain-texture.vert");
+        ShaderSource frg_shader(Options::data_path + "/shaders/terrain-noise.frag");
 
         Scene::load_shaders_from_strings(*noise_program, vtx_shader.str(), frg_shader.str());
 

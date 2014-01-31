@@ -20,6 +20,7 @@
  * Authors:
  *  Jesse Barker
  */
+#include "options.h"
 #include "table.h"
 #include "scene.h"
 #include "shader-source.h"
@@ -101,8 +102,8 @@ Table::init(void)
 
     // Initialize shader sources from input files and create programs from them
     // Program to render the table with lighting and a time-based fade...
-    string table_vtx_filename(GLMARK_DATA_PATH"/shaders/ideas-table.vert");
-    string table_frg_filename(GLMARK_DATA_PATH"/shaders/ideas-table.frag");
+    string table_vtx_filename(Options::data_path + "/shaders/ideas-table.vert");
+    string table_frg_filename(Options::data_path + "/shaders/ideas-table.frag");
     ShaderSource table_vtx_source(table_vtx_filename);
     ShaderSource table_frg_source(table_frg_filename);
     if (!Scene::load_shaders_from_strings(tableProgram_, table_vtx_source.str(),
@@ -114,8 +115,8 @@ Table::init(void)
     tableVertexIndex_ = tableProgram_[vertexAttribName_].location();
 
     // Program to render the paper with lighting and a time-based fade...
-    string paper_vtx_filename(GLMARK_DATA_PATH"/shaders/ideas-paper.vert");
-    string paper_frg_filename(GLMARK_DATA_PATH"/shaders/ideas-paper.frag");
+    string paper_vtx_filename(Options::data_path + "/shaders/ideas-paper.vert");
+    string paper_frg_filename(Options::data_path + "/shaders/ideas-paper.frag");
     ShaderSource paper_vtx_source(paper_vtx_filename);
     ShaderSource paper_frg_source(paper_frg_filename);
     if (!Scene::load_shaders_from_strings(paperProgram_, paper_vtx_source.str(),
@@ -127,8 +128,8 @@ Table::init(void)
     paperVertexIndex_ = paperProgram_[vertexAttribName_].location();
 
     // Program to handle the text (time-based color fade)...
-    string text_vtx_filename(GLMARK_DATA_PATH"/shaders/ideas-text.vert");
-    string text_frg_filename(GLMARK_DATA_PATH"/shaders/ideas-text.frag");
+    string text_vtx_filename(Options::data_path + "/shaders/ideas-text.vert");
+    string text_frg_filename(Options::data_path + "/shaders/ideas-text.frag");
     ShaderSource text_vtx_source(text_vtx_filename);
     ShaderSource text_frg_source(text_frg_filename);
     if (!Scene::load_shaders_from_strings(textProgram_, text_vtx_source.str(),
@@ -140,8 +141,8 @@ Table::init(void)
     textVertexIndex_ = textProgram_[vertexAttribName_].location();
 
     // Program for the drawUnder functionality (just paint it black)...
-    string under_table_vtx_filename(GLMARK_DATA_PATH"/shaders/ideas-under-table.vert");
-    string under_table_frg_filename(GLMARK_DATA_PATH"/shaders/ideas-under-table.frag");
+    string under_table_vtx_filename(Options::data_path + "/shaders/ideas-under-table.vert");
+    string under_table_frg_filename(Options::data_path + "/shaders/ideas-under-table.frag");
     ShaderSource under_table_vtx_source(under_table_vtx_filename);
     ShaderSource under_table_frg_source(under_table_frg_filename);
     if (!Scene::load_shaders_from_strings(underProgram_, under_table_vtx_source.str(),

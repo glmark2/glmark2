@@ -23,13 +23,14 @@
 
 #include "scene.h"
 #include "mat.h"
+#include "options.h"
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
 #include "shader-source.h"
 #include "util.h"
 
-static const std::string shader_file_base(GLMARK_DATA_PATH"/shaders/function");
+static const std::string shader_file_base("/shaders/function");
 
 static const std::string vtx_file(shader_file_base + ".vert");
 static const std::string frg_file(shader_file_base + ".frag");
@@ -61,7 +62,7 @@ SceneFunction::~SceneFunction()
 static std::string
 get_vertex_shader_source(int steps, bool function, std::string &complexity)
 {
-    ShaderSource source(vtx_file);
+    ShaderSource source(Options::data_path + vtx_file);
     ShaderSource source_main;
     std::string step_file;
 
@@ -72,13 +73,13 @@ get_vertex_shader_source(int steps, bool function, std::string &complexity)
 
     for (int i = 0; i < steps; i++) {
         if (function)
-            source_main.append_file(call_file);
+            source_main.append_file(Options::data_path + call_file);
         else
-            source_main.append_file(step_file);
+            source_main.append_file(Options::data_path + step_file);
     }
 
     if (function)
-        source.replace_with_file("$PROCESS$", step_file);
+        source.replace_with_file("$PROCESS$", Options::data_path + step_file);
     else
         source.replace("$PROCESS$", "");
 
@@ -90,7 +91,7 @@ get_vertex_shader_source(int steps, bool function, std::string &complexity)
 static std::string
 get_fragment_shader_source(int steps, bool function, std::string &complexity)
 {
-    ShaderSource source(frg_file);
+    ShaderSource source(Options::data_path + frg_file);
     ShaderSource source_main;
     std::string step_file;
 
@@ -101,13 +102,13 @@ get_fragment_shader_source(int steps, bool function, std::string &complexity)
 
     for (int i = 0; i < steps; i++) {
         if (function)
-            source_main.append_file(call_file);
+            source_main.append_file(Options::data_path + call_file);
         else
-            source_main.append_file(step_file);
+            source_main.append_file(Options::data_path + step_file);
     }
 
     if (function)
-        source.replace_with_file("$PROCESS$", step_file);
+        source.replace_with_file("$PROCESS$", Options::data_path + step_file);
     else
         source.replace("$PROCESS$", "");
 

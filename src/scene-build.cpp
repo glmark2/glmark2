@@ -25,6 +25,7 @@
 #include "scene.h"
 #include "log.h"
 #include "mat.h"
+#include "options.h"
 #include "stack.h"
 #include "shader-source.h"
 #include "model.h"
@@ -89,8 +90,8 @@ SceneBuild::setup()
         return false;
 
     /* Set up shaders */
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.frag");
+    static const std::string vtx_shader_filename(Options::data_path + "/shaders/light-basic.vert");
+    static const std::string frg_shader_filename(Options::data_path + "/shaders/light-basic.frag");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     static const LibMatrix::vec4 materialDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
 

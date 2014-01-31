@@ -23,6 +23,7 @@
  */
 #include "texture.h"
 #include "log.h"
+#include "options.h"
 #include "util.h"
 #include "image-reader.h"
 
@@ -150,7 +151,7 @@ Texture::find_textures()
         return TexturePrivate::textureMap;
     }
     vector<string> pathVec;
-    string dataDir(GLMARK_DATA_PATH"/textures");
+    string dataDir(Options::data_path + "/textures");
     Util::list_files(dataDir, pathVec);
     // Now that we have a list of all of the image files available to us,
     // let's go through and pull out the names and what format they're in

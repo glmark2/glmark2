@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include "scene.h"
 #include "mat.h"
+#include "options.h"
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
@@ -112,19 +113,19 @@ ScenePulsar::setup()
     std::string frg_shader_filename;
     static const vec4 lightPosition(-20.0f, 20.0f,-20.0f, 1.0f);
     if (options_["light"].value == "true") {
-        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/pulsar-light.vert";
+        vtx_shader_filename = Options::data_path + "/shaders/pulsar-light.vert";
     } else {
-        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/pulsar.vert";
+        vtx_shader_filename = Options::data_path + "/shaders/pulsar.vert";
     }
 
     if (options_["texture"].value == "true") {
-        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic-tex.frag";
+        frg_shader_filename = Options::data_path + "/shaders/light-basic-tex.frag";
         Texture::find_textures();
         if (!Texture::load("crate-base", &texture_, GL_NEAREST, GL_NEAREST, 0))
             return false;
 
     } else {
-        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.frag";
+        frg_shader_filename = Options::data_path + "/shaders/light-basic.frag";
     }
 
     ShaderSource vtx_source(vtx_shader_filename);

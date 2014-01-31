@@ -21,6 +21,7 @@
  */
 #include "text-renderer.h"
 #include "gl-headers.h"
+#include "options.h"
 #include "scene.h"
 #include "shader-source.h"
 #include "vec.h"
@@ -49,8 +50,8 @@ TextRenderer::TextRenderer(Canvas& canvas) :
     size(0.03);
 
     glGenBuffers(2, vbo_);
-    ShaderSource vtx_source(GLMARK_DATA_PATH"/shaders/text-renderer.vert");
-    ShaderSource frg_source(GLMARK_DATA_PATH"/shaders/text-renderer.frag");
+    ShaderSource vtx_source(Options::data_path + "/shaders/text-renderer.vert");
+    ShaderSource frg_source(Options::data_path + "/shaders/text-renderer.frag");
 
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
                                           frg_source.str()))

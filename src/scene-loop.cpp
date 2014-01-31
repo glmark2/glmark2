@@ -23,13 +23,14 @@
 
 #include "scene.h"
 #include "mat.h"
+#include "options.h"
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
 #include "shader-source.h"
 #include "util.h"
 
-static const std::string shader_file_base(GLMARK_DATA_PATH"/shaders/loop");
+static const std::string shader_file_base("/shaders/loop");
 
 static const std::string vtx_file(shader_file_base + ".vert");
 static const std::string frg_file(shader_file_base + ".frag");
@@ -62,11 +63,11 @@ SceneLoop::~SceneLoop()
 static std::string
 get_fragment_shader_source(int steps, bool loop, bool uniform)
 {
-    ShaderSource source(frg_file);
+    ShaderSource source(Options::data_path + frg_file);
     ShaderSource source_main;
 
     if (loop) {
-        source_main.append_file(step_loop_file);
+        source_main.append_file(Options::data_path + step_loop_file);
         if (uniform) {
             source_main.replace("$NLOOPS$", "FragmentLoops");
         }
@@ -76,7 +77,7 @@ get_fragment_shader_source(int steps, bool loop, bool uniform)
     }
     else {
         for (int i = 0; i < steps; i++)
-            source_main.append_file(step_simple_file);
+            source_main.append_file(Options::data_path + step_simple_file);
     }
 
     source.replace("$MAIN$", source_main.str());
@@ -87,11 +88,11 @@ get_fragment_shader_source(int steps, bool loop, bool uniform)
 static std::string
 get_vertex_shader_source(int steps, bool loop, bool uniform)
 {
-    ShaderSource source(vtx_file);
+    ShaderSource source(Options::data_path + vtx_file);
     ShaderSource source_main;
 
     if (loop) {
-        source_main.append_file(step_loop_file);
+        source_main.append_file(Options::data_path + step_loop_file);
         if (uniform) {
             source_main.replace("$NLOOPS$", "VertexLoops");
         }
@@ -101,7 +102,7 @@ get_vertex_shader_source(int steps, bool loop, bool uniform)
     }
     else {
         for (int i = 0; i < steps; i++)
-            source_main.append_file(step_simple_file);
+            source_main.append_file(Options::data_path + step_simple_file);
     }
 
     source.replace("$MAIN$", source_main.str());
