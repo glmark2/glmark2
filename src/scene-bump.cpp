@@ -23,6 +23,7 @@
 #include "scene.h"
 #include "log.h"
 #include "mat.h"
+#include "options.h"
 #include "stack.h"
 #include "shader-source.h"
 #include "model.h"
@@ -61,8 +62,8 @@ SceneBump::unload()
 bool
 SceneBump::setup_model_plain(const std::string &type)
 {
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-poly.vert");
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/bump-poly.frag");
+    static const std::string vtx_shader_filename(Options::data_path + "/shaders/bump-poly.vert");
+    static const std::string frg_shader_filename(Options::data_path + "/shaders/bump-poly.frag");
     static const std::string low_poly_filename("asteroid-low");
     static const std::string high_poly_filename("asteroid-high");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
@@ -115,8 +116,8 @@ SceneBump::setup_model_plain(const std::string &type)
 bool
 SceneBump::setup_model_normals()
 {
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals.vert");
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals.frag");
+    static const std::string vtx_shader_filename(Options::data_path + "/shaders/bump-normals.vert");
+    static const std::string frg_shader_filename(Options::data_path + "/shaders/bump-normals.frag");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     Model model;
 
@@ -170,8 +171,8 @@ SceneBump::setup_model_normals()
 bool
 SceneBump::setup_model_normals_tangent()
 {
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals-tangent.vert");
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/bump-normals-tangent.frag");
+    static const std::string vtx_shader_filename(Options::data_path + "/shaders/bump-normals-tangent.vert");
+    static const std::string frg_shader_filename(Options::data_path + "/shaders/bump-normals-tangent.frag");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     Model model;
 
@@ -228,8 +229,8 @@ SceneBump::setup_model_normals_tangent()
 bool
 SceneBump::setup_model_height()
 {
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/bump-height.vert");
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/bump-height.frag");
+    static const std::string vtx_shader_filename(Options::data_path + "/shaders/bump-height.vert");
+    static const std::string frg_shader_filename(Options::data_path + "/shaders/bump-height.frag");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     Model model;
 

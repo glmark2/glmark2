@@ -26,6 +26,7 @@
 
 #include "scene.h"
 #include "mat.h"
+#include "options.h"
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
@@ -44,8 +45,8 @@ static void
 create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
                     unsigned int radius, float sigma, BlurDirection direction)
 {
-    vtx_source.append_file(GLMARK_DATA_PATH"/shaders/desktop.vert");
-    frg_source.append_file(GLMARK_DATA_PATH"/shaders/desktop-blur.frag");
+    vtx_source.append_file(Options::data_path + "/shaders/desktop.vert");
+    frg_source.append_file(Options::data_path + "/shaders/desktop-blur.frag");
 
     /* Don't let the gaussian curve become too narrow */
     if (sigma < 1.0)
@@ -149,8 +150,8 @@ public:
 
         /* Load the shader program when this class if first used */
         if (RenderObject::use_count == 0) {
-            ShaderSource vtx_source(GLMARK_DATA_PATH"/shaders/desktop.vert");
-            ShaderSource frg_source(GLMARK_DATA_PATH"/shaders/desktop.frag");
+            ShaderSource vtx_source(Options::data_path + "/shaders/desktop.vert");
+            ShaderSource frg_source(Options::data_path + "/shaders/desktop.frag");
             Scene::load_shaders_from_strings(main_program, vtx_source.str(),
                                              frg_source.str());
         }

@@ -19,6 +19,7 @@
  * Authors:
  *  Alexandros Frantzis
  */
+#include "options.h"
 #include "scene.h"
 #include "renderer.h"
 #include "shader-source.h"
@@ -39,8 +40,8 @@ NormalFromHeightRenderer::normal_from_height_program(const LibMatrix::vec2 &size
 
     if (!normal_from_height_program) {
         normal_from_height_program = new Program();
-        ShaderSource vtx_shader(GLMARK_DATA_PATH"/shaders/terrain-texture.vert");
-        ShaderSource frg_shader(GLMARK_DATA_PATH"/shaders/terrain-normalmap.frag");
+        ShaderSource vtx_shader(Options::data_path + "/shaders/terrain-texture.vert");
+        ShaderSource frg_shader(Options::data_path + "/shaders/terrain-normalmap.frag");
 
         Scene::load_shaders_from_strings(*normal_from_height_program,
                                          vtx_shader.str(), frg_shader.str());

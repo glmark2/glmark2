@@ -21,6 +21,7 @@
  */
 #include "scene.h"
 #include "mat.h"
+#include "options.h"
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
@@ -29,7 +30,7 @@
 
 #include <cmath>
 
-static const std::string shader_file_base(GLMARK_DATA_PATH"/shaders/conditionals");
+static const std::string shader_file_base("/shaders/conditionals");
 
 static const std::string vtx_file(shader_file_base + ".vert");
 static const std::string frg_file(shader_file_base + ".frag");
@@ -56,14 +57,14 @@ SceneConditionals::~SceneConditionals()
 static std::string
 get_vertex_shader_source(int steps, bool conditionals)
 {
-    ShaderSource source(vtx_file);
+    ShaderSource source(Options::data_path + vtx_file);
     ShaderSource source_main;
 
     for (int i = 0; i < steps; i++) {
         if (conditionals)
-            source_main.append_file(step_conditional_file);
+            source_main.append_file(Options::data_path + step_conditional_file);
         else
-            source_main.append_file(step_simple_file);
+            source_main.append_file(Options::data_path + step_simple_file);
     }
 
     source.replace("$MAIN$", source_main.str());
@@ -74,14 +75,14 @@ get_vertex_shader_source(int steps, bool conditionals)
 static std::string
 get_fragment_shader_source(int steps, bool conditionals)
 {
-    ShaderSource source(frg_file);
+    ShaderSource source(Options::data_path + frg_file);
     ShaderSource source_main;
 
     for (int i = 0; i < steps; i++) {
         if (conditionals)
-            source_main.append_file(step_conditional_file);
+            source_main.append_file(Options::data_path + step_conditional_file);
         else
-            source_main.append_file(step_simple_file);
+            source_main.append_file(Options::data_path + step_simple_file);
     }
 
     source.replace("$MAIN$", source_main.str());

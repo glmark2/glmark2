@@ -19,6 +19,7 @@
  * Authors:
  *  Alexandros Frantzis
  */
+#include "options.h"
 #include "scene.h"
 #include "renderer.h"
 #include "shader-source.h"
@@ -38,8 +39,8 @@ CopyRenderer::copy_program(bool create_new)
 
     if (!copy_program) {
         copy_program = new Program();
-        ShaderSource vtx_shader(GLMARK_DATA_PATH"/shaders/terrain-texture.vert");
-        ShaderSource frg_shader(GLMARK_DATA_PATH"/shaders/terrain-overlay.frag");
+        ShaderSource vtx_shader(Options::data_path + "/shaders/terrain-texture.vert");
+        ShaderSource frg_shader(Options::data_path + "/shaders/terrain-overlay.frag");
 
         Scene::load_shaders_from_strings(*copy_program, vtx_shader.str(), frg_shader.str());
 

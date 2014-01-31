@@ -24,6 +24,7 @@
  */
 #include "scene.h"
 #include "mat.h"
+#include "options.h"
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
@@ -154,24 +155,24 @@ SceneShading::setup()
     ShaderSource vtx_source;
     ShaderSource frg_source;
     if (shading == "gouraud") {
-        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.vert";
-        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-basic.frag";
+        vtx_shader_filename = Options::data_path + "/shaders/light-basic.vert";
+        frg_shader_filename = Options::data_path + "/shaders/light-basic.frag";
         frg_source.append_file(frg_shader_filename);
         vtx_source.append_file(vtx_shader_filename);
         vtx_source.add_const("LightSourcePosition", lightPosition);
         vtx_source.add_const("MaterialDiffuse", materialDiffuse);
     }
     else if (shading == "blinn-phong-inf") {
-        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced.vert";
-        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-advanced.frag";
+        vtx_shader_filename = Options::data_path + "/shaders/light-advanced.vert";
+        frg_shader_filename = Options::data_path + "/shaders/light-advanced.frag";
         frg_source.append_file(frg_shader_filename);
         frg_source.add_const("LightSourcePosition", lightPosition);
         frg_source.add_const("LightSourceHalfVector", halfVector);
         vtx_source.append_file(vtx_shader_filename);
     }
     else if (shading == "phong") {
-        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.vert";
-        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.frag";
+        vtx_shader_filename = Options::data_path + "/shaders/light-phong.vert";
+        frg_shader_filename = Options::data_path + "/shaders/light-phong.frag";
         unsigned int num_lights = Util::fromString<unsigned int>(options_["num-lights"].value);
         string fragsource = get_fragment_shader_source(frg_shader_filename, num_lights);
         frg_source.append(fragsource);
@@ -179,8 +180,8 @@ SceneShading::setup()
         vtx_source.append_file(vtx_shader_filename);
     }
     else if (shading == "cel") {
-        vtx_shader_filename = GLMARK_DATA_PATH"/shaders/light-phong.vert";
-        frg_shader_filename = GLMARK_DATA_PATH"/shaders/light-cel.frag";
+        vtx_shader_filename = Options::data_path + "/shaders/light-phong.vert";
+        frg_shader_filename = Options::data_path + "/shaders/light-cel.frag";
         vtx_source.append_file(vtx_shader_filename);
         frg_source.append_file(frg_shader_filename);
     }

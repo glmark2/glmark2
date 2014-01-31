@@ -19,6 +19,7 @@
  * Authors:
  *  Alexandros Frantzis
  */
+#include "options.h"
 #include "scene.h"
 #include "renderer.h"
 #include "texture.h"
@@ -85,8 +86,8 @@ TerrainRenderer::init_textures()
 void
 TerrainRenderer::init_program()
 {
-    ShaderSource vtx_shader(GLMARK_DATA_PATH"/shaders/terrain.vert");
-    ShaderSource frg_shader(GLMARK_DATA_PATH"/shaders/terrain.frag");
+    ShaderSource vtx_shader(Options::data_path + "/shaders/terrain.vert");
+    ShaderSource frg_shader(Options::data_path + "/shaders/terrain.frag");
 
     if (!Scene::load_shaders_from_strings(program_, vtx_shader.str(), frg_shader.str()))
         return;

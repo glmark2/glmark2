@@ -26,6 +26,7 @@
 
 #include "scene.h"
 #include "mat.h"
+#include "options.h"
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
@@ -96,7 +97,7 @@ static std::string
 create_convolution_fragment_shader(Canvas &canvas, std::vector<float> &array,
                                    unsigned int width, unsigned int height)
 {
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/effect-2d-convolution.frag");
+    static const std::string frg_shader_filename(Options::data_path + "/shaders/effect-2d-convolution.frag");
     ShaderSource source(frg_shader_filename);
 
     if (width * height != array.size()) {
@@ -303,7 +304,7 @@ SceneEffect2D::setup()
 
     Texture::find_textures();
 
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/effect-2d.vert");
+    static const std::string vtx_shader_filename(Options::data_path + "/shaders/effect-2d.vert");
 
     std::vector<float> kernel;
     unsigned int kernel_width = 0;

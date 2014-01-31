@@ -21,6 +21,7 @@
 //
 #include "scene.h"
 #include "model.h"
+#include "options.h"
 #include "util.h"
 #include "log.h"
 #include "shader-source.h"
@@ -73,8 +74,8 @@ public:
 bool
 DepthRenderTarget::setup(unsigned int width, unsigned int height)
 {
-    static const string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/depth.vert");
-    static const string frg_shader_filename(GLMARK_DATA_PATH"/shaders/depth.frag");
+    static const string vtx_shader_filename(Options::data_path + "/shaders/depth.vert");
+    static const string frg_shader_filename(Options::data_path + "/shaders/depth.frag");
 
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source(frg_shader_filename);
@@ -201,8 +202,8 @@ GroundRenderer::setup(const mat4& projection, unsigned int texture)
 
     // Program set up
     static const vec4 materialDiffuse(0.3f, 0.3f, 0.3f, 1.0f);
-    static const string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/shadow.vert");
-    static const string frg_shader_filename(GLMARK_DATA_PATH"/shaders/shadow.frag");
+    static const string vtx_shader_filename(Options::data_path + "/shaders/shadow.vert");
+    static const string frg_shader_filename(Options::data_path + "/shaders/shadow.frag");
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source(frg_shader_filename);
 
@@ -314,8 +315,8 @@ bool
 ShadowPrivate::setup(map<string, Scene::Option>& options)
 {
     // Program object setup
-    static const string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
-    static const string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.frag");
+    static const string vtx_shader_filename(Options::data_path + "/shaders/light-basic.vert");
+    static const string frg_shader_filename(Options::data_path + "/shaders/light-basic.frag");
     static const vec4 materialDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
 
     ShaderSource vtx_source(vtx_shader_filename);

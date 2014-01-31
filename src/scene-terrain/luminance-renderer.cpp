@@ -19,6 +19,7 @@
  * Authors:
  *  Alexandros Frantzis
  */
+#include "options.h"
 #include "scene.h"
 #include "renderer.h"
 #include "shader-source.h"
@@ -38,8 +39,8 @@ LuminanceRenderer::luminance_program(bool create_new)
 
     if (!luminance_program) {
         luminance_program = new Program();
-        ShaderSource vtx_shader(GLMARK_DATA_PATH"/shaders/terrain-texture.vert");
-        ShaderSource frg_shader(GLMARK_DATA_PATH"/shaders/terrain-luminance.frag");
+        ShaderSource vtx_shader(Options::data_path + "/shaders/terrain-texture.vert");
+        ShaderSource frg_shader(Options::data_path + "/shaders/terrain-luminance.frag");
 
         Scene::load_shaders_from_strings(*luminance_program,
                                          vtx_shader.str(), frg_shader.str());

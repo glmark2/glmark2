@@ -24,6 +24,7 @@
  */
 #include "scene.h"
 #include "mat.h"
+#include "options.h"
 #include "stack.h"
 #include "vec.h"
 #include "log.h"
@@ -109,10 +110,10 @@ SceneTexture::setup()
     if (!Scene::setup())
         return false;
 
-    static const std::string vtx_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic.vert");
-    static const std::string vtx_shader_texgen_filename(GLMARK_DATA_PATH"/shaders/light-basic-texgen.vert");
-    static const std::string frg_shader_filename(GLMARK_DATA_PATH"/shaders/light-basic-tex.frag");
-    static const std::string frg_shader_bilinear_filename(GLMARK_DATA_PATH"/shaders/light-basic-tex-bilinear.frag");
+    static const std::string vtx_shader_filename(Options::data_path + "/shaders/light-basic.vert");
+    static const std::string vtx_shader_texgen_filename(Options::data_path + "/shaders/light-basic-texgen.vert");
+    static const std::string frg_shader_filename(Options::data_path + "/shaders/light-basic-tex.frag");
+    static const std::string frg_shader_bilinear_filename(Options::data_path + "/shaders/light-basic-tex-bilinear.frag");
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     static const LibMatrix::vec4 materialDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
 

@@ -31,6 +31,7 @@
 std::vector<std::string> Options::benchmarks;
 std::vector<std::string> Options::benchmark_files;
 bool Options::validate = false;
+std::string Options::data_path = std::string(GLMARK_DATA_PATH);
 Options::FrameEnd Options::frame_end = Options::FrameEndDefault;
 std::pair<int,int> Options::size(800, 600);
 bool Options::list_scenes = false;
@@ -48,6 +49,7 @@ static struct option long_options[] = {
     {"benchmark", 1, 0, 0},
     {"benchmark-file", 1, 0, 0},
     {"validate", 0, 0, 0},
+    {"data-path", 1, 0, 0},
     {"frame-end", 1, 0, 0},
     {"off-screen", 0, 0, 0},
     {"visual-config", 1, 0, 0},
@@ -123,6 +125,8 @@ Options::print_help()
            "                         (the option can be used multiple times)\n"
            "      --validate         Run a quick output validation test instead of \n"
            "                         running the benchmarks\n"
+           "      --data-path        Path to glmark2 models, shaders and textures\n"
+           "                         Default: " GLMARK_DATA_PATH "\n"
            "      --frame-end METHOD How to end a frame [default,none,swap,finish,readpixels]\n"
            "      --off-screen       Render to an off-screen surface\n"
            "      --visual-config C  The visual configuration to use for the rendering\n"
@@ -171,6 +175,8 @@ Options::parse_args(int argc, char **argv)
             Options::benchmark_files.push_back(optarg);
         else if (!strcmp(optname, "validate"))
             Options::validate = true;
+        else if (!strcmp(optname, "data-path"))
+            Options::data_path = std::string(optarg);
         else if (!strcmp(optname, "frame-end"))
             Options::frame_end = frame_end_from_str(optarg);
         else if (!strcmp(optname, "off-screen"))

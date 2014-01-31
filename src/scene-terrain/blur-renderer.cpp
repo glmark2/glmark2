@@ -19,6 +19,7 @@
  * Authors:
  *  Alexandros Frantzis
  */
+#include "options.h"
 #include "scene.h"
 #include "renderer.h"
 #include "shader-source.h"
@@ -76,8 +77,8 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
                     unsigned int radius, float sigma, BlurRenderer::BlurDirection direction,
                     float tilt_shift)
 {
-    vtx_source.append_file(GLMARK_DATA_PATH"/shaders/terrain-texture.vert");
-    frg_source.append_file(GLMARK_DATA_PATH"/shaders/terrain-blur.frag");
+    vtx_source.append_file(Options::data_path + "/shaders/terrain-texture.vert");
+    frg_source.append_file(Options::data_path + "/shaders/terrain-blur.frag");
 
     /* Don't let the gaussian curve become too narrow */
     if (sigma < 1.0)

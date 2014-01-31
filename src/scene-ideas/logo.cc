@@ -23,6 +23,7 @@
  *  Jesse Barker
  */
 #include "logo.h"
+#include "options.h"
 #include "scene.h"
 #include "shader-source.h"
 #include "log.h"
@@ -423,8 +424,8 @@ SGILogo::init()
 
     // Initialize shader sources from input files and create programs from them
     // The program for handling the main object with lighting...
-    string logo_vtx_filename(GLMARK_DATA_PATH"/shaders/ideas-logo.vert");
-    string logo_frg_filename(GLMARK_DATA_PATH"/shaders/ideas-logo.frag");
+    string logo_vtx_filename(Options::data_path + "/shaders/ideas-logo.vert");
+    string logo_frg_filename(Options::data_path + "/shaders/ideas-logo.frag");
     ShaderSource logo_vtx_source(logo_vtx_filename);
     ShaderSource logo_frg_source(logo_frg_filename);
     if (!Scene::load_shaders_from_strings(normalProgram_, logo_vtx_source.str(),
@@ -437,8 +438,8 @@ SGILogo::init()
     normalNormalIndex_ = normalProgram_[normalAttribName_].location();
 
     // The program for handling the flat object...
-    string logo_flat_vtx_filename(GLMARK_DATA_PATH"/shaders/ideas-logo-flat.vert");
-    string logo_flat_frg_filename(GLMARK_DATA_PATH"/shaders/ideas-logo-flat.frag");
+    string logo_flat_vtx_filename(Options::data_path + "/shaders/ideas-logo-flat.vert");
+    string logo_flat_frg_filename(Options::data_path + "/shaders/ideas-logo-flat.frag");
     ShaderSource logo_flat_vtx_source(logo_flat_vtx_filename);
     ShaderSource logo_flat_frg_source(logo_flat_frg_filename);
     if (!Scene::load_shaders_from_strings(flatProgram_, logo_flat_vtx_source.str(),
@@ -450,8 +451,8 @@ SGILogo::init()
     flatVertexIndex_ = flatProgram_[vertexAttribName_].location();
 
     // The program for handling the shadow object with texturing...
-    string logo_shadow_vtx_filename(GLMARK_DATA_PATH"/shaders/ideas-logo-shadow.vert");
-    string logo_shadow_frg_filename(GLMARK_DATA_PATH"/shaders/ideas-logo-shadow.frag");
+    string logo_shadow_vtx_filename(Options::data_path + "/shaders/ideas-logo-shadow.vert");
+    string logo_shadow_frg_filename(Options::data_path + "/shaders/ideas-logo-shadow.frag");
     ShaderSource logo_shadow_vtx_source(logo_shadow_vtx_filename);
     ShaderSource logo_shadow_frg_source(logo_shadow_frg_filename);
     if (!Scene::load_shaders_from_strings(shadowProgram_, logo_shadow_vtx_source.str(),

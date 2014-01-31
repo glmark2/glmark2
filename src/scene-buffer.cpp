@@ -23,6 +23,7 @@
 #include "scene.h"
 #include "log.h"
 #include "mat.h"
+#include "options.h"
 #include "stack.h"
 #include "shader-source.h"
 #include "util.h"
@@ -244,9 +245,9 @@ private:
     {
         /* Set up shaders */
         static const std::string vtx_shader_filename(
-                GLMARK_DATA_PATH"/shaders/buffer-wireframe.vert");
+                Options::data_path + "/shaders/buffer-wireframe.vert");
         static const std::string frg_shader_filename(
-                GLMARK_DATA_PATH"/shaders/buffer-wireframe.frag");
+                Options::data_path + "/shaders/buffer-wireframe.frag");
 
         ShaderSource vtx_source(vtx_shader_filename);
         ShaderSource frg_source(frg_shader_filename);
