@@ -534,8 +534,10 @@ void
 SceneShadow::teardown()
 {
     // Add scene-specific teardown here
-    priv_->teardown();
-    delete priv_;
+    if (priv_) {
+        priv_->teardown();
+        delete priv_;
+    }
     Scene::teardown();
 }
 
