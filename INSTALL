@@ -2,7 +2,7 @@ glmark2 uses the WAF build system.
 
 To configure glmark2 use:
 
-$ ./waf configure [--enable-gl --enable-glesv2 --enable-gl-drm --enable-glesv2-drm --data-path=DATA_PATH --prefix=PREFIX]
+$ ./waf configure --with-flavors=<drm-gl,drm-glesv2,mir-gl,mir-glesv2,wayland-gl,wayland-glesv2,x11-gl,x11-glesv2> [--data-path=DATA_PATH --prefix=PREFIX]
 
 To build use:
 
