@@ -22,11 +22,11 @@ flavor_uselibs = {
   'x11-gl' : ['x11', 'gl', 'matrix-gl'],
   'x11-glesv2' : ['x11', 'egl', 'glesv2', 'matrix-glesv2'],
   'drm-gl' : ['drm', 'gbm', 'egl', 'gl', 'matrix-gl'],
-  'drm-glesv2' : ['drm', 'gbm', 'egl', 'glesv2', 'matrix-gl'],
+  'drm-glesv2' : ['drm', 'gbm', 'egl', 'glesv2', 'matrix-glesv2'],
   'mir-gl' : ['mirclient', 'egl', 'gl', 'matrix-gl'],
-  'mir-glesv2' : ['mirclient', 'egl', 'glesv2', 'matrix-gl'],
+  'mir-glesv2' : ['mirclient', 'egl', 'glesv2', 'matrix-glesv2'],
   'wayland-gl' : ['wayland-client', 'wayland-egl', 'egl', 'gl', 'matrix-gl'],
-  'wayland-glesv2' : ['wayland-client', 'wayland-egl', 'egl', 'glesv2', 'matrix-gl']
+  'wayland-glesv2' : ['wayland-client', 'wayland-egl', 'egl', 'glesv2', 'matrix-glesv2']
 }
 flavor_defines = {
   'x11-gl' : ['GLMARK2_USE_X11', 'GLMARK2_USE_GL', 'GLMARK2_USE_GLX'],
