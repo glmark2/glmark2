@@ -47,7 +47,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := libglmark2-android
 LOCAL_STATIC_LIBRARIES := libglmark2-matrix libglmark2-png libglmark2-ideas libglmark2-jpeg
-LOCAL_CFLAGS := -DGLMARK_DATA_PATH="" -DGLMARK_VERSION="\"2012.12\"" \
+LOCAL_CFLAGS := -DGLMARK_DATA_PATH="" -DGLMARK_VERSION="\"2014.03\"" \
                 -DGLMARK2_USE_GLESv2 -Werror -Wall -Wextra -Wnon-virtual-dtor \
                 -Wno-error=unused-parameter
 LOCAL_LDLIBS := -landroid -llog -lGLESv2 -lEGL -lz
