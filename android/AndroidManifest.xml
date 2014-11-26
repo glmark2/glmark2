@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       android:versionCode="1"
-      android:versionName="2012.12" package="org.linaro.glmark2">
+      android:versionName="2014.03" package="org.linaro.glmark2">
     <application android:label="@string/app_name">
         <activity android:name="org.linaro.glmark2.MainActivity"
                   android:label="@string/title_activity_main">

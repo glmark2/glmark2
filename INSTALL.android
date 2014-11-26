@@ -13,13 +13,13 @@ $ ndk-build
 
 To continue building the package from the command line:
 
-$ android update project -p . -s
+$ android update project -p . -s -t <target> (where target, e.g., android-10)
 $ ant debug {or release}
 
 To install to a device, you need to have set up an ADB connection
 to the device. Then do:
 
-$ adb install bin/Glmark2Activity-debug.apk
+$ adb install bin/Glmark2-debug.apk
 
 Alternatively you can load the project (in the android/ directory) in Eclipse
 using the ADT plugin and manage the build and install process from there.  Keep

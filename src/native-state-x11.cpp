@@ -139,12 +139,17 @@ NativeStateX11::create_window(WindowProperties const& properties)
     }
 
     /* set hints and properties */
+    Atom fs_atom = None;
     if (properties_.fullscreen) {
-        Atom atom = XInternAtom(xdpy_, "_NET_WM_STATE_FULLSCREEN", True);
+        fs_atom = XInternAtom(xdpy_, "_NET_WM_STATE_FULLSCREEN", True);
+        if (fs_atom == None)
+            Log::debug("Warning: Could not set EWMH Fullscreen hint.\n");
+    }
+    if (fs_atom != None) {
         XChangeProperty(xdpy_, xwin_,
                         XInternAtom(xdpy_, "_NET_WM_STATE", True),
                         XA_ATOM, 32, PropModeReplace,
-                        reinterpret_cast<unsigned char*>(&atom),  1);
+                        reinterpret_cast<unsigned char*>(&fs_atom),  1);
     }
     else {
         XSizeHints sizehints;
