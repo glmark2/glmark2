@@ -2642,7 +2642,7 @@ extern PNG_EXPORT(void, png_write_png) PNGARG((png_structp png_ptr,
 #      define png_debug(l,m) \
        { \
        int num_tabs=l; \
-       fprintf(PNG_DEBUG_FILE,"%s"m PNG_STRING_NEWLINE,(num_tabs==1 ? "\t" : \
+       fprintf(PNG_DEBUG_FILE,"%s" m PNG_STRING_NEWLINE,(num_tabs==1 ? "\t" : \
          (num_tabs==2 ? "\t\t":(num_tabs>2 ? "\t\t\t":"")))); \
        }
 #    endif
@@ -2650,7 +2650,7 @@ extern PNG_EXPORT(void, png_write_png) PNGARG((png_structp png_ptr,
 #      define png_debug1(l,m,p1) \
        { \
        int num_tabs=l; \
-       fprintf(PNG_DEBUG_FILE,"%s"m PNG_STRING_NEWLINE,(num_tabs==1 ? "\t" : \
+       fprintf(PNG_DEBUG_FILE,"%s" m PNG_STRING_NEWLINE,(num_tabs==1 ? "\t" : \
          (num_tabs==2 ? "\t\t":(num_tabs>2 ? "\t\t\t":""))),p1); \
        }
 #    endif
@@ -2658,7 +2658,7 @@ extern PNG_EXPORT(void, png_write_png) PNGARG((png_structp png_ptr,
 #      define png_debug2(l,m,p1,p2) \
        { \
        int num_tabs=l; \
-       fprintf(PNG_DEBUG_FILE,"%s"m PNG_STRING_NEWLINE,(num_tabs==1 ? "\t" : \
+       fprintf(PNG_DEBUG_FILE,"%s" m PNG_STRING_NEWLINE,(num_tabs==1 ? "\t" : \
          (num_tabs==2 ? "\t\t":(num_tabs>2 ? "\t\t\t":""))),p1,p2); \
        }
 #    endif
