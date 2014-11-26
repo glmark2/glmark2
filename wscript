@@ -94,7 +94,7 @@ def configure(ctx):
                       uselib = uselib, mandatory = True)
 
     # Check for a supported version of libpng
-    supp_png_pkgs = (('libpng12', '1.2'), ('libpng15', '1.5'),)
+    supp_png_pkgs = (('libpng12', '1.2'), ('libpng15', '1.5'), ('libpng16', '1.6'),)
     have_png = False
     for (pkg, atleast) in supp_png_pkgs:
         try:
