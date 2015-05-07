@@ -22,6 +22,8 @@
 #ifndef GLMARK2_GL_STATE_H_
 #define GLMARK2_GL_STATE_H_
 
+#include <stdint.h>
+
 class GLVisualConfig;
 
 class GLState
@@ -35,7 +37,7 @@ public:
     virtual bool valid() = 0;
     virtual bool reset() = 0;
     virtual void swap() = 0;
-    virtual bool gotNativeConfig(int& vid) = 0;
+    virtual bool gotNativeConfig(intptr_t& vid) = 0;
     virtual void getVisualConfig(GLVisualConfig& vc) = 0;
 };
 

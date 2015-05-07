@@ -421,7 +421,7 @@ GLStateEGL::swap()
 }
 
 bool
-GLStateEGL::gotNativeConfig(int& vid)
+GLStateEGL::gotNativeConfig(intptr_t& vid)
 {
     if (!gotValidConfig())
         return false;

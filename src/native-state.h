@@ -22,12 +22,14 @@
 #ifndef GLMARK2_NATIVE_STATE_H_
 #define GLMARK2_NATIVE_STATE_H_
 
+#include <stdint.h>
+
 class NativeState
 {
 public:
     struct WindowProperties
     {
-        WindowProperties(int w, int h, bool f, int v)
+        WindowProperties(int w, int h, bool f, intptr_t v)
             : width(w), height(h), fullscreen(f), visual_id(v) {}
         WindowProperties()
             : width(0), height(0), fullscreen(false), visual_id(0) {}
@@ -35,7 +37,7 @@ public:
         int width;
         int height;
         bool fullscreen;
-        int visual_id;
+        intptr_t visual_id;
     };
 
     virtual ~NativeState() {}
