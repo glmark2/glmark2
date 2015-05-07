@@ -197,6 +197,8 @@ public:
         /* Recreate the backing texture with correct size */
         if (size_.x() != size.x() || size_.y() != size.y()) {
             size_ = size;
+            if (fbo_ == 0)
+                return;
             /* If we're resizing the texture, we need to tell the framebuffer*/
             glBindTexture(GL_TEXTURE_2D, texture_);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_.x(), size_.y(), 0,
