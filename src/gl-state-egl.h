@@ -153,7 +153,7 @@ public:
     bool reset();
     void swap();
     // Performs a config search, returning a native visual ID on success
-    bool gotNativeConfig(int& vid);
+    bool gotNativeConfig(intptr_t& vid);
     void getVisualConfig(GLVisualConfig& vc);
 };
 

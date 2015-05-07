@@ -221,7 +221,7 @@ CanvasGeneric::resize_no_viewport(int width, int height)
 {
     bool request_fullscreen = (width == -1 && height == -1);
 
-    int vid;
+    intptr_t vid;
     if (!gl_state_.gotNativeConfig(vid))
     {
         Log::error("Error: Couldn't get GL visual config!\n");
