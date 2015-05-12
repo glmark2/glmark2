@@ -32,7 +32,7 @@ public:
     virtual ~ImageReader() {}
 };
 
-class PNGReaderPrivate;
+struct PNGReaderPrivate;
 
 class PNGReader : public ImageReader
 {
@@ -54,7 +54,7 @@ private:
     PNGReaderPrivate *priv_;
 };
 
-class JPEGReaderPrivate;
+struct JPEGReaderPrivate;
 
 class JPEGReader : public ImageReader
 {

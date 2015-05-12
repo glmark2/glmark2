@@ -183,7 +183,6 @@ private:
     double wave_k_;
     double wave_period_;
     double wave_full_period_;
-    double wave_fill_;
     double wave_velocity_;
 
     std::vector<double> displacement_;

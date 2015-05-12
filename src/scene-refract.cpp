@@ -245,7 +245,7 @@ DistanceRenderTarget::teardown()
 {
     program_.stop();
     program_.release();
-    if (tex_) {
+    if (tex_[0]) {
         glDeleteTextures(2, &tex_[0]);
         tex_[DEPTH] = tex_[COLOR] = 0;
     }
