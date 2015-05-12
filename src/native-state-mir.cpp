@@ -217,16 +217,18 @@ NativeStateMir::create_window(WindowProperties const& properties)
 
     Log::debug("Using pixel format %u for the Mir surface\n", surface_format);
 
-    MirSurfaceParameters surface_parameters = {
-        win_name,
-        properties_.width, properties_.height,
-        surface_format,
-        mir_buffer_usage_hardware,
-        output_id
-    };
+    MirSurfaceSpec* spec =
+        mir_connection_create_spec_for_normal_surface(mir_connection_,
+                                                      properties_.width,
+                                                      properties_.height,
+                                                      surface_format);
+    mir_surface_spec_set_name(spec, win_name);
+    mir_surface_spec_set_buffer_usage(spec, mir_buffer_usage_hardware);
+    if (output_id != mir_display_output_id_invalid)
+        mir_surface_spec_set_fullscreen_on_output(spec, output_id);
 
-    mir_surface_ = mir_connection_create_surface_sync(mir_connection_,
-                                                      &surface_parameters);
+    mir_surface_ = mir_surface_create_sync(spec);
+    mir_surface_spec_release(spec);
 
     if (!mir_surface_ || !mir_surface_is_valid(mir_surface_)) {
         Log::error("Failed to create Mir surface!\n");
@@ -242,7 +244,10 @@ NativeStateMir::window(WindowProperties& properties)
     properties = properties_;
 
     if (mir_surface_)
-        return static_cast<void*>(mir_surface_get_egl_native_window(mir_surface_));
+    {
+        MirBufferStream* bstream = mir_surface_get_buffer_stream(mir_surface_);
+        return static_cast<void*>(mir_buffer_stream_get_egl_native_window(bstream));
+    }
 
     return 0;
 }

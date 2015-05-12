@@ -110,18 +110,22 @@ def configure(ctx):
         ctx.fatal('You need to install a supported version of libpng: ' + str(supp_png_pkgs))
 
     # Check optional packages
-    opt_pkgs = [('x11', 'x11', list_contains(Options.options.flavors, 'x11')),
-                ('gl', 'gl', list_contains(Options.options.flavors, 'gl$')),
-                ('egl', 'egl', list_contains(Options.options.flavors, 'glesv2$')),
-                ('glesv2', 'glesv2', list_contains(Options.options.flavors, 'glesv2$')),
-                ('libdrm','drm', list_contains(Options.options.flavors, 'drm')),
-                ('gbm','gbm', list_contains(Options.options.flavors, 'drm')),
-                ('mirclient','mirclient', list_contains(Options.options.flavors, 'mir')),
-                ('wayland-client','wayland-client', list_contains(Options.options.flavors, 'wayland')),
-                ('wayland-egl','wayland-egl', list_contains(Options.options.flavors, 'wayland'))]
-    for (pkg, uselib, mandatory) in opt_pkgs:
-        ctx.check_cfg(package = pkg, uselib_store = uselib,
-                      args = '--cflags --libs', mandatory = mandatory)
+    opt_pkgs = [('x11', 'x11', None, list_contains(Options.options.flavors, 'x11')),
+                ('gl', 'gl', None, list_contains(Options.options.flavors, 'gl$')),
+                ('egl', 'egl', None, list_contains(Options.options.flavors, 'glesv2$')),
+                ('glesv2', 'glesv2', None, list_contains(Options.options.flavors, 'glesv2$')),
+                ('libdrm','drm', None, list_contains(Options.options.flavors, 'drm')),
+                ('gbm','gbm', None, list_contains(Options.options.flavors, 'drm')),
+                ('mirclient','mirclient', '0.13', list_contains(Options.options.flavors, 'mir')),
+                ('wayland-client','wayland-client', None, list_contains(Options.options.flavors, 'wayland')),
+                ('wayland-egl','wayland-egl', None, list_contains(Options.options.flavors, 'wayland'))]
+    for (pkg, uselib, atleast, mandatory) in opt_pkgs:
+        if atleast is None:
+            ctx.check_cfg(package = pkg, uselib_store = uselib,
+                          args = '--cflags --libs', mandatory = mandatory)
+        else:
+            ctx.check_cfg(package = pkg, uselib_store = uselib, atleast_version=atleast,
+                          args = '--cflags --libs', mandatory = mandatory)
 
     ctx.env.append_unique('CXXFLAGS', '-Werror -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
 
