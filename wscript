@@ -177,7 +177,7 @@ class Glmark2Dist(Context.Context):
     def get_files(self):
         import fnmatch
         files = []
-        excludes = ['*.bzr', '*~', './.*waf*', './build*', '*.swp', '*.pyc', '*glmark2-*.tar.gz']
+        excludes = ['*.bzr', '*.git', '*~', './.*waf*', './build*', '*.swp', '*.pyc', '*glmark2-*.tar.gz']
         for (dirpath, dirnames, filenames) in os.walk(top):
             names_to_remove = []
             names = dirnames + filenames
