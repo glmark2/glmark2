@@ -127,14 +127,14 @@ def configure(ctx):
             ctx.check_cfg(package = pkg, uselib_store = uselib, atleast_version=atleast,
                           args = '--cflags --libs', mandatory = mandatory)
 
-    ctx.env.append_unique('CXXFLAGS', '-Werror -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
 
-    # Prepend -O# and -g flags so that they can be overriden by the
-    # CFLAGS environment variable
+    # Prepend CXX flags so that they can be overriden by the
+    # CXXFLAGS environment variable
     if Options.options.opt:
         ctx.env.prepend_value('CXXFLAGS', '-O2')
     if Options.options.debug:
         ctx.env.prepend_value('CXXFLAGS', '-g')
+    ctx.env.prepend_value('CXXFLAGS', '-Werror -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
 
     ctx.env.HAVE_EXTRAS = False
     if Options.options.extras_path is not None:
