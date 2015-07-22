@@ -121,13 +121,17 @@ def configure(ctx):
                 ('mirclient','mirclient', '0.13', list_contains(Options.options.flavors, 'mir')),
                 ('wayland-client','wayland-client', None, list_contains(Options.options.flavors, 'wayland')),
                 ('wayland-egl','wayland-egl', None, list_contains(Options.options.flavors, 'wayland'))]
-    for (pkg, uselib, atleast, mandatory) in opt_pkgs:
+    for (pkg, uselib, atleast, check) in opt_pkgs:
+        # Check packages required by the flavors
+        if not check:
+            continue
+
         if atleast is None:
             ctx.check_cfg(package = pkg, uselib_store = uselib,
-                          args = '--cflags --libs', mandatory = mandatory)
+                          args = '--cflags --libs', mandatory = True)
         else:
             ctx.check_cfg(package = pkg, uselib_store = uselib, atleast_version=atleast,
-                          args = '--cflags --libs', mandatory = mandatory)
+                          args = '--cflags --libs', mandatory = True)
 
 
     # Prepend CXX flags so that they can be overriden by the
