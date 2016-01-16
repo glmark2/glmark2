@@ -43,10 +43,12 @@ name(nam), value(val), default_value(val), description(desc), set(false)
 Scene::Scene(Canvas &pCanvas, const string &name) :
     canvas_(pCanvas), name_(name),
     startTime_(0), lastUpdateTime_(0), currentFrame_(0),
-    running_(0), duration_(0)
+    running_(0), duration_(0), nframes_(0)
 {
     options_["duration"] = Scene::Option("duration", "10.0",
                                          "The duration of each benchmark in seconds");
+    options_["nframes"] = Scene::Option("nframes", "",
+                                         "The number of frames to render");
     options_["vertex-precision"] = Scene::Option("vertex-precision",
                                                  "default,default,default,default",
                                                  "The precision values for the vertex shader (\"int,float,sampler2d,samplercube\")");
@@ -96,6 +98,7 @@ bool
 Scene::setup()
 {
     duration_ = Util::fromString<double>(options_["duration"].value);
+    nframes_ = Util::fromString<unsigned>(options_["nframes"].value);
 
     ShaderSource::default_precision(
             ShaderSource::Precision(options_["vertex-precision"].value),
@@ -131,6 +134,9 @@ Scene::update()
     lastUpdateTime_ = current_time;
 
     if (elapsed_time >= duration_)
+        running_ = false;
+
+    if (nframes_ > 0 && currentFrame_ >= nframes_)
         running_ = false;
 }
 
