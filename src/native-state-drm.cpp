@@ -24,6 +24,7 @@
  */
 #include "native-state-drm.h"
 #include "log.h"
+#include <fcntl.h>
 
 /******************
  * Public methods *
@@ -197,27 +198,7 @@ NativeStateDRM::init_gbm()
 bool
 NativeStateDRM::init()
 {
-    // TODO: Replace this with something that explicitly probes for the loaded
-    // driver (udev?).
-    static const char* drm_modules[] = {
-        "i915",
-        "nouveau",
-        "radeon",
-        "vmgfx",
-        "omapdrm",
-        "exynos"
-    };
-
-    unsigned int num_modules(sizeof(drm_modules)/sizeof(drm_modules[0]));
-    for (unsigned int m = 0; m < num_modules; m++) {
-        fd_ = drmOpen(drm_modules[m], 0);
-        if (fd_ < 0) {
-            Log::debug("Failed to open DRM module '%s'\n", drm_modules[m]);
-            continue;
-        }
-        Log::debug("Opened DRM module '%s'\n", drm_modules[m]);
-        break;
-    }
+    fd_ = open("/dev/dri/card0", O_RDWR);
 
     if (fd_ < 0) {
         Log::error("Failed to find a suitable DRM device\n");
