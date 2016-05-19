@@ -60,7 +60,7 @@ NativeStateX11::display()
 bool
 NativeStateX11::create_window(WindowProperties const& properties)
 {
-    static const char *win_name("glmark2 "GLMARK_VERSION);
+    static const char *win_name("glmark2 " GLMARK_VERSION);
 
     if (!xdpy_) {
         Log::error("Error: X11 Display has not been initialized!\n");
