@@ -15,6 +15,7 @@ common_flavor_sources = ['main.cpp', 'canvas-generic.cpp']
 flavor_sources = {
   'x11-gl' : common_flavor_sources + ['native-state-x11.cpp', 'gl-state-glx.cpp'],
   'x11-glesv2' : common_flavor_sources + ['native-state-x11.cpp', 'gl-state-egl.cpp'],
+  'dispmanx-glesv2' : common_flavor_sources + ['native-state-dispmanx.cpp', 'gl-state-egl.cpp'],
   'drm-gl' : common_flavor_sources + ['native-state-drm.cpp', 'gl-state-egl.cpp'],
   'drm-glesv2' : common_flavor_sources + ['native-state-drm.cpp', 'gl-state-egl.cpp'],
   'mir-gl' : common_flavor_sources + ['native-state-mir.cpp', 'gl-state-egl.cpp'],
@@ -25,6 +26,7 @@ flavor_sources = {
 flavor_uselibs = {
   'x11-gl' : ['x11', 'gl', 'matrix-gl', 'common-gl'],
   'x11-glesv2' : ['x11', 'egl', 'glesv2', 'matrix-glesv2', 'common-glesv2'],
+  'dispmanx-glesv2' : ['egl', 'glesv2', 'matrix-glesv2', 'common-glesv2',  'dispmanx'],
   'drm-gl' : ['drm', 'gbm', 'udev', 'egl', 'gl', 'matrix-gl', 'common-gl'],
   'drm-glesv2' : ['drm', 'gbm', 'udev', 'egl', 'glesv2', 'matrix-glesv2', 'common-glesv2'],
   'mir-gl' : ['mirclient', 'egl', 'gl', 'matrix-gl', 'common-gl'],
@@ -40,7 +42,8 @@ flavor_defines = {
   'mir-gl' : ['GLMARK2_USE_MIR', 'GLMARK2_USE_GL', 'GLMARK2_USE_EGL'],
   'mir-glesv2' : ['GLMARK2_USE_MIR', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
   'wayland-gl' : ['GLMARK2_USE_WAYLAND', 'GLMARK2_USE_GL', 'GLMARK2_USE_EGL'],
-  'wayland-glesv2' : ['GLMARK2_USE_WAYLAND', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL']
+  'wayland-glesv2' : ['GLMARK2_USE_WAYLAND', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
+  'dispmanx-glesv2' : ['GLMARK2_USE_DISPMANX', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
 }
 
 includes = ['.', 'scene-ideas', 'scene-terrain']
