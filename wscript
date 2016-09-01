@@ -15,7 +15,8 @@ FLAVORS = {
     'mir-gl' : 'glmark2-mir',
     'mir-glesv2' : 'glmark2-es2-mir',
     'wayland-gl' : 'glmark2-wayland',
-    'wayland-glesv2' : 'glmark2-es2-wayland'
+    'wayland-glesv2' : 'glmark2-es2-wayland',
+    'dispmanx-glesv2' : 'glmark2-es2-dispmanx',
 }
 FLAVORS_STR = ", ".join(FLAVORS.keys())
 
@@ -105,11 +106,24 @@ def configure(ctx):
     if not have_png:
         ctx.fatal('You need to install a supported version of libpng: ' + str(supp_png_pkgs))
 
+    dispmanx = 'dispmanx-glesv2' in ctx.options.flavors
+    if dispmanx:
+        # dispmanx uses custom Broadcom libraries that don't follow standard
+        # Linux packaging.  Just force the library setup here.
+        if len(ctx.options.flavors) != 1:
+            ctx.fatal("dispmanx can't be built with any other flavor")
+
+        ctx.env.append_value('CXXFLAGS', '-I/opt/vc/include')
+
+        ctx.check_cxx(lib = 'brcmGLESv2', uselib_store = 'glesv2', libpath='/opt/vc/lib')
+        ctx.check_cxx(lib = ['brcmEGL', 'brcmGLESv2'], uselib_store = 'egl', libpath='/opt/vc/lib')
+        ctx.check_cxx(lib = ['bcm_host', 'vcos', 'vchiq_arm'], uselib_store = 'dispmanx', libpath='/opt/vc/lib')
+
     # Check optional packages
     opt_pkgs = [('x11', 'x11', None, list_contains(ctx.options.flavors, 'x11')),
-                ('gl', 'gl', None, list_contains(ctx.options.flavors, 'gl$')),
-                ('egl', 'egl', None, list_contains(ctx.options.flavors, 'glesv2$')),
-                ('glesv2', 'glesv2', None, list_contains(ctx.options.flavors, 'glesv2$')),
+                ('gl', 'gl', None, list_contains(ctx.options.flavors, 'gl$') and not dispmanx),
+                ('egl', 'egl', None, list_contains(ctx.options.flavors, 'glesv2$') and not dispmanx),
+                ('glesv2', 'glesv2', None, list_contains(ctx.options.flavors, 'glesv2$') and not dispmanx),
                 ('libdrm','drm', None, list_contains(ctx.options.flavors, 'drm')),
                 ('gbm','gbm', None, list_contains(ctx.options.flavors, 'drm')),
                 ('libudev', 'udev', None, list_contains(ctx.options.flavors, 'drm')),
