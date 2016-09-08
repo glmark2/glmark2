@@ -102,7 +102,7 @@ NativeStateWayland::registry_handle_global(void *data, struct wl_registry *regis
                     wl_registry_bind(registry,
                                      id, &wl_shell_interface, 1));
     } else if (strcmp(interface, "wl_output") == 0) {
-        struct my_output *my_output = new struct my_output;
+        struct my_output *my_output = new struct my_output();
         memset(my_output, 0, sizeof(*my_output));
         my_output->output =
                 static_cast<struct wl_output *>(
@@ -191,7 +191,7 @@ NativeStateWayland::init_display()
     sigaction(SIGINT, &sa, NULL);
     sigaction(SIGTERM, &sa, NULL);
 
-    display_ = new struct my_display;
+    display_ = new struct my_display();
 
     if (!display_) {
         return false;
@@ -223,7 +223,7 @@ NativeStateWayland::create_window(WindowProperties const& properties)
 {
     struct my_output *output = 0;
     if (!display_->outputs.empty()) output = display_->outputs.at(0);
-    window_ = new struct my_window;
+    window_ = new struct my_window();
     window_->properties = properties;
     window_->surface = wl_compositor_create_surface(display_->compositor);
     if (window_->properties.fullscreen && output) {
