@@ -157,7 +157,7 @@ NativeStateMir::display()
 bool
 NativeStateMir::create_window(WindowProperties const& properties)
 {
-    static const char *win_name("glmark2 "GLMARK_VERSION);
+    static const char *win_name("glmark2 " GLMARK_VERSION);
 
     if (!mir_connection_is_valid(mir_connection_)) {
         Log::error("Cannot create a Mir surface without a valid connection "
