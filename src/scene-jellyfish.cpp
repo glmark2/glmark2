@@ -272,7 +272,7 @@ JellyfishPrivate::load_obj(const std::string &filename)
 {
     Log::debug("Loading model from file '%s'\n", filename.c_str());
 
-    const std::auto_ptr<std::istream> input_file_ptr(Util::get_resource(filename));
+    const std::unique_ptr<std::istream> input_file_ptr(Util::get_resource(filename));
     std::istream& inputFile(*input_file_ptr);
     if (!inputFile)
     {
