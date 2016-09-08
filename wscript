@@ -130,7 +130,7 @@ def configure(ctx):
         ctx.env.prepend_value('CXXFLAGS', '-O2')
     if ctx.options.debug:
         ctx.env.prepend_value('CXXFLAGS', '-g')
-    ctx.env.prepend_value('CXXFLAGS', '-Wall -Wextra -Wnon-virtual-dtor'.split(' '))
+    ctx.env.prepend_value('CXXFLAGS', '-std=c++14 -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
 
     ctx.env.HAVE_EXTRAS = False
     if ctx.options.extras_path is not None:
