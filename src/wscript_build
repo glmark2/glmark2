@@ -2,31 +2,35 @@ all_sources = bld.path.ant_glob('*.cpp scene-ideas/*.cc scene-terrain/*.cpp')
 common_sources = [f for f in all_sources if f.name.find('canvas-') == -1 and
                                             f.name.find('android') == -1 and
                                             f.name.find('native-state-') == -1 and
-                                            f.name.find('gl-state-') == -1]
+                                            f.name.find('gl-state-') == -1 and
+                                            f.name.find('main.cpp') == -1]
 common_uselibs = ['libpng']
 common_defines = ['USE_EXCEPTIONS']
 
 libmatrix_sources = [f for f in bld.path.ant_glob('libmatrix/*.cc')
                      if not f.name.endswith('test.cc')]
+
+common_flavor_sources = ['main.cpp', 'canvas-generic.cpp']
+
 flavor_sources = {
-  'x11-gl' : ['canvas-generic.cpp', 'native-state-x11.cpp', 'gl-state-glx.cpp'],
-  'x11-glesv2' : ['canvas-generic.cpp', 'native-state-x11.cpp', 'gl-state-egl.cpp'],
-  'drm-gl' : ['canvas-generic.cpp', 'native-state-drm.cpp', 'gl-state-egl.cpp'],
-  'drm-glesv2' : ['canvas-generic.cpp', 'native-state-drm.cpp', 'gl-state-egl.cpp'],
-  'mir-gl' : ['canvas-generic.cpp', 'native-state-mir.cpp', 'gl-state-egl.cpp'],
-  'mir-glesv2' : ['canvas-generic.cpp', 'native-state-mir.cpp', 'gl-state-egl.cpp'],
-  'wayland-gl' : ['canvas-generic.cpp', 'native-state-wayland.cpp', 'gl-state-egl.cpp'],
-  'wayland-glesv2' : ['canvas-generic.cpp', 'native-state-wayland.cpp', 'gl-state-egl.cpp']
+  'x11-gl' : common_flavor_sources + ['native-state-x11.cpp', 'gl-state-glx.cpp'],
+  'x11-glesv2' : common_flavor_sources + ['native-state-x11.cpp', 'gl-state-egl.cpp'],
+  'drm-gl' : common_flavor_sources + ['native-state-drm.cpp', 'gl-state-egl.cpp'],
+  'drm-glesv2' : common_flavor_sources + ['native-state-drm.cpp', 'gl-state-egl.cpp'],
+  'mir-gl' : common_flavor_sources + ['native-state-mir.cpp', 'gl-state-egl.cpp'],
+  'mir-glesv2' : common_flavor_sources + ['native-state-mir.cpp', 'gl-state-egl.cpp'],
+  'wayland-gl' : common_flavor_sources + ['native-state-wayland.cpp', 'gl-state-egl.cpp'],
+  'wayland-glesv2' : common_flavor_sources + ['native-state-wayland.cpp', 'gl-state-egl.cpp']
 }
 flavor_uselibs = {
-  'x11-gl' : ['x11', 'gl', 'matrix-gl'],
-  'x11-glesv2' : ['x11', 'egl', 'glesv2', 'matrix-glesv2'],
-  'drm-gl' : ['drm', 'gbm', 'egl', 'gl', 'matrix-gl'],
-  'drm-glesv2' : ['drm', 'gbm', 'egl', 'glesv2', 'matrix-glesv2'],
-  'mir-gl' : ['mirclient', 'egl', 'gl', 'matrix-gl'],
-  'mir-glesv2' : ['mirclient', 'egl', 'glesv2', 'matrix-glesv2'],
-  'wayland-gl' : ['wayland-client', 'wayland-egl', 'egl', 'gl', 'matrix-gl'],
-  'wayland-glesv2' : ['wayland-client', 'wayland-egl', 'egl', 'glesv2', 'matrix-glesv2']
+  'x11-gl' : ['x11', 'gl', 'matrix-gl', 'common-gl'],
+  'x11-glesv2' : ['x11', 'egl', 'glesv2', 'matrix-glesv2', 'common-glesv2'],
+  'drm-gl' : ['drm', 'gbm', 'egl', 'gl', 'matrix-gl', 'common-gl'],
+  'drm-glesv2' : ['drm', 'gbm', 'egl', 'glesv2', 'matrix-glesv2', 'common-glesv2'],
+  'mir-gl' : ['mirclient', 'egl', 'gl', 'matrix-gl', 'common-gl'],
+  'mir-glesv2' : ['mirclient', 'egl', 'glesv2', 'matrix-glesv2', 'common-glesv2'],
+  'wayland-gl' : ['wayland-client', 'wayland-egl', 'egl', 'gl', 'matrix-gl', 'common-gl'],
+  'wayland-glesv2' : ['wayland-client', 'wayland-egl', 'egl', 'glesv2', 'matrix-glesv2', 'common-glesv2']
 }
 flavor_defines = {
   'x11-gl' : ['GLMARK2_USE_X11', 'GLMARK2_USE_GL', 'GLMARK2_USE_GLX'],
@@ -49,11 +53,11 @@ for name in bld.env.keys():
         target = bld.env[name]
         bld(
             features     = ['cxx', 'cprogram'],
-            source       = common_sources + flavor_sources[flavor],
+            source       = flavor_sources[flavor],
             target       = target,
             use          = common_uselibs + flavor_uselibs[flavor],
             lib          = ['m', 'jpeg', 'dl'],
-            includes     = includes,
+            includes     = ['.'],
             defines      = common_defines + flavor_defines[flavor]
             )
         all_uselibs |= set(flavor_uselibs[flavor])
@@ -77,5 +81,27 @@ if 'matrix-glesv2' in all_uselibs:
         lib      = ['m'],
         includes = ['.'],
         export_includes = 'libmatrix',
+        defines  = ['GLMARK2_USE_GLESv2', 'USE_EXCEPTIONS']
+        )
+
+if 'common-gl' in all_uselibs:
+    bld(
+        features = ['cxx', 'cxxstlib'],
+        source   = common_sources,
+        target   = 'common-gl',
+        use      = common_uselibs + ['gl', 'matrix-gl'],
+        lib      = ['m', 'jpeg', 'dl'],
+        includes = includes,
+        defines  = ['GLMARK2_USE_GL', 'USE_EXCEPTIONS']
+        )
+
+if 'common-glesv2' in all_uselibs:
+    bld(
+        features = ['cxx', 'cxxstlib'],
+        source   = common_sources,
+        target   = 'common-glesv2',
+        use      = common_uselibs + ['glesv2', 'matrix-glesv2'],
+        lib      = ['m', 'jpeg', 'dl'],
+        includes = includes,
         defines  = ['GLMARK2_USE_GLESv2', 'USE_EXCEPTIONS']
         )
