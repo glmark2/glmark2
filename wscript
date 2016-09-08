@@ -46,8 +46,6 @@ def options(opt):
                    default = True, help='disable compiler debug information')
     opt.add_option('--no-opt', action='store_false', dest = 'opt',
                    default = True, help='disable compiler optimizations')
-    opt.add_option('--no-werror', action='store_false', dest = 'werror',
-                   default = True, help='disable treating compiler warnings as errors')
     opt.add_option('--data-path', action='store', dest = 'data_path',
                    help='path to main data (also see --data(root)dir)')
     opt.add_option('--extras-path', action='store', dest = 'extras_path',
@@ -132,8 +130,6 @@ def configure(ctx):
         ctx.env.prepend_value('CXXFLAGS', '-O2')
     if ctx.options.debug:
         ctx.env.prepend_value('CXXFLAGS', '-g')
-    if ctx.options.werror:
-        ctx.env.prepend_value('CXXFLAGS', '-Werror')
     ctx.env.prepend_value('CXXFLAGS', '-Wall -Wextra -Wnon-virtual-dtor'.split(' '))
 
     ctx.env.HAVE_EXTRAS = False
