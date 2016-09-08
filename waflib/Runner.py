@@ -1,57 +1,57 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
-import random,atexit
+import random
 try:
 	from queue import Queue
-except:
+except ImportError:
 	from Queue import Queue
 from waflib import Utils,Task,Errors,Logs
-GAP=10
-class TaskConsumer(Utils.threading.Thread):
-	def __init__(self):
+GAP=20
+class Consumer(Utils.threading.Thread):
+	__slots__=('task','spawner')
+	def __init__(self,spawner,task):
 		Utils.threading.Thread.__init__(self)
-		self.ready=Queue()
+		self.task=task
+		self.spawner=spawner
+		self.setDaemon(1)
+		self.start()
+	def run(self):
+		try:
+			if not self.spawner.master.stop:
+				self.task.process()
+		finally:
+			self.spawner.sem.release()
+			self.spawner.master.out.put(self.task)
+			self.task=None
+			self.spawner=None
+class Spawner(Utils.threading.Thread):
+	def __init__(self,master):
+		Utils.threading.Thread.__init__(self)
+		self.master=master
+		self.sem=Utils.threading.Semaphore(master.numjobs)
 		self.setDaemon(1)
 		self.start()
 	def run(self):
 		try:
 			self.loop()
-		except:
+		except Exception:
 			pass
 	def loop(self):
+		master=self.master
 		while 1:
-			tsk=self.ready.get()
-			if not isinstance(tsk,Task.TaskBase):
-				tsk(self)
-			else:
-				tsk.process()
-pool=Queue()
-def get_pool():
-	try:
-		return pool.get(False)
-	except:
-		return TaskConsumer()
-def put_pool(x):
-	pool.put(x)
-def _free_resources():
-	global pool
-	lst=[]
-	while pool.qsize():
-		lst.append(pool.get())
-	for x in lst:
-		x.ready.put(None)
-	for x in lst:
-		x.join()
-	pool=None
-atexit.register(_free_resources)
+			task=master.ready.get()
+			self.sem.acquire()
+			task.log_display(task.generator.bld)
+			Consumer(self,task)
 class Parallel(object):
 	def __init__(self,bld,j=2):
 		self.numjobs=j
 		self.bld=bld
-		self.outstanding=[]
-		self.frozen=[]
+		self.outstanding=Utils.deque()
+		self.frozen=Utils.deque()
+		self.ready=Queue(0)
 		self.out=Queue(0)
 		self.count=0
 		self.processed=1
@@ -59,13 +59,14 @@ class Parallel(object):
 		self.error=[]
 		self.biter=None
 		self.dirty=False
+		self.spawner=Spawner(self)
 	def get_next_task(self):
 		if not self.outstanding:
 			return None
-		return self.outstanding.pop(0)
+		return self.outstanding.popleft()
 	def postpone(self,tsk):
 		if random.randint(0,1):
-			self.frozen.insert(0,tsk)
+			self.frozen.appendleft(tsk)
 		else:
 			self.frozen.append(tsk)
 	def refill_task_list(self):
@@ -77,7 +78,7 @@ class Parallel(object):
 			elif self.frozen:
 				try:
 					cond=self.deadlock==self.processed
-				except:
+				except AttributeError:
 					pass
 				else:
 					if cond:
@@ -92,15 +93,15 @@ class Parallel(object):
 						raise Errors.WafError('Deadlock detected: %s%s'%(msg,''.join(lst)))
 				self.deadlock=self.processed
 			if self.frozen:
-				self.outstanding+=self.frozen
-				self.frozen=[]
+				self.outstanding.extend(self.frozen)
+				self.frozen.clear()
 			elif not self.count:
-				self.outstanding.extend(self.biter.next())
+				self.outstanding.extend(next(self.biter))
 				self.total=self.bld.total()
 				break
 	def add_more_tasks(self,tsk):
 		if getattr(tsk,'more_tasks',None):
-			self.outstanding+=tsk.more_tasks
+			self.outstanding.extend(tsk.more_tasks)
 			self.total+=len(tsk.more_tasks)
 	def get_out(self):
 		tsk=self.out.get()
@@ -109,40 +110,38 @@ class Parallel(object):
 		self.count-=1
 		self.dirty=True
 		return tsk
+	def add_task(self,tsk):
+		self.ready.put(tsk)
+	def skip(self,tsk):
+		tsk.hasrun=Task.SKIPPED
 	def error_handler(self,tsk):
+		if hasattr(tsk,'scan')and hasattr(tsk,'uid'):
+			try:
+				del self.bld.imp_sigs[tsk.uid()]
+			except KeyError:
+				pass
 		if not self.bld.keep:
 			self.stop=True
 		self.error.append(tsk)
-	def add_task(self,tsk):
+	def task_status(self,tsk):
 		try:
-			self.pool
-		except AttributeError:
-			self.init_task_pool()
-		self.ready.put(tsk)
-	def init_task_pool(self):
-		pool=self.pool=[get_pool()for i in range(self.numjobs)]
-		self.ready=Queue(0)
-		def setq(consumer):
-			consumer.ready=self.ready
-		for x in pool:
-			x.ready.put(setq)
-		return pool
-	def free_task_pool(self):
-		def setq(consumer):
-			consumer.ready=Queue(0)
-			self.out.put(self)
-		try:
-			pool=self.pool
-		except:
-			pass
-		else:
-			for x in pool:
-				self.ready.put(setq)
-			for x in pool:
-				self.get_out()
-			for x in pool:
-				put_pool(x)
-			self.pool=[]
+			return tsk.runnable_status()
+		except Exception:
+			self.processed+=1
+			tsk.err_msg=Utils.ex_stack()
+			if not self.stop and self.bld.keep:
+				self.skip(tsk)
+				if self.bld.keep==1:
+					if Logs.verbose>1 or not self.error:
+						self.error.append(tsk)
+					self.stop=True
+				else:
+					if Logs.verbose>1:
+						self.error.append(tsk)
+				return Task.EXCEPTION
+			tsk.hasrun=Task.EXCEPTION
+			self.error_handler(tsk)
+			return Task.EXCEPTION
 	def start(self):
 		self.total=self.bld.total()
 		while not self.stop:
@@ -158,40 +157,25 @@ class Parallel(object):
 				continue
 			if self.stop:
 				break
-			try:
-				st=tsk.runnable_status()
-			except Exception:
+			st=self.task_status(tsk)
+			if st==Task.RUN_ME:
+				self.count+=1
 				self.processed+=1
-				tsk.err_msg=Utils.ex_stack()
-				if not self.stop and self.bld.keep:
-					tsk.hasrun=Task.SKIPPED
-					if self.bld.keep==1:
-						if Logs.verbose>1 or not self.error:
-							self.error.append(tsk)
-						self.stop=True
-					else:
-						if Logs.verbose>1:
-							self.error.append(tsk)
-					continue
-				tsk.hasrun=Task.EXCEPTION
-				self.error_handler(tsk)
-				continue
+				if self.numjobs==1:
+					tsk.log_display(tsk.generator.bld)
+					try:
+						tsk.process()
+					finally:
+						self.out.put(tsk)
+				else:
+					self.add_task(tsk)
 			if st==Task.ASK_LATER:
 				self.postpone(tsk)
 			elif st==Task.SKIP_ME:
 				self.processed+=1
-				tsk.hasrun=Task.SKIPPED
+				self.skip(tsk)
 				self.add_more_tasks(tsk)
-			else:
-				tsk.position=(self.processed,self.total)
-				self.count+=1
-				tsk.master=self
-				self.processed+=1
-				if self.numjobs==1:
-					tsk.process()
-				else:
-					self.add_task(tsk)
 		while self.error and self.count:
 			self.get_out()
+		self.ready.put(None)
 		assert(self.count==0 or self.stop)
-		self.free_task_pool()

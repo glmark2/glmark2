@@ -1,54 +1,53 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
 import os,re,traceback,sys
-_nocolor=os.environ.get('NOCOLOR','no')not in('no','0','false')
-try:
-	if not _nocolor:
-		import waflib.ansiterm
-except:
-	pass
+from waflib import Utils,ansiterm
+if not os.environ.get('NOSYNC',False):
+	if sys.stdout.isatty()and id(sys.stdout)==id(sys.__stdout__):
+		sys.stdout=ansiterm.AnsiTerm(sys.stdout)
+	if sys.stderr.isatty()and id(sys.stderr)==id(sys.__stderr__):
+		sys.stderr=ansiterm.AnsiTerm(sys.stderr)
 import logging
-LOG_FORMAT="%(asctime)s %(c1)s%(zone)s%(c2)s %(message)s"
-HOUR_FORMAT="%H:%M:%S"
-zones=''
+LOG_FORMAT=os.environ.get('WAF_LOG_FORMAT','%(asctime)s %(c1)s%(zone)s%(c2)s %(message)s')
+HOUR_FORMAT=os.environ.get('WAF_HOUR_FORMAT','%H:%M:%S')
+zones=[]
 verbose=0
-colors_lst={'USE':True,'BOLD':'\x1b[01;1m','RED':'\x1b[01;31m','GREEN':'\x1b[32m','YELLOW':'\x1b[33m','PINK':'\x1b[35m','BLUE':'\x1b[01;34m','CYAN':'\x1b[36m','NORMAL':'\x1b[0m','cursor_on':'\x1b[?25h','cursor_off':'\x1b[?25l',}
-got_tty=not os.environ.get('TERM','dumb')in['dumb','emacs']
-if got_tty:
-	try:
-		got_tty=sys.stderr.isatty()
-	except AttributeError:
-		got_tty=False
-if(not got_tty and os.environ.get('TERM','dumb')!='msys')or _nocolor:
-	colors_lst['USE']=False
-def get_term_cols():
-	return 80
+colors_lst={'USE':True,'BOLD':'\x1b[01;1m','RED':'\x1b[01;31m','GREEN':'\x1b[32m','YELLOW':'\x1b[33m','PINK':'\x1b[35m','BLUE':'\x1b[01;34m','CYAN':'\x1b[36m','GREY':'\x1b[37m','NORMAL':'\x1b[0m','cursor_on':'\x1b[?25h','cursor_off':'\x1b[?25l',}
+indicator='\r\x1b[K%s%s%s'
 try:
-	import struct,fcntl,termios
-except ImportError:
-	pass
-else:
-	if got_tty:
-		def get_term_cols_real():
-			dummy_lines,cols=struct.unpack("HHHH",fcntl.ioctl(sys.stderr.fileno(),termios.TIOCGWINSZ,struct.pack("HHHH",0,0,0,0)))[:2]
-			return cols
-		try:
-			get_term_cols_real()
-		except:
-			pass
+	unicode
+except NameError:
+	unicode=None
+def enable_colors(use):
+	if use==1:
+		if not(sys.stderr.isatty()or sys.stdout.isatty()):
+			use=0
+		if Utils.is_win32 and os.name!='java':
+			term=os.environ.get('TERM','')
 		else:
-			get_term_cols=get_term_cols_real
+			term=os.environ.get('TERM','dumb')
+		if term in('dumb','emacs'):
+			use=0
+	if use>=1:
+		os.environ['TERM']='vt100'
+	colors_lst['USE']=use
+try:
+	get_term_cols=ansiterm.get_term_cols
+except AttributeError:
+	def get_term_cols():
+		return 80
 get_term_cols.__doc__="""
-	Get the console width in characters.
+	Returns the console width in characters.
 
 	:return: the number of characters per line
 	:rtype: int
 	"""
 def get_color(cl):
-	if not colors_lst['USE']:return''
-	return colors_lst.get(cl,'')
+	if colors_lst['USE']:
+		return colors_lst.get(cl,'')
+	return''
 class color_dict(object):
 	def __getattr__(self,a):
 		return get_color(a)
@@ -57,19 +56,12 @@ class color_dict(object):
 colors=color_dict()
 re_log=re.compile(r'(\w+): (.*)',re.M)
 class log_filter(logging.Filter):
-	def __init__(self,name=None):
-		pass
+	def __init__(self,name=''):
+		logging.Filter.__init__(self,name)
 	def filter(self,rec):
-		rec.c1=colors.PINK
-		rec.c2=colors.NORMAL
+		global verbose
 		rec.zone=rec.module
 		if rec.levelno>=logging.INFO:
-			if rec.levelno>=logging.ERROR:
-				rec.c1=colors.RED
-			elif rec.levelno>=logging.WARNING:
-				rec.c1=colors.YELLOW
-			else:
-				rec.c1=colors.GREEN
 			return True
 		m=re_log.match(rec.msg)
 		if m:
@@ -80,26 +72,82 @@ class log_filter(logging.Filter):
 		elif not verbose>2:
 			return False
 		return True
+class log_handler(logging.StreamHandler):
+	def emit(self,record):
+		try:
+			try:
+				self.stream=record.stream
+			except AttributeError:
+				if record.levelno>=logging.WARNING:
+					record.stream=self.stream=sys.stderr
+				else:
+					record.stream=self.stream=sys.stdout
+			self.emit_override(record)
+			self.flush()
+		except(KeyboardInterrupt,SystemExit):
+			raise
+		except:
+			self.handleError(record)
+	def emit_override(self,record,**kw):
+		self.terminator=getattr(record,'terminator','\n')
+		stream=self.stream
+		if unicode:
+			msg=self.formatter.format(record)
+			fs='%s'+self.terminator
+			try:
+				if(isinstance(msg,unicode)and getattr(stream,'encoding',None)):
+					fs=fs.decode(stream.encoding)
+					try:
+						stream.write(fs%msg)
+					except UnicodeEncodeError:
+						stream.write((fs%msg).encode(stream.encoding))
+				else:
+					stream.write(fs%msg)
+			except UnicodeError:
+				stream.write((fs%msg).encode('utf-8'))
+		else:
+			logging.StreamHandler.emit(self,record)
 class formatter(logging.Formatter):
 	def __init__(self):
 		logging.Formatter.__init__(self,LOG_FORMAT,HOUR_FORMAT)
 	def format(self,rec):
-		if rec.levelno>=logging.WARNING or rec.levelno==logging.INFO:
-			try:
-				msg=rec.msg.decode('utf-8')
-			except:
-				msg=rec.msg
-			return'%s%s%s'%(rec.c1,msg,rec.c2)
+		try:
+			msg=rec.msg.decode('utf-8')
+		except Exception:
+			msg=rec.msg
+		use=colors_lst['USE']
+		if(use==1 and rec.stream.isatty())or use==2:
+			c1=getattr(rec,'c1',None)
+			if c1 is None:
+				c1=''
+				if rec.levelno>=logging.ERROR:
+					c1=colors.RED
+				elif rec.levelno>=logging.WARNING:
+					c1=colors.YELLOW
+				elif rec.levelno>=logging.INFO:
+					c1=colors.GREEN
+			c2=getattr(rec,'c2',colors.NORMAL)
+			msg='%s%s%s'%(c1,msg,c2)
+		else:
+			msg=re.sub(r'\r(?!\n)|\x1B\[(K|.*?(m|h|l))','',msg)
+		if rec.levelno>=logging.INFO:
+			if rec.args:
+				return msg%rec.args
+			return msg
+		rec.msg=msg
+		rec.c1=colors.PINK
+		rec.c2=colors.NORMAL
 		return logging.Formatter.format(self,rec)
 log=None
 def debug(*k,**kw):
+	global verbose
 	if verbose:
 		k=list(k)
 		k[0]=k[0].replace('\n',' ')
 		global log
 		log.debug(*k,**kw)
 def error(*k,**kw):
-	global log
+	global log,verbose
 	log.error(*k,**kw)
 	if verbose>2:
 		st=traceback.extract_stack()
@@ -107,10 +155,10 @@ def error(*k,**kw):
 			st=st[:-1]
 			buf=[]
 			for filename,lineno,name,line in st:
-				buf.append('  File "%s", line %d, in %s'%(filename,lineno,name))
+				buf.append('  File %r, line %d, in %s'%(filename,lineno,name))
 				if line:
 					buf.append('	%s'%line.strip())
-			if buf:log.error("\n".join(buf))
+			if buf:log.error('\n'.join(buf))
 def warn(*k,**kw):
 	global log
 	log.warn(*k,**kw)
@@ -122,7 +170,7 @@ def init_log():
 	log=logging.getLogger('waflib')
 	log.handlers=[]
 	log.filters=[]
-	hdlr=logging.StreamHandler()
+	hdlr=log_handler()
 	hdlr.setFormatter(formatter())
 	log.addHandler(hdlr)
 	log.addFilter(log_filter())
@@ -135,7 +183,7 @@ def make_logger(path,name):
 	logger.addHandler(hdlr)
 	logger.setLevel(logging.DEBUG)
 	return logger
-def make_mem_logger(name,to_log,size=10000):
+def make_mem_logger(name,to_log,size=8192):
 	from logging.handlers import MemoryHandler
 	logger=logging.getLogger(name)
 	hdlr=MemoryHandler(size,target=to_log)
@@ -145,5 +193,13 @@ def make_mem_logger(name,to_log,size=10000):
 	logger.memhandler=hdlr
 	logger.setLevel(logging.DEBUG)
 	return logger
-def pprint(col,str,label='',sep='\n'):
-	sys.stderr.write("%s%s%s %s%s"%(colors(col),str,colors.NORMAL,label,sep))
+def free_logger(logger):
+	try:
+		for x in logger.handlers:
+			x.close()
+			logger.removeHandler(x)
+	except Exception:
+		pass
+def pprint(col,msg,label='',sep='\n'):
+	global info
+	info('%s%s%s %s',colors(col),msg,colors.NORMAL,label,extra={'terminator':sep})

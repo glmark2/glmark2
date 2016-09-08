@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: ISO8859-1
-# Thomas Nagy, 2005-2011
-
+# Thomas Nagy, 2005-2016
+#
 """
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -30,13 +30,15 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os, sys
+import os, sys, inspect
 
-VERSION="1.6.11"
-REVISION="30618c54883417962c38f5d395f83584"
+VERSION="1.9.3"
+REVISION="826456a3e8d1d27787c240c6ba69d280"
+GIT="b022313c197614245fae732c0dd1d8167b9ee5dd"
 INSTALL=''
-C1='#*'
+C1='#)'
 C2='#%'
+C3='#$'
 cwd = os.getcwd()
 join = os.path.join
 
@@ -53,8 +55,8 @@ def err(m):
 	print(('\033[91mError: %s\033[0m' % m))
 	sys.exit(1)
 
-def unpack_wafdir(dir):
-	f = open(sys.argv[0],'rb')
+def unpack_wafdir(dir, src):
+	f = open(src,'rb')
 	c = 'corrupt archive (%d)'
 	while 1:
 		line = f.readline()
@@ -65,22 +67,22 @@ def unpack_wafdir(dir):
 			if f.readline() != b('#<==\n'): err(c % 2)
 			break
 	if not txt: err(c % 3)
-	txt = txt[1:-1].replace(b(C1), b('\n')).replace(b(C2), b('\r'))
+	txt = txt[1:-1].replace(b(C1), b('\n')).replace(b(C2), b('\r')).replace(b(C3), b('\x00'))
 
 	import shutil, tarfile
 	try: shutil.rmtree(dir)
 	except OSError: pass
 	try:
-		for x in ['Tools', 'extras']:
+		for x in ('Tools', 'extras'):
 			os.makedirs(join(dir, 'waflib', x))
 	except OSError:
-		err("Cannot unpack waf lib into %s\nMove waf into a writeable directory" % dir)
+		err("Cannot unpack waf lib into %s\nMove waf in a writable directory" % dir)
 
 	os.chdir(dir)
 	tmp = 't.bz2'
 	t = open(tmp,'wb')
-	t.write(txt)
-	t.close()
+	try: t.write(txt)
+	finally: t.close()
 
 	try:
 		t = tarfile.open(tmp)
@@ -95,10 +97,12 @@ def unpack_wafdir(dir):
 			except OSError: pass
 			err("Waf cannot be unpacked, check that bzip2 support is present")
 
-	for x in t: t.extract(x)
-	t.close()
+	try:
+		for x in t: t.extract(x)
+	finally:
+		t.close()
 
-	for x in ['Tools', 'extras']:
+	for x in ('Tools', 'extras'):
 		os.chmod(join('waflib',x), 493)
 
 	if sys.hexversion<0x300000f:
@@ -106,7 +110,7 @@ def unpack_wafdir(dir):
 		import fixpy2
 		fixpy2.fixdir(dir)
 
-	os.unlink(tmp)
+	os.remove(tmp)
 	os.chdir(cwd)
 
 	try: dir = unicode(dir, 'mbcs')
@@ -125,8 +129,8 @@ def test(dir):
 		pass
 
 def find_lib():
-	name = sys.argv[0]
-	base = os.path.dirname(os.path.abspath(name))
+	src = os.path.abspath(inspect.getfile(inspect.getmodule(err)))
+	base, name = os.path.split(src)
 
 	#devs use $WAFDIR
 	w=test(os.environ.get('WAFDIR', ''))
@@ -139,7 +143,7 @@ def find_lib():
 		err('waf-light requires waflib -> export WAFDIR=/folder')
 
 	dirname = '%s-%s-%s' % (WAF, VERSION, REVISION)
-	for i in [INSTALL,'/usr','/usr/local','/opt']:
+	for i in (INSTALL,'/usr','/usr/local','/opt'):
 		w = test(i + '/lib/' + dirname)
 		if w: return w
 
@@ -149,14 +153,14 @@ def find_lib():
 	if w: return w
 
 	#unpack
-	unpack_wafdir(dir)
+	unpack_wafdir(dir, src)
 	return dir
 
 wafdir = find_lib()
 sys.path.insert(0, wafdir)
 
 if __name__ == '__main__':
-	import waflib.extras.compat15
+
 	from waflib import Scripting
 	Scripting.waf_entry_point(cwd, VERSION, wafdir)
 

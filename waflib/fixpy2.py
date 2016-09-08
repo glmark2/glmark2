@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
 import os
 all_modifs={}
@@ -21,12 +21,16 @@ def modif(dir,name,fun):
 		return
 	filename=os.path.join(dir,name)
 	f=open(filename,'r')
-	txt=f.read()
-	f.close()
+	try:
+		txt=f.read()
+	finally:
+		f.close()
 	txt=fun(txt)
 	f=open(filename,'w')
-	f.write(txt)
-	f.close()
+	try:
+		f.write(txt)
+	finally:
+		f.close()
 def subst(*k):
 	def do_subst(fun):
 		global all_modifs
@@ -37,14 +41,14 @@ def subst(*k):
 				all_modifs[x]=[fun]
 		return fun
 	return do_subst
+@subst('*')
 def r1(code):
-	code=code.replace(',e:',',e:')
-	code=code.replace("",'')
-	code=code.replace('','')
-	return code
+	code=code.replace('as e:',',e:')
+	code=code.replace(".decode(sys.stdout.encoding or 'iso8859-1')",'')
+	return code.replace('.encode()','')
+@subst('Runner.py')
 def r4(code):
-	code=code.replace('next(self.biter)','self.biter.next()')
-	return code
-
-subst('*')(r1)
-subst('Runner.py')(r4)
+	return code.replace('next(self.biter)','self.biter.next()')
+@subst('Context.py')
+def r5(code):
+	return code.replace("('Execution failure: %s'%str(e),ex=e)","('Execution failure: %s'%str(e),ex=e),None,sys.exc_info()[2]")

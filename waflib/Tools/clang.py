@@ -2,16 +2,16 @@
 # encoding: utf-8
 # WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
-import sys
 from waflib.Tools import ccroot,ar,gcc
 from waflib.Configure import conf
 @conf
-def find_icc(conf):
-	cc=conf.find_program(['icc','ICL'],var='CC')
-	conf.get_cc_version(cc,icc=True)
-	conf.env.CC_NAME='icc'
+def find_clang(conf):
+	cc=conf.find_program('clang',var='CC')
+	conf.get_cc_version(cc,clang=True)
+	conf.env.CC_NAME='clang'
 def configure(conf):
-	conf.find_icc()
+	conf.find_clang()
+	conf.find_program(['llvm-ar','ar'],var='AR')
 	conf.find_ar()
 	conf.gcc_common_flags()
 	conf.gcc_modifier_platform()

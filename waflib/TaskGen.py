@@ -1,21 +1,18 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
-import sys
-if sys.hexversion < 0x020400f0: from sets import Set as set
 import copy,re,os
-from waflib import Task,Utils,Logs,Errors,ConfigSet
+from waflib import Task,Utils,Logs,Errors,ConfigSet,Node
 feats=Utils.defaultdict(set)
+HEADER_EXTS=['.h','.hpp','.hxx','.hh']
 class task_gen(object):
-	mappings={}
+	mappings=Utils.ordered_iter_dict()
 	prec=Utils.defaultdict(list)
 	def __init__(self,*k,**kw):
 		self.source=''
 		self.target=''
 		self.meths=[]
-		self.prec=Utils.defaultdict(list)
-		self.mappings={}
 		self.features=[]
 		self.tasks=[]
 		if not'bld'in kw:
@@ -27,20 +24,22 @@ class task_gen(object):
 			self.env=self.bld.env.derive()
 			self.path=self.bld.path
 			try:
-				self.idx=self.bld.idx[id(self.path)]=self.bld.idx.get(id(self.path),0)+1
+				self.idx=self.bld.idx[self.path]=self.bld.idx.get(self.path,0)+1
 			except AttributeError:
 				self.bld.idx={}
-				self.idx=self.bld.idx[id(self.path)]=1
+				self.idx=self.bld.idx[self.path]=1
 		for key,val in kw.items():
 			setattr(self,key,val)
 	def __str__(self):
 		return"<task_gen %r declared in %s>"%(self.name,self.path.abspath())
 	def __repr__(self):
 		lst=[]
-		for x in self.__dict__.keys():
-			if x not in['env','bld','compiled_tasks','tasks']:
+		for x in self.__dict__:
+			if x not in('env','bld','compiled_tasks','tasks'):
 				lst.append("%s=%s"%(x,repr(getattr(self,x))))
 		return"bld(%s) in %s"%(", ".join(lst),self.path.abspath())
+	def get_cwd(self):
+		return self.bld.bldnode
 	def get_name(self):
 		try:
 			return self._name
@@ -55,8 +54,10 @@ class task_gen(object):
 		self._name=name
 	name=property(get_name,set_name)
 	def to_list(self,val):
-		if isinstance(val,str):return val.split()
-		else:return val
+		if isinstance(val,str):
+			return val.split()
+		else:
+			return val
 	def post(self):
 		if getattr(self,'posted',None):
 			return False
@@ -67,10 +68,10 @@ class task_gen(object):
 			st=feats[x]
 			if not st:
 				if not x in Task.classes:
-					Logs.warn('feature %r does not exist - bind at least one method to it'%x)
+					Logs.warn('feature %r does not exist - bind at least one method to it',x)
 			keys.update(list(st))
 		prec={}
-		prec_tbl=self.prec or task_gen.prec
+		prec_tbl=self.prec
 		for x in prec_tbl:
 			if x in keys:
 				prec[x]=prec_tbl[x]
@@ -80,6 +81,7 @@ class task_gen(object):
 				if a in x:break
 			else:
 				tmp.append(a)
+		tmp.sort()
 		out=[]
 		while tmp:
 			e=tmp.pop()
@@ -97,42 +99,45 @@ class task_gen(object):
 					else:
 						tmp.append(x)
 		if prec:
-			raise Errors.WafError('Cycle detected in the method execution %r'%prec)
+			txt='\n'.join(['- %s after %s'%(k,repr(v))for k,v in prec.items()])
+			raise Errors.WafError('Cycle detected in the method execution\n%s'%txt)
 		out.reverse()
 		self.meths=out
-		Logs.debug('task_gen: posting %s %d'%(self,id(self)))
+		Logs.debug('task_gen: posting %s %d',self,id(self))
 		for x in out:
 			try:
 				v=getattr(self,x)
 			except AttributeError:
 				raise Errors.WafError('%r is not a valid task generator method'%x)
-			Logs.debug('task_gen: -> %s (%d)'%(x,id(self)))
+			Logs.debug('task_gen: -> %s (%d)',x,id(self))
 			v()
-		Logs.debug('task_gen: posted %s'%self.name)
+		Logs.debug('task_gen: posted %s',self.name)
 		return True
 	def get_hook(self,node):
 		name=node.name
 		for k in self.mappings:
-			if name.endswith(k):
-				return self.mappings[k]
-		for k in task_gen.mappings:
-			if name.endswith(k):
-				return task_gen.mappings[k]
-		raise Errors.WafError("File %r has no mapping in %r (did you forget to load a waf tool?)"%(node,task_gen.mappings.keys()))
-	def create_task(self,name,src=None,tgt=None):
+			try:
+				if name.endswith(k):
+					return self.mappings[k]
+			except TypeError:
+				if k.match(name):
+					return self.mappings[k]
+		raise Errors.WafError("File %r has no mapping in %r (have you forgotten to load a waf tool?)"%(node,self.mappings.keys()))
+	def create_task(self,name,src=None,tgt=None,**kw):
 		task=Task.classes[name](env=self.env.derive(),generator=self)
 		if src:
 			task.set_inputs(src)
 		if tgt:
 			task.set_outputs(tgt)
+		task.__dict__.update(kw)
 		self.tasks.append(task)
 		return task
 	def clone(self,env):
 		newobj=self.bld()
 		for x in self.__dict__:
-			if x in['env','bld']:
+			if x in('env','bld'):
 				continue
-			elif x in['path','features']:
+			elif x in('path','features'):
 				setattr(newobj,x,getattr(self,x))
 			else:
 				setattr(newobj,x,copy.copy(getattr(self,x)))
@@ -149,12 +154,11 @@ def declare_chain(name='',rule=None,reentrant=None,color='BLUE',ext_in=[],ext_ou
 		name=rule
 	cls=Task.task_factory(name,rule,color=color,ext_in=ext_in,ext_out=ext_out,before=before,after=after,scan=scan,shell=shell)
 	def x_file(self,node):
-		ext=decider and decider(self,node)or cls.ext_out
 		if ext_in:
 			_ext_in=ext_in[0]
 		tsk=self.create_task(name,node)
 		cnt=0
-		keys=self.mappings.keys()+self.__class__.mappings.keys()
+		ext=decider(self,node)if decider else cls.ext_out
 		for x in ext:
 			k=node.change_ext(x,ext_in=_ext_in)
 			tsk.outputs.append(k)
@@ -162,13 +166,13 @@ def declare_chain(name='',rule=None,reentrant=None,color='BLUE',ext_in=[],ext_ou
 				if cnt<int(reentrant):
 					self.source.append(k)
 			else:
-				for y in keys:
+				for y in self.mappings:
 					if k.name.endswith(y):
 						self.source.append(k)
 						break
 			cnt+=1
 		if install_path:
-			self.bld.install_files(install_path,tsk.outputs)
+			self.install_task=self.add_install_files(install_to=install_path,install_from=tsk.outputs)
 		return tsk
 	for x in cls.ext_in:
 		task_gen.mappings[x]=x_file
@@ -208,11 +212,12 @@ def extension(*k):
 			task_gen.mappings[x]=func
 		return func
 	return deco
+@taskgen_method
 def to_nodes(self,lst,path=None):
 	tmp=[]
 	path=path or self.path
 	find=path.find_resource
-	if isinstance(lst,self.path.__class__):
+	if isinstance(lst,Node.Node):
 		lst=[lst]
 	for x in Utils.to_list(lst):
 		if isinstance(x,str):
@@ -223,15 +228,57 @@ def to_nodes(self,lst,path=None):
 			raise Errors.WafError("source not found: %r in %r"%(x,self))
 		tmp.append(node)
 	return tmp
+@feature('*')
 def process_source(self):
 	self.source=self.to_nodes(getattr(self,'source',[]))
 	for node in self.source:
 		self.get_hook(node)(self,node)
+@feature('*')
+@before_method('process_source')
 def process_rule(self):
 	if not getattr(self,'rule',None):
 		return
-	name=str(getattr(self,'name',None)or self.target or self.rule)
-	cls=Task.task_factory(name,self.rule,getattr(self,'vars',[]),shell=getattr(self,'shell',True),color=getattr(self,'color','BLUE'))
+	name=str(getattr(self,'name',None)or self.target or getattr(self.rule,'__name__',self.rule))
+	try:
+		cache=self.bld.cache_rule_attr
+	except AttributeError:
+		cache=self.bld.cache_rule_attr={}
+	cls=None
+	if getattr(self,'cache_rule','True'):
+		try:
+			cls=cache[(name,self.rule)]
+		except KeyError:
+			pass
+	if not cls:
+		rule=self.rule
+		if hasattr(self,'chmod'):
+			def chmod_fun(tsk):
+				for x in tsk.outputs:
+					os.chmod(x.abspath(),self.chmod)
+			rule=(self.rule,chmod_fun)
+		cls=Task.task_factory(name,rule,getattr(self,'vars',[]),shell=getattr(self,'shell',True),color=getattr(self,'color','BLUE'),scan=getattr(self,'scan',None))
+		if getattr(self,'scan',None):
+			cls.scan=self.scan
+		elif getattr(self,'deps',None):
+			def scan(self):
+				nodes=[]
+				for x in self.generator.to_list(getattr(self.generator,'deps',None)):
+					node=self.generator.path.find_resource(x)
+					if not node:
+						self.generator.bld.fatal('Could not find %r (was it declared?)'%x)
+					nodes.append(node)
+				return[nodes,[]]
+			cls.scan=scan
+		if getattr(self,'always',None):
+			cls.always_run=True
+		for x in('after','before','ext_in','ext_out'):
+			setattr(cls,x,getattr(self,x,[]))
+		if getattr(self,'cache_rule','True'):
+			cache[(name,self.rule)]=cls
+		if getattr(self,'cls_str',None):
+			setattr(cls,'__str__',self.cls_str)
+		if getattr(self,'cls_keyword',None):
+			setattr(cls,'keyword',self.cls_keyword)
 	tsk=self.create_task(name)
 	if getattr(self,'target',None):
 		if isinstance(self.target,str):
@@ -245,30 +292,13 @@ def process_rule(self):
 				x.parent.mkdir()
 				tsk.outputs.append(x)
 		if getattr(self,'install_path',None):
-			self.bld.install_files(self.install_path,tsk.outputs)
+			self.install_task=self.add_install_files(install_to=self.install_path,install_from=tsk.outputs,chmod=getattr(self,'chmod',Utils.O644))
 	if getattr(self,'source',None):
 		tsk.inputs=self.to_nodes(self.source)
 		self.source=[]
-	if getattr(self,'scan',None):
-		cls.scan=self.scan
-	elif getattr(self,'deps',None):
-		def scan(self):
-			nodes=[]
-			for x in self.generator.to_list(self.generator.deps):
-				node=self.generator.path.find_resource(x)
-				if not node:
-					self.generator.bld.fatal('Could not find %r (was it declared?)'%x)
-				nodes.append(node)
-			return[nodes,[]]
-		cls.scan=scan
 	if getattr(self,'cwd',None):
 		tsk.cwd=self.cwd
-	if getattr(self,'update_outputs',None)or getattr(self,'on_results',None):
-		Task.update_outputs(cls)
-	if getattr(self,'always',None):
-		Task.always_run(cls)
-	for x in['after','before','ext_in','ext_out']:
-		setattr(cls,x,getattr(self,x,[]))
+@feature('seq')
 def sequence_order(self):
 	if self.meths and self.meths[-1]!='sequence_order':
 		self.meths.append('sequence_order')
@@ -283,8 +313,28 @@ def sequence_order(self):
 	self.bld.prev=self
 re_m4=re.compile('@(\w+)@',re.M)
 class subst_pc(Task.Task):
+	def force_permissions(self):
+		if getattr(self.generator,'chmod',None):
+			for x in self.outputs:
+				os.chmod(x.abspath(),self.generator.chmod)
 	def run(self):
-		code=self.inputs[0].read()
+		if getattr(self.generator,'is_copy',None):
+			for i,x in enumerate(self.outputs):
+				x.write(self.inputs[i].read('rb'),'wb')
+			self.force_permissions()
+			return None
+		if getattr(self.generator,'fun',None):
+			ret=self.generator.fun(self)
+			if not ret:
+				self.force_permissions()
+			return ret
+		code=self.inputs[0].read(encoding=getattr(self.generator,'encoding','ISO8859-1'))
+		if getattr(self.generator,'subst_fun',None):
+			code=self.generator.subst_fun(self,code)
+			if code is not None:
+				self.outputs[0].write(code,encoding=getattr(self.generator,'encoding','ISO8859-1'))
+			self.force_permissions()
+			return None
 		code=code.replace('%','%%')
 		lst=[]
 		def repl(match):
@@ -293,61 +343,90 @@ class subst_pc(Task.Task):
 				lst.append(g(1))
 				return"%%(%s)s"%g(1)
 			return''
-		code=re_m4.sub(repl,code)
+		global re_m4
+		code=getattr(self.generator,'re_m4',re_m4).sub(repl,code)
 		try:
 			d=self.generator.dct
 		except AttributeError:
 			d={}
 			for x in lst:
-				tmp=getattr(self.generator,x,'')or self.env.get_flat(x)or self.env.get_flat(x.upper())
-				d[x]=str(tmp)
-		self.outputs[0].write(code%d)
-		self.generator.bld.raw_deps[self.uid()]=self.dep_vars=lst
+				tmp=getattr(self.generator,x,'')or self.env[x]or self.env[x.upper()]
+				try:
+					tmp=''.join(tmp)
+				except TypeError:
+					tmp=str(tmp)
+				d[x]=tmp
+		code=code%d
+		self.outputs[0].write(code,encoding=getattr(self.generator,'encoding','ISO8859-1'))
+		self.generator.bld.raw_deps[self.uid()]=lst
 		try:delattr(self,'cache_sig')
 		except AttributeError:pass
-		if getattr(self.generator,'chmod',None):
-			os.chmod(self.outputs[0].abspath(),self.generator.chmod)
+		self.force_permissions()
 	def sig_vars(self):
 		bld=self.generator.bld
 		env=self.env
 		upd=self.m.update
+		if getattr(self.generator,'fun',None):
+			upd(Utils.h_fun(self.generator.fun).encode())
+		if getattr(self.generator,'subst_fun',None):
+			upd(Utils.h_fun(self.generator.subst_fun).encode())
 		vars=self.generator.bld.raw_deps.get(self.uid(),[])
 		act_sig=bld.hash_env_vars(env,vars)
 		upd(act_sig)
 		lst=[getattr(self.generator,x,'')for x in vars]
 		upd(Utils.h_list(lst))
 		return self.m.digest()
+@extension('.pc.in')
 def add_pcfile(self,node):
 	tsk=self.create_task('subst_pc',node,node.change_ext('.pc','.pc.in'))
-	self.bld.install_files(getattr(self,'install_path','${LIBDIR}/pkgconfig/'),tsk.outputs)
+	self.install_task=self.add_install_files(install_to=getattr(self,'install_path','${LIBDIR}/pkgconfig/'),install_from=tsk.outputs)
 class subst(subst_pc):
 	pass
+@feature('subst')
+@before_method('process_source','process_rule')
 def process_subst(self):
-	src=self.to_nodes(getattr(self,'source',[]))
-	tgt=getattr(self,'target',[])
-	if isinstance(tgt,self.path.__class__):
+	src=Utils.to_list(getattr(self,'source',[]))
+	if isinstance(src,Node.Node):
+		src=[src]
+	tgt=Utils.to_list(getattr(self,'target',[]))
+	if isinstance(tgt,Node.Node):
 		tgt=[tgt]
-	tgt=[isinstance(x,self.path.__class__)and x or self.path.find_or_declare(x)for x in Utils.to_list(tgt)]
 	if len(src)!=len(tgt):
-		raise Errors.WafError('invalid source or target for %r'%self)
+		raise Errors.WafError('invalid number of source/target for %r'%self)
 	for x,y in zip(src,tgt):
-		if not(x and y):
-			raise Errors.WafError('invalid source or target for %r'%self)
-		tsk=self.create_task('subst',x,y)
-		for a in('after','before','ext_in','ext_out'):
-			val=getattr(self,a,None)
+		if not x or not y:
+			raise Errors.WafError('null source or target for %r'%self)
+		a,b=None,None
+		if isinstance(x,str)and isinstance(y,str)and x==y:
+			a=self.path.find_node(x)
+			b=self.path.get_bld().make_node(y)
+			if not os.path.isfile(b.abspath()):
+				b.parent.mkdir()
+		else:
+			if isinstance(x,str):
+				a=self.path.find_resource(x)
+			elif isinstance(x,Node.Node):
+				a=x
+			if isinstance(y,str):
+				b=self.path.find_or_declare(y)
+			elif isinstance(y,Node.Node):
+				b=y
+		if not a:
+			raise Errors.WafError('could not find %r for %r'%(x,self))
+		has_constraints=False
+		tsk=self.create_task('subst',a,b)
+		for k in('after','before','ext_in','ext_out'):
+			val=getattr(self,k,None)
 			if val:
-				setattr(tsk,a,val)
-	inst_to=getattr(self,'install_path',None)
-	if inst_to:
-		self.bld.install_files(inst_to,tgt,chmod=getattr(self,'chmod',Utils.O644))
+				has_constraints=True
+				setattr(tsk,k,val)
+		if not has_constraints:
+			global HEADER_EXTS
+			for xt in HEADER_EXTS:
+				if b.name.endswith(xt):
+					tsk.before=[k for k in('c','cxx')if k in Task.classes]
+					break
+		inst_to=getattr(self,'install_path',None)
+		if inst_to:
+			self.install_task=self.add_install_files(install_to=inst_to,install_from=b,chmod=getattr(self,'chmod',Utils.O644))
 	self.source=[]
-
-taskgen_method(to_nodes)
-feature('*')(process_source)
-feature('*')(process_rule)
-before_method('process_source')(process_rule)
-feature('seq')(sequence_order)
-extension('.pc.in')(add_pcfile)
-feature('subst')(process_subst)
-before_method('process_source','process_rule')(process_subst)

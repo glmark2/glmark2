@@ -1,35 +1,44 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
-import re,shutil,os,sys,string,shlex
+import re,os,sys,shlex
 from waflib.Configure import conf
-from waflib.TaskGen import feature,after_method,before_method
-from waflib import Build,Utils
+from waflib.TaskGen import feature,before_method
 FC_FRAGMENT='        program main\n        end     program main\n'
 FC_FRAGMENT2='        PROGRAM MAIN\n        END\n'
+@conf
 def fc_flags(conf):
 	v=conf.env
-	v['FC_SRC_F']=[]
-	v['FC_TGT_F']=['-c','-o']
-	v['FCINCPATH_ST']='-I%s'
-	v['FCDEFINES_ST']='-D%s'
-	if not v['LINK_FC']:v['LINK_FC']=v['FC']
-	v['FCLNK_SRC_F']=[]
-	v['FCLNK_TGT_F']=['-o']
-	v['FCFLAGS_fcshlib']=['-fpic']
-	v['LINKFLAGS_fcshlib']=['-shared']
-	v['fcshlib_PATTERN']='lib%s.so'
-	v['fcstlib_PATTERN']='lib%s.a'
-	v['FCLIB_ST']='-l%s'
-	v['FCLIBPATH_ST']='-L%s'
-	v['FCSTLIB_ST']='-l%s'
-	v['FCSTLIBPATH_ST']='-L%s'
-	v['FCSTLIB_MARKER']='-Wl,-Bstatic'
-	v['FCSHLIB_MARKER']='-Wl,-Bdynamic'
-	v['SONAME_ST']='-Wl,-h,%s'
+	v.FC_SRC_F=[]
+	v.FC_TGT_F=['-c','-o']
+	v.FCINCPATH_ST='-I%s'
+	v.FCDEFINES_ST='-D%s'
+	if not v.LINK_FC:
+		v.LINK_FC=v.FC
+	v.FCLNK_SRC_F=[]
+	v.FCLNK_TGT_F=['-o']
+	v.FCFLAGS_fcshlib=['-fpic']
+	v.LINKFLAGS_fcshlib=['-shared']
+	v.fcshlib_PATTERN='lib%s.so'
+	v.fcstlib_PATTERN='lib%s.a'
+	v.FCLIB_ST='-l%s'
+	v.FCLIBPATH_ST='-L%s'
+	v.FCSTLIB_ST='-l%s'
+	v.FCSTLIBPATH_ST='-L%s'
+	v.FCSTLIB_MARKER='-Wl,-Bstatic'
+	v.FCSHLIB_MARKER='-Wl,-Bdynamic'
+	v.SONAME_ST='-Wl,-h,%s'
+@conf
+def fc_add_flags(conf):
+	conf.add_os_flags('FCPPFLAGS',dup=False)
+	conf.add_os_flags('FCFLAGS',dup=False)
+	conf.add_os_flags('LINKFLAGS',dup=False)
+	conf.add_os_flags('LDFLAGS',dup=False)
+@conf
 def check_fortran(self,*k,**kw):
 	self.check_cc(fragment=FC_FRAGMENT,compile_filename='test.f',features='fc fcprogram',msg='Compiling a simple fortran app')
+@conf
 def check_fc(self,*k,**kw):
 	kw['compiler']='fc'
 	if not'compile_mode'in kw:
@@ -41,32 +50,35 @@ def check_fc(self,*k,**kw):
 	if not'code'in kw:
 		kw['code']=FC_FRAGMENT
 	return self.check(*k,**kw)
+@conf
 def fortran_modifier_darwin(conf):
 	v=conf.env
-	v['FCFLAGS_fcshlib']=['-fPIC','-compatibility_version','1','-current_version','1']
-	v['LINKFLAGS_fcshlib']=['-dynamiclib']
-	v['fcshlib_PATTERN']='lib%s.dylib'
-	v['FRAMEWORKPATH_ST']='-F%s'
-	v['FRAMEWORK_ST']='-framework %s'
-	v['LINKFLAGS_fcstlib']=[]
-	v['FCSHLIB_MARKER']=''
-	v['FCSTLIB_MARKER']=''
-	v['SONAME_ST']=''
+	v.FCFLAGS_fcshlib=['-fPIC']
+	v.LINKFLAGS_fcshlib=['-dynamiclib']
+	v.fcshlib_PATTERN='lib%s.dylib'
+	v.FRAMEWORKPATH_ST='-F%s'
+	v.FRAMEWORK_ST='-framework %s'
+	v.LINKFLAGS_fcstlib=[]
+	v.FCSHLIB_MARKER=''
+	v.FCSTLIB_MARKER=''
+	v.SONAME_ST=''
+@conf
 def fortran_modifier_win32(conf):
 	v=conf.env
-	v['fcprogram_PATTERN']=v['fcprogram_test_PATTERN']='%s.exe'
-	v['fcshlib_PATTERN']='%s.dll'
-	v['implib_PATTERN']='lib%s.dll.a'
-	v['IMPLIB_ST']='-Wl,--out-implib,%s'
-	v['FCFLAGS_fcshlib']=[]
-	v.append_value('FCFLAGS_fcshlib',['-DDLL_EXPORT'])
+	v.fcprogram_PATTERN=v.fcprogram_test_PATTERN='%s.exe'
+	v.fcshlib_PATTERN='%s.dll'
+	v.implib_PATTERN='lib%s.dll.a'
+	v.IMPLIB_ST='-Wl,--out-implib,%s'
+	v.FCFLAGS_fcshlib=[]
 	v.append_value('LINKFLAGS',['-Wl,--enable-auto-import'])
+@conf
 def fortran_modifier_cygwin(conf):
 	fortran_modifier_win32(conf)
 	v=conf.env
-	v['fcshlib_PATTERN']='cyg%s.dll'
+	v.fcshlib_PATTERN='cyg%s.dll'
 	v.append_value('LINKFLAGS_fcshlib',['-Wl,--enable-auto-image-base'])
-	v['FCFLAGS_fcshlib']=[]
+	v.FCFLAGS_fcshlib=[]
+@conf
 def check_fortran_dummy_main(self,*k,**kw):
 	if not self.env.CC:
 		self.fatal('A c compiler is required for check_fortran_dummy_main')
@@ -93,6 +105,7 @@ def check_fortran_dummy_main(self,*k,**kw):
 GCC_DRIVER_LINE=re.compile('^Driving:')
 POSIX_STATIC_EXT=re.compile('\S+\.a')
 POSIX_LIB_FLAGS=re.compile('-l\S+')
+@conf
 def is_link_verbose(self,txt):
 	assert isinstance(txt,str)
 	for line in txt.splitlines():
@@ -100,9 +113,10 @@ def is_link_verbose(self,txt):
 			if POSIX_STATIC_EXT.search(line)or POSIX_LIB_FLAGS.search(line):
 				return True
 	return False
+@conf
 def check_fortran_verbose_flag(self,*k,**kw):
 	self.start_msg('fortran link verbose flag')
-	for x in['-v','--verbose','-verbose','-V']:
+	for x in('-v','--verbose','-verbose','-V'):
 		try:
 			self.check_cc(features='fc fcprogram_test',fragment=FC_FRAGMENT2,compile_filename='test.f',linkflags=[x],mandatory=True)
 		except self.errors.ConfigurationError:
@@ -135,41 +149,42 @@ def parse_fortran_link(lines):
 	return final_flags
 SPACE_OPTS=re.compile('^-[LRuYz]$')
 NOSPACE_OPTS=re.compile('^-[RL]')
+def _parse_flink_token(lexer,token,tmp_flags):
+	if _match_ignore(token):
+		pass
+	elif token.startswith('-lkernel32')and sys.platform=='cygwin':
+		tmp_flags.append(token)
+	elif SPACE_OPTS.match(token):
+		t=lexer.get_token()
+		if t.startswith('P,'):
+			t=t[2:]
+		for opt in t.split(os.pathsep):
+			tmp_flags.append('-L%s'%opt)
+	elif NOSPACE_OPTS.match(token):
+		tmp_flags.append(token)
+	elif POSIX_LIB_FLAGS.match(token):
+		tmp_flags.append(token)
+	else:
+		pass
+	t=lexer.get_token()
+	return t
 def _parse_flink_line(line,final_flags):
 	lexer=shlex.shlex(line,posix=True)
 	lexer.whitespace_split=True
 	t=lexer.get_token()
 	tmp_flags=[]
 	while t:
-		def parse(token):
-			if _match_ignore(token):
-				pass
-			elif token.startswith('-lkernel32')and sys.platform=='cygwin':
-				tmp_flags.append(token)
-			elif SPACE_OPTS.match(token):
-				t=lexer.get_token()
-				if t.startswith('P,'):
-					t=t[2:]
-				for opt in t.split(os.pathsep):
-					tmp_flags.append('-L%s'%opt)
-			elif NOSPACE_OPTS.match(token):
-				tmp_flags.append(token)
-			elif POSIX_LIB_FLAGS.match(token):
-				tmp_flags.append(token)
-			else:
-				pass
-			t=lexer.get_token()
-			return t
-		t=parse(t)
+		t=_parse_flink_token(lexer,t,tmp_flags)
 	final_flags.extend(tmp_flags)
 	return final_flags
+@conf
 def check_fortran_clib(self,autoadd=True,*k,**kw):
 	if not self.env.FC_VERBOSE_FLAG:
 		self.fatal('env.FC_VERBOSE_FLAG is not set: execute check_fortran_verbose_flag?')
 	self.start_msg('Getting fortran runtime link flags')
 	try:
 		self.check_cc(fragment=FC_FRAGMENT2,compile_filename='test.f',features='fc fcprogram_test',linkflags=[self.env.FC_VERBOSE_FLAG])
-	except:
+	except Exception:
 		self.end_msg(False)
 		if kw.get('mandatory',True):
 			conf.fatal('Could not find the c library flags')
@@ -181,24 +196,24 @@ def check_fortran_clib(self,autoadd=True,*k,**kw):
 		return flags
 	return[]
 def getoutput(conf,cmd,stdin=False):
-	if stdin:
-		stdin=Utils.subprocess.PIPE
+	from waflib import Errors
+	if conf.env.env:
+		env=conf.env.env
 	else:
-		stdin=None
-	env=conf.env.env or None
+		env=dict(os.environ)
+		env['LANG']='C'
+	input=stdin and'\n'.encode()or None
 	try:
-		p=Utils.subprocess.Popen(cmd,stdin=stdin,stdout=Utils.subprocess.PIPE,stderr=Utils.subprocess.PIPE,env=env)
-		if stdin:
-			p.stdin.write('\n')
-		stdout,stderr=p.communicate()
-	except:
+		out,err=conf.cmd_and_log(cmd,env=env,output=0,input=input)
+	except Errors.WafError as e:
+		if not(hasattr(e,'stderr')and hasattr(e,'stdout')):
+			raise e
+		else:
+			out=e.stdout
+			err=e.stderr
+	except Exception:
 		conf.fatal('could not determine the compiler version %r'%cmd)
-	else:
-		if not isinstance(stdout,str):
-			stdout=stdout.decode(sys.stdout.encoding)
-		if not isinstance(stderr,str):
-			stderr=stderr.decode(sys.stdout.encoding)
-		return stdout,stderr
+	return(out,err)
 ROUTINES_CODE="""\
       subroutine foobar()
       return
@@ -216,6 +231,8 @@ int %(main_func_name)s() {
   return 0;
 }
 """
+@feature('link_main_routines_func')
+@before_method('process_source')
 def link_main_routines_tg_method(self):
 	def write_test_file(task):
 		task.outputs[0].write(task.generator.code)
@@ -225,12 +242,13 @@ def link_main_routines_tg_method(self):
 	bld(features='fc fcstlib',source='test.f',target='test')
 	bld(features='c fcprogram',source='main.c',target='app',use='test')
 def mangling_schemes():
-	for u in['_','']:
-		for du in['','_']:
-			for c in["lower","upper"]:
+	for u in('_',''):
+		for du in('','_'):
+			for c in("lower","upper"):
 				yield(u,du,c)
 def mangle_name(u,du,c,name):
 	return getattr(name,c)()+u+(name.find('_')!=-1 and du or'')
+@conf
 def check_fortran_mangling(self,*k,**kw):
 	if not self.env.CC:
 		self.fatal('A c compiler is required for link_main_routines')
@@ -241,7 +259,7 @@ def check_fortran_mangling(self,*k,**kw):
 	self.start_msg('Getting fortran mangling scheme')
 	for(u,du,c)in mangling_schemes():
 		try:
-			self.check_cc(compile_filename=[],features='link_main_routines_func',msg='nomsg',errmsg='nomsg',mandatory=True,dummy_func_nounder=mangle_name(u,du,c,"foobar"),dummy_func_under=mangle_name(u,du,c,"foo_bar"),main_func_name=self.env.FC_MAIN)
+			self.check_cc(compile_filename=[],features='link_main_routines_func',msg='nomsg',errmsg='nomsg',dummy_func_nounder=mangle_name(u,du,c,'foobar'),dummy_func_under=mangle_name(u,du,c,'foo_bar'),main_func_name=self.env.FC_MAIN)
 		except self.errors.ConfigurationError:
 			pass
 		else:
@@ -252,10 +270,13 @@ def check_fortran_mangling(self,*k,**kw):
 		self.end_msg(False)
 		self.fatal('mangler not found')
 	return(u,du,c)
+@feature('pyext')
+@before_method('propagate_uselib_vars','apply_link')
 def set_lib_pat(self):
-	self.env['fcshlib_PATTERN']=self.env['pyext_PATTERN']
+	self.env.fcshlib_PATTERN=self.env.pyext_PATTERN
+@conf
 def detect_openmp(self):
-	for x in['-fopenmp','-openmp','-mp','-xopenmp','-omp','-qsmp=omp']:
+	for x in('-fopenmp','-openmp','-mp','-xopenmp','-omp','-qsmp=omp'):
 		try:
 			self.check_fc(msg='Checking for OpenMP flag %s'%x,fragment='program main\n  call omp_get_num_threads()\nend program main',fcflags=x,linkflags=x,uselib_store='OPENMP')
 		except self.errors.ConfigurationError:
@@ -264,20 +285,3 @@ def detect_openmp(self):
 			break
 	else:
 		self.fatal('Could not find OpenMP')
-
-conf(fc_flags)
-conf(check_fortran)
-conf(check_fc)
-conf(fortran_modifier_darwin)
-conf(fortran_modifier_win32)
-conf(fortran_modifier_cygwin)
-conf(check_fortran_dummy_main)
-conf(is_link_verbose)
-conf(check_fortran_verbose_flag)
-conf(check_fortran_clib)
-feature('link_main_routines_func')(link_main_routines_tg_method)
-before_method('process_source')(link_main_routines_tg_method)
-conf(check_fortran_mangling)
-feature('pyext')(set_lib_pat)
-before_method('propagate_uselib_vars','apply_link')(set_lib_pat)
-conf(detect_openmp)

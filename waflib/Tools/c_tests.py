@@ -1,11 +1,10 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
 from waflib import Task
 from waflib.Configure import conf
 from waflib.TaskGen import feature,before_method,after_method
-import sys
 LIB_CODE='''
 #ifdef _MSC_VER
 #define testEXPORT __declspec(dllexport)
@@ -21,8 +20,13 @@ MAIN_CODE='''
 #define testEXPORT
 #endif
 testEXPORT int lib_func(void);
-int main(void) {return !(lib_func() == 9);}
+int main(int argc, char **argv) {
+	(void)argc; (void)argv;
+	return !(lib_func() == 9);
+}
 '''
+@feature('link_lib_test')
+@before_method('process_source')
 def link_lib_test_fun(self):
 	def write_test_file(task):
 		task.outputs[0].write(task.generator.code)
@@ -37,12 +41,13 @@ def link_lib_test_fun(self):
 	bld(rule=write_test_file,target='main.'+mode,code=MAIN_CODE)
 	bld(features='%sshlib'%m,source='test.'+mode,target='test')
 	bld(features='%sprogram %s'%(m,ex),source='main.'+mode,target='app',use='test',rpath=rpath)
+@conf
 def check_library(self,mode=None,test_exec=True):
 	if not mode:
 		mode='c'
 		if self.env.CXX:
 			mode='cxx'
-	self.check(compile_filename=[],features='link_lib_test',msg='Checking for libraries',mode=mode,test_exec=test_exec,)
+	self.check(compile_filename=[],features='link_lib_test',msg='Checking for libraries',mode=mode,test_exec=test_exec)
 INLINE_CODE='''
 typedef int foo_t;
 static %s foo_t static_foo () {return 0; }
@@ -51,6 +56,7 @@ static %s foo_t static_foo () {return 0; }
 }
 '''
 INLINE_VALUES=['inline','__inline__','__inline']
+@conf
 def check_inline(self,**kw):
 	self.start_msg('Checking for inline')
 	if not'define_name'in kw:
@@ -72,7 +78,13 @@ def check_inline(self,**kw):
 				self.define('inline',x,quote=False)
 			return x
 	self.fatal('could not use inline functions')
-LARGE_FRAGMENT='#include <unistd.h>\nint main() { return !(sizeof(off_t) >= 8); }\n'
+LARGE_FRAGMENT='''#include <unistd.h>
+int main(int argc, char **argv) {
+	(void)argc; (void)argv;
+	return !(sizeof(off_t) >= 8);
+}
+'''
+@conf
 def check_large_file(self,**kw):
 	if not'define_name'in kw:
 		kw['define_name']='HAVE_LARGEFILE'
@@ -127,20 +139,14 @@ class grep_for_endianness(Task.Task):
 			self.generator.tmp.append('big')
 		else:
 			return-1
+@feature('grep_for_endianness')
+@after_method('process_source')
 def grep_for_endianness_fun(self):
 	self.create_task('grep_for_endianness',self.compiled_tasks[0].outputs[0])
+@conf
 def check_endianness(self):
 	tmp=[]
 	def check_msg(self):
 		return tmp[0]
-	self.check(fragment=ENDIAN_FRAGMENT,features='c grep_for_endianness',msg="Checking for endianness",define='ENDIANNESS',tmp=tmp,okmsg=check_msg)
+	self.check(fragment=ENDIAN_FRAGMENT,features='c grep_for_endianness',msg='Checking for endianness',define='ENDIANNESS',tmp=tmp,okmsg=check_msg)
 	return tmp[0]
-
-feature('link_lib_test')(link_lib_test_fun)
-before_method('process_source')(link_lib_test_fun)
-conf(check_library)
-conf(check_inline)
-conf(check_large_file)
-feature('grep_for_endianness')(grep_for_endianness_fun)
-after_method('process_source')(grep_for_endianness_fun)
-conf(check_endianness)

@@ -1,15 +1,15 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
-import sys
-if sys.hexversion < 0x020400f0: from sets import Set as set
-from waflib import Utils,Task,Options,Logs,Errors
+from waflib import Utils,Task,Options,Errors
 from waflib.TaskGen import before_method,after_method,feature
 from waflib.Tools import ccroot
 from waflib.Configure import conf
 ccroot.USELIB_VARS['cs']=set(['CSFLAGS','ASSEMBLIES','RESOURCES'])
 ccroot.lib_patterns['csshlib']=['%s']
+@feature('cs')
+@before_method('process_source')
 def apply_cs(self):
 	cs_nodes=[]
 	no_nodes=[]
@@ -19,14 +19,17 @@ def apply_cs(self):
 		else:
 			no_nodes.append(x)
 	self.source=no_nodes
-	bintype=getattr(self,'type',self.gen.endswith('.dll')and'library'or'exe')
+	bintype=getattr(self,'bintype',self.gen.endswith('.dll')and'library'or'exe')
 	self.cs_task=tsk=self.create_task('mcs',cs_nodes,self.path.find_or_declare(self.gen))
 	tsk.env.CSTYPE='/target:%s'%bintype
 	tsk.env.OUT='/out:%s'%tsk.outputs[0].abspath()
+	self.env.append_value('CSFLAGS','/platform:%s'%getattr(self,'platform','anycpu'))
 	inst_to=getattr(self,'install_path',bintype=='exe'and'${BINDIR}'or'${LIBDIR}')
 	if inst_to:
 		mod=getattr(self,'chmod',bintype=='exe'and Utils.O755 or Utils.O644)
-		self.install_task=self.bld.install_files(inst_to,self.cs_task.outputs[:],env=self.env,chmod=mod)
+		self.install_task=self.add_install_files(install_to=inst_to,install_from=self.cs_task.outputs[:],chmod=mod)
+@feature('cs')
+@after_method('apply_cs')
 def use_cs(self):
 	names=self.to_list(getattr(self,'use',[]))
 	get=self.bld.get_tgen_by_name
@@ -34,7 +37,7 @@ def use_cs(self):
 		try:
 			y=get(x)
 		except Errors.WafError:
-			self.cs_task.env.append_value('CSFLAGS','/reference:%s'%x)
+			self.env.append_value('CSFLAGS','/reference:%s'%x)
 			continue
 		y.post()
 		tsk=getattr(y,'cs_task',None)or getattr(y,'link_task',None)
@@ -42,7 +45,9 @@ def use_cs(self):
 			self.bld.fatal('cs task has no link task for use %r'%self)
 		self.cs_task.dep_nodes.extend(tsk.outputs)
 		self.cs_task.set_run_after(tsk)
-		self.cs_task.env.append_value('CSFLAGS','/reference:%s'%tsk.outputs[0].abspath())
+		self.env.append_value('CSFLAGS','/reference:%s'%tsk.outputs[0].abspath())
+@feature('cs')
+@after_method('apply_cs','use_cs')
 def debug_cs(self):
 	csdebug=getattr(self,'csdebug',self.env.CSDEBUG)
 	if not csdebug:
@@ -63,10 +68,14 @@ def debug_cs(self):
 		val=['/debug+','/debug:full']
 	else:
 		val=['/debug-']
-	self.cs_task.env.append_value('CSFLAGS',val)
+	self.env.append_value('CSFLAGS',val)
 class mcs(Task.Task):
 	color='YELLOW'
 	run_str='${MCS} ${CSTYPE} ${CSFLAGS} ${ASS_ST:ASSEMBLIES} ${RES_ST:RESOURCES} ${OUT} ${SRC}'
+	def exec_command(self,cmd,**kw):
+		if'/noconfig'in cmd:
+			raise ValueError('/noconfig is not allowed when using response files, check your flags!')
+		return super(self.__class__,self).exec_command(cmd,**kw)
 def configure(conf):
 	csc=getattr(Options.options,'cscbinary',None)
 	if csc:
@@ -83,16 +92,7 @@ class fake_csshlib(Task.Task):
 	color='YELLOW'
 	inst_to=None
 	def runnable_status(self):
-		for x in self.outputs:
-			x.sig=Utils.h_file(x.abspath())
 		return Task.SKIP_ME
+@conf
 def read_csshlib(self,name,paths=[]):
 	return self(name=name,features='fake_lib',lib_paths=paths,lib_type='csshlib')
-
-feature('cs')(apply_cs)
-before_method('process_source')(apply_cs)
-feature('cs')(use_cs)
-after_method('apply_cs')(use_cs)
-feature('cs')(debug_cs)
-after_method('apply_cs','use_cs')(debug_cs)
-conf(read_csshlib)

@@ -1,9 +1,7 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
-import sys
-if sys.hexversion < 0x020400f0: from sets import Set as set
 import copy,re,os
 from waflib import Logs,Utils
 re_imp=re.compile('^(#)*?([^#=]*?)\ =\ (.*?)$',re.M)
@@ -26,12 +24,14 @@ class ConfigSet(object):
 		keys=list(keys)
 		keys.sort()
 		return keys
+	def __iter__(self):
+		return iter(self.keys())
 	def __str__(self):
 		return"\n".join(["%r %r"%(x,self.__getitem__(x))for x in self.keys()])
 	def __getitem__(self,key):
 		try:
 			while 1:
-				x=self.table.get(key,None)
+				x=self.table.get(key)
 				if not x is None:
 					return x
 				self=self.parent
@@ -71,6 +71,7 @@ class ConfigSet(object):
 			for x in keys:
 				tbl[x]=copy.deepcopy(tbl[x])
 			self.table=tbl
+		return self
 	def get_flat(self,key):
 		s=self[key]
 		if isinstance(s,str):return s
@@ -79,21 +80,24 @@ class ConfigSet(object):
 		try:
 			value=self.table[key]
 		except KeyError:
-			try:value=self.parent[key]
-			except AttributeError:value=[]
-			if isinstance(value,list):
-				value=value[:]
+			try:
+				value=self.parent[key]
+			except AttributeError:
+				value=[]
 			else:
-				value=[value]
+				if isinstance(value,list):
+					value=value[:]
+				else:
+					value=[value]
+			self.table[key]=value
 		else:
 			if not isinstance(value,list):
-				value=[value]
-		self.table[key]=value
+				self.table[key]=value=[value]
 		return value
 	def append_value(self,var,val):
-		current_value=self._get_list_value_for_modification(var)
 		if isinstance(val,str):
 			val=[val]
+		current_value=self._get_list_value_for_modification(var)
 		current_value.extend(val)
 	def prepend_value(self,var,val):
 		if isinstance(val,str):
@@ -122,30 +126,34 @@ class ConfigSet(object):
 			os.makedirs(os.path.split(filename)[0])
 		except OSError:
 			pass
-		f=None
+		buf=[]
+		merged_table=self.get_merged_dict()
+		keys=list(merged_table.keys())
+		keys.sort()
 		try:
-			f=open(filename,'w')
-			merged_table=self.get_merged_dict()
-			keys=list(merged_table.keys())
-			keys.sort()
-			for k in keys:
-				if k!='undo_stack':
-					f.write('%s = %r\n'%(k,merged_table[k]))
-		finally:
-			if f:
-				f.close()
+			fun=ascii
+		except NameError:
+			fun=repr
+		for k in keys:
+			if k!='undo_stack':
+				buf.append('%s = %s\n'%(k,fun(merged_table[k])))
+		Utils.writef(filename,''.join(buf))
 	def load(self,filename):
 		tbl=self.table
-		code=Utils.readf(filename)
+		code=Utils.readf(filename,m='rU')
 		for m in re_imp.finditer(code):
 			g=m.group
 			tbl[g(2)]=eval(g(3))
-		Logs.debug('env: %s'%str(self.table))
+		Logs.debug('env: %s',self.table)
 	def update(self,d):
-		for k,v in d.items():
-			self[k]=v
+		self.table.update(d)
 	def stash(self):
-		self.undo_stack=self.undo_stack+[self.table]
-		self.table=self.table.copy()
+		orig=self.table
+		tbl=self.table=self.table.copy()
+		for x in tbl.keys():
+			tbl[x]=copy.deepcopy(tbl[x])
+		self.undo_stack=self.undo_stack+[orig]
+	def commit(self):
+		self.undo_stack.pop(-1)
 	def revert(self):
 		self.table=self.undo_stack.pop(-1)

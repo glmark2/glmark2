@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
 from waflib import Utils,Task,Errors
 from waflib.TaskGen import taskgen_method,feature,extension
@@ -18,11 +18,11 @@ class d_header(Task.Task):
 class dprogram(link_task):
 	run_str='${D_LINKER} ${LINKFLAGS} ${DLNK_SRC_F}${SRC} ${DLNK_TGT_F:TGT} ${RPATH_ST:RPATH} ${DSTLIB_MARKER} ${DSTLIBPATH_ST:STLIBPATH} ${DSTLIB_ST:STLIB} ${DSHLIB_MARKER} ${DLIBPATH_ST:LIBPATH} ${DSHLIB_ST:LIB}'
 	inst_to='${BINDIR}'
-	chmod=Utils.O755
 class dshlib(dprogram):
 	inst_to='${LIBDIR}'
 class dstlib(stlink_task):
 	pass
+@extension('.d','.di','.D')
 def d_hook(self,node):
 	ext=Utils.destos_to_binfmt(self.env.DEST_OS)=='pe'and'obj'or'o'
 	out='%s.%d.%s'%(node.name,self.idx,ext)
@@ -35,22 +35,20 @@ def d_hook(self,node):
 		return task
 	if getattr(self,'generate_headers',None):
 		tsk=create_compiled_task(self,'d_with_header',node)
-		tsk.outputs.append(node.change_ext(self.env['DHEADER_ext']))
+		tsk.outputs.append(node.change_ext(self.env.DHEADER_ext))
 	else:
 		tsk=create_compiled_task(self,'d',node)
 	return tsk
-def generate_header(self,filename,install_path=None):
+@taskgen_method
+def generate_header(self,filename):
 	try:
-		self.header_lst.append([filename,install_path])
+		self.header_lst.append([filename,self.install_path])
 	except AttributeError:
-		self.header_lst=[[filename,install_path]]
+		self.header_lst=[[filename,self.install_path]]
+@feature('d')
 def process_header(self):
 	for i in getattr(self,'header_lst',[]):
 		node=self.path.find_resource(i[0])
 		if not node:
 			raise Errors.WafError('file %r not found on d obj'%i[0])
 		self.create_task('d_header',node,node.change_ext('.di'))
-
-extension('.d','.di','.D')(d_hook)
-taskgen_method(generate_header)
-feature('d')(process_header)

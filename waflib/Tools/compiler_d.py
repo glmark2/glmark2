@@ -1,30 +1,41 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
-import os,sys,imp,types
-from waflib import Utils,Configure,Options,Logs
+import re
+from waflib import Utils,Logs
+d_compiler={'default':['gdc','dmd','ldc2']}
+def default_compilers():
+	build_platform=Utils.unversioned_sys_platform()
+	possible_compiler_list=d_compiler.get(build_platform,d_compiler['default'])
+	return' '.join(possible_compiler_list)
 def configure(conf):
-	for compiler in conf.options.dcheck.split(','):
+	try:
+		test_for_compiler=conf.options.check_d_compiler or default_compilers()
+	except AttributeError:
+		conf.fatal("Add options(opt): opt.load('compiler_d')")
+	for compiler in re.split('[ ,]+',test_for_compiler):
 		conf.env.stash()
-		conf.start_msg('Checking for %r (d compiler)'%compiler)
+		conf.start_msg('Checking for %r (D compiler)'%compiler)
 		try:
 			conf.load(compiler)
-		except conf.errors.ConfigurationError ,e:
+		except conf.errors.ConfigurationError as e:
 			conf.env.revert()
 			conf.end_msg(False)
-			Logs.debug('compiler_cxx: %r'%e)
+			Logs.debug('compiler_d: %r',e)
 		else:
 			if conf.env.D:
 				conf.end_msg(conf.env.get_flat('D'))
-				conf.env['COMPILER_D']=compiler
-				conf.env.D_COMPILER=conf.env.D
+				conf.env.COMPILER_D=compiler
+				conf.env.commit()
 				break
+			conf.env.revert()
 			conf.end_msg(False)
 	else:
-		conf.fatal('no suitable d compiler was found')
+		conf.fatal('could not configure a D compiler!')
 def options(opt):
-	d_compiler_opts=opt.add_option_group('D Compiler Options')
-	d_compiler_opts.add_option('--check-d-compiler',default='gdc,dmd',action='store',help='check for the compiler [Default:gdc,dmd]',dest='dcheck')
-	for d_compiler in['gdc','dmd']:
-		opt.load('%s'%d_compiler)
+	test_for_compiler=default_compilers()
+	d_compiler_opts=opt.add_option_group('Configuration options')
+	d_compiler_opts.add_option('--check-d-compiler',default=None,help='list of D compilers to try [%s]'%test_for_compiler,dest='check_d_compiler')
+	for x in test_for_compiler.split():
+		opt.load('%s'%x)

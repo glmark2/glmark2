@@ -1,22 +1,19 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
-import sys
-if sys.hexversion < 0x020400f0: from sets import Set as set
-import re
-from waflib import Utils,Task,TaskGen,Logs
+from waflib import Utils,Task
 from waflib.Tools import ccroot,fc_config,fc_scan
-from waflib.TaskGen import feature,before_method,after_method,extension
+from waflib.TaskGen import extension
 from waflib.Configure import conf
-ccroot.USELIB_VARS['fc']=set(['FCFLAGS','DEFINES','INCLUDES'])
+ccroot.USELIB_VARS['fc']=set(['FCFLAGS','DEFINES','INCLUDES','FCPPFLAGS'])
 ccroot.USELIB_VARS['fcprogram_test']=ccroot.USELIB_VARS['fcprogram']=set(['LIB','STLIB','LIBPATH','STLIBPATH','LINKFLAGS','RPATH','LINKDEPS'])
 ccroot.USELIB_VARS['fcshlib']=set(['LIB','STLIB','LIBPATH','STLIBPATH','LINKFLAGS','RPATH','LINKDEPS'])
 ccroot.USELIB_VARS['fcstlib']=set(['ARFLAGS','LINKDEPS'])
-def dummy(self):
-	pass
+@extension('.f','.f90','.F','.F90','.for','.FOR')
 def fc_hook(self,node):
 	return self.create_compiled_task('fc',node)
+@conf
 def modfile(conf,name):
 	return{'lower':name.lower()+'.mod','lower.MOD':name.upper()+'.MOD','UPPER.mod':name.upper()+'.mod','UPPER':name.upper()+'.MOD'}[conf.env.FC_MOD_CAPITALIZATION or'lower']
 def get_fortran_tasks(tsk):
@@ -25,14 +22,12 @@ def get_fortran_tasks(tsk):
 	return[x for x in tasks if isinstance(x,fc)and not getattr(x,'nomod',None)and not getattr(x,'mod_fortran_done',None)]
 class fc(Task.Task):
 	color='GREEN'
-	run_str='${FC} ${FCFLAGS} ${FCINCPATH_ST:INCPATHS} ${FCDEFINES_ST:DEFINES} ${_FCMODOUTFLAGS} ${FC_TGT_F}${TGT[0].abspath()} ${FC_SRC_F}${SRC[0].abspath()}'
+	run_str='${FC} ${FCFLAGS} ${FCINCPATH_ST:INCPATHS} ${FCDEFINES_ST:DEFINES} ${_FCMODOUTFLAGS} ${FC_TGT_F}${TGT[0].abspath()} ${FC_SRC_F}${SRC[0].abspath()} ${FCPPFLAGS}'
 	vars=["FORTRANMODPATHFLAG"]
 	def scan(self):
 		tmp=fc_scan.fortran_parser(self.generator.includes_nodes)
 		tmp.task=self
 		tmp.start(self.inputs[0])
-		if Logs.verbose:
-			Logs.debug('deps: deps for %r: %r; unresolved %r'%(self.inputs,tmp.nodes,tmp.names))
 		return(tmp.nodes,tmp.names)
 	def runnable_status(self):
 		if getattr(self,'mod_fortran_done',None):
@@ -74,10 +69,7 @@ class fc(Task.Task):
 				for t in outs[k]:
 					tmp.extend(t.outputs)
 				a.dep_nodes.extend(tmp)
-				try:
-					a.dep_nodes.sort(key=lambda x:x.abspath())
-				except:
-					a.dep_nodes.sort(lambda x,y:cmp(x.abspath(),y.abspath()))
+				a.dep_nodes.sort(key=lambda x:x.abspath())
 		for tsk in lst:
 			try:
 				delattr(tsk,'cache_sig')
@@ -86,14 +78,13 @@ class fc(Task.Task):
 		return super(fc,self).runnable_status()
 class fcprogram(ccroot.link_task):
 	color='YELLOW'
-	run_str='${FC} ${LINKFLAGS} ${FCLNK_SRC_F}${SRC} ${FCLNK_TGT_F}${TGT[0].abspath()} ${RPATH_ST:RPATH} ${FCSTLIB_MARKER} ${FCSTLIBPATH_ST:STLIBPATH} ${FCSTLIB_ST:STLIB} ${FCSHLIB_MARKER} ${FCLIBPATH_ST:LIBPATH} ${FCLIB_ST:LIB}'
+	run_str='${FC} ${LINKFLAGS} ${FCLNK_SRC_F}${SRC} ${FCLNK_TGT_F}${TGT[0].abspath()} ${RPATH_ST:RPATH} ${FCSTLIB_MARKER} ${FCSTLIBPATH_ST:STLIBPATH} ${FCSTLIB_ST:STLIB} ${FCSHLIB_MARKER} ${FCLIBPATH_ST:LIBPATH} ${FCLIB_ST:LIB} ${LDFLAGS}'
 	inst_to='${BINDIR}'
-	chmod=Utils.O755
 class fcshlib(fcprogram):
 	inst_to='${LIBDIR}'
+class fcstlib(ccroot.stlink_task):
+	pass
 class fcprogram_test(fcprogram):
-	def can_retrieve_cache(self):
-		return False
 	def runnable_status(self):
 		ret=super(fcprogram_test,self).runnable_status()
 		if ret==Task.SKIP_ME:
@@ -103,21 +94,15 @@ class fcprogram_test(fcprogram):
 		bld=self.generator.bld
 		kw['shell']=isinstance(cmd,str)
 		kw['stdout']=kw['stderr']=Utils.subprocess.PIPE
-		kw['cwd']=bld.variant_dir
+		kw['cwd']=self.get_cwd()
 		bld.out=bld.err=''
 		bld.to_log('command: %s\n'%cmd)
 		kw['output']=0
 		try:
 			(bld.out,bld.err)=bld.cmd_and_log(cmd,**kw)
-		except Exception ,e:
+		except Exception:
 			return-1
 		if bld.out:
-			bld.to_log("out: %s\n"%bld.out)
+			bld.to_log('out: %s\n'%bld.out)
 		if bld.err:
-			bld.to_log("err: %s\n"%bld.err)
-class fcstlib(ccroot.stlink_task):
-	pass
-
-feature('fcprogram','fcshlib','fcstlib','fcprogram_test')(dummy)
-extension('.f','.f90','.F','.F90','.for','.FOR')(fc_hook)
-conf(modfile)
+			bld.to_log('err: %s\n'%bld.err)

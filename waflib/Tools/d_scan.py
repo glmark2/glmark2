@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
 import re
-from waflib import Utils,Logs
+from waflib import Utils
 def filter_comments(filename):
 	txt=Utils.readf(filename)
 	i=0
@@ -128,6 +128,4 @@ def scan(self):
 	gruik.start(node)
 	nodes=gruik.nodes
 	names=gruik.names
-	if Logs.verbose:
-		Logs.debug('deps: deps for %s: %r; unresolved %r'%(str(node),nodes,names))
 	return(nodes,names)

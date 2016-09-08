@@ -1,15 +1,17 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
 from waflib import Task,Errors
 from waflib.TaskGen import taskgen_method,before_method
+@taskgen_method
 def add_dbus_file(self,filename,prefix,mode):
 	if not hasattr(self,'dbus_lst'):
 		self.dbus_lst=[]
 	if not'process_dbus'in self.meths:
 		self.meths.append('process_dbus')
 	self.dbus_lst.append([filename,prefix,mode])
+@before_method('apply_core')
 def process_dbus(self):
 	for filename,prefix,mode in getattr(self,'dbus_lst',[]):
 		node=self.path.find_resource(filename)
@@ -24,7 +26,4 @@ class dbus_binding_tool(Task.Task):
 	run_str='${DBUS_BINDING_TOOL} --prefix=${DBUS_BINDING_TOOL_PREFIX} --mode=${DBUS_BINDING_TOOL_MODE} --output=${TGT} ${SRC}'
 	shell=True
 def configure(conf):
-	dbus_binding_tool=conf.find_program('dbus-binding-tool',var='DBUS_BINDING_TOOL')
-
-taskgen_method(add_dbus_file)
-before_method('apply_core')(process_dbus)
+	conf.find_program('dbus-binding-tool',var='DBUS_BINDING_TOOL')

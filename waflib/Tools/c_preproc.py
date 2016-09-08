@@ -1,12 +1,9 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
-import sys
-if sys.hexversion < 0x020400f0: from sets import Set as set
-import re,sys,os,string,traceback
-from waflib import Logs,Build,Utils,Errors
-from waflib.Logs import debug,error
+import re,string,traceback
+from waflib import Logs,Utils,Errors
 class PreprocError(Errors.WafError):
 	pass
 POPFILE='-'
@@ -17,13 +14,13 @@ if Utils.is_win32:
 	standard_includes=[]
 use_trigraphs=0
 strict_quotes=0
-g_optrans={'not':'!','and':'&&','bitand':'&','and_eq':'&=','or':'||','bitor':'|','or_eq':'|=','xor':'^','xor_eq':'^=','compl':'~',}
-re_lines=re.compile('^[ \t]*(#|%:)[ \t]*(ifdef|ifndef|if|else|elif|endif|include|import|define|undef|pragma)[ \t]*(.*)\r*$',re.IGNORECASE|re.MULTILINE)
+g_optrans={'not':'!','not_eq':'!','and':'&&','and_eq':'&=','or':'||','or_eq':'|=','xor':'^','xor_eq':'^=','bitand':'&','bitor':'|','compl':'~',}
+re_lines=re.compile('^[ \t]*(?:#|%:)[ \t]*(ifdef|ifndef|if|else|elif|endif|include|import|define|undef|pragma)[ \t]*(.*)\r*$',re.IGNORECASE|re.MULTILINE)
 re_mac=re.compile("^[a-zA-Z_]\w*")
 re_fun=re.compile('^[a-zA-Z_][a-zA-Z0-9_]*[(]')
 re_pragma_once=re.compile('^\s*once\s*',re.IGNORECASE)
 re_nl=re.compile('\\\\\r*\n',re.MULTILINE)
-re_cpp=re.compile(r"""(/\*[^*]*\*+([^/*][^*]*\*+)*/)|//[^\n]*|("(\\.|[^"\\])*"|'(\\.|[^'\\])*'|.[^/"'\\]*)""",re.MULTILINE)
+re_cpp=re.compile(r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"',re.DOTALL|re.MULTILINE)
 trig_def=[('??'+a,b)for a,b in zip("=-/!'()<>",r'#~\|^[]{}')]
 chr_esc={'0':0,'a':7,'b':8,'t':9,'n':10,'f':11,'v':12,'r':13,'\\':92,"'":39}
 NUM='i'
@@ -39,21 +36,13 @@ ignored='i'
 undefined='u'
 skipped='s'
 def repl(m):
-	s=m.group(1)
-	if s:
+	s=m.group()
+	if s[0]=='/':
 		return' '
-	return m.group(3)or''
-def filter_comments(filename):
-	code=Utils.readf(filename)
-	if use_trigraphs:
-		for(a,b)in trig_def:code=code.split(a).join(b)
-	code=re_nl.sub('',code)
-	code=re_cpp.sub(repl,code)
-	return[(m.group(2),m.group(3))for m in re.finditer(re_lines,code)]
+	return s
 prec={}
 ops=['* / %','+ -','<< >>','< <= >= >','== !=','& | ^','&& ||',',']
-for x in range(len(ops)):
-	syms=ops[x]
+for x,syms in enumerate(ops):
 	for u in syms.split():
 		prec[u]=x
 def trimquotes(s):
@@ -73,23 +62,23 @@ def reduce_nums(val_1,val_2,val_op):
 	elif d=='*':c=a*b
 	elif d=='/':c=a/b
 	elif d=='^':c=a^b
-	elif d=='|':c=a|b
-	elif d=='||':c=int(a or b)
-	elif d=='&':c=a&b
-	elif d=='&&':c=int(a and b)
 	elif d=='==':c=int(a==b)
-	elif d=='!=':c=int(a!=b)
+	elif d=='|'or d=='bitor':c=a|b
+	elif d=='||'or d=='or':c=int(a or b)
+	elif d=='&'or d=='bitand':c=a&b
+	elif d=='&&'or d=='and':c=int(a and b)
+	elif d=='!='or d=='not_eq':c=int(a!=b)
+	elif d=='^'or d=='xor':c=int(a^b)
 	elif d=='<=':c=int(a<=b)
 	elif d=='<':c=int(a<b)
 	elif d=='>':c=int(a>b)
 	elif d=='>=':c=int(a>=b)
-	elif d=='^':c=int(a^b)
 	elif d=='<<':c=a<<b
 	elif d=='>>':c=a>>b
 	else:c=0
 	return c
 def get_num(lst):
-	if not lst:raise PreprocError("empty list for get_num")
+	if not lst:raise PreprocError('empty list for get_num')
 	(p,v)=lst[0]
 	if p==OP:
 		if v=='(':
@@ -106,7 +95,7 @@ def get_num(lst):
 						count_par+=1
 				i+=1
 			else:
-				raise PreprocError("rparen expected %r"%lst)
+				raise PreprocError('rparen expected %r'%lst)
 			(num,_)=get_term(lst[1:i])
 			return(num,lst[i+1:])
 		elif v=='+':
@@ -118,27 +107,24 @@ def get_num(lst):
 			num,lst=get_num(lst[1:])
 			return(int(not int(num)),lst)
 		elif v=='~':
+			num,lst=get_num(lst[1:])
 			return(~int(num),lst)
 		else:
-			raise PreprocError("Invalid op token %r for get_num"%lst)
+			raise PreprocError('Invalid op token %r for get_num'%lst)
 	elif p==NUM:
 		return v,lst[1:]
 	elif p==IDENT:
 		return 0,lst[1:]
 	else:
-		raise PreprocError("Invalid token %r for get_num"%lst)
+		raise PreprocError('Invalid token %r for get_num'%lst)
 def get_term(lst):
-	if not lst:raise PreprocError("empty list for get_term")
+	if not lst:raise PreprocError('empty list for get_term')
 	num,lst=get_num(lst)
 	if not lst:
 		return(num,[])
 	(p,v)=lst[0]
 	if p==OP:
-		if v=='&&'and not num:
-			return(num,[])
-		elif v=='||'and num:
-			return(num,[])
-		elif v==',':
+		if v==',':
 			return get_term(lst[1:])
 		elif v=='?':
 			count_par=0
@@ -155,7 +141,7 @@ def get_term(lst):
 							break
 				i+=1
 			else:
-				raise PreprocError("rparen expected %r"%lst)
+				raise PreprocError('rparen expected %r'%lst)
 			if int(num):
 				return get_term(lst[1:i])
 			else:
@@ -167,7 +153,7 @@ def get_term(lst):
 				return get_term([(NUM,num2)]+lst)
 			p2,v2=lst[0]
 			if p2!=OP:
-				raise PreprocError("op expected %r"%lst)
+				raise PreprocError('op expected %r'%lst)
 			if prec[v2]>=prec[v]:
 				num2=reduce_nums(num,num2,v)
 				return get_term([(NUM,num2)]+lst)
@@ -175,7 +161,7 @@ def get_term(lst):
 				num3,lst=get_num(lst[1:])
 				num3=reduce_nums(num2,num3,v2)
 				return get_term([(NUM,num),(p,v),(NUM,num3)]+lst)
-	raise PreprocError("cannot reduce %r"%lst)
+	raise PreprocError('cannot reduce %r'%lst)
 def reduce_eval(lst):
 	num,lst=get_term(lst)
 	return(NUM,num)
@@ -215,7 +201,7 @@ def reduce_tokens(lst,defs,ban=[]):
 					else:
 						lst[i]=(NUM,0)
 				else:
-					raise PreprocError("Invalid define expression %r"%lst)
+					raise PreprocError('Invalid define expression %r'%lst)
 		elif p==IDENT and v in defs:
 			if isinstance(defs[v],str):
 				a,b=extract_macro(defs[v])
@@ -224,17 +210,19 @@ def reduce_tokens(lst,defs,ban=[]):
 			to_add=macro_def[1]
 			if isinstance(macro_def[0],list):
 				del lst[i]
-				for x in range(len(to_add)):
-					lst.insert(i,to_add[x])
+				accu=to_add[:]
+				reduce_tokens(accu,defs,ban+[v])
+				for tmp in accu:
+					lst.insert(i,tmp)
 					i+=1
 			else:
 				args=[]
 				del lst[i]
 				if i>=len(lst):
-					raise PreprocError("expected '(' after %r (got nothing)"%v)
+					raise PreprocError('expected ( after %r (got nothing)'%v)
 				(p2,v2)=lst[i]
 				if p2!=OP or v2!='(':
-					raise PreprocError("expected '(' after %r"%v)
+					raise PreprocError('expected ( after %r'%v)
 				del lst[i]
 				one_param=[]
 				count_paren=0
@@ -249,7 +237,7 @@ def reduce_tokens(lst,defs,ban=[]):
 							if one_param:args.append(one_param)
 							break
 						elif v2==',':
-							if not one_param:raise PreprocError("empty param in funcall %s"%p)
+							if not one_param:raise PreprocError('empty param in funcall %r'%v)
 							args.append(one_param)
 							one_param=[]
 						else:
@@ -317,7 +305,7 @@ def reduce_tokens(lst,defs,ban=[]):
 		i+=1
 def eval_macro(lst,defs):
 	reduce_tokens(lst,defs,[])
-	if not lst:raise PreprocError("missing tokens to evaluate")
+	if not lst:raise PreprocError('missing tokens to evaluate')
 	(p,v)=reduce_eval(lst)
 	return int(v)!=0
 def extract_macro(txt):
@@ -325,7 +313,7 @@ def extract_macro(txt):
 	if re_fun.search(txt):
 		p,name=t[0]
 		p,v=t[1]
-		if p!=OP:raise PreprocError("expected open parenthesis")
+		if p!=OP:raise PreprocError('expected (')
 		i=1
 		pindex=0
 		params={}
@@ -341,50 +329,55 @@ def extract_macro(txt):
 				elif p==OP and v==')':
 					break
 				else:
-					raise PreprocError("unexpected token (3)")
+					raise PreprocError('unexpected token (3)')
 			elif prev==IDENT:
 				if p==OP and v==',':
 					prev=v
 				elif p==OP and v==')':
 					break
 				else:
-					raise PreprocError("comma or ... expected")
+					raise PreprocError('comma or ... expected')
 			elif prev==',':
 				if p==IDENT:
 					params[v]=pindex
 					pindex+=1
 					prev=p
 				elif p==OP and v=='...':
-					raise PreprocError("not implemented (1)")
+					raise PreprocError('not implemented (1)')
 				else:
-					raise PreprocError("comma or ... expected (2)")
+					raise PreprocError('comma or ... expected (2)')
 			elif prev=='...':
-				raise PreprocError("not implemented (2)")
+				raise PreprocError('not implemented (2)')
 			else:
-				raise PreprocError("unexpected else")
+				raise PreprocError('unexpected else')
 		return(name,[params,t[i+1:]])
 	else:
 		(p,v)=t[0]
-		return(v,[[],t[1:]])
-re_include=re.compile('^\s*(<(?P<a>.*)>|"(?P<b>.*)")')
+		if len(t)>1:
+			return(v,[[],t[1:]])
+		else:
+			return(v,[[],[('T','')]])
+re_include=re.compile('^\s*(<(?:.*)>|"(?:.*)")')
 def extract_include(txt,defs):
 	m=re_include.search(txt)
 	if m:
-		if m.group('a'):return'<',m.group('a')
-		if m.group('b'):return'"',m.group('b')
+		txt=m.group(1)
+		return txt[0],txt[1:-1]
 	toks=tokenize(txt)
 	reduce_tokens(toks,defs,['waf_include'])
 	if not toks:
-		raise PreprocError("could not parse include %s"%txt)
+		raise PreprocError('could not parse include %r'%txt)
 	if len(toks)==1:
 		if toks[0][0]==STR:
 			return'"',toks[0][1]
 	else:
 		if toks[0][1]=='<'and toks[-1][1]=='>':
-			return stringize(toks).lstrip('<').rstrip('>')
-	raise PreprocError("could not parse include %s."%txt)
+			ret='<',stringize(toks).lstrip('<').rstrip('>')
+			return ret
+	raise PreprocError('could not parse include %r'%txt)
 def parse_char(txt):
-	if not txt:raise PreprocError("attempted to parse a null char")
+	if not txt:
+		raise PreprocError('attempted to parse a null char')
 	if txt[0]!='\\':
 		return ord(txt)
 	c=txt[1]
@@ -398,8 +391,10 @@ def parse_char(txt):
 				return(1+i,int(txt[1:1+i],8))
 	else:
 		try:return chr_esc[c]
-		except KeyError:raise PreprocError("could not parse char literal '%s'"%txt)
+		except KeyError:raise PreprocError('could not parse char literal %r'%txt)
 def tokenize(s):
+	return tokenize_private(s)[:]
+def tokenize_private(s):
 	ret=[]
 	for match in re_clexer.finditer(s):
 		m=match.group
@@ -407,7 +402,9 @@ def tokenize(s):
 			v=m(name)
 			if v:
 				if name==IDENT:
-					try:v=g_optrans[v];name=OP
+					try:
+						g_optrans[v]
+						name=OP
 					except KeyError:
 						if v.lower()=="true":
 							v=1
@@ -431,8 +428,18 @@ def tokenize(s):
 				ret.append((name,v))
 				break
 	return ret
-def define_name(line):
-	return re_mac.match(line).group(0)
+def format_defines(lst):
+	ret=[]
+	for y in lst:
+		if y:
+			pos=y.find('=')
+			if pos==-1:
+				ret.append(y)
+			elif pos>0:
+				ret.append('%s %s'%(y[:pos],y[pos+1:]))
+			else:
+				raise ValueError('Invalid define expression %r'%y)
+	return ret
 class c_parser(object):
 	def __init__(self,nodepaths=None,defines=None):
 		self.lines=[]
@@ -450,81 +457,84 @@ class c_parser(object):
 		self.ban_includes=set([])
 	def cached_find_resource(self,node,filename):
 		try:
-			nd=node.ctx.cache_nd
-		except:
-			nd=node.ctx.cache_nd={}
-		tup=(node,filename)
+			cache=node.ctx.preproc_cache_node
+		except AttributeError:
+			cache=node.ctx.preproc_cache_node=Utils.lru_cache(1000)
+		key=(node,filename)
 		try:
-			return nd[tup]
+			return cache[key]
 		except KeyError:
 			ret=node.find_resource(filename)
 			if ret:
 				if getattr(ret,'children',None):
 					ret=None
 				elif ret.is_child_of(node.ctx.bldnode):
-					tmp=node.ctx.srcnode.search(ret.path_from(node.ctx.bldnode))
+					tmp=node.ctx.srcnode.search_node(ret.path_from(node.ctx.bldnode))
 					if tmp and getattr(tmp,'children',None):
 						ret=None
-			nd[tup]=ret
+			cache[key]=ret
 			return ret
 	def tryfind(self,filename):
+		if filename.endswith('.moc'):
+			self.names.append(filename)
+			return None
 		self.curfile=filename
 		found=self.cached_find_resource(self.currentnode_stack[-1],filename)
 		for n in self.nodepaths:
 			if found:
 				break
 			found=self.cached_find_resource(n,filename)
-		if found:
+		if found and not found in self.ban_includes:
 			self.nodes.append(found)
-			if filename[-4:]!='.moc':
-				self.addlines(found)
+			self.addlines(found)
 		else:
 			if not filename in self.names:
 				self.names.append(filename)
 		return found
-	def addlines(self,node):
-		self.currentnode_stack.append(node.parent)
-		filepath=node.abspath()
-		self.count_files+=1
-		if self.count_files>recursion_limit:
-			raise PreprocError("recursion limit exceeded")
-		pc=self.parse_cache
-		debug('preproc: reading file %r',filepath)
+	def filter_comments(self,node):
+		code=node.read()
+		if use_trigraphs:
+			for(a,b)in trig_def:code=code.split(a).join(b)
+		code=re_nl.sub('',code)
+		code=re_cpp.sub(repl,code)
+		return re_lines.findall(code)
+	def parse_lines(self,node):
 		try:
-			lns=pc[filepath]
+			cache=node.ctx.preproc_cache_lines
+		except AttributeError:
+			cache=node.ctx.preproc_cache_lines=Utils.lru_cache(1000)
+		try:
+			return cache[node]
 		except KeyError:
-			pass
-		else:
-			self.lines.extend(lns)
-			return
-		try:
-			lines=filter_comments(filepath)
+			cache[node]=lines=self.filter_comments(node)
 			lines.append((POPFILE,''))
 			lines.reverse()
-			pc[filepath]=lines
-			self.lines.extend(lines)
-		except IOError:
-			raise PreprocError("could not read the file %s"%filepath)
+			return lines
+	def addlines(self,node):
+		self.currentnode_stack.append(node.parent)
+		self.count_files+=1
+		if self.count_files>recursion_limit:
+			raise PreprocError('recursion limit exceeded')
+		if Logs.verbose:
+			Logs.debug('preproc: reading file %r',node)
+		try:
+			lines=self.parse_lines(node)
+		except EnvironmentError:
+			raise PreprocError('could not read the file %r'%node)
 		except Exception:
 			if Logs.verbose>0:
-				error("parsing %s failed"%filepath)
+				Logs.error('parsing %r failed',node)
 				traceback.print_exc()
+		else:
+			self.lines.extend(lines)
 	def start(self,node,env):
-		debug('preproc: scanning %s (in %s)',node.name,node.parent.name)
-		bld=node.ctx
-		try:
-			self.parse_cache=bld.parse_cache
-		except AttributeError:
-			bld.parse_cache={}
-			self.parse_cache=bld.parse_cache
+		Logs.debug('preproc: scanning %s (in %s)',node.name,node.parent.name)
+		self.current_file=node
 		self.addlines(node)
-		if env['DEFINES']:
-			try:
-				lst=['%s %s'%(x[0],trimquotes('='.join(x[1:])))for x in[y.split('=')for y in env['DEFINES']]]
-				lst.reverse()
-				self.lines.extend([('define',x)for x in lst])
-			except AttributeError:
-				pass
+		if env.DEFINES:
+			lst=format_defines(env.DEFINES)
+			lst.reverse()
+			self.lines.extend([('define',x)for x in lst])
 		while self.lines:
 			(token,line)=self.lines.pop()
 			if token==POPFILE:
@@ -533,7 +543,7 @@ class c_parser(object):
 				continue
 			try:
 				ve=Logs.verbose
-				if ve:debug('preproc: line is %s - %s state is %s',token,line,self.state)
+				if ve:Logs.debug('preproc: line is %s - %s state is %s',token,line,self.state)
 				state=self.state
 				if token[:2]=='if':
 					state.append(undefined)
@@ -548,20 +558,19 @@ class c_parser(object):
 					else:state[-1]=ignored
 				elif token=='ifdef':
 					m=re_mac.match(line)
-					if m and m.group(0)in self.defs:state[-1]=accepted
+					if m and m.group()in self.defs:state[-1]=accepted
 					else:state[-1]=ignored
 				elif token=='ifndef':
 					m=re_mac.match(line)
-					if m and m.group(0)in self.defs:state[-1]=ignored
+					if m and m.group()in self.defs:state[-1]=ignored
 					else:state[-1]=accepted
 				elif token=='include'or token=='import':
 					(kind,inc)=extract_include(line,self.defs)
-					if inc in self.ban_includes:
-						continue
-					if token=='import':self.ban_includes.add(inc)
-					if ve:debug('preproc: include found %s    (%s) ',inc,kind)
+					if ve:Logs.debug('preproc: include found %s    (%s) ',inc,kind)
 					if kind=='"'or not strict_quotes:
-						self.tryfind(inc)
+						self.current_file=self.tryfind(inc)
+						if token=='import':
+							self.ban_includes.add(self.current_file)
 				elif token=='elif':
 					if state[-1]==accepted:
 						state[-1]=skipped
@@ -573,19 +582,21 @@ class c_parser(object):
 					elif state[-1]==ignored:state[-1]=accepted
 				elif token=='define':
 					try:
-						self.defs[define_name(line)]=line
-					except:
-						raise PreprocError("Invalid define line %s"%line)
+						self.defs[self.define_name(line)]=line
+					except AttributeError:
+						raise PreprocError('Invalid define line %r'%line)
 				elif token=='undef':
 					m=re_mac.match(line)
-					if m and m.group(0)in self.defs:
-						self.defs.__delitem__(m.group(0))
+					if m and m.group()in self.defs:
+						self.defs.__delitem__(m.group())
 				elif token=='pragma':
 					if re_pragma_once.match(line.lower()):
-						self.ban_includes.add(self.curfile)
-			except Exception ,e:
+						self.ban_includes.add(self.current_file)
+			except Exception as e:
 				if Logs.verbose:
-					debug('preproc: line parsing failed (%s): %s %s',e,line,Utils.ex_stack())
+					Logs.debug('preproc: line parsing failed (%s): %s %s',e,line,Utils.ex_stack())
+	def define_name(self,line):
+		return re_mac.match(line).group()
 def scan(task):
 	global go_absolute
 	try:
@@ -593,14 +604,9 @@ def scan(task):
 	except AttributeError:
 		raise Errors.WafError('%r is missing a feature such as "c", "cxx" or "includes": '%task.generator)
 	if go_absolute:
-		nodepaths=incn+standard_includes
+		nodepaths=incn+[task.generator.bld.root.find_dir(x)for x in standard_includes]
 	else:
 		nodepaths=[x for x in incn if x.is_child_of(x.ctx.srcnode)or x.is_child_of(x.ctx.bldnode)]
 	tmp=c_parser(nodepaths)
 	tmp.start(task.inputs[0],task.env)
-	if Logs.verbose:
-		debug('deps: deps for %r: %r; unresolved %r'%(task.inputs,tmp.nodes,tmp.names))
 	return(tmp.nodes,tmp.names)
-
-Utils.run_once(tokenize)
-Utils.run_once(define_name)

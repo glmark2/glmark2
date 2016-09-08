@@ -1,12 +1,9 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+# WARNING! Do not edit! https://waf.io/book/index.html#_obtaining_the_waf_file
 
 import re
-from waflib import Utils,Task,TaskGen,Logs
-from waflib.TaskGen import feature,before_method,after_method,extension
-from waflib.Configure import conf
-INC_REGEX="""(?:^|['">]\s*;)\s*INCLUDE\s+(?:\w+_)?[<"'](.+?)(?=["'>])"""
+INC_REGEX="""(?:^|['">]\s*;)\s*(?:|#\s*)INCLUDE\s+(?:\w+_)?[<"'](.+?)(?=["'>])"""
 USE_REGEX="""(?:^|;)\s*USE(?:\s+|(?:(?:\s*,\s*(?:NON_)?INTRINSIC)?\s*::))\s*(\w+)"""
 MOD_REGEX="""(?:^|;)\s*MODULE(?!\s*PROCEDURE)(?:\s+|(?:(?:\s*,\s*(?:NON_)?INTRINSIC)?\s*::))\s*(\w+)"""
 re_inc=re.compile(INC_REGEX,re.I)
@@ -40,7 +37,6 @@ class fortran_parser(object):
 			nd=self.waiting.pop(0)
 			self.iter(nd)
 	def iter(self,node):
-		path=node.abspath()
 		incs,uses,mods=self.find_deps(node)
 		for x in incs:
 			if x in self.seen:
