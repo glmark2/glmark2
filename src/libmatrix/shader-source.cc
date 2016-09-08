@@ -34,7 +34,7 @@ ShaderSource::default_precision_(ShaderSource::ShaderTypeUnknown + 1);
 bool
 ShaderSource::load_file(const std::string& filename, std::string& str)
 {
-    std::auto_ptr<std::istream> is_ptr(Util::get_resource(filename));
+    std::unique_ptr<std::istream> is_ptr(Util::get_resource(filename));
     std::istream& inputFile(*is_ptr);
 
     if (!inputFile)
