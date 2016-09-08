@@ -82,17 +82,17 @@ def configure(ctx):
     # Check required headers
     req_headers = ['stdlib.h', 'string.h', 'unistd.h', 'stdint.h', 'stdio.h', 'jpeglib.h']
     for header in req_headers:
-        ctx.check_cxx(header_name = header, auto_add_header_name = True, mandatory = True)
+        ctx.check_cc(header_name = header, auto_add_header_name = True, mandatory = True)
 
     # Check for required libs
     req_libs = [('m', 'm'), ('jpeg', 'jpeg')]
     for (lib, uselib) in req_libs:
-        ctx.check_cxx(lib = lib, uselib_store = uselib)
+        ctx.check_cc(lib = lib, uselib_store = uselib)
 
     # Check required functions
     req_funcs = [('memset', 'string.h', []) ,('sqrt', 'math.h', ['m'])]
     for func, header, uselib in req_funcs:
-        ctx.check_cxx(function_name = func, header_name = header,
+        ctx.check_cc(function_name = func, header_name = header,
                       uselib = uselib, mandatory = True)
 
     # Check for a supported version of libpng
