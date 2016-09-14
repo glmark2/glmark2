@@ -2,7 +2,6 @@
 uniform mat4 modelViewMatrix;
 uniform mat4 normalMatrix;
 uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
 
 // Vertex attributes
 attribute vec3 position;

@@ -6,7 +6,6 @@ struct LightSourceParameters
     vec4 position;
 };
 LightSourceParameters lightSource[3];
-uniform mat4 modelview;
 uniform vec4 light0Position;
 uniform vec4 light1Position;
 uniform vec4 light2Position;
