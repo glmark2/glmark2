@@ -48,7 +48,7 @@ public:
         timeOffset_(START_TIME_)
     {
         startTime_.tv_sec = 0;
-        startTime_.tv_usec = 0; 
+        startTime_.tv_nsec = 0; 
     }
     ~SceneIdeasPrivate()
     {
@@ -69,7 +69,7 @@ private:
     float currentSpeed_;
     float currentTime_;
     float timeOffset_;
-    struct timeval startTime_;
+    struct timespec startTime_;
     static const float CYCLE_TIME_;
     static const float TIME_;
     static const float START_TIME_;
@@ -163,17 +163,17 @@ void
 SceneIdeasPrivate::reset_time()
 {
     timeOffset_ = START_TIME_;
-    gettimeofday(&startTime_, NULL);
+    clock_gettime(CLOCK_MONOTONIC, &startTime_);
 }
 
 void
 SceneIdeasPrivate::update_time()
 {
     // Compute new time
-    struct timeval current = {0, 0};
-    gettimeofday(&current, NULL);
+    struct timespec current = {0, 0};
+    clock_gettime(CLOCK_MONOTONIC, &current);
     float timediff = (current.tv_sec - startTime_.tv_sec) + 
-        static_cast<double>(current.tv_usec - startTime_.tv_usec) / 1000000.0;
+        static_cast<double>(current.tv_nsec - startTime_.tv_nsec) / 1000000000.0;
     float sceneTime = timediff * currentSpeed_ + timeOffset_;
 
     // Keep the current time in [START_TIME_..CYCLE_TIME_)
