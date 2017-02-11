@@ -234,6 +234,7 @@ protected:
     unsigned currentFrame_;
     bool running_;
     double duration_;      // Duration of run in seconds
+    unsigned nframes_;
 };
 
 /*
