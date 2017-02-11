@@ -415,7 +415,23 @@ GLStateEGL::gotValidDisplay()
     if (egl_display_)
         return true;
 
-    egl_display_ = eglGetDisplay(native_display_);
+    Log::debug("Using eglGetPlatformDisplayEXT !\n");
+    PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display = NULL;
+    get_platform_display =
+      reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(
+        eglGetProcAddress("eglGetPlatformDisplayEXT")
+      );
+
+    if (get_platform_display != nullptr) {
+        egl_display_ = get_platform_display(
+          GLMARK2_NATIVE_EGL_DISPLAY_ENUM, native_display_, NULL
+        );
+    }
+    
+    /* Just in case get_platform_display failed... */
+    if (!egl_display_)
+        egl_display_ = eglGetDisplay(native_display_);
+
     if (!egl_display_) {
         Log::error("eglGetDisplay() failed with error: 0x%x\n", eglGetError());
         return false;
@@ -494,11 +510,11 @@ GLStateEGL::gotValidConfig()
         return false;
 
     const EGLint config_attribs[] = {
-        EGL_RED_SIZE, requested_visual_config_.red,
-        EGL_GREEN_SIZE, requested_visual_config_.green,
-        EGL_BLUE_SIZE, requested_visual_config_.blue,
-        EGL_ALPHA_SIZE, requested_visual_config_.alpha,
-        EGL_DEPTH_SIZE, requested_visual_config_.depth,
+        EGL_RED_SIZE,     requested_visual_config_.red,
+        EGL_GREEN_SIZE,   requested_visual_config_.green,
+        EGL_BLUE_SIZE,    requested_visual_config_.blue,
+        EGL_ALPHA_SIZE,   requested_visual_config_.alpha,
+        EGL_DEPTH_SIZE,   requested_visual_config_.depth,
         EGL_STENCIL_SIZE, requested_visual_config_.stencil,
 #if GLMARK2_USE_GLESv2
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,

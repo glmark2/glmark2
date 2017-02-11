@@ -24,8 +24,19 @@
 
 #include <vector>
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include "gl-state.h"
 #include "gl-visual-config.h"
+
+#ifdef GLMARK2_USE_X11
+#define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_X11_KHR
+#elif  GLMARK2_USE_WAYLAND
+#define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_WAYLAND_KHR
+#elif  GLMARK2_USE_DRM
+#define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_GBM_KHR
+#elif  GLMARK2_USE_MIR
+#define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_MIR_KHR
+#endif
 
 class EglConfig
 {
