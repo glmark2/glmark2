@@ -84,7 +84,7 @@ def configure(ctx):
         ctx.check_cc(lib = lib, uselib_store = uselib)
 
     # Check required functions
-    req_funcs = [('memset', 'string.h', []) ,('sqrt', 'math.h', ['m'])]
+    req_funcs = [('memset', 'string.h', [])]
     for func, header, uselib in req_funcs:
         ctx.check_cc(function_name = func, header_name = header,
                       uselib = uselib, mandatory = True)
