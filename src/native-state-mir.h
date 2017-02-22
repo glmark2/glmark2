@@ -29,7 +29,7 @@
 class NativeStateMir : public NativeState
 {
 public:
-    NativeStateMir() : mir_connection_(0), mir_surface_(0), properties_() {}
+    NativeStateMir();
     ~NativeStateMir();
 
     bool init_display();
@@ -45,7 +45,8 @@ private:
     static volatile std::sig_atomic_t should_quit_;
 
     MirConnection* mir_connection_;
-    MirSurface* mir_surface_;
+    MirRenderSurface* mir_render_surface_;
+    MirWindow* mir_window_;
     WindowProperties properties_;
 };
 

@@ -112,7 +112,7 @@ def configure(ctx):
                 ('glesv2', 'glesv2', None, list_contains(ctx.options.flavors, 'glesv2$')),
                 ('libdrm','drm', None, list_contains(ctx.options.flavors, 'drm')),
                 ('gbm','gbm', None, list_contains(ctx.options.flavors, 'drm')),
-                ('mirclient','mirclient', '0.13', list_contains(ctx.options.flavors, 'mir')),
+                ('mirclient','mirclient', '0.26.1', list_contains(ctx.options.flavors, 'mir')),
                 ('wayland-client','wayland-client', None, list_contains(ctx.options.flavors, 'wayland')),
                 ('wayland-egl','wayland-egl', None, list_contains(ctx.options.flavors, 'wayland'))]
     for (pkg, uselib, atleast, mandatory) in opt_pkgs:
