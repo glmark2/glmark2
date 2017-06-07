@@ -106,6 +106,7 @@ NativeStateDRM::flip()
     FD_ZERO(&fds);
     FD_SET(fd_, &fds);
     drmEventContext evCtx;
+    memset(&evCtx, 0, sizeof(evCtx));
     evCtx.version = DRM_EVENT_CONTEXT_VERSION;
     evCtx.page_flip_handler = page_flip_handler;
 
