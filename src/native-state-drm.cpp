@@ -205,7 +205,9 @@ NativeStateDRM::init()
         "radeon",
         "vmgfx",
         "omapdrm",
-        "exynos"
+        "exynos",
+        "pl111",
+        "vc4",
     };
 
     unsigned int num_modules(sizeof(drm_modules)/sizeof(drm_modules[0]));
