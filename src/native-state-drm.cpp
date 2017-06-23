@@ -25,6 +25,9 @@
 #include "native-state-drm.h"
 #include "log.h"
 
+#include <fcntl.h>
+#include <libudev.h>
+
 /******************
  * Public methods *
  ******************/
@@ -195,8 +198,100 @@ NativeStateDRM::init_gbm()
     return true;
 }
 
-bool
-NativeStateDRM::init()
+char const *
+NativeStateDRM::drm_primary_gpu_device_node
+(struct udev * __restrict const udev,
+ struct udev_enumerate * __restrict const dev_enum)
+{
+    char const * __restrict result = NULL;
+
+    struct udev_list_entry * device_list =
+        udev_enumerate_get_list_entry(dev_enum);
+
+    struct udev_list_entry * __restrict current_element;
+
+    udev_list_entry_foreach(current_element, device_list) {
+        
+        char const * __restrict current_element_sys_path =
+            udev_list_entry_get_name(current_element);
+        
+        struct udev_device * __restrict const current_device =
+            udev_device_new_from_syspath(udev, current_element_sys_path);
+        
+        struct udev_device * __restrict const potential_primary_gpu =
+            udev_device_get_parent_with_subsystem_devtype(
+                current_device, "pci", NULL
+            );
+        
+        if (potential_primary_gpu) {
+            char const * __restrict const value = 
+                udev_device_get_sysattr_value(
+                    potential_primary_gpu, "boot_vga"
+                );
+            if (value) {
+                result = udev_device_get_devnode(current_device);
+                break;
+            }
+        }
+        
+        current_element = udev_list_entry_get_next(current_element);
+    }
+
+    return result;
+}
+
+/* Inspired by KWin detection mechanism */
+char const *
+NativeStateDRM::udev_main_gpu_drm_node_path()
+{
+    Log::debug("Using Udev to detect the right DRM node to use\n");
+    struct udev * const __restrict udev = udev_new();
+    struct udev_enumerate * const __restrict dev_enumeration =
+        udev_enumerate_new(udev);
+    
+    udev_enumerate_add_match_subsystem(dev_enumeration, "drm");
+    udev_enumerate_add_match_sysname(dev_enumeration, "card[0-9]*");
+    udev_enumerate_scan_devices(dev_enumeration);
+    
+    const char * __restrict node_path =
+        drm_primary_gpu_device_node(udev, dev_enumeration);
+
+    udev_enumerate_unref(dev_enumeration);
+    udev_unref(udev);
+    
+    return node_path;
+}
+
+int
+NativeStateDRM::open_using_udev_scan()
+{
+    char const * __restrict const dev_path =
+        udev_main_gpu_drm_node_path();
+    
+    int fd = -1;
+    if (dev_path) {
+        Log::debug("Trying to use the DRM node %s\n", dev_path);
+        fd = open(dev_path, O_RDWR);
+    }
+    else {
+        Log::error(
+            "Can't determine the main graphic card DRM device node\n"
+        );
+    }
+    
+    if (!is_valid_fd(fd)) {
+        Log::error(
+            "Tried to use '%s' but failed.\nReason : %m",
+            dev_path
+        );
+    }
+    else Log::debug("Success !\n");
+    
+    return fd;
+}
+
+int
+NativeStateDRM::open_using_module_checking()
 {
     // TODO: Replace this with something that explicitly probes for the loaded
     // driver (udev?).
@@ -212,23 +307,43 @@ NativeStateDRM::init()
         "vc4",
     };
 
+    int fd = -1;
     unsigned int num_modules(sizeof(drm_modules)/sizeof(drm_modules[0]));
     for (unsigned int m = 0; m < num_modules; m++) {
-        fd_ = drmOpen(drm_modules[m], 0);
-        if (fd_ < 0) {
+        fd = drmOpen(drm_modules[m], 0);
+        if (fd < 0) {
             Log::debug("Failed to open DRM module '%s'\n", drm_modules[m]);
             continue;
         }
         Log::debug("Opened DRM module '%s'\n", drm_modules[m]);
         break;
     }
+    
+    return fd;
+}
 
-    if (fd_ < 0) {
+bool
+NativeStateDRM::init()
+{
+
+    // TODO: The user should be able to define *exactly* which device
+    //       node to open and the program should try to open only
+    //       this node. This would mainly be used by software renderer
+    //       users (Virtual GEM).
+    int fd = open_using_udev_scan();
+    
+    if (!is_valid_fd(fd)) {
+        fd = open_using_module_checking();
+    }
+    
+    if (!is_valid_fd(fd)) {
         Log::error("Failed to find a suitable DRM device\n");
         return false;
     }
 
-    resources_ = drmModeGetResources(fd_);
+    fd_ = fd;
+    
+    resources_ = drmModeGetResources(fd);
     if (!resources_) {
         Log::error("drmModeGetResources failed\n");
         return false;
@@ -236,7 +351,7 @@ NativeStateDRM::init()
 
     // Find a connected connector
     for (int c = 0; c < resources_->count_connectors; c++) {
-        connector_ = drmModeGetConnector(fd_, resources_->connectors[c]);
+        connector_ = drmModeGetConnector(fd, resources_->connectors[c]);
         if (DRM_MODE_CONNECTED == connector_->connection) {
             break;
         }

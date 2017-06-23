@@ -32,6 +32,7 @@
 #include <drm.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <libudev.h>
 
 class NativeStateDRM : public NativeState
 {
@@ -71,10 +72,25 @@ private:
     static void quit_handler(int signum);
     static volatile std::sig_atomic_t should_quit_;
 
+    static char const * drm_primary_gpu_device_node
+    (struct udev * __restrict const udev,
+     struct udev_enumerate * __restrict const dev_enum);
+    
+    static char const * udev_main_gpu_drm_node_path();
+    
+    static int open_using_udev_scan();
+    static int open_using_module_checking();
+    
+    inline static bool is_valid_fd(int fd) {
+        return fd >= 0;
+    }
+
     DRMFBState* fb_get_from_bo(gbm_bo* bo);
     bool init_gbm();
     bool init();
     void cleanup();
+
+
 
     int fd_;
     drmModeRes* resources_;
