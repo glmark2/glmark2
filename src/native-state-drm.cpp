@@ -199,9 +199,19 @@ NativeStateDRM::init_gbm()
     return true;
 }
 
+/* Omitting the parameter names is kind of ugly but is the only way
+ * to force G++ to forget about the unused parameters.
+ * Having big warnings during the compilation isn't very nice.
+ * 
+ * These functions will be used as function pointers and should have
+ * the same signature to avoid weird stack related issues.
+ * 
+ * Another way to deal with that issue will be to mark unused parameters
+ * with __attribute__((unused))
+ */
 bool 
 NativeStateDRM::udev_drm_test_virtual
-(UDEV_TEST_FUNC_SIGNATURE(udev, current_device, tested_node_syspath))
+(UDEV_TEST_FUNC_SIGNATURE(,, tested_node_syspath))
 {
     return strstr(tested_node_syspath, "virtual") != NULL;
 }
@@ -217,7 +227,7 @@ NativeStateDRM::udev_drm_test_not_virtual
 
 bool
 NativeStateDRM::udev_drm_test_primary_gpu
-(UDEV_TEST_FUNC_SIGNATURE(udev, current_device, tested_node_syspath))
+(UDEV_TEST_FUNC_SIGNATURE(, current_device,))
 {
 
     bool result = false;
