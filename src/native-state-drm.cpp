@@ -27,6 +27,7 @@
 
 #include <fcntl.h>
 #include <libudev.h>
+#include <cstring>
 
 /******************
  * Public methods *
@@ -198,49 +199,103 @@ NativeStateDRM::init_gbm()
     return true;
 }
 
+bool 
+NativeStateDRM::udev_drm_test_virtual
+(UDEV_TEST_FUNC_SIGNATURE(udev, current_device, tested_node_syspath))
+{
+    return strstr(tested_node_syspath, "virtual") != NULL;
+}
+
+bool
+NativeStateDRM::udev_drm_test_not_virtual
+(UDEV_TEST_FUNC_SIGNATURE(udev, current_device, tested_node_syspath))
+{
+    return !udev_drm_test_virtual(
+        udev, current_device, tested_node_syspath
+    );
+}
+
+bool
+NativeStateDRM::udev_drm_test_primary_gpu
+(UDEV_TEST_FUNC_SIGNATURE(udev, current_device, tested_node_syspath))
+{
+
+    bool result = false;
+    
+    struct udev_device * __restrict const drm_node_parent =
+        udev_device_get_parent(current_device);
+        
+    if (drm_node_parent != NULL) {
+        char const * __restrict const boot_vga_attribute =
+            udev_device_get_sysattr_value(drm_node_parent, "boot_vga");
+        
+        result = (boot_vga_attribute != NULL);
+    }
+    
+    return result;
+}
+
 char const *
-NativeStateDRM::drm_primary_gpu_device_node
+NativeStateDRM::udev_get_node_that_pass_in_enum
 (struct udev * __restrict const udev,
- struct udev_enumerate * __restrict const dev_enum)
+ struct udev_enumerate * __restrict const dev_enum,
+ bool (* check_function)(UDEV_TEST_FUNC_SIGNATURE(,,))
+)
 {
     char const * __restrict result = NULL;
-
-    struct udev_list_entry * device_list =
+    
+    struct udev_list_entry * current_element =
         udev_enumerate_get_list_entry(dev_enum);
-
-    struct udev_list_entry * __restrict current_element;
-
-    udev_list_entry_foreach(current_element, device_list) {
+    
+    while(current_element) {
         
         char const * __restrict current_element_sys_path =
             udev_list_entry_get_name(current_element);
         
         struct udev_device * __restrict const current_device =
-            udev_device_new_from_syspath(udev, current_element_sys_path);
-        
-        struct udev_device * __restrict const potential_primary_gpu =
-            udev_device_get_parent_with_subsystem_devtype(
-                current_device, "pci", NULL
+            udev_device_new_from_syspath(
+                udev, current_element_sys_path
             );
         
-        if (potential_primary_gpu) {
-            char const * __restrict const value = 
-                udev_device_get_sysattr_value(
-                    potential_primary_gpu, "boot_vga"
-                );
-            if (value) {
+        if (current_element_sys_path) {
+            
+            bool check_passed = check_function(
+                udev, current_device, current_element_sys_path
+            );
+            
+            if (check_passed) {
                 result = udev_device_get_devnode(current_device);
                 break;
             }
         }
-        
+
         current_element = udev_list_entry_get_next(current_element);
     }
-
+    
     return result;
 }
 
 /* Inspired by KWin detection mechanism */
+/* And yet KWin got it wrong too, it seems.
+ * 1 - Looking for the primary GPU by checking the flag 'boot_vga'
+ *     won't get you far with some embedded chipsets, like Rockchip.
+ * 2 - Looking for a GPU plugged in PCI will fail on various embedded
+ *     devices !
+ * 3 - Looking for a render node is not guaranteed to work on some
+ *     poorly maintained DRM drivers, which plague some embedded
+ *     devices too...
+ * 
+ * So, we won't play too smart here. 
+ * - We first check for a primary GPU plugged in PCI with the 'boot_vga' 
+ *   attribute, to take care of Desktop users using multiple GPU.
+ * - Then, we just check for a DRM node that is not virtual
+ * - At least, we use the first virtual node we get, if we didn't find
+ *   anything yet.
+ * This should take care of almost every potential use case.
+ * 
+ * The remaining ones will be dealt with an additional option to
+ * specify the DRM dev node manually.
+ */
 char const *
 NativeStateDRM::udev_main_gpu_drm_node_path()
 {
@@ -253,9 +308,34 @@ NativeStateDRM::udev_main_gpu_drm_node_path()
     udev_enumerate_add_match_sysname(dev_enumeration, "card[0-9]*");
     udev_enumerate_scan_devices(dev_enumeration);
     
-    const char * __restrict node_path =
-        drm_primary_gpu_device_node(udev, dev_enumeration);
+    Log::debug("Looking for the main GPU DRM node...\n");
+    const char * __restrict node_path = udev_get_node_that_pass_in_enum(
+        udev, dev_enumeration, udev_drm_test_primary_gpu
+    );
 
+    if (invalid_drm_node_path(node_path)) {
+        Log::debug("Not found !\n");
+        Log::debug("Looking for a concrete GPU DRM node...\n");
+        node_path = udev_get_node_that_pass_in_enum(
+            udev, dev_enumeration, udev_drm_test_not_virtual
+        );
+    }
+    if (invalid_drm_node_path(node_path)) {
+        Log::debug("Not found !?\n");
+        Log::debug("Looking for a virtual GPU DRM node...\n");
+        node_path = udev_get_node_that_pass_in_enum(
+            udev, dev_enumeration, udev_drm_test_virtual
+        );
+    }
+    if (invalid_drm_node_path(node_path)) {
+        Log::debug("Not found.\n");
+        Log::debug("Cannot find a single DRM node using UDEV...\n");
+    }
+    
+    if (valid_drm_node_path(node_path)) {
+        Log::debug("Success !\n");
+    }
+    
     udev_enumerate_unref(dev_enumeration);
     udev_unref(udev);
     
@@ -279,7 +359,8 @@ NativeStateDRM::open_using_udev_scan()
         );
     }
     
-    if (!is_valid_fd(fd)) {
+    if (!valid_fd(fd)) {
+        // %m is GLIBC specific... Maybe use strerror here...
         Log::error(
             "Tried to use '%s' but failed.\nReason : %m",
             dev_path
@@ -290,11 +371,18 @@ NativeStateDRM::open_using_udev_scan()
     return fd;
 }
 
+/* 
+ * This method is there to take care of cases that would not be handled
+ * by open_using_udev_scan. This should not happen.
+ * 
+ * If your driver defines a /dev/dri/cardX node and open_using_udev_scan
+ * were not able to detect it, you should probably file an issue.
+ *
+ */
 int
 NativeStateDRM::open_using_module_checking()
 {
-    // TODO: Replace this with something that explicitly probes for the loaded
-    // driver (udev?).
+
     static const char* drm_modules[] = {
         "i915",
         "imx-drm",
@@ -328,15 +416,14 @@ NativeStateDRM::init()
 
     // TODO: The user should be able to define *exactly* which device
     //       node to open and the program should try to open only
-    //       this node. This would mainly be used by software renderer
-    //       users (Virtual GEM).
+    //       this node, in order to take care of unknown use cases.
     int fd = open_using_udev_scan();
     
-    if (!is_valid_fd(fd)) {
+    if (!valid_fd(fd)) {
         fd = open_using_module_checking();
     }
     
-    if (!is_valid_fd(fd)) {
+    if (!valid_fd(fd)) {
         Log::error("Failed to find a suitable DRM device\n");
         return false;
     }
