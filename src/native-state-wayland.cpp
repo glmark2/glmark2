@@ -56,10 +56,10 @@ NativeStateWayland::~NativeStateWayland()
             wl_shell_surface_destroy(window_->shell_surface);
         if (window_->opaque_reqion)
             wl_region_destroy(window_->opaque_reqion);
-        if (window_->surface)
-            wl_surface_destroy(window_->surface);
         if (window_->native)
             wl_egl_window_destroy(window_->native);
+        if (window_->surface)
+            wl_surface_destroy(window_->surface);
         delete window_;
     }
 
