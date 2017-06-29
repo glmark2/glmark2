@@ -106,7 +106,6 @@ private:
     struct my_window {
         WindowProperties properties;
         struct wl_surface *surface;
-        struct wl_region *opaque_reqion;
         struct wl_egl_window *native;
         struct wl_shell_surface *shell_surface;
     } *window_;

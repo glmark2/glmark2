@@ -54,8 +54,6 @@ NativeStateWayland::~NativeStateWayland()
     if (window_) {
         if (window_->shell_surface)
             wl_shell_surface_destroy(window_->shell_surface);
-        if (window_->opaque_reqion)
-            wl_region_destroy(window_->opaque_reqion);
         if (window_->native)
             wl_egl_window_destroy(window_->native);
         if (window_->surface)
@@ -236,11 +234,14 @@ NativeStateWayland::create_window(WindowProperties const& properties)
                                                properties.width, properties.height);
     }
 
-    window_->opaque_reqion = wl_compositor_create_region(display_->compositor);
-    wl_region_add(window_->opaque_reqion, 0, 0,
+    struct wl_region *opaque_reqion = wl_compositor_create_region(display_->compositor);
+    wl_region_add(opaque_reqion, 0, 0,
                   window_->properties.width,
                   window_->properties.height);
-    wl_surface_set_opaque_region(window_->surface, window_->opaque_reqion);
+
+    wl_surface_set_opaque_region(window_->surface, opaque_reqion);
+
+    wl_region_destroy(opaque_reqion);
 
     window_->shell_surface = wl_shell_get_shell_surface(display_->shell,
                                                         window_->surface);
