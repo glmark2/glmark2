@@ -32,6 +32,7 @@
 #include <drm.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <libudev.h>
 
 class NativeStateDRM : public NativeState
 {
@@ -71,10 +72,57 @@ private:
     static void quit_handler(int signum);
     static volatile std::sig_atomic_t should_quit_;
 
+    // Udev detection functions
+    #define UDEV_TEST_FUNC_SIGNATURE(udev_identifier, device_identifier, syspath_identifier) \
+      struct udev * __restrict const udev_identifier, \
+      struct udev_device * __restrict const device_identifier, \
+      char const * __restrict syspath_identifier
+    
+    static bool udev_drm_test_virtual(
+        UDEV_TEST_FUNC_SIGNATURE(udev,device,syspath)
+    );
+    
+    static bool udev_drm_test_not_virtual(
+        UDEV_TEST_FUNC_SIGNATURE(udev,device,syspath)
+    );
+    
+    static bool udev_drm_test_primary_gpu(
+        UDEV_TEST_FUNC_SIGNATURE(udev,device,syspath)
+    );
+    
+    static char const * udev_get_node_that_pass_in_enum
+    (struct udev * __restrict const udev,
+     struct udev_enumerate * __restrict const dev_enum,
+     bool (* check_function)(UDEV_TEST_FUNC_SIGNATURE(,,))
+    );
+    
+    static char const * udev_main_gpu_drm_node_path();
+    
+    static int open_using_udev_scan();
+    static int open_using_module_checking();
+    
+    inline static bool valid_fd(int fd) {
+        return fd >= 0;
+    }
+
+    inline static bool valid_drm_node_path
+    (char const * __restrict const provided_node_path)
+    {
+        return provided_node_path != NULL;
+    }
+    
+    inline static bool invalid_drm_node_path
+    (char const * __restrict const provided_node_path)
+    {
+        return !(valid_drm_node_path(provided_node_path));
+    }
+    
     DRMFBState* fb_get_from_bo(gbm_bo* bo);
     bool init_gbm();
     bool init();
     void cleanup();
+
+
 
     int fd_;
     drmModeRes* resources_;
