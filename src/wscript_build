@@ -25,8 +25,8 @@ flavor_sources = {
 flavor_uselibs = {
   'x11-gl' : ['x11', 'gl', 'matrix-gl', 'common-gl'],
   'x11-glesv2' : ['x11', 'egl', 'glesv2', 'matrix-glesv2', 'common-glesv2'],
-  'drm-gl' : ['drm', 'gbm', 'egl', 'gl', 'matrix-gl', 'common-gl'],
-  'drm-glesv2' : ['drm', 'gbm', 'egl', 'glesv2', 'matrix-glesv2', 'common-glesv2'],
+  'drm-gl' : ['drm', 'gbm', 'udev', 'egl', 'gl', 'matrix-gl', 'common-gl'],
+  'drm-glesv2' : ['drm', 'gbm', 'udev', 'egl', 'glesv2', 'matrix-glesv2', 'common-glesv2'],
   'mir-gl' : ['mirclient', 'egl', 'gl', 'matrix-gl', 'common-gl'],
   'mir-glesv2' : ['mirclient', 'egl', 'glesv2', 'matrix-glesv2', 'common-glesv2'],
   'wayland-gl' : ['wayland-client', 'wayland-egl', 'egl', 'gl', 'matrix-gl', 'common-gl'],
