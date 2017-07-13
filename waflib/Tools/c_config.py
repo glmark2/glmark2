@@ -10,6 +10,13 @@ WAF_CONFIG_H='config.h'
 DEFKEYS='define_key'
 INCKEYS='include_key'
 cfg_ver={'atleast-version':'>=','exact-version':'==','max-version':'<=',}
+SNIP_FUNCTION_SQRT='''
+	int main() {
+	double (*p)(double);
+	p=(%s);
+	return 0;
+}
+'''
 SNIP_FUNCTION='''
 int main(int argc, char **argv) {
 	void (*p)();
@@ -320,7 +327,10 @@ def validate_c(self,kw):
 		fu=kw['function_name']
 		if not'msg'in kw:
 			kw['msg']='Checking for function %s'%fu
-		kw['code']=to_header(kw)+SNIP_FUNCTION%fu
+		if (fu == 'sqrt') :
+			kw['code']=to_header(kw)+SNIP_FUNCTION_SQRT%fu
+		else:
+			kw['code']=to_header(kw)+SNIP_FUNCTION%fu
 		if not'uselib_store'in kw:
 			kw['uselib_store']=fu.upper()
 		if not'define_name'in kw:
