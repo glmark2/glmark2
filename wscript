@@ -4,7 +4,7 @@ from waflib import Context
 out = 'build'
 top = '.'
 
-VERSION = '2014.03'
+VERSION = '2017.07'
 APPNAME = 'glmark2'
 
 FLAVORS = {
