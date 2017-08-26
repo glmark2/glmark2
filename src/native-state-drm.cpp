@@ -331,7 +331,7 @@ static int open_using_udev_scan()
     if (!valid_fd(fd)) {
         // %m is GLIBC specific... Maybe use strerror here...
         Log::error("Tried to use '%s' but failed.\nReason : %m",
-                   dev_path);
+                   dev_path.c_str());
     }
     else
         Log::debug("Success!\n");
