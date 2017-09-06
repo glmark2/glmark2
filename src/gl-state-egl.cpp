@@ -457,7 +457,11 @@ GLStateEGL::gotValidDisplay()
     /* Just in case get_platform_display failed... */
     if (!egl_display_) {
         Log::debug("Falling back to eglGetDisplay()\n");
+#ifdef HAS_MALI
+        egl_display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+#else
         egl_display_ = eglGetDisplay(native_display_);
+#endif
     }
 
     if (!egl_display_) {

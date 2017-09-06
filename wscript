@@ -15,7 +15,8 @@ FLAVORS = {
     'mir-gl' : 'glmark2-mir',
     'mir-glesv2' : 'glmark2-es2-mir',
     'wayland-gl' : 'glmark2-wayland',
-    'wayland-glesv2' : 'glmark2-es2-wayland'
+    'wayland-glesv2' : 'glmark2-es2-wayland',
+    'fbdev-glesv2' : 'glmark2-es2-fbdev'
 }
 FLAVORS_STR = ", ".join(FLAVORS.keys())
 
@@ -42,6 +43,8 @@ def options(opt):
                    help = "a list of flavors to build (%s, all)" % FLAVORS_STR)
     opt.parser.set_default('flavors', [])
 
+    opt.add_option('--for-mali', action='store_true', dest = 'mali',
+                   default = False, help='enable ARM Mali GPU support')
     opt.add_option('--no-debug', action='store_false', dest = 'debug',
                    default = True, help='disable compiler debug information')
     opt.add_option('--no-opt', action='store_false', dest = 'opt',
@@ -132,6 +135,9 @@ def configure(ctx):
     if ctx.options.debug:
         ctx.env.prepend_value('CXXFLAGS', '-g')
     ctx.env.prepend_value('CXXFLAGS', '-std=c++14 -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
+
+    if ctx.options.mali:
+        ctx.env.append_unique('DEFINES','HAS_MALI=1')
 
     ctx.env.HAVE_EXTRAS = False
     if ctx.options.extras_path is not None:
