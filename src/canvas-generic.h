@@ -24,6 +24,8 @@
 #define GLMARK2_CANVAS_GENERIC_H_
 
 #include "canvas.h"
+#include <vector>
+#include <memory>
 
 class GLState;
 class NativeState;
@@ -35,11 +37,8 @@ class CanvasGeneric : public Canvas
 {
 public:
     CanvasGeneric(NativeState& native_state, GLState& gl_state,
-                  int width, int height)
-        : Canvas(width, height),
-          native_state_(native_state), gl_state_(gl_state),
-          gl_color_format_(0), gl_depth_format_(0),
-          color_renderbuffer_(0), depth_renderbuffer_(0), fbo_(0) {}
+                  int width, int height);
+    ~CanvasGeneric();
 
     bool init();
     bool reset();
@@ -54,6 +53,8 @@ public:
     unsigned int fbo();
 
 private:
+    class Timer;
+
     bool supports_gl2();
     bool resize_no_viewport(int width, int height);
     bool do_make_current();
@@ -61,6 +62,11 @@ private:
     bool ensure_fbo();
     void release_fbo();
     const char *get_gl_format_str(GLenum f);
+
+    void start_frame_timer();
+    void stop_frame_timer();
+    Timer& timer_for_frame(uint64_t frame);
+    void check_timers();
 
     NativeState& native_state_;
     GLState& gl_state_;
@@ -70,6 +76,9 @@ private:
     GLuint color_renderbuffer_;
     GLuint depth_renderbuffer_;
     GLuint fbo_;
+
+    uint64_t frame;
+    std::vector<std::unique_ptr<Timer>> timers;
 };
 
 #endif /* GLMARK2_CANVAS_GENERIC_H_ */

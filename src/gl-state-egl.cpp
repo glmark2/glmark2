@@ -317,9 +317,31 @@ GLStateEGL::init_gl_extensions()
         GLExtensions::UnmapBuffer =
             reinterpret_cast<PFNGLUNMAPBUFFEROESPROC>(eglGetProcAddress("glUnmapBufferOES"));
     }
+    if (GLExtensions::support("GL_EXT_disjoint_timer_query")) {
+        GLExtensions::GenQueries =
+            reinterpret_cast<PFNGLGENQUERIESEXTPROC>(eglGetProcAddress("glGenQueriesEXT"));
+        GLExtensions::DeleteQueries =
+            reinterpret_cast<PFNGLDELETEQUERIESEXTPROC>(eglGetProcAddress("glDeleteQueriesEXT"));
+        GLExtensions::QueryCounter =
+            reinterpret_cast<PFNGLQUERYCOUNTEREXTPROC>(eglGetProcAddress("glQueryCounterEXT"));
+        GLExtensions::GetQueryObjectuiv =
+            reinterpret_cast<PFNGLGETQUERYOBJECTUIVEXTPROC>(eglGetProcAddress("glGetQueryObjectuivEXT"));
+        GLExtensions::GetQueryObjectui64v =
+            reinterpret_cast<PFNGLGETQUERYOBJECTUI64VEXTPROC>(eglGetProcAddress("glGetQueryObjectui64vEXT"));
+    }
 #elif GLMARK2_USE_GL
     GLExtensions::MapBuffer = glMapBuffer;
     GLExtensions::UnmapBuffer = glUnmapBuffer;
+    GLExtensions::GenQueries =
+        reinterpret_cast<PFNGLGENQUERIESPROC>(eglGetProcAddress("glGenQueries"));
+    GLExtensions::DeleteQueries =
+        reinterpret_cast<PFNGLDELETEQUERIESPROC>(eglGetProcAddress("glDeleteQueries"));
+    GLExtensions::QueryCounter =
+        reinterpret_cast<PFNGLQUERYCOUNTERPROC>(eglGetProcAddress("glQueryCounter"));
+    GLExtensions::GetQueryObjectuiv =
+        reinterpret_cast<PFNGLGETQUERYOBJECTUIVPROC>(eglGetProcAddress("glGetQueryObjectuiv"));
+    GLExtensions::GetQueryObjectui64v =
+        reinterpret_cast<PFNGLGETQUERYOBJECTUI64VPROC>(eglGetProcAddress("glGetQueryObjectui64v"));
 #endif
 }
 

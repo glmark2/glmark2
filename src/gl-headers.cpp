@@ -23,6 +23,11 @@
 
 void* (*GLExtensions::MapBuffer) (GLenum target, GLenum access) = 0;
 GLboolean (*GLExtensions::UnmapBuffer) (GLenum target) = 0;
+void (*GLExtensions::GenQueries) (GLsizei n, GLuint *ids) = nullptr;
+void (*GLExtensions::DeleteQueries) (GLsizei n, const GLuint *ids) = nullptr;
+void (*GLExtensions::QueryCounter) (GLuint id, GLenum target) = nullptr;
+void (*GLExtensions::GetQueryObjectuiv) (GLuint id, GLenum pname, GLuint *param) = nullptr;
+void (*GLExtensions::GetQueryObjectui64v) (GLuint id, GLenum pname, GLuint64 *params) = nullptr;
 
 bool
 GLExtensions::support(const std::string &ext)

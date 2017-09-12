@@ -34,6 +34,67 @@
  * Public methods *
  ******************/
 
+class CanvasGeneric::Timer
+{
+public:
+    uint64_t id;
+    uint64_t frame;
+    bool used = false;
+
+    Timer(uint64_t id) : id{id}
+    {
+        GLExtensions::GenQueries(2, queries);
+    }
+
+    ~Timer()
+    {
+        GLExtensions::DeleteQueries(2, queries);
+    }
+
+    void start() const
+    {
+        GLExtensions::QueryCounter(queries[0], GL_TIMESTAMP);
+    }
+
+    void stop() const
+    {
+        GLExtensions::QueryCounter(queries[1], GL_TIMESTAMP);
+    }
+
+    bool result_available() const
+    {
+        if (!used) return false;
+        GLuint available[2] = {GL_FALSE, GL_FALSE};
+        GLExtensions::GetQueryObjectuiv(queries[0], GL_QUERY_RESULT_AVAILABLE, &available[0]);
+        GLExtensions::GetQueryObjectuiv(queries[1], GL_QUERY_RESULT_AVAILABLE, &available[1]);
+
+        return available[0] && available[1];
+    }
+
+    uint64_t duration() const
+    {
+        GLuint64 start_tp, end_tp;
+        GLExtensions::GetQueryObjectui64v(queries[0], GL_QUERY_RESULT, &start_tp);
+        GLExtensions::GetQueryObjectui64v(queries[1], GL_QUERY_RESULT, &end_tp);
+        return end_tp - start_tp;
+    }
+
+private:
+    GLuint queries[2] = {0, 0};
+};
+
+CanvasGeneric::CanvasGeneric(NativeState& native_state, GLState& gl_state,
+                             int width, int height)
+    : Canvas(width, height),
+      native_state_(native_state), gl_state_(gl_state),
+      gl_color_format_(0), gl_depth_format_(0),
+      color_renderbuffer_(0), depth_renderbuffer_(0), fbo_(0),
+      frame(0)
+{
+}
+
+CanvasGeneric::~CanvasGeneric() = default;
+
 bool
 CanvasGeneric::init()
 {
@@ -88,6 +149,8 @@ CanvasGeneric::visible(bool visible)
 void
 CanvasGeneric::clear()
 {
+    start_frame_timer();
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 #if GLMARK2_USE_GL
     glClearDepth(1.0f);
@@ -100,6 +163,10 @@ CanvasGeneric::clear()
 void
 CanvasGeneric::update()
 {
+    stop_frame_timer();
+
+    check_timers();
+
     Options::FrameEnd m = Options::frame_end;
 
     if (m == Options::FrameEndDefault) {
@@ -124,6 +191,11 @@ CanvasGeneric::update()
         default:
             break;
     }
+
+    printf("Swapped frame %lu\n", frame);
+    check_timers();
+
+    ++frame;
 }
 
 void
@@ -445,4 +517,61 @@ CanvasGeneric::get_gl_format_str(GLenum f)
     }
 
     return str;
+}
+
+
+void CanvasGeneric::start_frame_timer()
+{
+    if (GLExtensions::GenQueries == nullptr)
+        return;
+
+    auto& timer = timer_for_frame(frame);
+    timer.start();
+}
+
+void CanvasGeneric::stop_frame_timer()
+{
+    if (GLExtensions::GenQueries == nullptr)
+        return;
+
+    auto& timer = timer_for_frame(frame);
+    timer.stop();
+}
+
+CanvasGeneric::Timer& CanvasGeneric::timer_for_frame(uint64_t frame)
+{
+    for (auto& timer : timers)
+    {
+        if (timer->frame == frame)
+            return *timer;
+    }
+
+    for (auto& timer : timers)
+    {
+        if (!timer->used)
+        {
+            timer->used = true;
+            timer->frame = frame;
+            return *timer;
+        }
+    }
+
+    timers.push_back(std::make_unique<Timer>(timers.size()));
+    auto& timer = timers.back();
+    timer->used = true;
+    timer->frame = frame;
+    return *timer;
+}
+
+
+void CanvasGeneric::check_timers()
+{
+    for (auto& timer : timers)
+    {
+        if (timer->result_available())
+        {
+            printf("Timer ID %lu Frame %lu GPU time: %lu ns\n", timer->id, timer->frame, timer->duration());
+            timer->used = false;
+        }
+    }
 }

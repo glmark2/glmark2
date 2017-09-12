@@ -59,6 +59,26 @@ GLStateGLX::init_gl_extensions()
 {
     GLExtensions::MapBuffer = glMapBuffer;
     GLExtensions::UnmapBuffer = glUnmapBuffer;
+    GLExtensions::GenQueries =
+        reinterpret_cast<PFNGLGENQUERIESPROC>(
+                glXGetProcAddress(
+                    reinterpret_cast<const GLubyte *>("glGenQueries")));
+    GLExtensions::DeleteQueries =
+        reinterpret_cast<PFNGLDELETEQUERIESPROC>(
+                glXGetProcAddress(
+                    reinterpret_cast<const GLubyte *>("glDeleteQueries")));
+    GLExtensions::QueryCounter =
+        reinterpret_cast<PFNGLQUERYCOUNTERPROC>(
+                glXGetProcAddress(
+                    reinterpret_cast<const GLubyte *>("glQueryCounter")));
+    GLExtensions::GetQueryObjectuiv =
+        reinterpret_cast<PFNGLGETQUERYOBJECTUIVPROC>(
+                glXGetProcAddress(
+                    reinterpret_cast<const GLubyte *>("glGetQueryObjectuiv")));
+    GLExtensions::GetQueryObjectui64v =
+        reinterpret_cast<PFNGLGETQUERYOBJECTUI64VPROC>(
+                glXGetProcAddress(
+                    reinterpret_cast<const GLubyte *>("glGetQueryObjectui64v")));
 }
 
 bool

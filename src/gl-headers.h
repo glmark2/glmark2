@@ -48,6 +48,18 @@
 #ifndef GL_RGB8
 #define GL_RGB8 GL_RGB8_OES
 #endif
+#ifndef GL_TIMESTAMP
+#define GL_TIMESTAMP GL_TIMESTAMP_EXT
+#endif
+#ifndef GL_TIMESTAMP
+#define GL_TIMESTAMP GL_TIMESTAMP_EXT
+#endif
+#ifndef GL_QUERY_RESULT_AVAILABLE
+#define GL_QUERY_RESULT_AVAILABLE GL_QUERY_RESULT_AVAILABLE_EXT
+#endif
+#ifndef GL_QUERY_RESULT
+#define GL_QUERY_RESULT GL_QUERY_RESULT_EXT
+#endif
 #endif
 
 #include <string>
@@ -66,6 +78,12 @@ struct GLExtensions {
 
     static void* (*MapBuffer) (GLenum target, GLenum access);
     static GLboolean (*UnmapBuffer) (GLenum target);
+
+    static void (*GenQueries) (GLsizei n, GLuint *ids);
+    static void (*DeleteQueries) (GLsizei n, const GLuint *ids);
+    static void (*QueryCounter) (GLuint id, GLenum target);
+    static void (*GetQueryObjectuiv) (GLuint id, GLenum pname, GLuint *param);
+    static void (*GetQueryObjectui64v) (GLuint id, GLenum pname, GLuint64 *params);
 };
 
 #endif
