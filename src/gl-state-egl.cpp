@@ -412,6 +412,7 @@ GLStateEGL::getVisualConfig(GLVisualConfig& vc)
  * GLStateEGL private methods *
  *****************************/
 
+#define EGL_PLATFORM_X11_KHR 0x31D5
 #ifdef GLMARK2_USE_X11
 #define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_X11_KHR
 #elif  GLMARK2_USE_WAYLAND
