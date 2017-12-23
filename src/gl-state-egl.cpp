@@ -293,7 +293,7 @@ EglConfig::print() const
 bool
 GLStateEGL::init_display(void* native_display, GLVisualConfig& visual_config)
 {
-    native_display_ = reinterpret_cast<EGLNativeDisplayType>(native_display);
+    native_display_ = static_cast<EGLNativeDisplayType>((intptr_t)native_display);
     requested_visual_config_ = visual_config;
 
     return gotValidDisplay();
@@ -420,6 +420,9 @@ GLStateEGL::getVisualConfig(GLVisualConfig& vc)
 #define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_GBM_KHR
 #elif  GLMARK2_USE_MIR
 #define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_MIR_KHR
+#elif  GLMARK2_USE_QNX
+#define EGL_PLATFORM_QNX_KHR  1
+#define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_QNX_KHR
 #endif
 
 bool
@@ -441,7 +444,7 @@ GLStateEGL::gotValidDisplay()
 
         if (get_platform_display != nullptr) {
             egl_display_ = get_platform_display(
-                GLMARK2_NATIVE_EGL_DISPLAY_ENUM, native_display_, NULL);
+                GLMARK2_NATIVE_EGL_DISPLAY_ENUM, (void *)native_display_, NULL);
         }
 
         if (!egl_display_) {
