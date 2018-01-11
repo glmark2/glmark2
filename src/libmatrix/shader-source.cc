@@ -18,6 +18,36 @@
 #include "vec.h"
 #include "util.h"
 
+namespace
+{
+
+bool is_valid_precision_value(ShaderSource::PrecisionValue precision_value)
+{
+    switch(precision_value) {
+        case ShaderSource::PrecisionValueLow:
+        case ShaderSource::PrecisionValueMedium:
+        case ShaderSource::PrecisionValueHigh:
+        case ShaderSource::PrecisionValueDefault:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool is_valid_shader_type(ShaderSource::ShaderType shader_type)
+{
+    switch(shader_type) {
+        case ShaderSource::ShaderTypeVertex:
+        case ShaderSource::ShaderTypeFragment:
+        case ShaderSource::ShaderTypeUnknown:
+            return true;
+        default:
+            return false;
+    }
+}
+
+}
+
 /**
  * Holds default precision values for all shader types
  * (even the unknown type, which is hardwired to default precision values)
@@ -421,7 +451,9 @@ ShaderSource::emit_precision(std::stringstream& ss, ShaderSource::PrecisionValue
             ss << "#endif" << std::endl;
         }
     }
-    else if (val >= 0 && val < ShaderSource::PrecisionValueDefault) {
+    else if (is_valid_precision_value(val) &&
+             val != ShaderSource::PrecisionValueDefault)
+    {
         ss << "precision " << precision_map[val] << " ";
         ss << type_str << ";" << std::endl;
     }
@@ -512,7 +544,7 @@ void
 ShaderSource::default_precision(const ShaderSource::Precision& precision,
                                 ShaderSource::ShaderType type)
 {
-    if (type < 0 || type > ShaderSource::ShaderTypeUnknown)
+    if (!is_valid_shader_type(type))
         type = ShaderSource::ShaderTypeUnknown;
 
     if (type == ShaderSource::ShaderTypeUnknown) {
@@ -537,7 +569,7 @@ ShaderSource::default_precision(const ShaderSource::Precision& precision,
 const ShaderSource::Precision&
 ShaderSource::default_precision(ShaderSource::ShaderType type)
 {
-    if (type < 0 || type > ShaderSource::ShaderTypeUnknown)
+    if (!is_valid_shader_type(type))
         type = ShaderSource::ShaderTypeUnknown;
 
     return default_precision_[type];
