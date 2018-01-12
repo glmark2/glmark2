@@ -109,9 +109,6 @@ public:
     // NOTE: If this is non-invertible, we will
     //       throw to avoid undefined behavior.
     tmat2& inverse()
-#ifdef USE_EXCEPTIONS
-        throw(std::runtime_error)
-#endif // USE_EXCEPTIONS
     {
         T d(determinant());
         if (d == static_cast<T>(0))
@@ -411,9 +408,6 @@ public:
     // NOTE: If this is non-invertible, we will
     //       throw to avoid undefined behavior.
     tmat3& inverse()
-#ifdef USE_EXCEPTIONS
-        throw(std::runtime_error)
-#endif // USE_EXCEPTIONS
     {
         T d(determinant());
         if (d == static_cast<T>(0))
@@ -793,9 +787,6 @@ public:
     // NOTE: If this is non-invertible, we will
     //       throw to avoid undefined behavior.
     tmat4& inverse()
-#ifdef USE_EXCEPTIONS
-        throw(std::runtime_error)
-#endif // USE_EXCEPTIONS
     {
         T d(determinant());
         if (d == static_cast<T>(0))
