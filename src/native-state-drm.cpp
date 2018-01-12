@@ -496,10 +496,16 @@ NativeStateDRM::init()
 
     // Find a suitable encoder
     for (int e = 0; e < resources_->count_encoders; e++) {
+        int found = 0;
         encoder_ = drmModeGetEncoder(fd_, resources_->encoders[e]);
-        if (encoder_ && encoder_->encoder_id == connector_->encoder_id) {
-            break;
+        for (int ce = 0; e < connector_->count_encoders; ce++) {
+            if (encoder_ && encoder_->encoder_id == connector_->encoders[ce]) {
+                found = 1;
+                break;
+            }
         }
+        if (found)
+            break;
         drmModeFreeEncoder(encoder_);
         encoder_ = 0;
     }
@@ -515,8 +521,13 @@ NativeStateDRM::init()
 
     crtc_ = drmModeGetCrtc(fd_, encoder_->crtc_id);
     if (!crtc_) {
-        Log::error("Failed to get current CRTC\n");
-        return false;
+	/* if there is no current CRTC, make sure to attach a suitable one */
+        for (int c = 0; c < resources_->count_crtcs; c++) {
+            if (encoder_->possible_crtcs & (1 << c)) {
+                encoder_->crtc_id = resources_->crtcs[c];
+                break;
+            }
+        }
     }
 
     signal(SIGINT, &NativeStateDRM::quit_handler);
