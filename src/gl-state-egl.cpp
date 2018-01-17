@@ -31,6 +31,10 @@
 
 #include <EGL/eglext.h>
 
+#ifndef EGL_EXT_platform_base
+typedef EGLDisplay (EGLAPIENTRYP PFNEGLGETPLATFORMDISPLAYEXTPROC) (EGLenum platform, void *native_display, const EGLint *attrib_list);
+#endif
+
 using std::vector;
 using std::string;
 
