@@ -396,8 +396,9 @@ Mesh::update_single_array(const std::vector<std::pair<size_t, size_t> >& ranges,
         /* Update the current range from the vertex data */
         float *dest(array + nfloats * ri->first);
         for (size_t n = ri->first; n <= ri->second; n++) {
-            for (size_t i = 0; i < nfloats; i++)
-                *dest++ = vertices_[n][offset + i];
+            float *src(vertices_[n].data() + offset);
+            std::copy(src, src + nfloats, dest);
+            dest += nfloats;
         }
 
     }
