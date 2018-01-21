@@ -35,24 +35,24 @@
 class NativeStateQnx : public NativeState
 {
 public:
-	NativeStateQnx();
-	~NativeStateQnx();
+    NativeStateQnx();
+    ~NativeStateQnx();
 
-	bool init_display();
-	void* display();
-	bool create_window(WindowProperties const& properties);
-	void* window(WindowProperties& properties);
-	void visible(bool v);
-	bool should_quit();
-	void flip();
+    bool init_display();
+    void* display();
+    bool create_window(WindowProperties const& properties);
+    void* window(WindowProperties& properties);
+    void visible(bool v);
+    bool should_quit();
+    void flip();
 
 private:
-	void destroy_window();
-	screen_context_t screen_ctx_;
-	screen_window_t screen_win_;
-	screen_event_t screen_ev_;
-	int win_visible_;
-	WindowProperties win_properties_;
+    void destroy_window();
+    screen_context_t screen_ctx_;
+    screen_window_t screen_win_;
+    screen_event_t screen_ev_;
+    int win_visible_;
+    WindowProperties win_properties_;
 };
 
 #endif /* GLMARK2_NATIVE_STATE_QNX_H_ */

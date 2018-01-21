@@ -32,175 +32,175 @@
 #include "log.h"
 
 NativeStateQnx::NativeStateQnx() :
-	screen_ctx_(nullptr),
-	screen_win_(nullptr),
-	screen_ev_(nullptr),
-	win_visible_(1)
+    screen_ctx_(nullptr),
+    screen_win_(nullptr),
+    screen_ev_(nullptr),
+    win_visible_(1)
 {
 }
 
 NativeStateQnx::~NativeStateQnx()
 {
-	destroy_window();
-	if (screen_ev_) {
-		screen_destroy_event(screen_ev_);
-	}
-	if(screen_ctx_){
-		screen_destroy_context(screen_ctx_);
-	}
+    destroy_window();
+    if (screen_ev_) {
+        screen_destroy_event(screen_ev_);
+    }
+    if(screen_ctx_){
+        screen_destroy_context(screen_ctx_);
+    }
 }
 
 bool
 NativeStateQnx::init_display()
 {
-	int rc;
-	rc = screen_create_context(&screen_ctx_, 0);
-	if (rc) {
-		Log::error("screen_create_context failed, rc=%d", rc);
-		return false;
-	}
+    int rc;
+    rc = screen_create_context(&screen_ctx_, 0);
+    if (rc) {
+        Log::error("screen_create_context failed, rc=%d", rc);
+        return false;
+    }
 
-	rc = screen_create_event(&screen_ev_);
-	if (rc) {
-		Log::error("screen_create_event failed, rc=%d", rc);
-		return false;
-	}
+    rc = screen_create_event(&screen_ev_);
+    if (rc) {
+        Log::error("screen_create_event failed, rc=%d", rc);
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 void*
 NativeStateQnx::display()
 {
-	return (void *)EGL_DEFAULT_DISPLAY;
+    return (void *)EGL_DEFAULT_DISPLAY;
 }
 
 bool
 NativeStateQnx::create_window(WindowProperties const& properties)
 {
-	int rc;
-	static const char *win_name("glmark2 " GLMARK_VERSION);
+    int rc;
+    static const char *win_name("glmark2 " GLMARK_VERSION);
 
-	destroy_window();
+    destroy_window();
 
-	rc = screen_create_window(&screen_win_, screen_ctx_);
-	if (rc) {
-		Log::error("screen_create_window failed, rc=%d", rc);
-		return false;
+    rc = screen_create_window(&screen_win_, screen_ctx_);
+    if (rc) {
+        Log::error("screen_create_window failed, rc=%d", rc);
+        return false;
 	}
 
-	rc = screen_set_window_property_cv(screen_win_,
-				SCREEN_PROPERTY_ID_STRING, strlen(win_name), win_name);
-	if (rc) {
-		Log::error("screen_set_window_property_cv(SCREEN_PROPERTY_ID_STRING) failed, rc=%d", rc);
-		return false;
-	}
+    rc = screen_set_window_property_cv(screen_win_,
+            SCREEN_PROPERTY_ID_STRING, strlen(win_name), win_name);
+    if (rc) {
+        Log::error("screen_set_window_property_cv(SCREEN_PROPERTY_ID_STRING) failed, rc=%d", rc);
+        return false;
+    }
 
-	int size[2] = { properties.width, properties.height };
-	if (!properties.fullscreen && size[0] > 0 && size[1] > 0) {
-		rc = screen_set_window_property_iv(screen_win_, SCREEN_PROPERTY_SIZE, size);
-		if (rc) {
-			Log::error("screen_set_window_property_iv(SCREEN_PROPERTY_SIZE) failed. rc=%d, size={%d,%d}",
-					rc, size[0], size[1]);
-			return false;
-		}
-		win_properties_.fullscreen = false;
-	} else {
-		win_properties_.fullscreen = true;
-	}
+    int size[2] = { properties.width, properties.height };
+    if (!properties.fullscreen && size[0] > 0 && size[1] > 0) {
+        rc = screen_set_window_property_iv(screen_win_, SCREEN_PROPERTY_SIZE, size);
+        if (rc) {
+            Log::error("screen_set_window_property_iv(SCREEN_PROPERTY_SIZE) failed. rc=%d, size={%d,%d}",
+                        rc, size[0], size[1]);
+            return false;
+        }
+        win_properties_.fullscreen = false;
+    } else {
+        win_properties_.fullscreen = true;
+    }
 
-	int usage = SCREEN_USAGE_OPENGL_ES2;
-	rc = screen_set_window_property_iv(screen_win_, SCREEN_PROPERTY_USAGE, &usage);
-	if (rc) {
-		Log::error("screen_set_window_property_iv(SCREEN_PROPERTY_USAGE) failed. rc=%d", rc);
-		return false;
-	}
+    int usage = SCREEN_USAGE_OPENGL_ES2;
+    rc = screen_set_window_property_iv(screen_win_, SCREEN_PROPERTY_USAGE, &usage);
+    if (rc) {
+        Log::error("screen_set_window_property_iv(SCREEN_PROPERTY_USAGE) failed. rc=%d", rc);
+        return false;
+    }
 
-	int format = properties.visual_id;
-	switch(format) {
-	case SCREEN_FORMAT_RGBA8888:
-	case SCREEN_FORMAT_RGBX8888:
-	case SCREEN_FORMAT_RGB565:
-		win_properties_.visual_id = format;
-		break;
-	default:
-		Log::error("unsupported native visual_id. %d", properties.visual_id);
-		return false;
-	}
+    int format = properties.visual_id;
+    switch(format) {
+    case SCREEN_FORMAT_RGBA8888:
+    case SCREEN_FORMAT_RGBX8888:
+    case SCREEN_FORMAT_RGB565:
+        win_properties_.visual_id = format;
+        break;
+    default:
+        Log::error("unsupported native visual_id. %d", properties.visual_id);
+        return false;
+    }
 
-	rc = screen_set_window_property_iv(screen_win_, SCREEN_PROPERTY_FORMAT, &format);
-	if (rc) {
-		Log::error("screen_set_window_property_iv(SCREEN_PROPERTY_FORMAT), rc=%d", rc);
-		return false;
-	}
+    rc = screen_set_window_property_iv(screen_win_, SCREEN_PROPERTY_FORMAT, &format);
+    if (rc) {
+        Log::error("screen_set_window_property_iv(SCREEN_PROPERTY_FORMAT), rc=%d", rc);
+        return false;
+    }
 
     Log::debug("Creating Window buffers W: %d H: %d FMT: %d\n",
-               properties.width, properties.height, format);
+                properties.width, properties.height, format);
 
-	int nbuffers = 2;
-	rc = screen_create_window_buffers(screen_win_, nbuffers);
-	if (rc) {
-		Log::error("screen_create_window_buffers failed, rc=%d", rc);
-		return false;
-	}
+    int nbuffers = 2;
+    rc = screen_create_window_buffers(screen_win_, nbuffers);
+    if (rc) {
+        Log::error("screen_create_window_buffers failed, rc=%d", rc);
+        return false;
+    }
 
-	if (win_properties_.fullscreen) {
-		rc = screen_get_window_property_iv(screen_win_, SCREEN_PROPERTY_SIZE, size);
-		if (rc) {
-			Log::error("screen_get_window_property_iv(SCREEN_PROPERTY_SIZE)  failed, rc=%d", rc);
-			return false;
-		}
-	}
-	win_properties_.width  = size[0];
-	win_properties_.height = size[1];
+    if (win_properties_.fullscreen) {
+        rc = screen_get_window_property_iv(screen_win_, SCREEN_PROPERTY_SIZE, size);
+        if (rc) {
+            Log::error("screen_get_window_property_iv(SCREEN_PROPERTY_SIZE)  failed, rc=%d", rc);
+            return false;
+        }
+    }
+    win_properties_.width  = size[0];
+    win_properties_.height = size[1];
 
-	rc = screen_set_window_property_iv(screen_win_, SCREEN_PROPERTY_VISIBLE, &win_visible_);
-	if (rc) {
-		Log::error("screen_set_window_property_iv(SCREEN_PROPERTY_VISIBLE)  failed, rc=%d", rc);
-	}
+    rc = screen_set_window_property_iv(screen_win_, SCREEN_PROPERTY_VISIBLE, &win_visible_);
+    if (rc) {
+        Log::error("screen_set_window_property_iv(SCREEN_PROPERTY_VISIBLE)  failed, rc=%d", rc);
+    }
 
-	return true;
+    return true;
 }
 
 void*
 NativeStateQnx::window(WindowProperties& properties)
 {
-	properties = win_properties_;
-	return (void *)screen_win_;
+    properties = win_properties_;
+    return (void *)screen_win_;
 }
 
 void
 NativeStateQnx::visible(bool visible)
 {
-	win_visible_ = visible ? 1 : 0;
+    win_visible_ = visible ? 1 : 0;
 }
 
 bool
 NativeStateQnx::should_quit()
 {
-	int rc, val;
-	if(!screen_get_event(screen_ctx_, screen_ev_, 0)) {
-		rc = screen_get_event_property_iv(screen_ev_, SCREEN_PROPERTY_TYPE, &val);
-		if (rc || val == SCREEN_EVENT_NONE) {
-			return false;
-		}
-		switch (val) {
-		case SCREEN_EVENT_CLOSE:
-			return true;
-		case SCREEN_EVENT_KEYBOARD:
-			screen_get_event_property_iv(screen_ev_, SCREEN_PROPERTY_FLAGS, &val);
-			if (val & KEY_DOWN) {
-				switch (val) {
-				case KEYCODE_ESCAPE:
-					return true;
-				};
-			}
-			break;
-		default:
-			break;
-		}
-	}
-	return false;
+    int rc, val;
+    if(!screen_get_event(screen_ctx_, screen_ev_, 0)) {
+        rc = screen_get_event_property_iv(screen_ev_, SCREEN_PROPERTY_TYPE, &val);
+        if (rc || val == SCREEN_EVENT_NONE) {
+            return false;
+        }
+        switch (val) {
+        case SCREEN_EVENT_CLOSE:
+            return true;
+        case SCREEN_EVENT_KEYBOARD:
+            screen_get_event_property_iv(screen_ev_, SCREEN_PROPERTY_FLAGS, &val);
+            if (val & KEY_DOWN) {
+                switch (val) {
+                case KEYCODE_ESCAPE:
+                    return true;
+                };
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return false;
 }
 
 void
@@ -211,8 +211,8 @@ NativeStateQnx::flip()
 void
 NativeStateQnx::destroy_window()
 {
-	if (screen_win_){
-		screen_destroy_window(screen_win_);
-		screen_win_ = nullptr;
-	}
+    if (screen_win_){
+        screen_destroy_window(screen_win_);
+        screen_win_ = nullptr;
+    }
 }

@@ -4,7 +4,7 @@ endif
 include $(QCONFIG)
 
 define PINFO
-PINFO DESCRIPTION=glmakr2 application
+PINFO DESCRIPTION=glmake2 application
 endef
 
 SRC_ROOT=$(PROJECT_ROOT)/../src
