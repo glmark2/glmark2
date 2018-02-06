@@ -40,7 +40,7 @@ def options(opt):
     opt.add_option('--with-flavors', type = 'string', action='callback',
                    callback=option_list_cb,
                    dest = 'flavors',
-                   help = "a list of flavors to build (%s, all)" % FLAVORS_STR)
+                   help = "a list of flavors to build (%s, all (except dispmanx-glesv2))" % FLAVORS_STR)
     opt.parser.set_default('flavors', [])
 
     opt.add_option('--no-debug', action='store_false', dest = 'debug',
@@ -57,6 +57,8 @@ def configure(ctx):
     if 'all' in ctx.options.flavors:
         ctx.options.flavors = list(set(ctx.options.flavors) | set(FLAVORS.keys()))
         ctx.options.flavors.remove('all')
+        # dispmanx is a special case, we don't want to include it in all
+        ctx.options.flavors.remove('dispmanx-glesv2')
 
     # Ensure the flavors are valid
     for flavor in ctx.options.flavors:
