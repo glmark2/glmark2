@@ -138,6 +138,7 @@ public:
         egl_config_(0),
         egl_context_(0),
         egl_surface_(0) {}
+    ~GLStateEGL();
 
     bool init_display(void* native_display, GLVisualConfig& config_pref);
     bool init_surface(void* native_window);

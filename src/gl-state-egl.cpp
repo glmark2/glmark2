@@ -294,6 +294,17 @@ EglConfig::print() const
  * GLStateEGL public methods *
  ****************************/
 
+GLStateEGL::~GLStateEGL()
+{
+    if(egl_display_ != nullptr){
+        if(!eglTerminate(egl_display_))
+            Log::error("eglTerminate failed\n");
+    }
+
+    if(!eglReleaseThread())
+       Log::error("eglReleaseThread failed\n");
+}
+
 bool
 GLStateEGL::init_display(void* native_display, GLVisualConfig& visual_config)
 {
