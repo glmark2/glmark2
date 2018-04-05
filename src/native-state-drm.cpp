@@ -445,23 +445,34 @@ NativeStateDRM::init()
     //       node to open and the program should try to open only
     //       this node, in order to take care of unknown use cases.
     int fd = open_using_udev_scan();
-
     if (!valid_fd(fd)) {
-        fd = open_using_module_checking();
+        Log::error("Failed to find a suitable DRM device using udev\n");
+	goto init_with_module_checking;
     }
 
+    resources_ = drmModeGetResources(fd);
+    if (!resources_) {
+        Log::error("drmModeGetResources using udev failed\n");
+	goto init_with_module_checking;
+    }
+
+    goto init_resources_ok;
+
+init_with_module_checking:
+    fd = open_using_module_checking();
     if (!valid_fd(fd)) {
         Log::error("Failed to find a suitable DRM device\n");
         return false;
     }
-
-    fd_ = fd;
 
     resources_ = drmModeGetResources(fd);
     if (!resources_) {
         Log::error("drmModeGetResources failed\n");
         return false;
     }
+
+init_resources_ok:
+    fd_ = fd;
 
     // Find a connected connector
     for (int c = 0; c < resources_->count_connectors; c++) {
