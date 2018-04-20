@@ -362,6 +362,7 @@ static int open_using_module_checking()
         "pl111",
         "vc4",
         "meson",
+        "sun4i-drm",
     };
 
     int fd = -1;
