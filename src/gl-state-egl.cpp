@@ -456,7 +456,9 @@ GLStateEGL::gotValidDisplay()
 
         if (get_platform_display != nullptr) {
             egl_display_ = get_platform_display(
-                GLMARK2_NATIVE_EGL_DISPLAY_ENUM, native_display_, NULL);
+                GLMARK2_NATIVE_EGL_DISPLAY_ENUM,
+                reinterpret_cast<void*>(native_display_),
+                nullptr);
         }
 
         if (!egl_display_) {
