@@ -109,7 +109,6 @@ NativeStateWayland::registry_handle_global(void *data, struct wl_registry *regis
         that->display_->outputs.push_back(my_output);
 
         wl_output_add_listener(my_output->output, &output_listener_, my_output);
-        wl_display_roundtrip(that->display_->display);
     }
 }
 
