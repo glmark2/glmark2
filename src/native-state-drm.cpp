@@ -361,6 +361,7 @@ static int open_using_module_checking()
         "exynos",
         "pl111",
         "vc4",
+        "msm",
         "meson",
         "sun4i-drm",
     };
