@@ -41,6 +41,7 @@ public:
         resources_(0),
         connector_(0),
         encoder_(0),
+        crtc_(0),
         mode_(0),
         dev_(0),
         surface_(0),
