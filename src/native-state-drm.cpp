@@ -514,6 +514,26 @@ NativeStateDRM::init()
         encoder_ = 0;
     }
 
+    // If encoder is not connected to the connector try to find
+    // a suitable one
+    if (!encoder_) {
+	for (int e = 0; e < connector_->count_encoders; e++) {
+	    encoder_ = drmModeGetEncoder(fd, connector_->encoders[e]);
+	    for (int c = 0; c < resources_->count_crtcs; c++) {
+		if (encoder_->possible_crtcs & (1 << c)) {
+		    encoder_->crtc_id = resources_->crtcs[c];
+		    break;
+		}
+	    }
+	    if (encoder_->crtc_id) {
+		break;
+	    }
+
+	    drmModeFreeEncoder(encoder_);
+	    encoder_ = 0;
+	}
+    }
+
     if (!encoder_) {
         Log::error("Failed to find a suitable encoder\n");
         return false;
