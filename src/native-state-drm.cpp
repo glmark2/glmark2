@@ -364,6 +364,7 @@ static int open_using_module_checking()
         "msm",
         "meson",
         "sun4i-drm",
+        "stm",
     };
 
     int fd = -1;
