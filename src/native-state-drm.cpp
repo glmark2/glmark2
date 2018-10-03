@@ -502,7 +502,7 @@ NativeStateDRM::init()
     for (int e = 0; e < resources_->count_encoders; e++) {
         bool found = false;
         encoder_ = drmModeGetEncoder(fd_, resources_->encoders[e]);
-        for (int ce = 0; e < connector_->count_encoders; ce++) {
+        for (int ce = 0; ce < connector_->count_encoders; ce++) {
             if (encoder_ && encoder_->encoder_id == connector_->encoders[ce]) {
                 found = true;
                 break;
