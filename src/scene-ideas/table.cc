@@ -1,6 +1,6 @@
 /*
  * (c) Copyright 1993, Silicon Graphics, Inc.
- * Copyright © 2012 Linaro Limited
+ * Copyright Â© 2012 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
@@ -111,7 +111,7 @@ Table::init(void)
         Log::error("No valid program for table rendering.\n");
         return;
     }
-    textVertexIndex_ = tableProgram_[vertexAttribName_].location();
+    tableVertexIndex_ = tableProgram_[vertexAttribName_].location();
 
     // Program to render the paper with lighting and a time-based fade...
     string paper_vtx_filename(GLMARK_DATA_PATH"/shaders/ideas-paper.vert");
