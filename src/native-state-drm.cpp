@@ -212,6 +212,25 @@ udev_drm_test_primary_gpu(UDEV_TEST_FUNC_SIGNATURE(, current_device,))
     return is_main_gpu;
 }
 
+/* Test if the drm-device is actually modeset capable.
+ * Render-only devices cannot drive an actual display,
+ * so the GETRESOURCES ioctl will fail in that case.
+ */
+static bool udev_drm_test_modeset(std::string const& dev_path)
+{
+    struct drm_mode_card_res res {};
+    int fd, ret;
+
+    fd = open(dev_path.c_str(), O_RDWR);
+    if (!valid_fd(fd))
+        return false;
+
+    ret = drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res);
+    drmClose(fd);
+
+    return !ret;
+}
+
 static std::string
 udev_get_node_that_pass_in_enum(
     struct udev * __restrict const udev,
@@ -237,8 +256,9 @@ udev_get_node_that_pass_in_enum(
                 const char * device_node_path =
                     udev_device_get_devnode(current_device);
 
-                if (device_node_path) {
-                    result = device_node_path;
+                if (device_node_path &&
+                    udev_drm_test_modeset(device_node_path)) {
+                        result = device_node_path;
                 }
 
             }
