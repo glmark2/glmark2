@@ -363,6 +363,7 @@ static int open_using_module_checking()
         "vc4",
         "msm",
         "meson",
+        "rockchip",
         "sun4i-drm",
         "stm",
     };
