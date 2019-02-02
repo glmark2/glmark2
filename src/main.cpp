@@ -44,12 +44,16 @@
 #include "native-state-wayland.h"
 #elif GLMARK2_USE_DISPMANX
 #include "native-state-dispmanx.h"
+#elif GLMARK2_USE_WIN32
+#include "native-state-win32.h"
 #endif
 
 #if GLMARK2_USE_EGL
 #include "gl-state-egl.h"
 #elif GLMARK2_USE_GLX
 #include "gl-state-glx.h"
+#elif GLMARK2_USE_WGL
+#include "gl-state-wgl.h"
 #endif
 
 using std::vector;
@@ -140,7 +144,6 @@ do_validation(Canvas &canvas)
 int
 main(int argc, char *argv[])
 {
-
     if (!Options::parse_args(argc, argv))
         return 1;
 
@@ -172,12 +175,16 @@ main(int argc, char *argv[])
     NativeStateWayland native_state;
 #elif GLMARK2_USE_DISPMANX
     NativeStateDispmanx native_state;
+#elif GLMARK2_USE_WIN32
+    NativeStateWin32 native_state;
 #endif
 
 #if GLMARK2_USE_EGL
     GLStateEGL gl_state;
 #elif GLMARK2_USE_GLX
     GLStateGLX gl_state;
+#elif GLMARK2_USE_WGL
+    GLStateWGL gl_state;
 #endif
 
     CanvasGeneric canvas(native_state, gl_state, Options::size.first, Options::size.second);

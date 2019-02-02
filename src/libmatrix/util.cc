@@ -244,7 +244,7 @@ Util::appname_from_path(const std::string& path)
 std::istream *
 Util::get_resource(const std::string &path)
 {
-    std::ifstream *ifs = new std::ifstream(path.c_str(), std::ios::in | std::ios::binary);
+    std::ifstream *ifs = new std::ifstream(path.c_str(), std::ios::binary);
 
     return static_cast<std::istream *>(ifs);
 }

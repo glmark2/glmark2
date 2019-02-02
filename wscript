@@ -1,4 +1,4 @@
-import os
+import os, platform
 from waflib import Context
 
 out = 'build'
@@ -16,9 +16,10 @@ FLAVORS = {
     'mir-glesv2' : 'glmark2-es2-mir',
     'wayland-gl' : 'glmark2-wayland',
     'wayland-glesv2' : 'glmark2-es2-wayland',
+    'win32-gl': 'glmark2-win32',
     'dispmanx-glesv2' : 'glmark2-es2-dispmanx',
 }
-FLAVORS_STR = ", ".join(FLAVORS.keys())
+FLAVORS_STR = ", ".join(sorted(FLAVORS.keys()))
 
 def option_list_cb(option, opt, value, parser):
     value = value.split(',')
@@ -40,7 +41,7 @@ def options(opt):
     opt.add_option('--with-flavors', type = 'string', action='callback',
                    callback=option_list_cb,
                    dest = 'flavors',
-                   help = "a list of flavors to build (%s, all (except dispmanx-glesv2))" % FLAVORS_STR)
+                   help = "a list of flavors to build (%s, all-linux (except dispmanx-glesv2), all-win32)" % FLAVORS_STR)
     opt.parser.set_default('flavors', [])
 
     opt.add_option('--no-debug', action='store_false', dest = 'debug',
@@ -52,13 +53,30 @@ def options(opt):
     opt.add_option('--extras-path', action='store', dest = 'extras_path',
                    help='path to additional data (models, shaders, textures)')
 
+def get_data_path(ctx):
+    if ctx.options.data_path is not None:
+        return ctx.options.data_path
+    else:
+        return os.path.join(ctx.env.DATADIR, 'glmark2')
+
 def configure(ctx):
     # Special 'all' flavor
-    if 'all' in ctx.options.flavors:
+    if 'all-linux' in ctx.options.flavors:
         ctx.options.flavors = list(set(ctx.options.flavors) | set(FLAVORS.keys()))
-        ctx.options.flavors.remove('all')
+        ctx.options.flavors.remove('all-linux')
         # dispmanx is a special case, we don't want to include it in all
         ctx.options.flavors.remove('dispmanx-glesv2')
+
+    if 'all-win32' in ctx.options.flavors:
+        ctx.options.flavors = ['win32-gl']
+
+    used_flavors_string = ", ".join(ctx.options.flavors)
+    is_win = 'win32' in used_flavors_string
+    linux_libs = ['x11', 'drm', 'mir', 'wayland', 'dispmanx']
+    is_linux = any([lib in used_flavors_string for lib in linux_libs])
+
+    if is_win and is_linux:
+        ctx.fatal('Simultaneous Windows and Linux builds are not supported')
 
     # Ensure the flavors are valid
     for flavor in ctx.options.flavors:
@@ -76,8 +94,63 @@ def configure(ctx):
     ctx.load('compiler_c')
     ctx.load('compiler_cxx')
 
+    if is_win:
+        configure_win32(ctx)
+    else:
+        configure_linux(ctx)
+
+    ctx.env.append_unique('DEFINES', 'GLMARK_VERSION="%s"' % VERSION)
+    ctx.env.GLMARK2_VERSION = VERSION
+
+    ctx.msg("Prefix", ctx.env.PREFIX, color = 'PINK')
+    ctx.msg("Data path", get_data_path(ctx), color = 'PINK')
+    ctx.msg("Including extras", "Yes" if ctx.env.HAVE_EXTRAS else "No",
+            color = 'PINK');
+    if ctx.env.HAVE_EXTRAS:
+        ctx.msg("Extras path", ctx.options.extras_path, color = 'PINK')
+    ctx.msg("Building flavors", ctx.options.flavors)
+
+
+def configure_win32(ctx):
     # Check required headers
-    req_headers = ['stdlib.h', 'string.h', 'unistd.h', 'stdint.h', 'stdio.h', 'jpeglib.h']
+    req_headers = ['stdlib.h', 'string.h', 'stdint.h', 'stdio.h', 'windows.h']
+    for header in req_headers:
+        ctx.check_cc(header_name = header, auto_add_header_name = True, mandatory = True)
+
+    req_libs = [('user32', 'user32'), ('opengl32', 'opengl32'), ('gdi32', 'gdi32')]
+    for (lib, uselib) in req_libs:
+        ctx.check_cc(lib = lib, uselib_store = uselib)
+
+    # Prepend CXX flags so that they can be overriden by the
+    # CXXFLAGS environment variable
+    if ctx.options.opt:
+        ctx.env.prepend_value('CXXFLAGS', '-O2')
+    if ctx.env.CXX_NAME != 'msvc':
+        if ctx.options.debug:
+            ctx.env.prepend_value('CXXFLAGS', '-g')
+        ctx.env.prepend_value('CXXFLAGS', '-std=c++14 -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
+    else:
+        ctx.env.prepend_value('CXXFLAGS', '/EHsc /wd4312'.split(' '))
+
+    ctx.env.HAVE_EXTRAS = False
+    if ctx.options.extras_path is not None:
+        ctx.env.HAVE_EXTRAS = True
+        ctx.env.append_unique('GLMARK_EXTRAS_PATH', ctx.options.extras_path)
+        ctx.env.append_unique('DEFINES', 'GLMARK_EXTRAS_PATH="%s"' % ctx.options.extras_path)
+
+    data_path = get_data_path(ctx)
+
+    # Necessary for M_PI
+    ctx.env.append_unique('DEFINES', '_USE_MATH_DEFINES')
+    ctx.env.append_unique('DEFINES', 'WIN32')
+    # String contants have issues with Windows slashes
+    ctx.env.append_unique('DEFINES', 'GLMARK_DATA_PATH="%s"' % data_path.replace('\\', '/'))
+    ctx.env.append_unique('GLMARK_DATA_PATH', data_path)
+
+
+def configure_linux(ctx):
+    # Check required headers
+    req_headers = ['stdlib.h', 'string.h', 'stdint.h', 'stdio.h', 'dlfcn.h', 'unistd.h', 'jpeglib.h']
     for header in req_headers:
         ctx.check_cc(header_name = header, auto_add_header_name = True, mandatory = True)
 
@@ -87,14 +160,14 @@ def configure(ctx):
         ctx.check_cc(lib = lib, uselib_store = uselib)
 
     # Check required functions
-    req_funcs = [('memset', 'string.h', []) ,('sqrt', 'math.h', ['m'])]
+    req_funcs = [('memset', 'string.h', []), ('sqrt', 'math.h', ['m'])]
     for func, header, uselib in req_funcs:
         ctx.check_cc(function_name = func, header_name = header,
                       uselib = uselib, mandatory = True)
 
     # Check for a supported version of libpng
-    supp_png_pkgs = (('libpng12', '1.2'), ('libpng15', '1.5'), ('libpng16', '1.6'),)
     have_png = False
+    supp_png_pkgs = (('libpng12', '1.2'), ('libpng15', '1.5'), ('libpng16', '1.6'),)
     for (pkg, atleast) in supp_png_pkgs:
         try:
             pkg_ver = ctx.check_cfg(package=pkg, uselib_store='libpng', atleast_version=atleast,
@@ -137,7 +210,6 @@ def configure(ctx):
             ctx.check_cfg(package = pkg, uselib_store = uselib, atleast_version=atleast,
                           args = '--cflags --libs', mandatory = mandatory)
 
-
     # Prepend CXX flags so that they can be overriden by the
     # CXXFLAGS environment variable
     if ctx.options.opt:
@@ -152,23 +224,10 @@ def configure(ctx):
         ctx.env.append_unique('GLMARK_EXTRAS_PATH', ctx.options.extras_path)
         ctx.env.append_unique('DEFINES', 'GLMARK_EXTRAS_PATH="%s"' % ctx.options.extras_path)
 
-    if ctx.options.data_path is not None:
-        data_path = ctx.options.data_path 
-    else:
-        data_path = os.path.join(ctx.env.DATADIR, 'glmark2')
+    data_path = get_data_path(ctx)
 
-    ctx.env.append_unique('GLMARK_DATA_PATH', data_path)
     ctx.env.append_unique('DEFINES', 'GLMARK_DATA_PATH="%s"' % data_path)
-    ctx.env.append_unique('DEFINES', 'GLMARK_VERSION="%s"' % VERSION)
-    ctx.env.GLMARK2_VERSION = VERSION
-
-    ctx.msg("Prefix", ctx.env.PREFIX, color = 'PINK')
-    ctx.msg("Data path", data_path, color = 'PINK')
-    ctx.msg("Including extras", "Yes" if ctx.env.HAVE_EXTRAS else "No",
-            color = 'PINK');
-    if ctx.env.HAVE_EXTRAS:
-        ctx.msg("Extras path", ctx.options.extras_path, color = 'PINK')
-    ctx.msg("Building flavors", ctx.options.flavors)
+    ctx.env.append_unique('GLMARK_DATA_PATH', data_path)
 
 def build(ctx):
     ctx.recurse('src')

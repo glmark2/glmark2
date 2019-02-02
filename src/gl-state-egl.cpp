@@ -308,7 +308,11 @@ GLStateEGL::~GLStateEGL()
 bool
 GLStateEGL::init_display(void* native_display, GLVisualConfig& visual_config)
 {
+#if defined(WIN32)
+    if (!egl_lib_.open("libEGL.dll")) {
+#else
     if (!egl_lib_.open_from_alternatives({"libEGL.so", "libEGL.so.1" })) {
+#endif
         Log::error("Error loading EGL library\n");
         return false;
     }
@@ -340,6 +344,7 @@ GLStateEGL::init_gl_extensions()
         Log::error("Loading GLESv2 entry points failed.");
         return false;
     }
+
     if (GLExtensions::support("GL_OES_mapbuffer")) {
         GLExtensions::MapBuffer = glMapBufferOES;
         GLExtensions::UnmapBuffer = glUnmapBufferOES;
@@ -502,6 +507,7 @@ GLStateEGL::gotValidDisplay()
         Log::error("eglGetDisplay() failed with error: 0x%x\n", eglGetError());
         return false;
     }
+
     int egl_major(-1);
     int egl_minor(-1);
     if (!eglInitialize(egl_display_, &egl_major, &egl_minor)) {
@@ -518,7 +524,11 @@ GLStateEGL::gotValidDisplay()
 
 #if GLMARK2_USE_GLESv2
     EGLenum apiType(EGL_OPENGL_ES_API);
+#if defined(WIN32)
+    std::initializer_list<const char *> libNames = { "libGLESv2.dll" };
+#else
     std::initializer_list<const char *> libNames = { "libGLESv2.so", "libGLESv2.so.2" };
+#endif
 #elif GLMARK2_USE_GL
     EGLenum apiType(EGL_OPENGL_API);
     std::initializer_list<const char *> libNames = { "libGL.so", "libGL.so.1" };

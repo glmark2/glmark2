@@ -268,7 +268,7 @@ struct JPEGIStreamSourceMgr
             size_t n = static_cast<size_t>(num_bytes);
             while (n > src->pub.bytes_in_buffer) {
                 n -= src->pub.bytes_in_buffer;
-                (*src->fill_input_buffer)(cinfo);
+                src->fill_input_buffer(cinfo);
             }
             src->pub.next_input_byte += n;
             src->pub.bytes_in_buffer -= n;

@@ -84,7 +84,7 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
         sigma = 1.0;
 
     unsigned int side = 2 * radius + 1;
-    float values[radius + 1];
+    std::vector<float> values(radius + 1);
     float sum = 0.0;
 
     for (unsigned int i = 0; i < radius + 1; i++) {

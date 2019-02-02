@@ -20,8 +20,14 @@
  *  Jamie Madill
  */
 #include "shared-library.h"
-#include <dlfcn.h>
+
 #include <stdio.h>
+
+#if defined(WIN32)
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
 
 /******************
  * Public methods *
@@ -35,7 +41,11 @@ SharedLibrary::~SharedLibrary()
 
 bool SharedLibrary::open(const char *libName)
 {
+#if defined(WIN32)
+    handle_ = LoadLibraryA(libName);
+#else
     handle_ = dlopen(libName, RTLD_NOW | RTLD_NODELETE);
+#endif
     return (handle_ != nullptr);
 }
 
@@ -53,7 +63,11 @@ void SharedLibrary::close()
 {
     if (handle_)
     {
+#if defined(WIN32)
+        FreeLibrary(reinterpret_cast<HMODULE>(handle_));
+#else
         dlclose(handle_);
+#endif
     }
 }
 
@@ -64,7 +78,11 @@ void *SharedLibrary::handle() const
 
 void *SharedLibrary::load(const char *symbol) const
 {
+#if defined(WIN32)
+    return reinterpret_cast<void*>(GetProcAddress(reinterpret_cast<HMODULE>(handle_), symbol));
+#else
     return dlsym(handle_, symbol);
+#endif
 }
 
 /*******************
