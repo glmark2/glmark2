@@ -385,7 +385,7 @@ Model::load_3ds(const std::string &filename)
             return false;
         }
 
-        //Read the lenght of the chunk
+        //Read the length of the chunk
         read_or_fail(input_file, &chunk_length, 4);
 
         switch (chunk_id)
@@ -393,7 +393,7 @@ Model::load_3ds(const std::string &filename)
             //----------------- MAIN3DS -----------------
             // Description: Main chunk, contains all the other chunks
             // Chunk ID: 4d4d
-            // Chunk Lenght: 0 + sub chunks
+            // Chunk Length: 0 + sub chunks
             //-------------------------------------------
             case 0x4d4d:
                 break;
@@ -401,7 +401,7 @@ Model::load_3ds(const std::string &filename)
             //----------------- EDIT3DS -----------------
             // Description: 3D Editor chunk, objects layout info
             // Chunk ID: 3d3d (hex)
-            // Chunk Lenght: 0 + sub chunks
+            // Chunk Length: 0 + sub chunks
             //-------------------------------------------
             case 0x3d3d:
                 break;
@@ -409,7 +409,7 @@ Model::load_3ds(const std::string &filename)
             //--------------- EDIT_OBJECT ---------------
             // Description: Object block, info for each object
             // Chunk ID: 4000 (hex)
-            // Chunk Lenght: len(object name) + sub chunks
+            // Chunk Length: len(object name) + sub chunks
             //-------------------------------------------
             case 0x4000:
                 {
@@ -429,7 +429,7 @@ Model::load_3ds(const std::string &filename)
             //--------------- OBJ_TRIMESH ---------------
             // Description: Triangular mesh, contains chunks for 3d mesh info
             // Chunk ID: 4100 (hex)
-            // Chunk Lenght: 0 + sub chunks
+            // Chunk Length: 0 + sub chunks
             //-------------------------------------------
             case 0x4100:
                 break;
@@ -437,7 +437,7 @@ Model::load_3ds(const std::string &filename)
             //--------------- TRI_VERTEXL ---------------
             // Description: Vertices list
             // Chunk ID: 4110 (hex)
-            // Chunk Lenght: 1 x unsigned short (number of vertices)
+            // Chunk Length: 1 x unsigned short (number of vertices)
             //             + 3 x float (vertex coordinates) x (number of vertices)
             //             + sub chunks
             //-------------------------------------------
@@ -461,7 +461,7 @@ Model::load_3ds(const std::string &filename)
             //--------------- TRI_FACEL1 ----------------
             // Description: Polygons (faces) list
             // Chunk ID: 4120 (hex)
-            // Chunk Lenght: 1 x unsigned short (number of polygons)
+            // Chunk Length: 1 x unsigned short (number of polygons)
             //             + 3 x unsigned short (polygon points) x (number of polygons)
             //             + sub chunks
             //-------------------------------------------
@@ -484,7 +484,7 @@ Model::load_3ds(const std::string &filename)
             //------------- TRI_MAPPINGCOORS ------------
             // Description: Vertices list
             // Chunk ID: 4140 (hex)
-            // Chunk Lenght: 1 x unsigned short (number of mapping points)
+            // Chunk Length: 1 x unsigned short (number of mapping points)
             //             + 2 x float (mapping coordinates) x (number of mapping points)
             //             + sub chunks
             //-------------------------------------------
@@ -505,7 +505,7 @@ Model::load_3ds(const std::string &filename)
 
             //----------- Skip unknow chunks ------------
             //We need to skip all the chunks that currently we don't use
-            //We use the chunk lenght information to set the file pointer
+            //We use the chunk length information to set the file pointer
             //to the same level next chunk
             //-------------------------------------------
             default:
