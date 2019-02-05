@@ -20,6 +20,7 @@
  *  Alexandros Frantzis (glmark2)
  *  Jesse Barker (glmark2)
  */
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 

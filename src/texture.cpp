@@ -26,6 +26,7 @@
 #include "util.h"
 #include "image-reader.h"
 
+#include <algorithm>
 #include <cstdarg>
 #include <vector>
 
