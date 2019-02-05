@@ -10,7 +10,6 @@
 //     Alexandros Frantzis <alexandros.frantzis@linaro.org>
 //     Jesse Barker <jesse.barker@linaro.org>
 //
-#include <unistd.h>
 #include <cstdio>
 #include <cstdarg>
 #include <string>
@@ -20,6 +19,13 @@
 
 #ifdef ANDROID
 #include <android/log.h>
+#endif
+
+#ifdef _WIN32
+// On windows 'isatty' is found in <io.h>
+#include <io.h>
+#else
+#include <unistd.h>
 #endif
 
 using std::string;
