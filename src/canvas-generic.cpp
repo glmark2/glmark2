@@ -281,7 +281,8 @@ CanvasGeneric::do_make_current()
         return false;
     }
 
-    gl_state_.init_gl_extensions();
+    if (!gl_state_.init_gl_extensions())
+        return false;
 
     if (offscreen_) {
         if (!ensure_fbo())

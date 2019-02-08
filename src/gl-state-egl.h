@@ -23,9 +23,10 @@
 #define GLMARK2_GL_STATE_EGL_H_
 
 #include <vector>
-#include <EGL/egl.h>
+#include <glad/egl.h>
 #include "gl-state.h"
 #include "gl-visual-config.h"
+#include "shared-library.h"
 
 class EglConfig
 {
@@ -124,12 +125,17 @@ class GLStateEGL : public GLState
     EGLSurface egl_surface_;
     GLVisualConfig requested_visual_config_;
     EglConfig best_config_;
+    SharedLibrary egl_lib_;
+    SharedLibrary gl_lib_;
     bool gotValidDisplay();
     bool gotValidConfig();
     bool gotValidSurface();
     bool gotValidContext();
     void get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config);
     EGLConfig select_best_config(std::vector<EGLConfig>& configs);
+
+    static GLADapiproc load_proc(const char* name, void* userptr);
+
 public:
     GLStateEGL() :
         native_display_(0),
@@ -142,7 +148,7 @@ public:
 
     bool init_display(void* native_display, GLVisualConfig& config_pref);
     bool init_surface(void* native_window);
-    void init_gl_extensions();
+    bool init_gl_extensions();
     bool valid();
     bool reset();
     void swap();

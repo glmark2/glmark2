@@ -26,13 +26,6 @@
 
 #include <climits>
 
-namespace
-{
-PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT_;
-PFNGLXSWAPINTERVALMESAPROC glXSwapIntervalMESA_;
-PFNGLXGETSWAPINTERVALMESAPROC glXGetSwapIntervalMESA_;
-}
-
 /******************
  * Public methods *
  ******************/
@@ -43,6 +36,12 @@ GLStateGLX::init_display(void* native_display, GLVisualConfig& visual_config)
     xdpy_ = reinterpret_cast<Display*>(native_display);
     requested_visual_config_ = visual_config;
 
+    if (!lib_.open_from_alternatives({"libGL.so", "libGL.so.1"})) {
+        Log::error("Failed to load libGL\n");
+        return false;
+    }
+
+    gladLoadGLXUserPtr(xdpy_, DefaultScreen(xdpy_), load_proc, this);
     return (xdpy_ != 0);
 }
 
@@ -54,11 +53,12 @@ GLStateGLX::init_surface(void* native_window)
     return (xwin_ != 0);
 }
 
-void
+bool
 GLStateGLX::init_gl_extensions()
 {
     GLExtensions::MapBuffer = glMapBuffer;
     GLExtensions::UnmapBuffer = glUnmapBuffer;
+    return true;
 }
 
 bool
@@ -80,20 +80,26 @@ GLStateGLX::valid()
         return false;
     }
 
-    init_gl_extensions();
+    if (gladLoadGLUserPtr(load_proc, this) == 0) {
+        Log::error("Failed to load GL entry points\n");
+        return false;
+    }
+
+    if (!init_gl_extensions())
+        return false;
 
     unsigned int desired_swap(0);
     unsigned int actual_swap(-1);
-    if (glXSwapIntervalEXT_) {
-        glXSwapIntervalEXT_(xdpy_, xwin_, desired_swap);
+    if (glXSwapIntervalEXT) {
+        glXSwapIntervalEXT(xdpy_, xwin_, desired_swap);
         glXQueryDrawable(xdpy_, xwin_, GLX_SWAP_INTERVAL_EXT, &actual_swap);
         if (actual_swap == desired_swap)
             return true;
     }
 
-    if (glXSwapIntervalMESA_) {
-        glXSwapIntervalMESA_(desired_swap);
-        actual_swap = glXGetSwapIntervalMESA_();
+    if (glXSwapIntervalMESA) {
+        glXSwapIntervalMESA(desired_swap);
+        actual_swap = glXGetSwapIntervalMESA();
         if (actual_swap == desired_swap)
             return true;
     }
@@ -186,31 +192,7 @@ GLStateGLX::init_extensions()
      * GLX_SGI_swap_control is not enough because it doesn't allow 0 as a valid
      * value (i.e. you can't turn off VSync).
      */
-    if (extString.find("GLX_EXT_swap_control") != std::string::npos) {
-        glXSwapIntervalEXT_ =
-            reinterpret_cast<PFNGLXSWAPINTERVALEXTPROC>(
-                glXGetProcAddress(
-                    reinterpret_cast<const GLubyte *>("glXSwapIntervalEXT")
-                )
-            );
-    }
-    else if (extString.find("GLX_MESA_swap_control") != std::string::npos) {
-        glXSwapIntervalMESA_ =
-            reinterpret_cast<PFNGLXSWAPINTERVALMESAPROC>(
-                glXGetProcAddress(
-                    reinterpret_cast<const GLubyte *>("glXSwapIntervalMESA")
-                )
-            );
-        glXGetSwapIntervalMESA_ =
-            reinterpret_cast<PFNGLXGETSWAPINTERVALMESAPROC>(
-                glXGetProcAddress(
-                    reinterpret_cast<const GLubyte *>("glXGetSwapIntervalMESA")
-                )
-            );
-    }
-
-
-    if (!glXSwapIntervalEXT_ && !glXSwapIntervalMESA_) {
+    if (!glXSwapIntervalEXT && !glXSwapIntervalMESA) {
         Log::info("** GLX does not support GLX_EXT_swap_control or GLX_MESA_swap_control!\n");
     }
 }
@@ -345,4 +327,19 @@ GLStateGLX::select_best_config(std::vector<GLXFBConfig> configs)
     }
 
     return best_config;
+}
+
+GLADapiproc
+GLStateGLX::load_proc(const char* name, void* userptr)
+{
+    if (glXGetProcAddress) {
+        const GLubyte* bytes = reinterpret_cast<const GLubyte*>(name);
+        GLADapiproc sym = glXGetProcAddress(bytes);
+        if (sym) {
+            return sym;
+        }
+    }
+
+    GLStateGLX* state = reinterpret_cast<GLStateGLX*>(userptr);
+    return reinterpret_cast<GLADapiproc>(state->lib_.load(name));
 }

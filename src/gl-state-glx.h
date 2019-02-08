@@ -26,13 +26,11 @@
 #include "gl-state.h"
 #include "gl-visual-config.h"
 #include "gl-headers.h"
+#include "shared-library.h"
 
 #include <vector>
 
-#include <X11/Xlib.h>
-#define GLX_GLXEXT_PROTOTYPES
-#include <GL/glx.h>
-#include <GL/glxext.h>
+#include <glad/glx.h>
 
 class GLStateGLX : public GLState
 {
@@ -43,7 +41,7 @@ public:
     bool valid();
     bool init_display(void* native_display, GLVisualConfig& config_pref);
     bool init_surface(void* native_window);
-    void init_gl_extensions();
+    bool init_gl_extensions();
     bool reset();
     void swap();
     bool gotNativeConfig(int& vid);
@@ -57,11 +55,14 @@ private:
     void get_glvisualconfig_glx(GLXFBConfig config, GLVisualConfig &visual_config);
     GLXFBConfig select_best_config(std::vector<GLXFBConfig> configs);
 
+    static GLADapiproc load_proc(const char* name, void* userptr);
+
     Display* xdpy_;
     Window xwin_;
     GLXFBConfig glx_fbconfig_;
     GLXContext glx_context_;
     GLVisualConfig requested_visual_config_;
+    SharedLibrary lib_;
 };
 
 #endif /* GLMARK2_GL_STATE_GLX_H_ */

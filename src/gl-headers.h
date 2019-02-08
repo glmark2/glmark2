@@ -25,14 +25,12 @@
 #define GL_GLEXT_PROTOTYPES
 
 #if GLMARK2_USE_GL
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include <glad/gl.h>
 #ifndef GL_RGB565
 #define GL_RGB565 0x8D62
 #endif
 #elif GLMARK2_USE_GLESv2
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#include <glad/gles2.h>
 #ifndef GL_WRITE_ONLY
 #define GL_WRITE_ONLY GL_WRITE_ONLY_OES
 #endif

@@ -123,9 +123,6 @@ def configure(ctx):
 
     # Check optional packages
     opt_pkgs = [('x11', 'x11', None, list_contains(ctx.options.flavors, 'x11')),
-                ('gl', 'gl', None, list_contains(ctx.options.flavors, 'gl$') and not dispmanx),
-                ('egl', 'egl', None, list_contains(ctx.options.flavors, 'glesv2$') and not dispmanx),
-                ('glesv2', 'glesv2', None, list_contains(ctx.options.flavors, 'glesv2$') and not dispmanx),
                 ('libdrm','drm', None, list_contains(ctx.options.flavors, 'drm')),
                 ('gbm','gbm', None, list_contains(ctx.options.flavors, 'drm')),
                 ('libudev', 'udev', None, list_contains(ctx.options.flavors, 'drm')),

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 Canonical Ltd
+ * Copyright © 2019 Jamie Madill
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
@@ -17,26 +17,28 @@
  * glmark2.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Authors:
- *  Alexandros Frantzis
+ *  Jamie Madill
  */
-#ifndef GLMARK2_GL_STATE_H_
-#define GLMARK2_GL_STATE_H_
+#ifndef GLMARK2_SHARED_LIBRARY_H_
+#define GLMARK2_SHARED_LIBRARY_H_
 
-class GLVisualConfig;
+#include <initializer_list>
 
-class GLState
+class SharedLibrary
 {
 public:
-    virtual ~GLState() {}
+    SharedLibrary();
+    ~SharedLibrary();
 
-    virtual bool init_display(void *native_display, GLVisualConfig& config_pref) = 0;
-    virtual bool init_surface(void *native_window) = 0;
-    virtual bool init_gl_extensions() = 0;
-    virtual bool valid() = 0;
-    virtual bool reset() = 0;
-    virtual void swap() = 0;
-    virtual bool gotNativeConfig(int& vid) = 0;
-    virtual void getVisualConfig(GLVisualConfig& vc) = 0;
+    bool open(const char *name);
+    bool open_from_alternatives(std::initializer_list<const char*> alt_names);
+    void close();
+
+    void *handle() const;
+    void *load(const char *symbol) const;
+
+private:
+    void *handle_;
 };
 
-#endif /* GLMARK2_GL_STATE_H_ */
+#endif /* GLMARK2_SHARED_LIBRARY_H_ */
