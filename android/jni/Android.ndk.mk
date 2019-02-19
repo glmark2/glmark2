@@ -6,7 +6,8 @@ LOCAL_CPP_EXTENSION := .cc
 LOCAL_MODULE := libglmark2-matrix
 LOCAL_CFLAGS := -DGLMARK2_USE_GLESv2 -Werror -Wall -Wextra -Wnon-virtual-dtor \
                 -Wno-error=unused-parameter
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/src
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/src \
+                    $(LOCAL_PATH)/src/glad/include
 LOCAL_SRC_FILES := $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/libmatrix/*.cc))
 
 include $(BUILD_STATIC_LIBRARY)
@@ -78,26 +79,40 @@ LOCAL_MODULE := libglmark2-ideas
 LOCAL_CFLAGS := -DGLMARK_DATA_PATH="" -DGLMARK2_USE_GLESv2 -Werror -Wall -Wextra\
                 -Wnon-virtual-dtor -Wno-error=unused-parameter
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/src \
-                    $(LOCAL_PATH)/src/libmatrix
+                    $(LOCAL_PATH)/src/libmatrix \
+                    $(LOCAL_PATH)/src/glad/include
 LOCAL_SRC_FILES := $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/scene-ideas/*.cc))
-
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE := libglad-egl
+LOCAL_CFLAGS := -Werror -Wall
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/src/glad/include
+LOCAL_SRC_FILES := $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/glad/src/egl.c))
+include $(BUILD_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE := libglad-glesv2
+LOCAL_CFLAGS := -Werror -Wall
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/src/glad/include
+LOCAL_SRC_FILES := $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/glad/src/gles2.c))
+include $(BUILD_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := libglmark2-android
-LOCAL_STATIC_LIBRARIES := libglmark2-matrix libglmark2-png libglmark2-ideas libglmark2-jpeg
+LOCAL_STATIC_LIBRARIES := libglmark2-matrix libglmark2-png libglmark2-ideas libglmark2-jpeg libglad-egl libglad-glesv2
 LOCAL_CFLAGS := -DGLMARK_DATA_PATH="" -DGLMARK_VERSION="\"2017.07\"" \
                 -DGLMARK2_USE_GLESv2 -Werror -Wall -Wextra -Wnon-virtual-dtor \
                 -Wno-error=unused-parameter
-LOCAL_LDLIBS := -landroid -llog -lGLESv2 -lEGL -lz
+LOCAL_LDLIBS := -landroid -llog -lz
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/src \
                     $(LOCAL_PATH)/src/libmatrix \
                     $(LOCAL_PATH)/src/scene-ideas \
                     $(LOCAL_PATH)/src/scene-terrain \
                     $(LOCAL_PATH)/src/libjpeg-turbo \
-                    $(LOCAL_PATH)/src/libpng
+                    $(LOCAL_PATH)/src/libpng \
+                    $(LOCAL_PATH)/src/glad/include
 LOCAL_SRC_FILES := $(filter-out src/canvas% src/gl-state% src/native-state% src/main.cpp, \
                      $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/*.cpp))) \
                    $(subst $(LOCAL_PATH)/,,$(wildcard $(LOCAL_PATH)/src/scene-terrain/*.cpp)) \
