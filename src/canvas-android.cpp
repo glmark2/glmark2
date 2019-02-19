@@ -24,7 +24,7 @@
 #include "log.h"
 #include "options.h"
 #include "gl-headers.h"
-#include <EGL/egl.h>
+#include "glad/egl.h"
 
 #include <fstream>
 #include <sstream>
