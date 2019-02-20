@@ -11,13 +11,7 @@ common_sources = [f for f in all_sources if f.name.find('canvas-') == -1 and
                                             f.name.find('gl-state-') == -1 and
                                             f.name.find('main.cpp') == -1]
 
-platform_uselibs = []
 common_defines = ['USE_EXCEPTIONS']
-
-if is_win:
-  platform_uselibs += ['libpng-local', 'zlib-local', 'libjpeg-turbo-local']
-else:
-  platform_uselibs += ['libpng']
 
 libmatrix_sources = [f for f in bld.path.ant_glob('libmatrix/*.cc')
                      if not f.name.endswith('test.cc')]
@@ -40,20 +34,22 @@ libjpeg_local_sources = [
 
 libjpeg_turbo_local_sources = ['libjpeg-turbo/%s.c' % f for f in libjpeg_local_sources]
 
-platform_libs = []
 platform_includes = []
-
-if is_msvc:
-  platform_includes += ['include']
+platform_libs = []
+platform_uselibs = []
 
 if is_win:
+  platform_uselibs += ['libpng-local', 'zlib-local', 'libjpeg-turbo-local']
   platform_libs = ['user32']
+
+  # On windows include some overrides for posix headers.
+  if is_msvc:
+    platform_includes += ['include']
 else:
+  platform_uselibs += ['libpng']
   platform_libs = ['m', 'jpeg', 'dl']
 
 flavor_sources = {
-  'x11-gl' : common_flavor_sources + ['native-state-x11.cpp', 'gl-state-glx.cpp'],
-  'x11-glesv2' : common_flavor_sources + ['native-state-x11.cpp', 'gl-state-egl.cpp'],
   'dispmanx-glesv2' : common_flavor_sources + ['native-state-dispmanx.cpp', 'gl-state-egl.cpp'],
   'drm-gl' : common_flavor_sources + ['native-state-drm.cpp', 'gl-state-egl.cpp'],
   'drm-glesv2' : common_flavor_sources + ['native-state-drm.cpp', 'gl-state-egl.cpp'],
@@ -61,11 +57,12 @@ flavor_sources = {
   'mir-glesv2' : common_flavor_sources + ['native-state-mir.cpp', 'gl-state-egl.cpp'],
   'wayland-gl' : common_flavor_sources + ['native-state-wayland.cpp', 'gl-state-egl.cpp'],
   'wayland-glesv2' : common_flavor_sources + ['native-state-wayland.cpp', 'gl-state-egl.cpp'],
-  'win32-gl': common_flavor_sources + ['native-state-win32.cpp', 'gl-state-wgl.cpp']
+  'win32-gl': common_flavor_sources + ['native-state-win32.cpp', 'gl-state-wgl.cpp'],
+  'win32-glesv2': common_flavor_sources + ['native-state-win32.cpp', 'gl-state-egl.cpp'],
+  'x11-gl' : common_flavor_sources + ['native-state-x11.cpp', 'gl-state-glx.cpp'],
+  'x11-glesv2' : common_flavor_sources + ['native-state-x11.cpp', 'gl-state-egl.cpp'],
 }
 flavor_uselibs = {
-  'x11-gl' : ['x11', 'glad-gl', 'glad-glx', 'matrix-gl', 'common-gl'],
-  'x11-glesv2' : ['x11', 'glad-egl-x11', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
   'dispmanx-glesv2' : ['glad-egl-dispmanx', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2',  'dispmanx'],
   'drm-gl' : ['drm', 'gbm', 'udev', 'glad-egl-drm', 'glad-gl', 'matrix-gl', 'common-gl'],
   'drm-glesv2' : ['drm', 'gbm', 'udev', 'glad-egl-drm', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
@@ -73,12 +70,13 @@ flavor_uselibs = {
   'mir-glesv2' : ['mirclient', 'glad-egl-mir', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
   'wayland-gl' : ['wayland-client', 'wayland-egl', 'glad-egl-wayland', 'glad-gl', 'matrix-gl', 'common-gl'],
   'wayland-glesv2' : ['wayland-client', 'wayland-egl', 'glad-egl-wayland', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
-  'win32-gl': ['glad-gl', 'matrix-gl', 'common-gl']
+  'win32-gl': ['glad-gl', 'matrix-gl', 'common-gl'],
+  'win32-glesv2': ['glad-egl-win32', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
+  'x11-gl' : ['x11', 'glad-gl', 'glad-glx', 'matrix-gl', 'common-gl'],
+  'x11-glesv2' : ['x11', 'glad-egl-x11', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
 }
 
 flavor_defines = {
-  'x11-gl' : ['GLMARK2_USE_X11', 'GLMARK2_USE_GL', 'GLMARK2_USE_GLX'],
-  'x11-glesv2' : ['GLMARK2_USE_X11', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
   'dispmanx-glesv2' : ['GLMARK2_USE_DISPMANX', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
   'drm-gl' : ['GLMARK2_USE_DRM', 'GLMARK2_USE_GL', 'GLMARK2_USE_EGL'],
   'drm-glesv2' : ['GLMARK2_USE_DRM', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
@@ -86,11 +84,12 @@ flavor_defines = {
   'mir-glesv2' : ['GLMARK2_USE_MIR', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
   'wayland-gl' : ['GLMARK2_USE_WAYLAND', 'GLMARK2_USE_GL', 'GLMARK2_USE_EGL'],
   'wayland-glesv2' : ['GLMARK2_USE_WAYLAND', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
-  'win32-gl': ['GLMARK2_USE_WIN32', 'GLMARK2_USE_WGL', 'GLMARK2_USE_GL']
+  'win32-gl': ['GLMARK2_USE_WIN32', 'GLMARK2_USE_WGL', 'GLMARK2_USE_GL'],
+  'win32-glesv2': ['GLMARK2_USE_WIN32', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
+  'x11-gl' : ['GLMARK2_USE_X11', 'GLMARK2_USE_GL', 'GLMARK2_USE_GLX'],
+  'x11-glesv2' : ['GLMARK2_USE_X11', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
 }
 flavor_libs = {
-  'x11-gl' : [],
-  'x11-glesv2' : [],
   'dispmanx-glesv2' : [],
   'drm-gl' : [],
   'drm-glesv2' : [],
@@ -98,15 +97,18 @@ flavor_libs = {
   'mir-glesv2' : [],
   'wayland-gl' : [],
   'wayland-glesv2' : [],
-  'win32-gl': ['opengl32', 'gdi32']
+  'win32-gl': ['opengl32', 'gdi32'],
+  'win32-glesv2' : [],
+  'x11-gl' : [],
+  'x11-glesv2' : [],
 }
 egl_platform_defines = {
-  'x11' : [],
+  'dispmanx' : ['MESA_EGL_NO_X11_HEADERS'],
   'drm' : ['__GBM__'],
   'mir' : ['MESA_EGL_NO_X11_HEADERS'],
   'wayland' : ['WL_EGL_PLATFORM'],
   'win32' : [],
-  'dispmanx' : ['MESA_EGL_NO_X11_HEADERS']
+  'x11' : [],
 }
 
 includes = ['.', 'scene-ideas', 'scene-terrain'] + platform_includes

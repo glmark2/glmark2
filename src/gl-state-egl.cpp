@@ -459,7 +459,8 @@ GLStateEGL::getVisualConfig(GLVisualConfig& vc)
 #define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_GBM_KHR
 #elif  GLMARK2_USE_MIR
 #define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_MIR_KHR
-#elif  GLMARK2_USE_DISPMANX
+#else
+// Platforms not in the above platform enums fall back to eglGetDisplay.
 #define GLMARK2_NATIVE_EGL_DISPLAY_ENUM 0
 #endif
 
@@ -472,7 +473,7 @@ GLStateEGL::gotValidDisplay()
     char const * __restrict const supported_extensions =
         eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
-    if (supported_extensions
+    if (GLMARK2_NATIVE_EGL_DISPLAY_ENUM != 0 && supported_extensions
         && strstr(supported_extensions, "EGL_EXT_platform_base"))
     {
         Log::debug("Using eglGetPlatformDisplayEXT()\n");

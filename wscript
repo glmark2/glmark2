@@ -8,8 +8,7 @@ VERSION = '2017.07'
 APPNAME = 'glmark2'
 
 FLAVORS = {
-    'x11-gl' : 'glmark2',
-    'x11-glesv2' : 'glmark2-es2',
+    'dispmanx-glesv2' : 'glmark2-es2-dispmanx',
     'drm-gl' : 'glmark2-drm',
     'drm-glesv2' : 'glmark2-es2-drm',
     'mir-gl' : 'glmark2-mir',
@@ -17,7 +16,9 @@ FLAVORS = {
     'wayland-gl' : 'glmark2-wayland',
     'wayland-glesv2' : 'glmark2-es2-wayland',
     'win32-gl': 'glmark2-win32',
-    'dispmanx-glesv2' : 'glmark2-es2-dispmanx',
+    'win32-glesv2': 'glmark2-es2',
+    'x11-gl' : 'glmark2',
+    'x11-glesv2' : 'glmark2-es2',
 }
 FLAVORS_STR = ", ".join(sorted(FLAVORS.keys()))
 
@@ -68,7 +69,7 @@ def configure(ctx):
         ctx.options.flavors.remove('dispmanx-glesv2')
 
     if 'all-win32' in ctx.options.flavors:
-        ctx.options.flavors = ['win32-gl']
+        ctx.options.flavors = ['win32-gl', 'win32-glesv2']
 
     used_flavors_string = ", ".join(ctx.options.flavors)
     is_win = 'win32' in used_flavors_string
