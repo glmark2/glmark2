@@ -23,6 +23,8 @@
 #define GLMARK2_CANVAS_ANDROID_H_
 
 #include "canvas.h"
+#include "shared-library.h"
+#include "glad/egl.h"
 
 /**
  * Canvas for rendering to Android surfaces.
@@ -49,6 +51,10 @@ public:
     void resize(int width, int height);
 
 private:
+    SharedLibrary egl_lib_;
+    SharedLibrary gles_lib_;
+
+    static GLADapiproc load_proc(const char *name, void *userdata);
     void init_gl_extensions();
 };
 
