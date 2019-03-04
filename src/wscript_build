@@ -134,7 +134,7 @@ for name in bld.env.keys():
 
 # Build glad-egl for all used EGL platforms
 for egl_target in (v for v in all_uselibs if v.startswith('glad-egl')):
-    egl_target_split = egl_target.split('-')[2]
+    egl_platform = egl_target.split('-')[2]
     bld(
         features = ['c'],
         source   = ['glad/src/egl.c'],
