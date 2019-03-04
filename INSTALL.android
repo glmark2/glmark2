@@ -1,7 +1,25 @@
-The minimum Android API level for glmark2 is 9 (>= Android 2.3).
+A build script for Linux has been added which simplifies the process of
+creating an APK.
+
+Any recent toolchain (released in 2018 or later) should work.  The steps
+using build-tools have been hard coded to 26.0.1, but could be made
+configurable, or update the script to point to installed version.
+
+Tested with NDK r18b.
+
+$ sudo apt-get install openjdk-8-jdk
+$ export ANDROID_SDK=/path/to/Android/Sdk
+$ export ANDROID_NDK=/path/to/Android/Sdk/ndk-bundle
+$ export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+$ cd android
+$ ./build.sh
+$ adb install glmark2.apk
 
 Building using the SDK and NDK
 ------------------------------
+
+Note: These build steps require older SDK and NDK.  Later revisions have
+removed the android and ant scripts.
 
 To build and install glmark2 you need the Android SDK and NDK. The 'android',
 'adb' and 'ndk-build' tools used below are included there.
