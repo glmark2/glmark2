@@ -21,8 +21,8 @@
  */
 #include "gl-headers.h"
 
-void* (*GLExtensions::MapBuffer) (GLenum target, GLenum access) = 0;
-GLboolean (*GLExtensions::UnmapBuffer) (GLenum target) = 0;
+void* (GLAD_API_PTR *GLExtensions::MapBuffer) (GLenum target, GLenum access) = 0;
+GLboolean (GLAD_API_PTR *GLExtensions::UnmapBuffer) (GLenum target) = 0;
 
 bool
 GLExtensions::support(const std::string &ext)

@@ -62,8 +62,8 @@ struct GLExtensions {
      */
     static bool support(const std::string &ext);
 
-    static void* (*MapBuffer) (GLenum target, GLenum access);
-    static GLboolean (*UnmapBuffer) (GLenum target);
+    static void* (GLAD_API_PTR *MapBuffer) (GLenum target, GLenum access);
+    static GLboolean (GLAD_API_PTR *UnmapBuffer) (GLenum target);
 };
 
 #endif
