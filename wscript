@@ -22,6 +22,12 @@ FLAVORS = {
 }
 FLAVORS_STR = ", ".join(sorted(FLAVORS.keys()))
 
+def linux_flavors():
+    return [f for f in FLAVORS.keys() if not f.startswith('win32')]
+
+def win32_flavors():
+    return [f for f in FLAVORS.keys() if f.startswith('win32')]
+
 def option_list_cb(option, opt, value, parser):
     value = value.split(',')
     setattr(parser.values, option.dest, value)
@@ -63,18 +69,17 @@ def get_data_path(ctx):
 def configure(ctx):
     # Special 'all' flavor
     if 'all-linux' in ctx.options.flavors:
-        ctx.options.flavors = list(set(ctx.options.flavors) | set(FLAVORS.keys()))
+        ctx.options.flavors = list(set(ctx.options.flavors) | set(linux_flavors()))
         ctx.options.flavors.remove('all-linux')
         # dispmanx is a special case, we don't want to include it in all
         ctx.options.flavors.remove('dispmanx-glesv2')
 
     if 'all-win32' in ctx.options.flavors:
-        ctx.options.flavors = ['win32-gl', 'win32-glesv2']
+        ctx.options.flavors = list(set(ctx.options.flavors) | set(win32_flavors()))
+        ctx.options.flavors.remove('all-win32')
 
-    used_flavors_string = ", ".join(ctx.options.flavors)
-    is_win = 'win32' in used_flavors_string
-    linux_libs = ['x11', 'drm', 'mir', 'wayland', 'dispmanx']
-    is_linux = any([lib in used_flavors_string for lib in linux_libs])
+    is_win = any(True for f in win32_flavors() if f in ctx.options.flavors)
+    is_linux = any(True for f in linux_flavors() if f in ctx.options.flavors)
 
     if is_win and is_linux:
         ctx.fatal('Simultaneous Windows and Linux builds are not supported')
