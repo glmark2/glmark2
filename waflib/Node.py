@@ -294,7 +294,6 @@ class Node(object):
 					if maxdepth:
 						for k in node.ant_iter(accept=accept,maxdepth=maxdepth-1,pats=npats,dir=dir,src=src,remove=remove):
 							yield k
-		raise StopIteration
 	def ant_glob(self,*k,**kw):
 		src=kw.get('src',True)
 		dir=kw.get('dir',False)

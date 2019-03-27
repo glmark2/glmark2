@@ -391,7 +391,6 @@ def find_single_qt5_lib(self,name,uselib,qtlibs,qtincludes,force_static):
 			for k in('','5')if Utils.is_win32 else['']:
 				for p in('lib',''):
 					yield(p,name,k,x)
-		raise StopIteration
 	for tup in lib_names():
 		k=''.join(tup)
 		path=os.path.join(qtlibs,k)
