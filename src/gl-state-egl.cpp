@@ -34,6 +34,13 @@ using std::string;
 
 GLADapiproc load_egl_func(const char *name, void *userdata)
 {
+    if (eglGetProcAddress) {
+        GLADapiproc sym = reinterpret_cast<GLADapiproc>(eglGetProcAddress(name));
+        if (sym) {
+            return sym;
+        }
+    }
+
     SharedLibrary *lib = reinterpret_cast<SharedLibrary *>(userdata);
     return reinterpret_cast<GLADapiproc>(lib->load(name));
 }
