@@ -81,6 +81,9 @@ public:
     void make_grid(int n_x, int n_y, double width, double height,
                    double spacing, grid_configuration_func conf_func = 0);
 
+    void make_grid(int n_x, int n_y, double width, double height,
+                   double spacing, double x_offset);
+
 private:
     bool check_attrib(unsigned int pos, int dim);
     std::vector<float> &ensure_vertex();

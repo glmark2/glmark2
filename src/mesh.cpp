@@ -638,3 +638,43 @@ Mesh::make_grid(int n_x, int n_y, double width, double height,
         }
     }
 }
+
+void
+Mesh::make_grid(int n_x, int n_y, double width, double height,
+                double spacing, double x_offset)
+{
+    double side_width = (width - (n_x - 1) * spacing) / n_x;
+    double side_height = (height - (n_y - 1) * spacing) / n_y;
+
+    for (int i = 0; i < n_x; i++) {
+        for (int j = 0; j < n_y; j++) {
+            LibMatrix::vec3 a(-width / 2 + i * (side_width + spacing),
+                              height / 2 - j * (side_height + spacing), 0);
+            LibMatrix::vec3 b(a.x(), a.y() - side_height, 0);
+            LibMatrix::vec3 c(a.x() + side_width, a.y(), 0);
+            LibMatrix::vec3 d(a.x() + side_width, a.y() - side_height, 0);
+
+            a += LibMatrix::vec3(x_offset, 0, 0);
+            b += LibMatrix::vec3(x_offset, 0, 0);
+            c += LibMatrix::vec3(x_offset, 0, 0);
+            d += LibMatrix::vec3(x_offset, 0, 0);
+
+            std::vector<float> ul(vertex_size_);
+            std::vector<float> ur(vertex_size_);
+            std::vector<float> ll(vertex_size_);
+            std::vector<float> lr(vertex_size_);
+
+            set_attrib(0, a, &ul);
+            set_attrib(0, c, &ur);
+            set_attrib(0, b, &ll);
+            set_attrib(0, d, &lr);
+
+            next_vertex(); vertices_.back() = ul;
+            next_vertex(); vertices_.back() = ll;
+            next_vertex(); vertices_.back() = ur;
+            next_vertex(); vertices_.back() = ll;
+            next_vertex(); vertices_.back() = lr;
+            next_vertex(); vertices_.back() = ur;
+        }
+    }
+}

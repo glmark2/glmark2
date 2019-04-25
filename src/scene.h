@@ -460,6 +460,30 @@ private:
     void create_and_setup_mesh();
 };
 
+class SceneUbo : public Scene
+{
+public:
+    SceneUbo(Canvas &pCanvas);
+    bool load();
+    void unload();
+    bool setup();
+    void teardown();
+    void update();
+    void draw();
+    ValidationResult validate();
+
+    ~SceneUbo();
+
+protected:
+    int numQuads_;
+    Program program_;
+    std::vector<Mesh> mesh_;
+    GLuint ubo_;
+
+private:
+    void create_and_setup_mesh();
+};
+
 struct SceneDesktopPrivate;
 
 class SceneDesktop : public Scene

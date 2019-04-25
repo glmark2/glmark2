@@ -75,6 +75,7 @@ private:
         scenes_.push_back(new SceneShadow(canvas));
         scenes_.push_back(new SceneRefract(canvas));
         scenes_.push_back(new SceneClear(canvas));
+        scenes_.push_back(new SceneUbo(canvas));
 
     }
 };

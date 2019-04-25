@@ -151,10 +151,11 @@ private:
     bool ready() const { return ready_; }
     const std::string& errorMessage() const { return message_; }
 
+    unsigned int handle_;
 private:
     int getAttribIndex(const std::string& name);
     int getUniformLocation(const std::string& name);
-    unsigned int handle_;
+    //unsigned int handle_;
     std::map<std::string, Symbol*> symbols_;
     std::vector<Shader> shaders_;
     std::string message_;
