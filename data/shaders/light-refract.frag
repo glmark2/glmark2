@@ -23,7 +23,7 @@ void main()
     vec3 mc_perspective = (MapCoord.xyz / MapCoord.w) + front_refraction;
     vec2 dcoord = mc_perspective.st * point_five + point_five;
     vec4 distance_value = texture2D(DistanceMap, dcoord);
-    vec3 back_position = vertex_position.xyz + front_refraction * distance_value.z;
+    vec3 back_position = vertex_position.xyz + front_refraction * distance_value.x;
     // Use the exit point to index the map of back-side normals, and use the
     // back-side position and normal to find the transmitted vector out of the
     // object.
