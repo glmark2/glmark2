@@ -80,9 +80,9 @@ MainLoop::step()
 
         /* If we have found a valid scene, set it up */
         if (bench_iter_ != benchmarks_.end()) {
+            before_scene_setup();
             if (!Options::reuse_context)
                 canvas_.reset();
-            before_scene_setup();
             scene_ = &(*bench_iter_)->setup_scene();
             if (!scene_->running()) {
                 if (!scene_->supported(false))
