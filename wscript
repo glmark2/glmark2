@@ -156,7 +156,8 @@ def configure_win32(ctx):
 
 def configure_linux(ctx):
     # Check required headers
-    req_headers = ['stdlib.h', 'string.h', 'stdint.h', 'stdio.h', 'dlfcn.h', 'unistd.h', 'jpeglib.h']
+    req_headers = ['stdlib.h', 'string.h', 'stdint.h', 'stdio.h', 'dlfcn.h',
+                   'unistd.h', 'jpeglib.h', 'math.h', 'string.h']
     for header in req_headers:
         ctx.check_cc(header_name = header, auto_add_header_name = True, mandatory = True)
 
@@ -165,11 +166,13 @@ def configure_linux(ctx):
     for (lib, uselib) in req_libs:
         ctx.check_cc(lib = lib, uselib_store = uselib)
 
-    # Check required functions
-    req_funcs = [('memset', 'string.h', []), ('sqrt', 'math.h', ['m'])]
-    for func, header, uselib in req_funcs:
-        ctx.check_cc(function_name = func, header_name = header,
-                      uselib = uselib, mandatory = True)
+    # Check for required functions. Note that headers from req_headers
+    # are already included for this check.
+    ctx.check_cc(function_name = 'memset', mandatory = True)
+    # Special test code for sqrt, to make clang/libc++ happy.
+    ctx.check_cc(fragment = 'int main(void) { double (*p)(double); p = sqrt; }',
+                 msg = 'Checking for function sqrt',
+                 uselib = ['m'], mandatory = True)
 
     # Check for a supported version of libpng
     have_png = False
