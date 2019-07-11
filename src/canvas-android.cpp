@@ -19,11 +19,13 @@
  * Authors:
  *  Alexandros Frantzis (glmark2)
  *  Jesse Barker
+ *  Ivan Efremov (i350300800e@gmail.com)
  */
 #include "canvas-android.h"
 #include "log.h"
 #include "options.h"
 #include "gl-headers.h"
+#include <EGL/egl.h>
 
 #include <fstream>
 #include <sstream>
@@ -93,16 +95,17 @@ CanvasAndroid::init()
 
     clear();
 
+    int buf, red, green, blue, alpha, depth, id, native_id;
+    eglGetConfigAttrib(egl_display, egl_config, EGL_CONFIG_ID, &id);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_NATIVE_VISUAL_ID, &native_id);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_BUFFER_SIZE, &buf);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_RED_SIZE, &red);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_GREEN_SIZE, &green);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_BLUE_SIZE, &blue);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_ALPHA_SIZE, &alpha);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_DEPTH_SIZE, &depth);
+    
     if (Options::show_debug) {
-        int buf, red, green, blue, alpha, depth, id, native_id;
-        eglGetConfigAttrib(egl_display, egl_config, EGL_CONFIG_ID, &id);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_NATIVE_VISUAL_ID, &native_id);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_BUFFER_SIZE, &buf);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_RED_SIZE, &red);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_GREEN_SIZE, &green);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_BLUE_SIZE, &blue);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_ALPHA_SIZE, &alpha);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_DEPTH_SIZE, &depth);
         Log::debug("EGL chosen config ID: 0x%x Native Visual ID: 0x%x\n"
                    "  Buffer: %d bits\n"
                    "     Red: %d bits\n"
@@ -112,6 +115,17 @@ CanvasAndroid::init()
                    "   Depth: %d bits\n",
                    id, native_id,
                    buf, red, green, blue, alpha, depth);
+    }
+
+    recognize_format(buf, red, green, blue, alpha, depth);
+    if(Options::offscreen)
+    {
+        Log::info("Offscreen mode ON\n");
+        Log::debug("Width = %d, height = %d\n", width_, height_);
+        if(ensure_fbo())
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+        else
+            Log::info("Problems occur while creating an FBO !!!\n");
     }
 
     return true;
@@ -162,17 +176,67 @@ CanvasAndroid::read_pixel(int x, int y)
 void
 CanvasAndroid::write_to_file(std::string &filename)
 {
-    char *pixels = new char[width_ * height_ * 4];
+    if(Options::write_file)
+    {
+        Log::debug("Writing to file %s...\n", filename.c_str());
+        int bpp = 24; //* Bits per pixel
 
-    for (int i = 0; i < height_; i++) {
-        glReadPixels(0, i, width_, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-                     &pixels[(height_ - i - 1) * width_ * 4]);
+        char *pixels = new char[width_ * height_ * 4];
+
+        for (int i = 0; i < height_; i++) {
+            glReadPixels(0, i, width_, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                        &pixels[(height_ - i - 1) * width_ * 4]);
+        }
+        
+        unsigned char *dataBuffer = new unsigned char[width_ * height_ * 3];
+        int x, y;
+
+ 	    for(y = 0; y < height_; ++y)
+        {
+		    for(x = 0; x < width_; ++x)
+            {
+                dataBuffer[(y * width_ + x) * 3 + 0] = pixels[((height_-y) * width_ + x) * 4 + 2];
+                dataBuffer[(y * width_ + x) * 3 + 1] = pixels[((height_-y) * width_ + x) * 4 + 1];
+                dataBuffer[(y * width_ + x) * 3 + 2] = pixels[((height_-y) * width_ + x) * 4 + 0];
+            }
+        }
+
+        char *outdata = new char[width_ * height_ * (bpp / 8) + 18];
+        char *data = outdata;
+
+        // Build TGA header
+        char c;
+        short s;
+        c = 0;      memcpy( data, &c, 1 ); data += 1;  // idLength
+        c = 0;      memcpy( data, &c, 1 ); data += 1;  // colmapType
+        c = 2;      memcpy( data, &c, 1 ); data += 1;  // imageType
+        s = 0;      memcpy( data, &s, 2 ); data += 2;  // colmapStart
+        s = 0;      memcpy( data, &s, 2 ); data += 2;  // colmapLength
+        c = 0;      memcpy( data, &c, 1 ); data += 1;  // colmapBits
+        s = 0;      memcpy( data, &s, 2 ); data += 2;  // x
+        s = 0;      memcpy( data, &s, 2 ); data += 2;  // y
+        s = width_;  memcpy( data, &s, 2 ); data += 2;  // width
+        s = height_; memcpy( data, &s, 2 ); data += 2;  // height
+        c = bpp;    memcpy( data, &c, 1 ); data += 1;  // bpp
+        c = 0;      memcpy( data, &c, 1 ); data += 1;  // imageDesc
+
+        if(dataBuffer)
+            memcpy(data, dataBuffer, width_ * height_ * (bpp / 8));
+
+        FILE* file = fopen(filename.c_str(), "w+b");
+        
+        if (file != NULL) {         // Checking the existing of file
+            fwrite(outdata, 3, width_ * height_ * (bpp / 8) + 18, file);
+            fclose(file); 
+        } else
+            Log::debug("File doesn't exist!\n");
+
+        delete [] dataBuffer;
+        delete [] pixels;
+        delete [] outdata;
+
+        Log::info("Writing to file %s successfully!\n", filename.c_str());
     }
-
-    std::ofstream output (filename.c_str(), std::ios::out | std::ios::binary);
-    output.write(pixels, 4 * width_ * height_);
-
-    delete [] pixels;
 }
 
 bool
@@ -188,9 +252,32 @@ CanvasAndroid::resize(int width, int height)
     height_ = height;
 
     glViewport(0, 0, width_, height_);
+    if(Options::offscreen)
+    {
+        Log::debug("CanvasAndroid::resize with offscreen\n");
+        if (color_renderbuffer_) {
+            glBindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer_);
+            glRenderbufferStorage(GL_RENDERBUFFER, gl_color_format_,
+                                width_, height_);
+        }
+
+        if (depth_renderbuffer_) {
+            glBindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
+            glRenderbufferStorage(GL_RENDERBUFFER, gl_depth_format_,
+                                width_, height_);
+        }
+    }
     projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
                                                1.0, 1024.0);
 }
+
+
+unsigned int
+CanvasAndroid::fbo()
+{
+    return fbo_;
+}
+
 
 /*******************
  * Private methods *
@@ -208,6 +295,169 @@ CanvasAndroid::load_proc(const char *name, void *userdata)
 
     SharedLibrary* lib = reinterpret_cast<SharedLibrary*>(userdata);
     return reinterpret_cast<GLADapiproc>(lib->load(name));
+}
+
+bool
+CanvasAndroid::ensure_gl_formats()
+{
+    if (gl_color_format_ && gl_depth_format_)
+        return true;
+    return false;
+}
+
+bool
+CanvasAndroid::recognize_format(int buf, int red, int green, int blue,
+                         int alpha, int depth)
+{
+    gl_color_format_ = 0;
+    gl_depth_format_ = 0;
+
+    bool supports_rgba8(false);
+    bool supports_rgb8(false);
+    bool supports_depth24(true);
+    bool supports_depth32(false);
+
+#if USE_GLESv2
+    if (GLExtensions::support("GL_ARM_rgba8"))
+        supports_rgba8 = true;
+
+    if (GLExtensions::support("GL_OES_rgb8_rgba8")) {
+        supports_rgba8 = true;
+        supports_rgb8 = true;
+    }
+
+    if (GLExtensions::support("GL_OES_depth24"))
+        supports_depth24 = true;
+
+    if (GLExtensions::support("GL_OES_depth32"))
+        supports_depth32 = true;
+#elif USE_GL
+    supports_rgba8 = true;
+    supports_rgb8 = true;
+    supports_depth24 = true;
+    supports_depth32 = true;
+#endif
+
+    if (buf == 32) {
+        if (supports_rgba8)
+            gl_color_format_ = GL_RGBA8;
+        else
+            gl_color_format_ = GL_RGBA4;
+    }
+    else if (buf == 24) {
+        if (supports_rgb8)
+            gl_color_format_ = GL_RGB8;
+        else
+            gl_color_format_ = GL_RGB565;
+    }
+    else if (buf == 16) {
+        if (red == 4 && green == 4 &&
+            blue == 4 && alpha == 4)
+        {
+            gl_color_format_ = GL_RGBA4;
+        }
+        else if (red == 5 && green == 5 &&
+                 blue == 5 && alpha == 1)
+        {
+            gl_color_format_ = GL_RGB5_A1;
+        }
+        else if (red == 5 && green == 6 &&
+                 blue == 5 && alpha == 0)
+        {
+            gl_color_format_ = GL_RGB565;
+        }
+    }
+
+    if (depth == 32 && supports_depth32)
+        gl_depth_format_ = GL_DEPTH_COMPONENT32;
+    else if (depth >= 24 && supports_depth24)
+        gl_depth_format_ = GL_DEPTH_COMPONENT24;
+    else if (depth == 16)
+        gl_depth_format_ = GL_DEPTH_COMPONENT16;
+
+    Log::info("Selected Renderbuffer ColorFormat: %s DepthFormat: %s\n",
+               get_gl_format_str(gl_color_format_),
+               get_gl_format_str(gl_depth_format_));
+
+    return (gl_color_format_ && gl_depth_format_);
+}
+
+bool
+CanvasAndroid::ensure_fbo()
+{
+    if (!fbo_) {
+        if(!ensure_gl_formats())
+            return false;
+
+        Log::debug("Ensure FBO func begin. width = %d, height = %d\n", width_, height_);
+
+        /* Create a texture for the color attachment  */
+        glGenRenderbuffers(1, &color_renderbuffer_);
+        glBindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer_);
+        glRenderbufferStorage(GL_RENDERBUFFER, gl_color_format_,
+                              width_, height_);
+        Log::debug("gl_color_format_ is %x\n", gl_color_format_);
+
+        /* Create a renderbuffer for the depth attachment */
+        glGenRenderbuffers(1, &depth_renderbuffer_);
+        glBindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
+        glRenderbufferStorage(GL_RENDERBUFFER, gl_depth_format_,
+                              width_, height_);
+        Log::debug("gl_depth_format_ is %x\n", gl_depth_format_);
+
+        /* Create a FBO and set it up */
+        glGenFramebuffers(1, &fbo_);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                  GL_RENDERBUFFER, color_renderbuffer_);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                  GL_RENDERBUFFER, depth_renderbuffer_);
+        Log::debug("Ensure FBO func end.\n");
+    }
+
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+    if(status != GL_FRAMEBUFFER_COMPLETE) {
+        Log::debug("Problem with OpenGL framebuffer after specifying color render buffer: n%xn", status);
+    } else {
+        Log::debug("FBO has created successfully");
+    }
+    return true;
+}
+
+void
+CanvasAndroid::release_fbo()
+{
+    glDeleteFramebuffers(1, &fbo_);
+    glDeleteRenderbuffers(1, &color_renderbuffer_);
+    glDeleteRenderbuffers(1, &depth_renderbuffer_);
+    fbo_ = 0;
+    color_renderbuffer_ = 0;
+    depth_renderbuffer_ = 0;
+
+    gl_color_format_ = 0;
+    gl_depth_format_ = 0;
+}
+
+const char *
+CanvasAndroid::get_gl_format_str(GLenum f)
+{
+    const char *str;
+
+    switch(f) {
+        case GL_RGBA8: str = "GL_RGBA8"; break;
+        case GL_RGB8: str = "GL_RGB8"; break;
+        case GL_RGBA4: str = "GL_RGBA4"; break;
+        case GL_RGB5_A1: str = "GL_RGB5_A1"; break;
+        case GL_RGB565: str = "GL_RGB565"; break;
+        case GL_DEPTH_COMPONENT16: str = "GL_DEPTH_COMPONENT16"; break;
+        case GL_DEPTH_COMPONENT24: str = "GL_DEPTH_COMPONENT24"; break;
+        case GL_DEPTH_COMPONENT32: str = "GL_DEPTH_COMPONENT32"; break;
+        case GL_NONE: str = "GL_NONE"; break;
+        default: str = "Unknown"; break;
+    }
+
+    return str;
 }
 
 void

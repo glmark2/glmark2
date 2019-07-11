@@ -273,6 +273,11 @@ SceneShading::setup()
 void
 SceneShading::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Shading.tga";
+        canvas_.write_to_file(name);
+    }
+
     program_.stop();
     program_.release();
 

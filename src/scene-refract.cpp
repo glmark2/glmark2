@@ -1,5 +1,5 @@
 //
-// Copyright © 2012 Linaro Limited
+// Copyright ï¿½ 2012 Linaro Limited
 //
 // This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
 //
@@ -144,6 +144,11 @@ SceneRefract::setup()
 void
 SceneRefract::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Refract.tga";
+        canvas_.write_to_file(name);
+    }
+
     // Add scene-specific teardown here
     if (priv_) {
         priv_->teardown();

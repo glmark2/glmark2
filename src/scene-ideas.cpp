@@ -1,6 +1,6 @@
 /*
  * (c) Copyright 1993, Silicon Graphics, Inc.
- * Copyright © 2012 Linaro Limited
+ * Copyright ï¿½ 2012 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
@@ -28,6 +28,7 @@
 #include "lamp.h"
 #include "util.h"
 #include "log.h"
+#include "options.h"
 #include <sys/time.h>
 
 using LibMatrix::Stack4;
@@ -408,6 +409,11 @@ SceneIdeas::validate()
 void
 SceneIdeas::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Ideas.tga";
+        canvas_.write_to_file(name);
+    }
+
     delete priv_;
     priv_ = 0;
     Scene::teardown();

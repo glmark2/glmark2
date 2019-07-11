@@ -49,13 +49,26 @@ public:
     void write_to_file(std::string &filename);
     bool should_quit();
     void resize(int width, int height);
-
+    virtual unsigned int fbo();
 private:
     SharedLibrary egl_lib_;
     SharedLibrary gles_lib_;
 
     static GLADapiproc load_proc(const char *name, void *userdata);
     void init_gl_extensions();
+    bool ensure_gl_formats();
+    bool recognize_format(int buf, int red, int green, int blue,
+                         int alpha, int depth);
+    bool ensure_fbo();
+    void release_fbo();
+
+    const char *get_gl_format_str(GLenum f);
+
+    GLenum gl_color_format_;
+    GLenum gl_depth_format_;
+    GLuint color_renderbuffer_;
+    GLuint depth_renderbuffer_;
+    GLuint fbo_;
 };
 
 #endif

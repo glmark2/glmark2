@@ -29,6 +29,7 @@
 #include "texture.h"
 #include "shader-source.h"
 #include "renderer.h"
+#include "options.h"
 
 using LibMatrix::vec2;
 using LibMatrix::vec3;
@@ -323,6 +324,11 @@ SceneTerrain::setup()
 void
 SceneTerrain::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Terrain.tga";
+        canvas_.write_to_file(name);
+    }
+    
     delete priv_;
     priv_ = 0;
     Scene::teardown();

@@ -902,6 +902,12 @@ SceneDesktop::setup()
 void
 SceneDesktop::teardown()
 {
+
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Desktop.tga";
+        canvas_.write_to_file(name);
+    }
+
     for (std::vector<RenderObject*>::iterator winIt = priv_->windows.begin();
          winIt != priv_->windows.end();
          winIt++)

@@ -416,6 +416,12 @@ SceneBuffer::setup()
 void
 SceneBuffer::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Buffer.tga";
+        canvas_.write_to_file(name);
+    }
+
+
     delete priv_->wave;
     priv_->wave = 0;
 

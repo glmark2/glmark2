@@ -195,6 +195,8 @@ class Glmark2SurfaceView extends GLSurfaceView {
 }
 
 class Glmark2Renderer implements GLSurfaceView.Renderer {
+    private boolean mContextSupportsFrameBufferObject;
+
     public Glmark2Renderer(Glmark2SurfaceView view) {
         mView = view;
     }
@@ -209,9 +211,28 @@ class Glmark2Renderer implements GLSurfaceView.Renderer {
     }
 
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        mContextSupportsFrameBufferObject = checkIfContextSupportsFrameBufferObject(gl);
+        if (!mContextSupportsFrameBufferObject)
+            Log.d("SurfaceView:", "Doesn't support FBO!");
         String args = mView.getActivity().getIntent().getStringExtra("args");
+        
         File f = new File(mView.getActivity().getFilesDir(), "last_run.log");
         Glmark2Native.init(mView.getActivity().getAssets(), args, f.getAbsolutePath());
+    }
+
+    private boolean checkIfContextSupportsFrameBufferObject(GL10 gl) {
+        return checkIfContextSupportsExtension(gl, "GL_OES_framebuffer_object");
+    }
+
+    private boolean checkIfContextSupportsExtension(GL10 gl, String extension) {
+        String extensions = " " + gl.glGetString(GL10.GL_EXTENSIONS) + " ";
+        // The extensions string is padded with spaces between extensions, but not
+        // necessarily at the beginning or end. For simplicity, add spaces at the
+        // beginning and end of the extensions string and the extension string.
+        // This means we can avoid special-case checks for the first or last
+        // extension, as well as avoid special-case checks when an extension name
+        // is the same as the first part of another extension name.
+        return extensions.indexOf(" " + extension + " ") >= 0;
     }
 
     private Glmark2SurfaceView mView;

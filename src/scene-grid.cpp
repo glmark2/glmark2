@@ -25,6 +25,7 @@
 #include "vec.h"
 #include "log.h"
 #include "util.h"
+#include "options.h"
 
 SceneGrid::SceneGrid(Canvas &pCanvas, const std::string &name) :
     Scene(pCanvas, name)
@@ -86,6 +87,11 @@ SceneGrid::setup()
 void
 SceneGrid::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Grid.tga";
+        canvas_.write_to_file(name);
+    }
+
     program_.stop();
     program_.release();
     mesh_.reset();
