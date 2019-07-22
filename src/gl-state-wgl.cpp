@@ -133,7 +133,7 @@ GLStateWGL::swap()
 }
 
 bool
-GLStateWGL::gotNativeConfig(int& vid)
+GLStateWGL::gotNativeConfig(intptr_t& vid)
 {
     vid = 1;
     return true;
