@@ -32,7 +32,7 @@
 using std::vector;
 using std::string;
 
-GLADapiproc load_egl_func(const char *name, void *userdata)
+GLADapiproc load_egl_func(void *userdata, const char *name)
 {
     SharedLibrary *lib = reinterpret_cast<SharedLibrary *>(userdata);
     return reinterpret_cast<GLADapiproc>(lib->load(name));
@@ -724,7 +724,7 @@ GLStateEGL::gotValidContext()
 }
 
 GLADapiproc
-GLStateEGL::load_proc(const char* name, void* userptr)
+GLStateEGL::load_proc(void *userptr, const char* name)
 {
     if (eglGetProcAddress) {
         GLADapiproc sym = reinterpret_cast<GLADapiproc>(eglGetProcAddress(name));

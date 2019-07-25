@@ -330,7 +330,7 @@ GLStateGLX::select_best_config(std::vector<GLXFBConfig> configs)
 }
 
 GLADapiproc
-GLStateGLX::load_proc(const char* name, void* userptr)
+GLStateGLX::load_proc(void *userptr, const char* name)
 {
     if (glXGetProcAddress) {
         const GLubyte* bytes = reinterpret_cast<const GLubyte*>(name);

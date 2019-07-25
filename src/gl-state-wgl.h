@@ -43,7 +43,7 @@ public:
 
 private:
     using api_proc = void (*)();
-    static api_proc load_proc(const char *name, void *userptr);
+    static api_proc load_proc(void *userptr, const char *name);
 
     SharedLibrary wgl_library_;
     HDC hdc_;

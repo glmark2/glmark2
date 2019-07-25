@@ -134,7 +134,7 @@ class GLStateEGL : public GLState
     void get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config);
     EGLConfig select_best_config(std::vector<EGLConfig>& configs);
 
-    static GLADapiproc load_proc(const char* name, void* userptr);
+    static GLADapiproc load_proc(void *userptr, const char* name);
 
 public:
     GLStateEGL() :

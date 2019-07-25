@@ -155,7 +155,7 @@ GLStateWGL::getVisualConfig(GLVisualConfig& vc)
  * Private methods *
  *******************/
 
-GLStateWGL::api_proc GLStateWGL::load_proc(const char *name, void *userptr)
+GLStateWGL::api_proc GLStateWGL::load_proc(void *userptr, const char *name)
 {
     GLStateWGL* state = reinterpret_cast<GLStateWGL*>(userptr);
     auto get_proc_addr = reinterpret_cast<decltype(&wglGetProcAddress)>(state->get_proc_addr_);

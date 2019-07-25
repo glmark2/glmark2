@@ -55,7 +55,7 @@ private:
     void get_glvisualconfig_glx(GLXFBConfig config, GLVisualConfig &visual_config);
     GLXFBConfig select_best_config(std::vector<GLXFBConfig> configs);
 
-    static GLADapiproc load_proc(const char* name, void* userptr);
+    static GLADapiproc load_proc(void* userptr, const char* name);
 
     Display* xdpy_;
     Window xwin_;
