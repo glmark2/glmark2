@@ -173,157 +173,157 @@ PFNGLVIEWPORTPROC glad_glViewport = NULL;
 
 static void glad_gl_load_GL_ES_VERSION_2_0( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GL_ES_VERSION_2_0) return;
-    glActiveTexture = (PFNGLACTIVETEXTUREPROC) load("glActiveTexture", userptr);
-    glAttachShader = (PFNGLATTACHSHADERPROC) load("glAttachShader", userptr);
-    glBindAttribLocation = (PFNGLBINDATTRIBLOCATIONPROC) load("glBindAttribLocation", userptr);
-    glBindBuffer = (PFNGLBINDBUFFERPROC) load("glBindBuffer", userptr);
-    glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC) load("glBindFramebuffer", userptr);
-    glBindRenderbuffer = (PFNGLBINDRENDERBUFFERPROC) load("glBindRenderbuffer", userptr);
-    glBindTexture = (PFNGLBINDTEXTUREPROC) load("glBindTexture", userptr);
-    glBlendColor = (PFNGLBLENDCOLORPROC) load("glBlendColor", userptr);
-    glBlendEquation = (PFNGLBLENDEQUATIONPROC) load("glBlendEquation", userptr);
-    glBlendEquationSeparate = (PFNGLBLENDEQUATIONSEPARATEPROC) load("glBlendEquationSeparate", userptr);
-    glBlendFunc = (PFNGLBLENDFUNCPROC) load("glBlendFunc", userptr);
-    glBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATEPROC) load("glBlendFuncSeparate", userptr);
-    glBufferData = (PFNGLBUFFERDATAPROC) load("glBufferData", userptr);
-    glBufferSubData = (PFNGLBUFFERSUBDATAPROC) load("glBufferSubData", userptr);
-    glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC) load("glCheckFramebufferStatus", userptr);
-    glClear = (PFNGLCLEARPROC) load("glClear", userptr);
-    glClearColor = (PFNGLCLEARCOLORPROC) load("glClearColor", userptr);
-    glClearDepthf = (PFNGLCLEARDEPTHFPROC) load("glClearDepthf", userptr);
-    glClearStencil = (PFNGLCLEARSTENCILPROC) load("glClearStencil", userptr);
-    glColorMask = (PFNGLCOLORMASKPROC) load("glColorMask", userptr);
-    glCompileShader = (PFNGLCOMPILESHADERPROC) load("glCompileShader", userptr);
-    glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC) load("glCompressedTexImage2D", userptr);
-    glCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC) load("glCompressedTexSubImage2D", userptr);
-    glCopyTexImage2D = (PFNGLCOPYTEXIMAGE2DPROC) load("glCopyTexImage2D", userptr);
-    glCopyTexSubImage2D = (PFNGLCOPYTEXSUBIMAGE2DPROC) load("glCopyTexSubImage2D", userptr);
-    glCreateProgram = (PFNGLCREATEPROGRAMPROC) load("glCreateProgram", userptr);
-    glCreateShader = (PFNGLCREATESHADERPROC) load("glCreateShader", userptr);
-    glCullFace = (PFNGLCULLFACEPROC) load("glCullFace", userptr);
-    glDeleteBuffers = (PFNGLDELETEBUFFERSPROC) load("glDeleteBuffers", userptr);
-    glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC) load("glDeleteFramebuffers", userptr);
-    glDeleteProgram = (PFNGLDELETEPROGRAMPROC) load("glDeleteProgram", userptr);
-    glDeleteRenderbuffers = (PFNGLDELETERENDERBUFFERSPROC) load("glDeleteRenderbuffers", userptr);
-    glDeleteShader = (PFNGLDELETESHADERPROC) load("glDeleteShader", userptr);
-    glDeleteTextures = (PFNGLDELETETEXTURESPROC) load("glDeleteTextures", userptr);
-    glDepthFunc = (PFNGLDEPTHFUNCPROC) load("glDepthFunc", userptr);
-    glDepthMask = (PFNGLDEPTHMASKPROC) load("glDepthMask", userptr);
-    glDepthRangef = (PFNGLDEPTHRANGEFPROC) load("glDepthRangef", userptr);
-    glDetachShader = (PFNGLDETACHSHADERPROC) load("glDetachShader", userptr);
-    glDisable = (PFNGLDISABLEPROC) load("glDisable", userptr);
-    glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC) load("glDisableVertexAttribArray", userptr);
-    glDrawArrays = (PFNGLDRAWARRAYSPROC) load("glDrawArrays", userptr);
-    glDrawElements = (PFNGLDRAWELEMENTSPROC) load("glDrawElements", userptr);
-    glEnable = (PFNGLENABLEPROC) load("glEnable", userptr);
-    glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC) load("glEnableVertexAttribArray", userptr);
-    glFinish = (PFNGLFINISHPROC) load("glFinish", userptr);
-    glFlush = (PFNGLFLUSHPROC) load("glFlush", userptr);
-    glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFERPROC) load("glFramebufferRenderbuffer", userptr);
-    glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC) load("glFramebufferTexture2D", userptr);
-    glFrontFace = (PFNGLFRONTFACEPROC) load("glFrontFace", userptr);
-    glGenBuffers = (PFNGLGENBUFFERSPROC) load("glGenBuffers", userptr);
-    glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC) load("glGenFramebuffers", userptr);
-    glGenRenderbuffers = (PFNGLGENRENDERBUFFERSPROC) load("glGenRenderbuffers", userptr);
-    glGenTextures = (PFNGLGENTEXTURESPROC) load("glGenTextures", userptr);
-    glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC) load("glGenerateMipmap", userptr);
-    glGetActiveAttrib = (PFNGLGETACTIVEATTRIBPROC) load("glGetActiveAttrib", userptr);
-    glGetActiveUniform = (PFNGLGETACTIVEUNIFORMPROC) load("glGetActiveUniform", userptr);
-    glGetAttachedShaders = (PFNGLGETATTACHEDSHADERSPROC) load("glGetAttachedShaders", userptr);
-    glGetAttribLocation = (PFNGLGETATTRIBLOCATIONPROC) load("glGetAttribLocation", userptr);
-    glGetBooleanv = (PFNGLGETBOOLEANVPROC) load("glGetBooleanv", userptr);
-    glGetBufferParameteriv = (PFNGLGETBUFFERPARAMETERIVPROC) load("glGetBufferParameteriv", userptr);
-    glGetError = (PFNGLGETERRORPROC) load("glGetError", userptr);
-    glGetFloatv = (PFNGLGETFLOATVPROC) load("glGetFloatv", userptr);
-    glGetFramebufferAttachmentParameteriv = (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC) load("glGetFramebufferAttachmentParameteriv", userptr);
-    glGetIntegerv = (PFNGLGETINTEGERVPROC) load("glGetIntegerv", userptr);
-    glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC) load("glGetProgramInfoLog", userptr);
-    glGetProgramiv = (PFNGLGETPROGRAMIVPROC) load("glGetProgramiv", userptr);
-    glGetRenderbufferParameteriv = (PFNGLGETRENDERBUFFERPARAMETERIVPROC) load("glGetRenderbufferParameteriv", userptr);
-    glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC) load("glGetShaderInfoLog", userptr);
-    glGetShaderPrecisionFormat = (PFNGLGETSHADERPRECISIONFORMATPROC) load("glGetShaderPrecisionFormat", userptr);
-    glGetShaderSource = (PFNGLGETSHADERSOURCEPROC) load("glGetShaderSource", userptr);
-    glGetShaderiv = (PFNGLGETSHADERIVPROC) load("glGetShaderiv", userptr);
-    glGetString = (PFNGLGETSTRINGPROC) load("glGetString", userptr);
-    glGetTexParameterfv = (PFNGLGETTEXPARAMETERFVPROC) load("glGetTexParameterfv", userptr);
-    glGetTexParameteriv = (PFNGLGETTEXPARAMETERIVPROC) load("glGetTexParameteriv", userptr);
-    glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC) load("glGetUniformLocation", userptr);
-    glGetUniformfv = (PFNGLGETUNIFORMFVPROC) load("glGetUniformfv", userptr);
-    glGetUniformiv = (PFNGLGETUNIFORMIVPROC) load("glGetUniformiv", userptr);
-    glGetVertexAttribPointerv = (PFNGLGETVERTEXATTRIBPOINTERVPROC) load("glGetVertexAttribPointerv", userptr);
-    glGetVertexAttribfv = (PFNGLGETVERTEXATTRIBFVPROC) load("glGetVertexAttribfv", userptr);
-    glGetVertexAttribiv = (PFNGLGETVERTEXATTRIBIVPROC) load("glGetVertexAttribiv", userptr);
-    glHint = (PFNGLHINTPROC) load("glHint", userptr);
-    glIsBuffer = (PFNGLISBUFFERPROC) load("glIsBuffer", userptr);
-    glIsEnabled = (PFNGLISENABLEDPROC) load("glIsEnabled", userptr);
-    glIsFramebuffer = (PFNGLISFRAMEBUFFERPROC) load("glIsFramebuffer", userptr);
-    glIsProgram = (PFNGLISPROGRAMPROC) load("glIsProgram", userptr);
-    glIsRenderbuffer = (PFNGLISRENDERBUFFERPROC) load("glIsRenderbuffer", userptr);
-    glIsShader = (PFNGLISSHADERPROC) load("glIsShader", userptr);
-    glIsTexture = (PFNGLISTEXTUREPROC) load("glIsTexture", userptr);
-    glLineWidth = (PFNGLLINEWIDTHPROC) load("glLineWidth", userptr);
-    glLinkProgram = (PFNGLLINKPROGRAMPROC) load("glLinkProgram", userptr);
-    glPixelStorei = (PFNGLPIXELSTOREIPROC) load("glPixelStorei", userptr);
-    glPolygonOffset = (PFNGLPOLYGONOFFSETPROC) load("glPolygonOffset", userptr);
-    glReadPixels = (PFNGLREADPIXELSPROC) load("glReadPixels", userptr);
-    glReleaseShaderCompiler = (PFNGLRELEASESHADERCOMPILERPROC) load("glReleaseShaderCompiler", userptr);
-    glRenderbufferStorage = (PFNGLRENDERBUFFERSTORAGEPROC) load("glRenderbufferStorage", userptr);
-    glSampleCoverage = (PFNGLSAMPLECOVERAGEPROC) load("glSampleCoverage", userptr);
-    glScissor = (PFNGLSCISSORPROC) load("glScissor", userptr);
-    glShaderBinary = (PFNGLSHADERBINARYPROC) load("glShaderBinary", userptr);
-    glShaderSource = (PFNGLSHADERSOURCEPROC) load("glShaderSource", userptr);
-    glStencilFunc = (PFNGLSTENCILFUNCPROC) load("glStencilFunc", userptr);
-    glStencilFuncSeparate = (PFNGLSTENCILFUNCSEPARATEPROC) load("glStencilFuncSeparate", userptr);
-    glStencilMask = (PFNGLSTENCILMASKPROC) load("glStencilMask", userptr);
-    glStencilMaskSeparate = (PFNGLSTENCILMASKSEPARATEPROC) load("glStencilMaskSeparate", userptr);
-    glStencilOp = (PFNGLSTENCILOPPROC) load("glStencilOp", userptr);
-    glStencilOpSeparate = (PFNGLSTENCILOPSEPARATEPROC) load("glStencilOpSeparate", userptr);
-    glTexImage2D = (PFNGLTEXIMAGE2DPROC) load("glTexImage2D", userptr);
-    glTexParameterf = (PFNGLTEXPARAMETERFPROC) load("glTexParameterf", userptr);
-    glTexParameterfv = (PFNGLTEXPARAMETERFVPROC) load("glTexParameterfv", userptr);
-    glTexParameteri = (PFNGLTEXPARAMETERIPROC) load("glTexParameteri", userptr);
-    glTexParameteriv = (PFNGLTEXPARAMETERIVPROC) load("glTexParameteriv", userptr);
-    glTexSubImage2D = (PFNGLTEXSUBIMAGE2DPROC) load("glTexSubImage2D", userptr);
-    glUniform1f = (PFNGLUNIFORM1FPROC) load("glUniform1f", userptr);
-    glUniform1fv = (PFNGLUNIFORM1FVPROC) load("glUniform1fv", userptr);
-    glUniform1i = (PFNGLUNIFORM1IPROC) load("glUniform1i", userptr);
-    glUniform1iv = (PFNGLUNIFORM1IVPROC) load("glUniform1iv", userptr);
-    glUniform2f = (PFNGLUNIFORM2FPROC) load("glUniform2f", userptr);
-    glUniform2fv = (PFNGLUNIFORM2FVPROC) load("glUniform2fv", userptr);
-    glUniform2i = (PFNGLUNIFORM2IPROC) load("glUniform2i", userptr);
-    glUniform2iv = (PFNGLUNIFORM2IVPROC) load("glUniform2iv", userptr);
-    glUniform3f = (PFNGLUNIFORM3FPROC) load("glUniform3f", userptr);
-    glUniform3fv = (PFNGLUNIFORM3FVPROC) load("glUniform3fv", userptr);
-    glUniform3i = (PFNGLUNIFORM3IPROC) load("glUniform3i", userptr);
-    glUniform3iv = (PFNGLUNIFORM3IVPROC) load("glUniform3iv", userptr);
-    glUniform4f = (PFNGLUNIFORM4FPROC) load("glUniform4f", userptr);
-    glUniform4fv = (PFNGLUNIFORM4FVPROC) load("glUniform4fv", userptr);
-    glUniform4i = (PFNGLUNIFORM4IPROC) load("glUniform4i", userptr);
-    glUniform4iv = (PFNGLUNIFORM4IVPROC) load("glUniform4iv", userptr);
-    glUniformMatrix2fv = (PFNGLUNIFORMMATRIX2FVPROC) load("glUniformMatrix2fv", userptr);
-    glUniformMatrix3fv = (PFNGLUNIFORMMATRIX3FVPROC) load("glUniformMatrix3fv", userptr);
-    glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC) load("glUniformMatrix4fv", userptr);
-    glUseProgram = (PFNGLUSEPROGRAMPROC) load("glUseProgram", userptr);
-    glValidateProgram = (PFNGLVALIDATEPROGRAMPROC) load("glValidateProgram", userptr);
-    glVertexAttrib1f = (PFNGLVERTEXATTRIB1FPROC) load("glVertexAttrib1f", userptr);
-    glVertexAttrib1fv = (PFNGLVERTEXATTRIB1FVPROC) load("glVertexAttrib1fv", userptr);
-    glVertexAttrib2f = (PFNGLVERTEXATTRIB2FPROC) load("glVertexAttrib2f", userptr);
-    glVertexAttrib2fv = (PFNGLVERTEXATTRIB2FVPROC) load("glVertexAttrib2fv", userptr);
-    glVertexAttrib3f = (PFNGLVERTEXATTRIB3FPROC) load("glVertexAttrib3f", userptr);
-    glVertexAttrib3fv = (PFNGLVERTEXATTRIB3FVPROC) load("glVertexAttrib3fv", userptr);
-    glVertexAttrib4f = (PFNGLVERTEXATTRIB4FPROC) load("glVertexAttrib4f", userptr);
-    glVertexAttrib4fv = (PFNGLVERTEXATTRIB4FVPROC) load("glVertexAttrib4fv", userptr);
-    glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC) load("glVertexAttribPointer", userptr);
-    glViewport = (PFNGLVIEWPORTPROC) load("glViewport", userptr);
+    glad_glActiveTexture = (PFNGLACTIVETEXTUREPROC) load(userptr, "glActiveTexture");
+    glad_glAttachShader = (PFNGLATTACHSHADERPROC) load(userptr, "glAttachShader");
+    glad_glBindAttribLocation = (PFNGLBINDATTRIBLOCATIONPROC) load(userptr, "glBindAttribLocation");
+    glad_glBindBuffer = (PFNGLBINDBUFFERPROC) load(userptr, "glBindBuffer");
+    glad_glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC) load(userptr, "glBindFramebuffer");
+    glad_glBindRenderbuffer = (PFNGLBINDRENDERBUFFERPROC) load(userptr, "glBindRenderbuffer");
+    glad_glBindTexture = (PFNGLBINDTEXTUREPROC) load(userptr, "glBindTexture");
+    glad_glBlendColor = (PFNGLBLENDCOLORPROC) load(userptr, "glBlendColor");
+    glad_glBlendEquation = (PFNGLBLENDEQUATIONPROC) load(userptr, "glBlendEquation");
+    glad_glBlendEquationSeparate = (PFNGLBLENDEQUATIONSEPARATEPROC) load(userptr, "glBlendEquationSeparate");
+    glad_glBlendFunc = (PFNGLBLENDFUNCPROC) load(userptr, "glBlendFunc");
+    glad_glBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATEPROC) load(userptr, "glBlendFuncSeparate");
+    glad_glBufferData = (PFNGLBUFFERDATAPROC) load(userptr, "glBufferData");
+    glad_glBufferSubData = (PFNGLBUFFERSUBDATAPROC) load(userptr, "glBufferSubData");
+    glad_glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC) load(userptr, "glCheckFramebufferStatus");
+    glad_glClear = (PFNGLCLEARPROC) load(userptr, "glClear");
+    glad_glClearColor = (PFNGLCLEARCOLORPROC) load(userptr, "glClearColor");
+    glad_glClearDepthf = (PFNGLCLEARDEPTHFPROC) load(userptr, "glClearDepthf");
+    glad_glClearStencil = (PFNGLCLEARSTENCILPROC) load(userptr, "glClearStencil");
+    glad_glColorMask = (PFNGLCOLORMASKPROC) load(userptr, "glColorMask");
+    glad_glCompileShader = (PFNGLCOMPILESHADERPROC) load(userptr, "glCompileShader");
+    glad_glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC) load(userptr, "glCompressedTexImage2D");
+    glad_glCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC) load(userptr, "glCompressedTexSubImage2D");
+    glad_glCopyTexImage2D = (PFNGLCOPYTEXIMAGE2DPROC) load(userptr, "glCopyTexImage2D");
+    glad_glCopyTexSubImage2D = (PFNGLCOPYTEXSUBIMAGE2DPROC) load(userptr, "glCopyTexSubImage2D");
+    glad_glCreateProgram = (PFNGLCREATEPROGRAMPROC) load(userptr, "glCreateProgram");
+    glad_glCreateShader = (PFNGLCREATESHADERPROC) load(userptr, "glCreateShader");
+    glad_glCullFace = (PFNGLCULLFACEPROC) load(userptr, "glCullFace");
+    glad_glDeleteBuffers = (PFNGLDELETEBUFFERSPROC) load(userptr, "glDeleteBuffers");
+    glad_glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC) load(userptr, "glDeleteFramebuffers");
+    glad_glDeleteProgram = (PFNGLDELETEPROGRAMPROC) load(userptr, "glDeleteProgram");
+    glad_glDeleteRenderbuffers = (PFNGLDELETERENDERBUFFERSPROC) load(userptr, "glDeleteRenderbuffers");
+    glad_glDeleteShader = (PFNGLDELETESHADERPROC) load(userptr, "glDeleteShader");
+    glad_glDeleteTextures = (PFNGLDELETETEXTURESPROC) load(userptr, "glDeleteTextures");
+    glad_glDepthFunc = (PFNGLDEPTHFUNCPROC) load(userptr, "glDepthFunc");
+    glad_glDepthMask = (PFNGLDEPTHMASKPROC) load(userptr, "glDepthMask");
+    glad_glDepthRangef = (PFNGLDEPTHRANGEFPROC) load(userptr, "glDepthRangef");
+    glad_glDetachShader = (PFNGLDETACHSHADERPROC) load(userptr, "glDetachShader");
+    glad_glDisable = (PFNGLDISABLEPROC) load(userptr, "glDisable");
+    glad_glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC) load(userptr, "glDisableVertexAttribArray");
+    glad_glDrawArrays = (PFNGLDRAWARRAYSPROC) load(userptr, "glDrawArrays");
+    glad_glDrawElements = (PFNGLDRAWELEMENTSPROC) load(userptr, "glDrawElements");
+    glad_glEnable = (PFNGLENABLEPROC) load(userptr, "glEnable");
+    glad_glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC) load(userptr, "glEnableVertexAttribArray");
+    glad_glFinish = (PFNGLFINISHPROC) load(userptr, "glFinish");
+    glad_glFlush = (PFNGLFLUSHPROC) load(userptr, "glFlush");
+    glad_glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFERPROC) load(userptr, "glFramebufferRenderbuffer");
+    glad_glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC) load(userptr, "glFramebufferTexture2D");
+    glad_glFrontFace = (PFNGLFRONTFACEPROC) load(userptr, "glFrontFace");
+    glad_glGenBuffers = (PFNGLGENBUFFERSPROC) load(userptr, "glGenBuffers");
+    glad_glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC) load(userptr, "glGenFramebuffers");
+    glad_glGenRenderbuffers = (PFNGLGENRENDERBUFFERSPROC) load(userptr, "glGenRenderbuffers");
+    glad_glGenTextures = (PFNGLGENTEXTURESPROC) load(userptr, "glGenTextures");
+    glad_glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC) load(userptr, "glGenerateMipmap");
+    glad_glGetActiveAttrib = (PFNGLGETACTIVEATTRIBPROC) load(userptr, "glGetActiveAttrib");
+    glad_glGetActiveUniform = (PFNGLGETACTIVEUNIFORMPROC) load(userptr, "glGetActiveUniform");
+    glad_glGetAttachedShaders = (PFNGLGETATTACHEDSHADERSPROC) load(userptr, "glGetAttachedShaders");
+    glad_glGetAttribLocation = (PFNGLGETATTRIBLOCATIONPROC) load(userptr, "glGetAttribLocation");
+    glad_glGetBooleanv = (PFNGLGETBOOLEANVPROC) load(userptr, "glGetBooleanv");
+    glad_glGetBufferParameteriv = (PFNGLGETBUFFERPARAMETERIVPROC) load(userptr, "glGetBufferParameteriv");
+    glad_glGetError = (PFNGLGETERRORPROC) load(userptr, "glGetError");
+    glad_glGetFloatv = (PFNGLGETFLOATVPROC) load(userptr, "glGetFloatv");
+    glad_glGetFramebufferAttachmentParameteriv = (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC) load(userptr, "glGetFramebufferAttachmentParameteriv");
+    glad_glGetIntegerv = (PFNGLGETINTEGERVPROC) load(userptr, "glGetIntegerv");
+    glad_glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC) load(userptr, "glGetProgramInfoLog");
+    glad_glGetProgramiv = (PFNGLGETPROGRAMIVPROC) load(userptr, "glGetProgramiv");
+    glad_glGetRenderbufferParameteriv = (PFNGLGETRENDERBUFFERPARAMETERIVPROC) load(userptr, "glGetRenderbufferParameteriv");
+    glad_glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC) load(userptr, "glGetShaderInfoLog");
+    glad_glGetShaderPrecisionFormat = (PFNGLGETSHADERPRECISIONFORMATPROC) load(userptr, "glGetShaderPrecisionFormat");
+    glad_glGetShaderSource = (PFNGLGETSHADERSOURCEPROC) load(userptr, "glGetShaderSource");
+    glad_glGetShaderiv = (PFNGLGETSHADERIVPROC) load(userptr, "glGetShaderiv");
+    glad_glGetString = (PFNGLGETSTRINGPROC) load(userptr, "glGetString");
+    glad_glGetTexParameterfv = (PFNGLGETTEXPARAMETERFVPROC) load(userptr, "glGetTexParameterfv");
+    glad_glGetTexParameteriv = (PFNGLGETTEXPARAMETERIVPROC) load(userptr, "glGetTexParameteriv");
+    glad_glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC) load(userptr, "glGetUniformLocation");
+    glad_glGetUniformfv = (PFNGLGETUNIFORMFVPROC) load(userptr, "glGetUniformfv");
+    glad_glGetUniformiv = (PFNGLGETUNIFORMIVPROC) load(userptr, "glGetUniformiv");
+    glad_glGetVertexAttribPointerv = (PFNGLGETVERTEXATTRIBPOINTERVPROC) load(userptr, "glGetVertexAttribPointerv");
+    glad_glGetVertexAttribfv = (PFNGLGETVERTEXATTRIBFVPROC) load(userptr, "glGetVertexAttribfv");
+    glad_glGetVertexAttribiv = (PFNGLGETVERTEXATTRIBIVPROC) load(userptr, "glGetVertexAttribiv");
+    glad_glHint = (PFNGLHINTPROC) load(userptr, "glHint");
+    glad_glIsBuffer = (PFNGLISBUFFERPROC) load(userptr, "glIsBuffer");
+    glad_glIsEnabled = (PFNGLISENABLEDPROC) load(userptr, "glIsEnabled");
+    glad_glIsFramebuffer = (PFNGLISFRAMEBUFFERPROC) load(userptr, "glIsFramebuffer");
+    glad_glIsProgram = (PFNGLISPROGRAMPROC) load(userptr, "glIsProgram");
+    glad_glIsRenderbuffer = (PFNGLISRENDERBUFFERPROC) load(userptr, "glIsRenderbuffer");
+    glad_glIsShader = (PFNGLISSHADERPROC) load(userptr, "glIsShader");
+    glad_glIsTexture = (PFNGLISTEXTUREPROC) load(userptr, "glIsTexture");
+    glad_glLineWidth = (PFNGLLINEWIDTHPROC) load(userptr, "glLineWidth");
+    glad_glLinkProgram = (PFNGLLINKPROGRAMPROC) load(userptr, "glLinkProgram");
+    glad_glPixelStorei = (PFNGLPIXELSTOREIPROC) load(userptr, "glPixelStorei");
+    glad_glPolygonOffset = (PFNGLPOLYGONOFFSETPROC) load(userptr, "glPolygonOffset");
+    glad_glReadPixels = (PFNGLREADPIXELSPROC) load(userptr, "glReadPixels");
+    glad_glReleaseShaderCompiler = (PFNGLRELEASESHADERCOMPILERPROC) load(userptr, "glReleaseShaderCompiler");
+    glad_glRenderbufferStorage = (PFNGLRENDERBUFFERSTORAGEPROC) load(userptr, "glRenderbufferStorage");
+    glad_glSampleCoverage = (PFNGLSAMPLECOVERAGEPROC) load(userptr, "glSampleCoverage");
+    glad_glScissor = (PFNGLSCISSORPROC) load(userptr, "glScissor");
+    glad_glShaderBinary = (PFNGLSHADERBINARYPROC) load(userptr, "glShaderBinary");
+    glad_glShaderSource = (PFNGLSHADERSOURCEPROC) load(userptr, "glShaderSource");
+    glad_glStencilFunc = (PFNGLSTENCILFUNCPROC) load(userptr, "glStencilFunc");
+    glad_glStencilFuncSeparate = (PFNGLSTENCILFUNCSEPARATEPROC) load(userptr, "glStencilFuncSeparate");
+    glad_glStencilMask = (PFNGLSTENCILMASKPROC) load(userptr, "glStencilMask");
+    glad_glStencilMaskSeparate = (PFNGLSTENCILMASKSEPARATEPROC) load(userptr, "glStencilMaskSeparate");
+    glad_glStencilOp = (PFNGLSTENCILOPPROC) load(userptr, "glStencilOp");
+    glad_glStencilOpSeparate = (PFNGLSTENCILOPSEPARATEPROC) load(userptr, "glStencilOpSeparate");
+    glad_glTexImage2D = (PFNGLTEXIMAGE2DPROC) load(userptr, "glTexImage2D");
+    glad_glTexParameterf = (PFNGLTEXPARAMETERFPROC) load(userptr, "glTexParameterf");
+    glad_glTexParameterfv = (PFNGLTEXPARAMETERFVPROC) load(userptr, "glTexParameterfv");
+    glad_glTexParameteri = (PFNGLTEXPARAMETERIPROC) load(userptr, "glTexParameteri");
+    glad_glTexParameteriv = (PFNGLTEXPARAMETERIVPROC) load(userptr, "glTexParameteriv");
+    glad_glTexSubImage2D = (PFNGLTEXSUBIMAGE2DPROC) load(userptr, "glTexSubImage2D");
+    glad_glUniform1f = (PFNGLUNIFORM1FPROC) load(userptr, "glUniform1f");
+    glad_glUniform1fv = (PFNGLUNIFORM1FVPROC) load(userptr, "glUniform1fv");
+    glad_glUniform1i = (PFNGLUNIFORM1IPROC) load(userptr, "glUniform1i");
+    glad_glUniform1iv = (PFNGLUNIFORM1IVPROC) load(userptr, "glUniform1iv");
+    glad_glUniform2f = (PFNGLUNIFORM2FPROC) load(userptr, "glUniform2f");
+    glad_glUniform2fv = (PFNGLUNIFORM2FVPROC) load(userptr, "glUniform2fv");
+    glad_glUniform2i = (PFNGLUNIFORM2IPROC) load(userptr, "glUniform2i");
+    glad_glUniform2iv = (PFNGLUNIFORM2IVPROC) load(userptr, "glUniform2iv");
+    glad_glUniform3f = (PFNGLUNIFORM3FPROC) load(userptr, "glUniform3f");
+    glad_glUniform3fv = (PFNGLUNIFORM3FVPROC) load(userptr, "glUniform3fv");
+    glad_glUniform3i = (PFNGLUNIFORM3IPROC) load(userptr, "glUniform3i");
+    glad_glUniform3iv = (PFNGLUNIFORM3IVPROC) load(userptr, "glUniform3iv");
+    glad_glUniform4f = (PFNGLUNIFORM4FPROC) load(userptr, "glUniform4f");
+    glad_glUniform4fv = (PFNGLUNIFORM4FVPROC) load(userptr, "glUniform4fv");
+    glad_glUniform4i = (PFNGLUNIFORM4IPROC) load(userptr, "glUniform4i");
+    glad_glUniform4iv = (PFNGLUNIFORM4IVPROC) load(userptr, "glUniform4iv");
+    glad_glUniformMatrix2fv = (PFNGLUNIFORMMATRIX2FVPROC) load(userptr, "glUniformMatrix2fv");
+    glad_glUniformMatrix3fv = (PFNGLUNIFORMMATRIX3FVPROC) load(userptr, "glUniformMatrix3fv");
+    glad_glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC) load(userptr, "glUniformMatrix4fv");
+    glad_glUseProgram = (PFNGLUSEPROGRAMPROC) load(userptr, "glUseProgram");
+    glad_glValidateProgram = (PFNGLVALIDATEPROGRAMPROC) load(userptr, "glValidateProgram");
+    glad_glVertexAttrib1f = (PFNGLVERTEXATTRIB1FPROC) load(userptr, "glVertexAttrib1f");
+    glad_glVertexAttrib1fv = (PFNGLVERTEXATTRIB1FVPROC) load(userptr, "glVertexAttrib1fv");
+    glad_glVertexAttrib2f = (PFNGLVERTEXATTRIB2FPROC) load(userptr, "glVertexAttrib2f");
+    glad_glVertexAttrib2fv = (PFNGLVERTEXATTRIB2FVPROC) load(userptr, "glVertexAttrib2fv");
+    glad_glVertexAttrib3f = (PFNGLVERTEXATTRIB3FPROC) load(userptr, "glVertexAttrib3f");
+    glad_glVertexAttrib3fv = (PFNGLVERTEXATTRIB3FVPROC) load(userptr, "glVertexAttrib3fv");
+    glad_glVertexAttrib4f = (PFNGLVERTEXATTRIB4FPROC) load(userptr, "glVertexAttrib4f");
+    glad_glVertexAttrib4fv = (PFNGLVERTEXATTRIB4FVPROC) load(userptr, "glVertexAttrib4fv");
+    glad_glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC) load(userptr, "glVertexAttribPointer");
+    glad_glViewport = (PFNGLVIEWPORTPROC) load(userptr, "glViewport");
 }
 static void glad_gl_load_GL_OES_mapbuffer( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GL_OES_mapbuffer) return;
-    glGetBufferPointerv = (PFNGLGETBUFFERPOINTERVPROC) load("glGetBufferPointerv", userptr);
-    glGetBufferPointervOES = (PFNGLGETBUFFERPOINTERVOESPROC) load("glGetBufferPointervOES", userptr);
-    glMapBuffer = (PFNGLMAPBUFFERPROC) load("glMapBuffer", userptr);
-    glMapBufferOES = (PFNGLMAPBUFFEROESPROC) load("glMapBufferOES", userptr);
-    glUnmapBuffer = (PFNGLUNMAPBUFFERPROC) load("glUnmapBuffer", userptr);
-    glUnmapBufferOES = (PFNGLUNMAPBUFFEROESPROC) load("glUnmapBufferOES", userptr);
+    glad_glGetBufferPointerv = (PFNGLGETBUFFERPOINTERVPROC) load(userptr, "glGetBufferPointerv");
+    glad_glGetBufferPointervOES = (PFNGLGETBUFFERPOINTERVOESPROC) load(userptr, "glGetBufferPointervOES");
+    glad_glMapBuffer = (PFNGLMAPBUFFERPROC) load(userptr, "glMapBuffer");
+    glad_glMapBufferOES = (PFNGLMAPBUFFEROESPROC) load(userptr, "glMapBufferOES");
+    glad_glUnmapBuffer = (PFNGLUNMAPBUFFERPROC) load(userptr, "glUnmapBuffer");
+    glad_glUnmapBufferOES = (PFNGLUNMAPBUFFEROESPROC) load(userptr, "glUnmapBufferOES");
 }
 
 
@@ -342,19 +342,19 @@ static int glad_gl_get_extensions( int version, const char **out_exts, unsigned 
     (void) out_num_exts_i;
     (void) out_exts_i;
 #endif
-        if (glGetString == NULL) {
+        if (glad_glGetString == NULL) {
             return 0;
         }
-        *out_exts = (const char *)glGetString(GL_EXTENSIONS);
+        *out_exts = (const char *)glad_glGetString(GL_EXTENSIONS);
 #if GLAD_GL_IS_SOME_NEW_VERSION
     } else {
         unsigned int index = 0;
         unsigned int num_exts_i = 0;
         char **exts_i = NULL;
-        if (glGetStringi == NULL || glGetIntegerv == NULL) {
+        if (glad_glGetStringi == NULL || glad_glGetIntegerv == NULL) {
             return 0;
         }
-        glGetIntegerv(GL_NUM_EXTENSIONS, (int*) &num_exts_i);
+        glad_glGetIntegerv(GL_NUM_EXTENSIONS, (int*) &num_exts_i);
         if (num_exts_i > 0) {
             exts_i = (char **) malloc(num_exts_i * (sizeof *exts_i));
         }
@@ -362,7 +362,7 @@ static int glad_gl_get_extensions( int version, const char **out_exts, unsigned 
             return 0;
         }
         for(index = 0; index < num_exts_i; index++) {
-            const char *gl_str_tmp = (const char*) glGetStringi(GL_EXTENSIONS, index);
+            const char *gl_str_tmp = (const char*) glad_glGetStringi(GL_EXTENSIONS, index);
             size_t len = strlen(gl_str_tmp) + 1;
 
             char *local_str = (char*) malloc(len * sizeof(char));
@@ -422,7 +422,7 @@ static int glad_gl_has_extension(int version, const char *exts, unsigned int num
     return 0;
 }
 
-static GLADapiproc glad_gl_get_proc_from_userptr(const char* name, void *userptr) {
+static GLADapiproc glad_gl_get_proc_from_userptr(void *userptr, const char* name) {
     return (GLAD_GNUC_EXTENSION (GLADapiproc (*)(const char *name)) userptr)(name);
 }
 
@@ -449,7 +449,7 @@ static int glad_gl_find_core_gles2(void) {
         "OpenGL ES ",
         NULL
     };
-    version = (const char*) glGetString(GL_VERSION);
+    version = (const char*) glad_glGetString(GL_VERSION);
     if (!version) return 0;
     for (i = 0;  prefixes[i];  i++) {
         const size_t length = strlen(prefixes[i]);
@@ -469,9 +469,9 @@ static int glad_gl_find_core_gles2(void) {
 int gladLoadGLES2UserPtr( GLADuserptrloadfunc load, void *userptr) {
     int version;
 
-    glGetString = (PFNGLGETSTRINGPROC) load("glGetString", userptr);
-    if(glGetString == NULL) return 0;
-    if(glGetString(GL_VERSION) == NULL) return 0;
+    glad_glGetString = (PFNGLGETSTRINGPROC) load(userptr, "glGetString");
+    if(glad_glGetString == NULL) return 0;
+    if(glad_glGetString(GL_VERSION) == NULL) return 0;
     version = glad_gl_find_core_gles2();
 
     glad_gl_load_GL_ES_VERSION_2_0(load, userptr);
@@ -491,4 +491,5 @@ int gladLoadGLES2( GLADloadfunc load) {
 
 
 
+ 
 

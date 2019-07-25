@@ -71,66 +71,66 @@ PFNGLXWAITXPROC glad_glXWaitX = NULL;
 
 static void glad_glx_load_GLX_VERSION_1_0( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GLX_VERSION_1_0) return;
-    glXChooseVisual = (PFNGLXCHOOSEVISUALPROC) load("glXChooseVisual", userptr);
-    glXCopyContext = (PFNGLXCOPYCONTEXTPROC) load("glXCopyContext", userptr);
-    glXCreateContext = (PFNGLXCREATECONTEXTPROC) load("glXCreateContext", userptr);
-    glXCreateGLXPixmap = (PFNGLXCREATEGLXPIXMAPPROC) load("glXCreateGLXPixmap", userptr);
-    glXDestroyContext = (PFNGLXDESTROYCONTEXTPROC) load("glXDestroyContext", userptr);
-    glXDestroyGLXPixmap = (PFNGLXDESTROYGLXPIXMAPPROC) load("glXDestroyGLXPixmap", userptr);
-    glXGetConfig = (PFNGLXGETCONFIGPROC) load("glXGetConfig", userptr);
-    glXGetCurrentContext = (PFNGLXGETCURRENTCONTEXTPROC) load("glXGetCurrentContext", userptr);
-    glXGetCurrentDrawable = (PFNGLXGETCURRENTDRAWABLEPROC) load("glXGetCurrentDrawable", userptr);
-    glXIsDirect = (PFNGLXISDIRECTPROC) load("glXIsDirect", userptr);
-    glXMakeCurrent = (PFNGLXMAKECURRENTPROC) load("glXMakeCurrent", userptr);
-    glXQueryExtension = (PFNGLXQUERYEXTENSIONPROC) load("glXQueryExtension", userptr);
-    glXQueryVersion = (PFNGLXQUERYVERSIONPROC) load("glXQueryVersion", userptr);
-    glXSwapBuffers = (PFNGLXSWAPBUFFERSPROC) load("glXSwapBuffers", userptr);
-    glXUseXFont = (PFNGLXUSEXFONTPROC) load("glXUseXFont", userptr);
-    glXWaitGL = (PFNGLXWAITGLPROC) load("glXWaitGL", userptr);
-    glXWaitX = (PFNGLXWAITXPROC) load("glXWaitX", userptr);
+    glad_glXChooseVisual = (PFNGLXCHOOSEVISUALPROC) load(userptr, "glXChooseVisual");
+    glad_glXCopyContext = (PFNGLXCOPYCONTEXTPROC) load(userptr, "glXCopyContext");
+    glad_glXCreateContext = (PFNGLXCREATECONTEXTPROC) load(userptr, "glXCreateContext");
+    glad_glXCreateGLXPixmap = (PFNGLXCREATEGLXPIXMAPPROC) load(userptr, "glXCreateGLXPixmap");
+    glad_glXDestroyContext = (PFNGLXDESTROYCONTEXTPROC) load(userptr, "glXDestroyContext");
+    glad_glXDestroyGLXPixmap = (PFNGLXDESTROYGLXPIXMAPPROC) load(userptr, "glXDestroyGLXPixmap");
+    glad_glXGetConfig = (PFNGLXGETCONFIGPROC) load(userptr, "glXGetConfig");
+    glad_glXGetCurrentContext = (PFNGLXGETCURRENTCONTEXTPROC) load(userptr, "glXGetCurrentContext");
+    glad_glXGetCurrentDrawable = (PFNGLXGETCURRENTDRAWABLEPROC) load(userptr, "glXGetCurrentDrawable");
+    glad_glXIsDirect = (PFNGLXISDIRECTPROC) load(userptr, "glXIsDirect");
+    glad_glXMakeCurrent = (PFNGLXMAKECURRENTPROC) load(userptr, "glXMakeCurrent");
+    glad_glXQueryExtension = (PFNGLXQUERYEXTENSIONPROC) load(userptr, "glXQueryExtension");
+    glad_glXQueryVersion = (PFNGLXQUERYVERSIONPROC) load(userptr, "glXQueryVersion");
+    glad_glXSwapBuffers = (PFNGLXSWAPBUFFERSPROC) load(userptr, "glXSwapBuffers");
+    glad_glXUseXFont = (PFNGLXUSEXFONTPROC) load(userptr, "glXUseXFont");
+    glad_glXWaitGL = (PFNGLXWAITGLPROC) load(userptr, "glXWaitGL");
+    glad_glXWaitX = (PFNGLXWAITXPROC) load(userptr, "glXWaitX");
 }
 static void glad_glx_load_GLX_VERSION_1_1( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GLX_VERSION_1_1) return;
-    glXGetClientString = (PFNGLXGETCLIENTSTRINGPROC) load("glXGetClientString", userptr);
-    glXQueryExtensionsString = (PFNGLXQUERYEXTENSIONSSTRINGPROC) load("glXQueryExtensionsString", userptr);
-    glXQueryServerString = (PFNGLXQUERYSERVERSTRINGPROC) load("glXQueryServerString", userptr);
+    glad_glXGetClientString = (PFNGLXGETCLIENTSTRINGPROC) load(userptr, "glXGetClientString");
+    glad_glXQueryExtensionsString = (PFNGLXQUERYEXTENSIONSSTRINGPROC) load(userptr, "glXQueryExtensionsString");
+    glad_glXQueryServerString = (PFNGLXQUERYSERVERSTRINGPROC) load(userptr, "glXQueryServerString");
 }
 static void glad_glx_load_GLX_VERSION_1_2( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GLX_VERSION_1_2) return;
-    glXGetCurrentDisplay = (PFNGLXGETCURRENTDISPLAYPROC) load("glXGetCurrentDisplay", userptr);
+    glad_glXGetCurrentDisplay = (PFNGLXGETCURRENTDISPLAYPROC) load(userptr, "glXGetCurrentDisplay");
 }
 static void glad_glx_load_GLX_VERSION_1_3( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GLX_VERSION_1_3) return;
-    glXChooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC) load("glXChooseFBConfig", userptr);
-    glXCreateNewContext = (PFNGLXCREATENEWCONTEXTPROC) load("glXCreateNewContext", userptr);
-    glXCreatePbuffer = (PFNGLXCREATEPBUFFERPROC) load("glXCreatePbuffer", userptr);
-    glXCreatePixmap = (PFNGLXCREATEPIXMAPPROC) load("glXCreatePixmap", userptr);
-    glXCreateWindow = (PFNGLXCREATEWINDOWPROC) load("glXCreateWindow", userptr);
-    glXDestroyPbuffer = (PFNGLXDESTROYPBUFFERPROC) load("glXDestroyPbuffer", userptr);
-    glXDestroyPixmap = (PFNGLXDESTROYPIXMAPPROC) load("glXDestroyPixmap", userptr);
-    glXDestroyWindow = (PFNGLXDESTROYWINDOWPROC) load("glXDestroyWindow", userptr);
-    glXGetCurrentReadDrawable = (PFNGLXGETCURRENTREADDRAWABLEPROC) load("glXGetCurrentReadDrawable", userptr);
-    glXGetFBConfigAttrib = (PFNGLXGETFBCONFIGATTRIBPROC) load("glXGetFBConfigAttrib", userptr);
-    glXGetFBConfigs = (PFNGLXGETFBCONFIGSPROC) load("glXGetFBConfigs", userptr);
-    glXGetSelectedEvent = (PFNGLXGETSELECTEDEVENTPROC) load("glXGetSelectedEvent", userptr);
-    glXGetVisualFromFBConfig = (PFNGLXGETVISUALFROMFBCONFIGPROC) load("glXGetVisualFromFBConfig", userptr);
-    glXMakeContextCurrent = (PFNGLXMAKECONTEXTCURRENTPROC) load("glXMakeContextCurrent", userptr);
-    glXQueryContext = (PFNGLXQUERYCONTEXTPROC) load("glXQueryContext", userptr);
-    glXQueryDrawable = (PFNGLXQUERYDRAWABLEPROC) load("glXQueryDrawable", userptr);
-    glXSelectEvent = (PFNGLXSELECTEVENTPROC) load("glXSelectEvent", userptr);
+    glad_glXChooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC) load(userptr, "glXChooseFBConfig");
+    glad_glXCreateNewContext = (PFNGLXCREATENEWCONTEXTPROC) load(userptr, "glXCreateNewContext");
+    glad_glXCreatePbuffer = (PFNGLXCREATEPBUFFERPROC) load(userptr, "glXCreatePbuffer");
+    glad_glXCreatePixmap = (PFNGLXCREATEPIXMAPPROC) load(userptr, "glXCreatePixmap");
+    glad_glXCreateWindow = (PFNGLXCREATEWINDOWPROC) load(userptr, "glXCreateWindow");
+    glad_glXDestroyPbuffer = (PFNGLXDESTROYPBUFFERPROC) load(userptr, "glXDestroyPbuffer");
+    glad_glXDestroyPixmap = (PFNGLXDESTROYPIXMAPPROC) load(userptr, "glXDestroyPixmap");
+    glad_glXDestroyWindow = (PFNGLXDESTROYWINDOWPROC) load(userptr, "glXDestroyWindow");
+    glad_glXGetCurrentReadDrawable = (PFNGLXGETCURRENTREADDRAWABLEPROC) load(userptr, "glXGetCurrentReadDrawable");
+    glad_glXGetFBConfigAttrib = (PFNGLXGETFBCONFIGATTRIBPROC) load(userptr, "glXGetFBConfigAttrib");
+    glad_glXGetFBConfigs = (PFNGLXGETFBCONFIGSPROC) load(userptr, "glXGetFBConfigs");
+    glad_glXGetSelectedEvent = (PFNGLXGETSELECTEDEVENTPROC) load(userptr, "glXGetSelectedEvent");
+    glad_glXGetVisualFromFBConfig = (PFNGLXGETVISUALFROMFBCONFIGPROC) load(userptr, "glXGetVisualFromFBConfig");
+    glad_glXMakeContextCurrent = (PFNGLXMAKECONTEXTCURRENTPROC) load(userptr, "glXMakeContextCurrent");
+    glad_glXQueryContext = (PFNGLXQUERYCONTEXTPROC) load(userptr, "glXQueryContext");
+    glad_glXQueryDrawable = (PFNGLXQUERYDRAWABLEPROC) load(userptr, "glXQueryDrawable");
+    glad_glXSelectEvent = (PFNGLXSELECTEVENTPROC) load(userptr, "glXSelectEvent");
 }
 static void glad_glx_load_GLX_VERSION_1_4( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GLX_VERSION_1_4) return;
-    glXGetProcAddress = (PFNGLXGETPROCADDRESSPROC) load("glXGetProcAddress", userptr);
+    glad_glXGetProcAddress = (PFNGLXGETPROCADDRESSPROC) load(userptr, "glXGetProcAddress");
 }
 static void glad_glx_load_GLX_EXT_swap_control( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GLX_EXT_swap_control) return;
-    glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC) load("glXSwapIntervalEXT", userptr);
+    glad_glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC) load(userptr, "glXSwapIntervalEXT");
 }
 static void glad_glx_load_GLX_MESA_swap_control( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GLX_MESA_swap_control) return;
-    glXGetSwapIntervalMESA = (PFNGLXGETSWAPINTERVALMESAPROC) load("glXGetSwapIntervalMESA", userptr);
-    glXSwapIntervalMESA = (PFNGLXSWAPINTERVALMESAPROC) load("glXSwapIntervalMESA", userptr);
+    glad_glXGetSwapIntervalMESA = (PFNGLXGETSWAPINTERVALMESAPROC) load(userptr, "glXGetSwapIntervalMESA");
+    glad_glXSwapIntervalMESA = (PFNGLXSWAPINTERVALMESAPROC) load(userptr, "glXSwapIntervalMESA");
 }
 
 
@@ -172,7 +172,7 @@ static int glad_glx_has_extension(Display *display, int screen, const char *ext)
     return 0;
 }
 
-static GLADapiproc glad_glx_get_proc_from_userptr(const char* name, void *userptr) {
+static GLADapiproc glad_glx_get_proc_from_userptr(void *userptr, const char* name) {
     return (GLAD_GNUC_EXTENSION (GLADapiproc (*)(const char *name)) userptr)(name);
 }
 
@@ -207,7 +207,7 @@ static int glad_glx_find_core_glx(Display **display, int *screen) {
 
 int gladLoadGLXUserPtr(Display *display, int screen, GLADuserptrloadfunc load, void *userptr) {
     int version;
-    glXQueryVersion = (PFNGLXQUERYVERSIONPROC) load("glXQueryVersion", userptr);
+    glXQueryVersion = (PFNGLXQUERYVERSIONPROC) load(userptr, "glXQueryVersion");
     if(glXQueryVersion == NULL) return 0;
     version = glad_glx_find_core_glx(&display, &screen);
 
@@ -228,4 +228,5 @@ int gladLoadGLX(Display *display, int screen, GLADloadfunc load) {
     return gladLoadGLXUserPtr(display, screen, glad_glx_get_proc_from_userptr, GLAD_GNUC_EXTENSION (void*) load);
 }
 
+ 
 
