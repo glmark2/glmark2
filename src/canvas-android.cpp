@@ -19,7 +19,7 @@
  * Authors:
  *  Alexandros Frantzis (glmark2)
  *  Jesse Barker
- *  Ivan Efremov (i350300800e@gmail.com)
+ *  Ivan Efremov
  */
 #include "canvas-android.h"
 #include "log.h"
