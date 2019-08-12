@@ -70,7 +70,7 @@ flavor_uselibs = {
   'mir-glesv2' : ['mirclient', 'glad-egl-mir', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
   'wayland-gl' : ['wayland-client', 'wayland-egl', 'glad-egl-wayland', 'glad-gl', 'matrix-gl', 'common-gl'],
   'wayland-glesv2' : ['wayland-client', 'wayland-egl', 'glad-egl-wayland', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
-  'win32-gl': ['glad-gl', 'matrix-gl', 'common-gl'],
+  'win32-gl': ['glad-gl', 'glad-wgl', 'matrix-gl', 'common-gl'],
   'win32-glesv2': ['glad-egl-win32', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
   'x11-gl' : ['x11', 'glad-gl', 'glad-glx', 'matrix-gl', 'common-gl'],
   'x11-glesv2' : ['x11', 'glad-egl-x11', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
@@ -162,6 +162,15 @@ if 'glad-gl' in all_uselibs:
         export_includes = 'glad/include'
         )
 
+if 'glad-wgl' in all_uselibs:
+    bld(
+        features = ['c'],
+        source   = ['glad/src/wgl.c'],
+        target   = 'glad-wgl',
+        includes = ['glad/include'],
+        export_includes = 'glad/include'
+        )
+
 if 'glad-glesv2' in all_uselibs:
     bld(
         features = ['c'],
@@ -200,7 +209,7 @@ if 'libpng-local' in all_uselibs:
         features  = ['c'],
         source    = libpng_local_sources,
         target    = 'libpng-local',
-        use       = ['zlib'],
+        use       = ['zlib-local'],
         export_includes = 'libpng'
         )
 
