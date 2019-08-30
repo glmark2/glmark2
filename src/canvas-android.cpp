@@ -197,7 +197,7 @@ CanvasAndroid::resize(int width, int height)
  *******************/
 
 GLADapiproc
-CanvasAndroid::load_proc(const char *name, void *userdata)
+CanvasAndroid::load_proc(void *userdata, const char *name)
 {
     if (eglGetProcAddress) {
         GLADapiproc sym = reinterpret_cast<GLADapiproc>(eglGetProcAddress(name));
