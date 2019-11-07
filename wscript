@@ -19,6 +19,7 @@ FLAVORS = {
     'win32-glesv2': 'glmark2-es2',
     'x11-gl' : 'glmark2',
     'x11-glesv2' : 'glmark2-es2',
+    'fb-glesv2' : 'glmark2-es2',
 }
 FLAVORS_STR = ", ".join(sorted(list(FLAVORS) + ['all-linux', 'all-win32']))
 
