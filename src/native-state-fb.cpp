@@ -64,4 +64,6 @@ void NativeStateFb::flip()
 }
 void NativeStateFb::cleanup()
 {
+    fbDestroyWindow(theNativeWindow); theNativeWindow = 0;
+    fbDestroyDisplay(theNativeDisplay); theNativeDisplay = 0;
 }
