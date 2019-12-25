@@ -202,9 +202,11 @@ static int glad_egl_find_core_egl(EGLDisplay display) {
         display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     }
 #endif
+#ifndef EGL_VERSION_1_5
     if (display == EGL_NO_DISPLAY) {
         return 0;
     }
+#endif
 
     version = eglQueryString(display, EGL_VERSION);
     (void) eglGetError();
