@@ -49,6 +49,35 @@ else:
   platform_uselibs += ['libpng']
   platform_libs = ['m', 'jpeg', 'dl']
 
+if 'WAYLAND_SCANNER_wayland_scanner' in bld.env.keys():
+    def wayland_scanner_cmd(arg, src):
+        return '%s %s < %s > ${TGT}' % (bld.env['WAYLAND_SCANNER_wayland_scanner'], arg, src)
+
+    def wayland_proto_src_path(proto, ver):
+        wp_dir = bld.env['WAYLAND_PROTOCOLS_pkgdatadir']
+        if ver == 'stable':
+            return '%s/stable/%s/%s.xml' % (wp_dir, proto, proto)
+        else:
+            return '%s/unstable/%s/%s-unstable-%s.xml' % (wp_dir, proto, proto, ver)
+
+    def wayland_client_protocol(proto, ver, dst_base):
+        src_path = wayland_proto_src_path(proto, ver)
+        out = '%s-client-protocol.h' % dst_base
+        return bld(rule = wayland_scanner_cmd('client-header', src_path),
+                   target = out,
+                   name = out,
+                   ext_out = ['.h'])
+
+    def wayland_protocol_code(proto, ver, dst_base):
+        src_path = wayland_proto_src_path(proto, ver)
+        out = '%s-protocol.c' % dst_base
+        return bld(rule = wayland_scanner_cmd('private-code', src_path),
+                   target = out,
+                   name = out)
+
+    wayland_client_protocol('xdg-shell', 'stable', 'xdg-shell')
+    wayland_protocol_code('xdg-shell', 'stable', 'xdg-shell')
+
 flavor_sources = {
   'dispmanx-glesv2' : common_flavor_sources + ['native-state-dispmanx.cpp', 'gl-state-egl.cpp'],
   'drm-gl' : common_flavor_sources + ['native-state-drm.cpp', 'gl-state-egl.cpp'],
@@ -108,8 +137,8 @@ flavor_depends_on = {
   'drm-glesv2' : [],
   'mir-gl' : [],
   'mir-glesv2' : [],
-  'wayland-gl' : [],
-  'wayland-glesv2' : [],
+  'wayland-gl' : ['xdg-shell-client-protocol.h', 'xdg-shell-protocol.c'],
+  'wayland-glesv2' : ['xdg-shell-client-protocol.h', 'xdg-shell-protocol.c'],
   'win32-gl': [],
   'win32-glesv2' : [],
   'x11-gl' : [],
@@ -121,8 +150,8 @@ flavor_sources_gen = {
   'drm-glesv2' : [],
   'mir-gl' : [],
   'mir-glesv2' : [],
-  'wayland-gl' : [],
-  'wayland-glesv2' : [],
+  'wayland-gl' : [bld.path.find_or_declare('xdg-shell-protocol.c')],
+  'wayland-glesv2' : [bld.path.find_or_declare('xdg-shell-protocol.c')],
   'win32-gl': [],
   'win32-glesv2' : [],
   'x11-gl' : [],

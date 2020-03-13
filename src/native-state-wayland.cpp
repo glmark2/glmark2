@@ -30,10 +30,17 @@ const struct wl_registry_listener NativeStateWayland::registry_listener_ = {
     NativeStateWayland::registry_handle_global_remove
 };
 
-const struct wl_shell_surface_listener NativeStateWayland::shell_surface_listener_ = {
-    NativeStateWayland::shell_surface_handle_ping,
-    NativeStateWayland::shell_surface_handle_configure,
-    NativeStateWayland::shell_surface_handle_popup_done
+const struct xdg_toplevel_listener NativeStateWayland::xdg_toplevel_listener_ = {
+    NativeStateWayland::xdg_toplevel_handle_configure,
+    NativeStateWayland::xdg_toplevel_handle_close
+};
+
+const struct xdg_surface_listener NativeStateWayland::xdg_surface_listener_ = {
+    NativeStateWayland::xdg_surface_handle_configure
+};
+
+const struct xdg_wm_base_listener NativeStateWayland::xdg_wm_base_listener_ = {
+    NativeStateWayland::xdg_wm_base_handle_ping
 };
 
 const struct wl_output_listener NativeStateWayland::output_listener_ = {
@@ -52,8 +59,10 @@ NativeStateWayland::NativeStateWayland() : display_(0), window_(0)
 NativeStateWayland::~NativeStateWayland()
 {
     if (window_) {
-        if (window_->shell_surface)
-            wl_shell_surface_destroy(window_->shell_surface);
+        if (window_->xdg_toplevel)
+            xdg_toplevel_destroy(window_->xdg_toplevel);
+        if (window_->xdg_surface)
+            xdg_surface_destroy(window_->xdg_surface);
         if (window_->native)
             wl_egl_window_destroy(window_->native);
         if (window_->surface)
@@ -62,8 +71,8 @@ NativeStateWayland::~NativeStateWayland()
     }
 
     if (display_) {
-        if (display_->shell)
-            wl_shell_destroy(display_->shell);
+        if (display_->xdg_wm_base)
+            xdg_wm_base_destroy(display_->xdg_wm_base);
 
         for (OutputsVector::iterator it = display_->outputs.begin();
              it != display_->outputs.end(); ++it) {
@@ -94,11 +103,11 @@ NativeStateWayland::registry_handle_global(void *data, struct wl_registry *regis
                 static_cast<struct wl_compositor *>(
                     wl_registry_bind(registry,
                                      id, &wl_compositor_interface, std::min(version, 4U)));
-    } else if (strcmp(interface, "wl_shell") == 0) {
-        that->display_->shell =
-                static_cast<struct wl_shell *>(
+    } else if (strcmp(interface, "xdg_wm_base") == 0) {
+        that->display_->xdg_wm_base =
+                static_cast<struct xdg_wm_base *>(
                     wl_registry_bind(registry,
-                                     id, &wl_shell_interface, 1));
+                                     id, &xdg_wm_base_interface, std::min(version, 2U)));
     } else if (strcmp(interface, "wl_output") == 0) {
         struct my_output *my_output = new struct my_output();
         memset(my_output, 0, sizeof(*my_output));
@@ -159,26 +168,76 @@ NativeStateWayland::output_handle_scale(void *data, struct wl_output * /*wl_outp
 }
 
 void
-NativeStateWayland::shell_surface_handle_ping(void * /*data*/, struct wl_shell_surface *shell_surface,
-                                              uint32_t serial)
+NativeStateWayland::xdg_wm_base_handle_ping(void * /*data*/, struct xdg_wm_base *xdg_wm_base,
+                                            uint32_t serial)
 {
-    wl_shell_surface_pong(shell_surface, serial);
+    xdg_wm_base_pong(xdg_wm_base, serial);
 }
 
 void
-NativeStateWayland::shell_surface_handle_popup_done(void * /*data*/,
-                                                    struct wl_shell_surface * /*shell_surface*/)
-{
-}
-
-void
-NativeStateWayland::shell_surface_handle_configure(void *data, struct wl_shell_surface * /*shell_surface*/,
-                                                   uint32_t /*edges*/, int32_t width, int32_t height)
+NativeStateWayland::xdg_toplevel_handle_configure(void *data, struct xdg_toplevel * /*xdg_toplevel*/,
+                                                  int32_t width, int32_t height,
+                                                  struct wl_array *states)
 {
     NativeStateWayland *that = static_cast<NativeStateWayland *>(data);
+    uint32_t *state;
+    bool want_fullscreen = false;
+    uint32_t scale = 1;
+
+    that->window_->waiting_for_configure = false;
+
+    if (!that->display_->outputs.empty()) scale = that->display_->outputs.at(0)->scale;
+
+    for (state = (uint32_t *) states->data;
+         state < (uint32_t *) ((char *) states->data + states->size);
+         state++) {
+        if (*state == XDG_TOPLEVEL_STATE_FULLSCREEN)
+            want_fullscreen = true;
+    }
+
+    if (want_fullscreen) {
+        width *= scale;
+        height *= scale;
+    }
+
+    if (want_fullscreen == that->window_->properties.fullscreen &&
+        (width == 0 || width == that->window_->properties.width) &&
+        (height == 0 || height == that->window_->properties.fullscreen)) {
+        return;
+    }
+
+    that->window_->properties.fullscreen = want_fullscreen;
     that->window_->properties.width = width;
     that->window_->properties.height = height;
+
+    if (!that->window_->native)
+        return;
+
     wl_egl_window_resize(that->window_->native, width, height, 0, 0);
+
+    struct wl_region *opaque_reqion = wl_compositor_create_region(that->display_->compositor);
+    wl_region_add(opaque_reqion, 0, 0,
+                  that->window_->properties.width,
+                  that->window_->properties.height);
+    wl_surface_set_opaque_region(that->window_->surface, opaque_reqion);
+    wl_region_destroy(opaque_reqion);
+}
+
+void
+NativeStateWayland::xdg_toplevel_handle_close(void *data,
+                                              struct xdg_toplevel * /*xdg_toplevel */)
+{
+    NativeStateWayland *that = static_cast<NativeStateWayland *>(data);
+
+    that->should_quit_ = true;
+}
+
+void
+NativeStateWayland::xdg_surface_handle_configure(void * /*data*/,
+                                                 struct xdg_surface *xdg_surface,
+                                                 uint32_t serial)
+{
+    xdg_surface_ack_configure(xdg_surface, serial);
 }
 
 bool
@@ -226,43 +285,49 @@ NativeStateWayland::create_window(WindowProperties const& properties)
     if (!display_->outputs.empty()) output = display_->outputs.at(0);
     window_ = new struct my_window();
     window_->properties = properties;
+
     window_->surface = wl_compositor_create_surface(display_->compositor);
-    if (window_->properties.fullscreen && output) {
-        window_->native = wl_egl_window_create(window_->surface,
-                                               output->width, output->height);
-        window_->properties.width = output->width;
-        window_->properties.height = output->height;
-    } else {
-        window_->native = wl_egl_window_create(window_->surface,
-                                               properties.width, properties.height);
+    window_->xdg_surface = xdg_wm_base_get_xdg_surface(display_->xdg_wm_base,
+                                                       window_->surface);
+    xdg_surface_add_listener(window_->xdg_surface, &xdg_surface_listener_, this);
+    window_->xdg_toplevel = xdg_surface_get_toplevel(window_->xdg_surface);
+    xdg_toplevel_add_listener(window_->xdg_toplevel, &xdg_toplevel_listener_, this);
+
+    xdg_toplevel_set_app_id(window_->xdg_toplevel, "com.github.glmark2.glmark2");
+    xdg_toplevel_set_title(window_->xdg_toplevel, "glmark2");
+    if (window_->properties.fullscreen && output)
+        xdg_toplevel_set_fullscreen(window_->xdg_toplevel, output->output);
+    wl_surface_commit(window_->surface);
+    window_->waiting_for_configure = true;
+
+    /* xdg-shell requires us to wait for the compositor to tell us what its
+     * desired size for us is */
+    while (window_->waiting_for_configure)
+        wl_display_roundtrip(display_->display);
+
+    if (output && window_->properties.fullscreen) {
+        if (window_->properties.width <= 0 ||
+             window_->properties.height <= 0) {
+            window_->properties.width = output->width * output->scale;
+            window_->properties.height = output->height * output->scale;
+        }
+
+        if (wl_proxy_get_version((struct wl_proxy *) output) >=
+            WL_OUTPUT_SCALE_SINCE_VERSION) {
+            wl_surface_set_buffer_scale(window_->surface, output->scale);
+        }
     }
+
+    window_->native = wl_egl_window_create(window_->surface,
+                                           window_->properties.width,
+                                           window_->properties.height);
 
     struct wl_region *opaque_reqion = wl_compositor_create_region(display_->compositor);
     wl_region_add(opaque_reqion, 0, 0,
                   window_->properties.width,
                   window_->properties.height);
-
     wl_surface_set_opaque_region(window_->surface, opaque_reqion);
-
     wl_region_destroy(opaque_reqion);
-
-    window_->shell_surface = wl_shell_get_shell_surface(display_->shell,
-                                                        window_->surface);
-
-    if (window_->shell_surface) {
-        wl_shell_surface_add_listener(window_->shell_surface,
-                                      &shell_surface_listener_, this);
-    }
-
-    wl_shell_surface_set_title(window_->shell_surface, "glmark2");
-
-    if (window_->properties.fullscreen) {
-        wl_shell_surface_set_fullscreen(window_->shell_surface,
-                                        WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER,
-                                        output->refresh, output->output);
-    } else {
-        wl_shell_surface_set_toplevel(window_->shell_surface);
-    }
 
     return true;
 }
