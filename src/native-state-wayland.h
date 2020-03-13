@@ -91,6 +91,7 @@ private:
         wl_output *output;
         int32_t width, height;
         int32_t refresh;
+        int32_t scale;
     };
 
     typedef std::vector<struct my_output *> OutputsVector;
