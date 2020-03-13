@@ -26,6 +26,7 @@
 #include <vector>
 #include <wayland-client.h>
 #include <wayland-egl.h>
+#include "xdg-shell-client-protocol.h"
 
 #include "native-state.h"
 
@@ -47,7 +48,9 @@ private:
     static void quit_handler(int signum);
 
     static const struct wl_registry_listener registry_listener_;
-    static const struct wl_shell_surface_listener shell_surface_listener_;
+    static const struct xdg_wm_base_listener xdg_wm_base_listener_;
+    static const struct xdg_surface_listener xdg_surface_listener_;
+    static const struct xdg_toplevel_listener xdg_toplevel_listener_;
     static const struct wl_output_listener output_listener_;
 
     static void
@@ -76,16 +79,18 @@ private:
     output_handle_scale(void *data, struct wl_output *wl_output, int32_t factor);
 
     static void
-    shell_surface_handle_ping(void *data, struct wl_shell_surface *shell_surface,
-                              uint32_t serial);
+    xdg_wm_base_handle_ping(void *data, struct xdg_wm_base *xdg_wm_base,
+                            uint32_t serial);
     static void
-    shell_surface_handle_configure(void *data,
-                                   struct wl_shell_surface *shell_surface,
-                                   uint32_t edges,
-                                   int32_t width, int32_t height);
+    xdg_toplevel_handle_configure(void *data,
+                                  struct xdg_toplevel *xdg_toplevel,
+                                  int32_t width, int32_t height,
+                                  struct wl_array *states);
     static void
-    shell_surface_handle_popup_done(void *data,
-                                    struct wl_shell_surface *shell_surface);
+    xdg_toplevel_handle_close(void *data, struct xdg_toplevel *xdg_toplevel);
+    static void
+    xdg_surface_handle_configure(void *data, struct xdg_surface *xdg_surface,
+                                 uint32_t serial);
 
     struct my_output {
         wl_output *output;
@@ -100,15 +105,17 @@ private:
         wl_display *display;
         wl_registry *registry;
         wl_compositor *compositor;
-        wl_shell *shell;
+        struct xdg_wm_base *xdg_wm_base;
         OutputsVector outputs;
     } *display_;
 
     struct my_window {
         WindowProperties properties;
+        bool waiting_for_configure;
         struct wl_surface *surface;
         struct wl_egl_window *native;
-        struct wl_shell_surface *shell_surface;
+        struct xdg_surface *xdg_surface;
+        struct xdg_toplevel *xdg_toplevel;
     } *window_;
 
     static volatile bool should_quit_;
