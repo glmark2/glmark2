@@ -86,14 +86,14 @@ NativeStateWayland::~NativeStateWayland()
 void
 NativeStateWayland::registry_handle_global(void *data, struct wl_registry *registry,
                                            uint32_t id, const char *interface,
-                                           uint32_t /*version*/)
+                                           uint32_t version)
 {
     NativeStateWayland *that = static_cast<NativeStateWayland *>(data);
     if (strcmp(interface, "wl_compositor") == 0) {
         that->display_->compositor =
                 static_cast<struct wl_compositor *>(
                     wl_registry_bind(registry,
-                                     id, &wl_compositor_interface, 1));
+                                     id, &wl_compositor_interface, std::min(version, 4U)));
     } else if (strcmp(interface, "wl_shell") == 0) {
         that->display_->shell =
                 static_cast<struct wl_shell *>(
@@ -102,10 +102,11 @@ NativeStateWayland::registry_handle_global(void *data, struct wl_registry *regis
     } else if (strcmp(interface, "wl_output") == 0) {
         struct my_output *my_output = new struct my_output();
         memset(my_output, 0, sizeof(*my_output));
+        my_output->scale = 1;
         my_output->output =
                 static_cast<struct wl_output *>(
                     wl_registry_bind(registry,
-                                     id, &wl_output_interface, 2));
+                                     id, &wl_output_interface, std::min(version, 2U)));
         that->display_->outputs.push_back(my_output);
 
         wl_output_add_listener(my_output->output, &output_listener_, my_output);
@@ -150,9 +151,11 @@ NativeStateWayland::output_handle_done(void * /*data*/, struct wl_output * /*wl_
 }
 
 void
-NativeStateWayland::output_handle_scale(void * /*data*/, struct wl_output * /*wl_output*/,
-                                        int32_t /*factor*/)
+NativeStateWayland::output_handle_scale(void *data, struct wl_output * /*wl_output*/,
+                                        int32_t factor)
 {
+    struct my_output *my_output = static_cast<struct my_output *>(data);
+    my_output->scale = factor;
 }
 
 void
