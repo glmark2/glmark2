@@ -102,6 +102,32 @@ flavor_libs = {
   'x11-gl' : [],
   'x11-glesv2' : [],
 }
+flavor_depends_on = {
+  'dispmanx-glesv2' : [],
+  'drm-gl' : [],
+  'drm-glesv2' : [],
+  'mir-gl' : [],
+  'mir-glesv2' : [],
+  'wayland-gl' : [],
+  'wayland-glesv2' : [],
+  'win32-gl': [],
+  'win32-glesv2' : [],
+  'x11-gl' : [],
+  'x11-glesv2' : [],
+}
+flavor_sources_gen = {
+  'dispmanx-glesv2' : [],
+  'drm-gl' : [],
+  'drm-glesv2' : [],
+  'mir-gl' : [],
+  'mir-glesv2' : [],
+  'wayland-gl' : [],
+  'wayland-glesv2' : [],
+  'win32-gl': [],
+  'win32-glesv2' : [],
+  'x11-gl' : [],
+  'x11-glesv2' : [],
+}
 egl_platform_defines = {
   'dispmanx' : ['MESA_EGL_NO_X11_HEADERS'],
   'drm' : ['__GBM__'],
@@ -120,7 +146,7 @@ for name in bld.env.keys():
         flavor = name.replace('FLAVOR_', '').lower().replace('_', '-')
         egl_platform = flavor.split('-')[0]
         target = bld.env[name]
-        bld(
+        node = bld(
             features     = ['cxx', 'cprogram'],
             source       = flavor_sources[flavor],
             target       = target,
@@ -128,8 +154,11 @@ for name in bld.env.keys():
             lib          = platform_libs + flavor_libs[flavor],
             includes     = ['.'] + platform_includes,
             defines      = common_defines + flavor_defines[flavor] +
-                           egl_platform_defines[egl_platform]
+                           egl_platform_defines[egl_platform],
+            depends_on   = flavor_depends_on[flavor]
             )
+        if flavor_sources_gen[flavor]:
+            node.source.extend(flavor_sources_gen[flavor])
         all_uselibs |= set(flavor_uselibs[flavor] + platform_uselibs)
 
 # Build glad-egl for all used EGL platforms
