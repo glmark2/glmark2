@@ -51,6 +51,9 @@ def options(opt):
                    help = "a list of flavors to build (%s, all-linux (except dispmanx-glesv2), all-win32)" % FLAVORS_STR)
     opt.parser.set_default('flavors', [])
 
+    opt.parser.add_option('--version-suffix', type='string', action='store', dest='versionsuffix',
+                          default='', help='add a suffix to the version number')
+
     opt.add_option('--no-debug', action='store_false', dest = 'debug',
                    default = True, help='disable compiler debug information')
     opt.add_option('--no-opt', action='store_false', dest = 'opt',
@@ -105,8 +108,8 @@ def configure(ctx):
     else:
         configure_linux(ctx)
 
-    ctx.env.append_unique('DEFINES', 'GLMARK_VERSION="%s"' % VERSION)
-    ctx.env.GLMARK2_VERSION = VERSION
+    ctx.env.append_unique('DEFINES', 'GLMARK_VERSION="%s"' % (VERSION + ctx.options.versionsuffix))
+    ctx.env.GLMARK2_VERSION = (VERSION + ctx.options.versionsuffix)
 
     ctx.msg("Prefix", ctx.env.PREFIX, color = 'PINK')
     ctx.msg("Data path", get_data_path(ctx), color = 'PINK')
