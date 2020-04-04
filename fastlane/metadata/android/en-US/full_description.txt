@@ -1,0 +1,5 @@
+This benchmark contains tests for standard OpenGL (ES) 2.0 features, such as vertex arrays, VBOs, texturing and shaders.
+
+glmark2 is developed by Alexandros Frantzis and Jesse Barker based on the original glmark benchmark by Ben Smith.
+
+It is licensed under the GPLv3.

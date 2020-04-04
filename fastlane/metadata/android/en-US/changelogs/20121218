@@ -1,0 +1,8 @@
+glmark2 2012.12 (20121218)
+==========================
+
+* Add a refraction (2 interface) and reflection benchmark (scene 'reflect').
+* Add a new canvas object which allows rendering to GBM managed surfaces
+  and page flipping to DRM managed framebuffer from a console.
+* Enhancements to visual config mechanism to consider stencil size in the
+  selection criteria and to query all config attribs.

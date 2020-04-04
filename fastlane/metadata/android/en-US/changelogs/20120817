@@ -1,0 +1,12 @@
+glmark2 2012.08 (20120817)
+==========================
+
+* Display benchmark results in the Android GUI.
+* Add an Android option menu offering load/save/delete benchmark list
+  functionality, access to last benchmark results, settings and
+  information about glmark2.
+* Properly handle spaces in scene options on Android.
+* Exclude from score calculation benchmarks whose set up wasn't successful.
+* Display an appropriate message (instead of a 0 FPS value) if benchmark
+  set up isn't successful.
+* Add support for standard GNU installation directories.

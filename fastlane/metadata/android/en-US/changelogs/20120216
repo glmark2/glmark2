@@ -1,0 +1,15 @@
+glmark2 2012.02 (20120216)
+==========================
+
+* Consolidate X11 and Android main loops.
+* Accept command-line options on Android through either a file
+  ('/data/glmark2/args') or an extra intent key ('args').
+* Support per-scene options for displaying an FPS count on screen
+  (show-fps, fps-pos, fps-size), and remove --show-fps command-line option.
+* Support per-scene options for displaying a benchmark title on screen
+  (title, title-pos, title-size).
+* Add command-line option to run benchmarks indefinitely (--run-forever).
+* Add command-line option to annotate the benchmarks with on-screen
+  information (--annotate == -b :show-fps=true:title=#info#).
+* Move various utility classes to libmatrix.
+* Fix build issues on Android ICS.

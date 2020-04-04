@@ -1,0 +1,9 @@
+glmark2 2011.12 (20111215)
+==========================
+
+* Add benchmark for bilinear filtering implemented in the fragment
+  shader (not included in the default benchmarks).
+* Ensure we don't call any GL functions before binding a GL context.
+* Fix bug in the ShaderSource object that could lead to shader
+  compilation errors in strict OpenGL ES 2.0 implementations.
+* Refactor scene update code to reduce duplication.

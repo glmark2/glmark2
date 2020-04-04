@@ -1,0 +1,9 @@
+glmark2 2011.08 (20110818)
+==========================
+
+* Port to Android (see INSTALL.android).
+* Add benchmark based on pulsar X11 GL screensaver.
+* Add benchmark for 2D image processing using the GPU.
+* Add command line option to set the size of the output window (-s, --size).
+* Implement ShaderSource object to simplify complex shader creation.
+* Implement utility functions to access resources in an abstract way.

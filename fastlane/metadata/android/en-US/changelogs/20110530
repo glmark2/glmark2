@@ -1,0 +1,8 @@
+glmark2 11.05 (20110530)
+==========================
+
+* Don't use the SDL_OPENGL flag for GLESv2 (LP: #761848).
+* Ensure our screen updates are not synchronized with the vertical
+  retrace (LP: 761855).
+* Use the correct GL headers depending on the flavor (desktop vs ES2).
+* Query the correct GL object for shader linking status.

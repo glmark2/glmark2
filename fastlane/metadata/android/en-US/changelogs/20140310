@@ -1,0 +1,9 @@
+glmark2 2014.03 (20140310)
+==========================
+
+* Refactor canvas code to make it easier to support new platforms.
+* Add Wayland backend.
+* Add Mir backend.
+* Add a new 'cel' (or 'toon') shading model (scene 'shading').
+* Add a new 'clear' scene, which just clears the canvas.
+* Improve support for the Wavefront .obj file format.

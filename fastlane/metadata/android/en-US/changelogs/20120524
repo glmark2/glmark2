@@ -1,0 +1,8 @@
+glmark2 2012.05 (20120524)
+==========================
+
+* Add benchmark based on the SGI "Ideas in Motion" demo.
+* Ensure that the framebuffer is drawn opaquely.
+* Add command-line option to configure the visual used for rendering
+  (--visual-config).
+* Add support for additional models and textures in the 'texture' scene.

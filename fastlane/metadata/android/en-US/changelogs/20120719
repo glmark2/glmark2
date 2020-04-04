@@ -1,0 +1,10 @@
+glmark2 2012.07 (20120719)
+==========================
+
+* Add Android GUI for defining and running benchmarks.
+* Add benchmark based on the WebGL jellyfish demo (scene 'jellyfish').
+* Add benchmark based on the WebGL dynamic terrain demo (scene 'terrain').
+* Extend texture scene with the option to compute texture coordinates
+  in the shader (option 'texgen').
+* Add support for reading texture data from JPEG files.
+* Properly support options that have a finite set of acceptable values.
