@@ -2,25 +2,25 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/save_benchmark_list"
           android:title="@string/saveMainOptionsText"
-          android:icon="@drawable/menu_save" />
+          android:icon="@drawable/ic_menu_save" />
 
     <item android:id="@+id/load_benchmark_list"
           android:title="@string/loadMainOptionsText"
-          android:icon="@drawable/menu_load" />
+          android:icon="@drawable/ic_menu_archive" />
 
     <item android:id="@+id/delete_benchmark_list"
           android:title="@string/deleteMainOptionsText"
-          android:icon="@drawable/menu_delete" />
+          android:icon="@drawable/ic_menu_delete" />
 
     <item android:id="@+id/settings"
           android:title="@string/settingsMainOptionsText"
-          android:icon="@drawable/menu_settings" />
+          android:icon="@drawable/ic_menu_preferences" />
 
     <item android:id="@+id/results"
           android:title="@string/resultsMainOptionsText"
-          android:icon="@drawable/menu_results" />
+          android:icon="@drawable/ic_menu_mark" />
 
     <item android:id="@+id/about"
           android:title="@string/aboutMainOptionsText"
-          android:icon="@drawable/menu_about" />
+          android:icon="@drawable/ic_menu_info_details" />
 </menu>
