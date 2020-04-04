@@ -1,0 +1,1 @@
+glmark2 is an OpenGL 2.0 and ES 2.0 benchmark.
