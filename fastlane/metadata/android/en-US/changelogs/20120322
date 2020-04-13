@@ -1,0 +1,7 @@
+glmark2 2012.03 (20120322)
+==========================
+
+* X11:
+  - Support rendering to an off-screen surface (--off-screen).
+  - Add command-line option to select which method to use to "end"
+    a frame (--frame-end).

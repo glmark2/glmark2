@@ -1,0 +1,9 @@
+glmark2 2011.09 (20110921)
+==========================
+
+* Add benchmark for blur desktop effect.
+* Add support for multiple lights in the phong shading benchmark.
+* Add support for loading models from OBJ geometry files.
+* Add Stanford Bunny model and make it available in the build benchmark.
+* Add per-scene options to set shader precision at runtime.
+* Add command-line option to specify the benchmarks to run using a text file.

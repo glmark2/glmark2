@@ -1,0 +1,4 @@
+glmark2 10.07.1 (20100728)
+==========================
+
+* Define the precision of fragment shader variables for OpenGL ES 2.0.

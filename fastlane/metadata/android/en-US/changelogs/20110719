@@ -1,0 +1,11 @@
+glmark2 2011.07 (20110719)
+==========================
+
+* Replace SDL with custom window handling code.
+* Add benchmark for shader conditionals.
+* Add benchmark for shader function calls.
+* Add benchmark for shader loops.
+* Add benchmark for real phong (vs blinn-phong) lighting model.
+* Add benchmark for normal mapping.
+* Refactor Mesh class to increase flexibility in vertex attribute
+  handling.

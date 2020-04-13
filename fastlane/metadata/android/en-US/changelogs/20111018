@@ -1,0 +1,9 @@
+glmark2 2011.10 (20111018)
+==========================
+
+* Add benchmark for buffer (VBO) updates.
+* Add benchmark for drop-shadow desktop effect.
+* Add support for glmark2 extra large models.
+* Enable the selection of additional models in the shading benchmark.
+* Gracefully handle unsupported OpenGL versions, on both X11 and Android.
+* Disable screen dimming and screen rotation on Android.

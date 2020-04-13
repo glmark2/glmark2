@@ -1,0 +1,9 @@
+glmark2 2011.11 (20111116)
+==========================
+
+* Add benchmark for bump mapping using a height map.
+* Add benchmark for bump mapping using a tangent space normal map
+  (not included in the default benchmarks).
+* Implement validation support for all default benchmarks.
+* Add a colored prefix to log messages in debug mode.
+* Clean up and refactor code.

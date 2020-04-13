@@ -1,0 +1,5 @@
+glmark2 2012.06 (20120621)
+==========================
+
+* Add command-line option to render in fullscreen mode (--fullscreen).
+* Display the frame time in addition to the FPS for each benchmark.

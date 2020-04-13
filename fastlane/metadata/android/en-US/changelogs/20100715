@@ -1,0 +1,12 @@
+glmark2 10.07 (20100715)
+========================
+
+* First release.
+* Included benchmarks:
+  - Rendering using vertex arrays
+  - Rendering using VBOs
+  - Texturing using nearest filtering
+  - Texturing using linear filtering
+  - Texturing using trilinear mipmapped filtering
+  - Lighting per vertex using simple GLSL shaders
+  - Lighting per pixel using elaborate GLSL shaders

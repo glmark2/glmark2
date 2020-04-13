@@ -1,0 +1,15 @@
+glmark2 2012.01 (20120119)
+==========================
+
+* X11:
+  - Run each benchmark in a fresh GL context. Use --reuse-context
+    to revert to the old default behavior of using the same context
+    for all benchmarks.
+  - Add option for showing a live FPS counter on screen (--show-fps).
+  - If the list of benchmarks to run contains only option-setting
+    descriptions, run the default benchmarks.
+* Android:
+  - Fix crash on platforms not supporting glMapBufferOES.
+  - Log the glmark2 score when finishing.
+  - Log an error message if we fail to find a suitable EGLContext.
+  - Implement various stability improvements.

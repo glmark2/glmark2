@@ -1,0 +1,8 @@
+glmark2 2017.07 (20170728)
+==========================
+
+* Use monotonic clock for benchmark timings.
+* Use udev to find the best node path to use in the DRM backend.
+* Don't rebuild common source needlessly.
+* Build in C++14 mode.
+

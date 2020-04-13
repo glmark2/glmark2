@@ -1,0 +1,8 @@
+glmark2 11.01 (20110125)
+==========================
+
+* Fix visual corruption in glmark2-es2 due to missing depth buffer.
+* Fix linking issues with gcc 4.5.
+* Use correct GL functions to manipulate shaders vs programs.
+* Make result reporting more parser-friendly.
+* Upgrade build system to waf 1.6.2.
