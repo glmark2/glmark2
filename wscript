@@ -20,7 +20,7 @@ FLAVORS = {
     'x11-gl' : 'glmark2',
     'x11-glesv2' : 'glmark2-es2',
 }
-FLAVORS_STR = ", ".join(sorted(FLAVORS.keys()))
+FLAVORS_STR = ", ".join(sorted(FLAVORS.keys() + ['all-linux', 'all-win32']))
 
 def linux_flavors():
     return [f for f in FLAVORS.keys() if not f.startswith('win32')]
@@ -93,7 +93,8 @@ def configure(ctx):
             ctx.fatal('Unknown flavor: %s. Supported flavors are %s' % (flavor, FLAVORS_STR))
 
     if not ctx.options.flavors:
-        ctx.fatal('You need to select at least one flavor. Supported flavors are %s' % FLAVORS_STR)
+        ctx.fatal('You need to select at least one flavor with --with-flavors=flavor1[,flavor2]...\n' +
+                  'Supported flavors are %s' % FLAVORS_STR)
 
     for flavor in FLAVORS:
         if flavor in ctx.options.flavors:
