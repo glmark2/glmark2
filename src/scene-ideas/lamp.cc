@@ -2,7 +2,7 @@
  * Vertex position data describing the lamp
  *
  * (c) Copyright 1993, Silicon Graphics, Inc.
- * Copyright © 2012 Linaro Limited
+ * Copyright Â© 2012 Linaro Limited
  *
  * This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
  *
