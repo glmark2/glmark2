@@ -1,0 +1,11 @@
+glmark2 2020.04 (20200428)
+==========================
+
+* Port Wayland flavor to xdg-shell window management.
+* Support recent Android SDK/NDK versions.
+* Add support for Windows via WGL and ANGLE-EGL.
+* Support Raspberry Pi's dispmanx.
+* Use glad for GL headers and dynamic GL library loading.
+* Add --data-path command-line option to set data path at runtime.
+* Add 'nframes' scene option to limit the number of rendered frames.
+* Add F-Droid/fastlane metadata.
