@@ -125,7 +125,7 @@ Options::print_help()
            "                         (the option can be used multiple times)\n"
            "      --validate         Run a quick output validation test instead of \n"
            "                         running the benchmarks\n"
-           "      --data-path        Path to glmark2 models, shaders and textures\n"
+           "      --data-path PATH   Path to glmark2 models, shaders and textures\n"
            "                         Default: " GLMARK_DATA_PATH "\n"
            "      --frame-end METHOD How to end a frame [default,none,swap,finish,readpixels]\n"
            "      --off-screen       Render to an off-screen surface\n"

@@ -21,6 +21,9 @@ list of benchmark descriptions (one per line)
 Run a quick output validation test instead of
 running the benchmarks
 .TP
+\fB\-\-data-path\fR PATH
+Path to glmark2 models, shaders and textures
+.TP
 \fB\-\-frame-end\fR METHOD
 How to end a frame [default,none,swap,finish,readpixels]
 .TP
