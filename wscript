@@ -20,7 +20,7 @@ FLAVORS = {
     'x11-gl' : 'glmark2',
     'x11-glesv2' : 'glmark2-es2',
 }
-FLAVORS_STR = ", ".join(sorted(FLAVORS.keys() + ['all-linux', 'all-win32']))
+FLAVORS_STR = ", ".join(sorted(list(FLAVORS) + ['all-linux', 'all-win32']))
 
 def linux_flavors():
     return [f for f in FLAVORS.keys() if not f.startswith('win32')]
