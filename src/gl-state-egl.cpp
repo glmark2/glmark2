@@ -301,7 +301,7 @@ GLStateEGL::~GLStateEGL()
             Log::error("eglTerminate failed\n");
     }
 
-    if(!eglReleaseThread())
+    if(eglReleaseThread && !eglReleaseThread())
        Log::error("eglReleaseThread failed\n");
 }
 
