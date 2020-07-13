@@ -108,6 +108,14 @@ GLVisualConfig::score_component(int component, int target, int scale) const
         /* Reward exact matches with the maximum per component score */
         score = MAXIMUM_COMPONENT_SCORE;
     }
+    else if (component > 8 && target <= 8 && scale > 1)
+    {
+        /* Penalize RGBA component widths larger than 8, since they are
+         * unlikely to be what the users want or properly supported for
+         * display. Such widths can still be used, but only if explicitly
+         * requested. */
+        score = UNACCEPTABLE_COMPONENT_PENALTY;
+    }
     else
     {
         /* 
