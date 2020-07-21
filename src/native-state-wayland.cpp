@@ -108,6 +108,7 @@ NativeStateWayland::registry_handle_global(void *data, struct wl_registry *regis
                 static_cast<struct xdg_wm_base *>(
                     wl_registry_bind(registry,
                                      id, &xdg_wm_base_interface, std::min(version, 2U)));
+        xdg_wm_base_add_listener(that->display_->xdg_wm_base, &xdg_wm_base_listener_, that);
     } else if (strcmp(interface, "wl_output") == 0) {
         struct my_output *my_output = new struct my_output();
         memset(my_output, 0, sizeof(*my_output));
