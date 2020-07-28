@@ -32,8 +32,8 @@ bool NativeStateFb::init_display()
     theNativeDisplay = fbGetDisplayByIndex(0);
     if( !theNativeDisplay )
         return false;
-    fbGetDisplayGeometry(theNativeDisplay,&width,&height);
-    theNativeWindow  = fbCreateWindow(theNativeDisplay, 0, 1, width, height);
+    fbGetDisplayGeometry((EGLNativeDisplayType)theNativeDisplay,&width,&height);
+    theNativeWindow  = fbCreateWindow((EGLNativeDisplayType)theNativeDisplay, 0, 1, width, height);
     return  true;
 }
 void* NativeStateFb::display()
@@ -42,10 +42,15 @@ void* NativeStateFb::display()
 }
 bool NativeStateFb::create_window(WindowProperties const& )
 {
+    /*NOTE we must do this trick otherwise the projection matrix wont'be initialized*/
+    win_created = 1;
     return true;
 }
 void* NativeStateFb::window(WindowProperties& properties)
 {
+    /*NOTE we must do this trick otherwise the projection matrix wont'be initialized*/
+    if(!win_created)
+        return 0;
     properties.width = width;
     properties.height = height;
     properties.fullscreen = true;
@@ -64,6 +69,6 @@ void NativeStateFb::flip()
 }
 void NativeStateFb::cleanup()
 {
-    fbDestroyWindow(theNativeWindow); theNativeWindow = 0;
-    fbDestroyDisplay(theNativeDisplay); theNativeDisplay = 0;
+    fbDestroyWindow((EGLNativeWindowType)theNativeWindow); theNativeWindow = 0;
+    fbDestroyDisplay((EGLNativeDisplayType)theNativeDisplay); theNativeDisplay = 0;
 }

@@ -66,4 +66,14 @@ struct GLExtensions {
     static GLboolean (GLAD_API_PTR *UnmapBuffer) (GLenum target);
 };
 
+#define CHECK_GL_ERRORS                                                        \
+    do{                                                                        \
+        const char *fname  = __FILE__;                                         \
+        int         lineno = __LINE__;                                         \
+        GLuint      error = glGetError();                                      \
+        if(error != GL_NONE)                                                   \
+            Log::error("GL error %d 0x%x %s:%d\n",error,error,fname,lineno);         \
+    }                                                                          \
+    while (0)
+
 #endif

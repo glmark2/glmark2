@@ -149,6 +149,10 @@ typedef void (*GLADpostcallback)(void *ret, const char *name, GLADapiproc apipro
 
 #endif /* GLAD_PLATFORM_H_ */
 
+#ifdef EGL_CAST
+#define EGL_CAST(a,b) ((a)b)
+#endif
+
 #define EGL_ALPHA_FORMAT 0x3088
 #define EGL_ALPHA_FORMAT_NONPRE 0x308B
 #define EGL_ALPHA_FORMAT_PRE 0x308C

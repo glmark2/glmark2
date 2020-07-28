@@ -25,14 +25,17 @@
 #include "native-state.h"
 #include <csignal>
 #include <cstring>
+#include <stdio.h>
 
 class NativeStateFb : public NativeState
 {
 public:
     NativeStateFb() :
         theNativeWindow(0),
-        theNativeDisplay(0)
-    {}
+        theNativeDisplay(0),
+        win_created(0)
+    {
+    }
     ~NativeStateFb() { cleanup(); }
 
     bool init_display();
@@ -47,6 +50,7 @@ private:
     void * theNativeWindow;
     void * theNativeDisplay;
     int    width,height;
+    bool   win_created;
     void cleanup();
 };
 
