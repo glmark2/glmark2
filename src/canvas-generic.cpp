@@ -249,6 +249,7 @@ CanvasGeneric::resize_no_viewport(int width, int height)
     }
 
     native_window_ = native_state_.window(cur_properties);
+    window_initialized_ = true;
 
     width_ = cur_properties.width;
     height_ = cur_properties.height;
@@ -274,6 +275,12 @@ CanvasGeneric::resize_no_viewport(int width, int height)
 bool
 CanvasGeneric::do_make_current()
 {
+    if (!window_initialized_) {
+        Log::error("glwindow has never been initialized, check native-state code\n"
+                   "it should not return a valid window until create_window() is called\n");
+        return false;
+    }
+
     gl_state_.init_surface(native_window_);
 
     if (!gl_state_.valid()) {

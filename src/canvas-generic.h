@@ -37,9 +37,10 @@ public:
     CanvasGeneric(NativeState& native_state, GLState& gl_state,
                   int width, int height)
         : Canvas(width, height),
-          native_state_(native_state), gl_state_(gl_state),
+          native_state_(native_state), gl_state_(gl_state), native_window_(0),
           gl_color_format_(0), gl_depth_format_(0),
-          color_renderbuffer_(0), depth_renderbuffer_(0), fbo_(0) {}
+          color_renderbuffer_(0), depth_renderbuffer_(0), fbo_(0),
+          window_initialized_(false) {}
 
     bool init();
     bool reset();
@@ -70,6 +71,7 @@ private:
     GLuint color_renderbuffer_;
     GLuint depth_renderbuffer_;
     GLuint fbo_;
+    bool window_initialized_;
 };
 
 #endif /* GLMARK2_CANVAS_GENERIC_H_ */
