@@ -90,6 +90,7 @@ flavor_sources = {
   'win32-glesv2': common_flavor_sources + ['native-state-win32.cpp', 'gl-state-egl.cpp'],
   'x11-gl' : common_flavor_sources + ['native-state-x11.cpp', 'gl-state-glx.cpp'],
   'x11-glesv2' : common_flavor_sources + ['native-state-x11.cpp', 'gl-state-egl.cpp'],
+  'fb-glesv2' : common_flavor_sources + ['native-state-fb.cpp', 'gl-state-egl.cpp'],
 }
 flavor_uselibs = {
   'dispmanx-glesv2' : ['glad-egl-dispmanx', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2',  'dispmanx'],
@@ -103,6 +104,7 @@ flavor_uselibs = {
   'win32-glesv2': ['glad-egl-win32', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
   'x11-gl' : ['x11', 'glad-gl', 'glad-glx', 'matrix-gl', 'common-gl'],
   'x11-glesv2' : ['x11', 'glad-egl-x11', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
+  'fb-glesv2' : ['fb', 'glad-egl-fb', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
 }
 
 flavor_defines = {
@@ -117,6 +119,7 @@ flavor_defines = {
   'win32-glesv2': ['GLMARK2_USE_WIN32', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
   'x11-gl' : ['GLMARK2_USE_X11', 'GLMARK2_USE_GL', 'GLMARK2_USE_GLX'],
   'x11-glesv2' : ['GLMARK2_USE_X11', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL'],
+  'fb-glesv2' : ['GLMARK2_USE_FB', 'GLMARK2_USE_GLESv2', 'GLMARK2_USE_EGL']
 }
 flavor_libs = {
   'dispmanx-glesv2' : [],
@@ -130,6 +133,7 @@ flavor_libs = {
   'win32-glesv2' : [],
   'x11-gl' : [],
   'x11-glesv2' : [],
+  'fb-glesv2' : ['GAL','EGL','GLESv2'],
 }
 flavor_depends_on = {
   'dispmanx-glesv2' : [],
@@ -143,6 +147,7 @@ flavor_depends_on = {
   'win32-glesv2' : [],
   'x11-gl' : [],
   'x11-glesv2' : [],
+  'fb-glesv2' : [],
 }
 flavor_sources_gen = {
   'dispmanx-glesv2' : [],
@@ -156,6 +161,7 @@ flavor_sources_gen = {
   'win32-glesv2' : [],
   'x11-gl' : [],
   'x11-glesv2' : [],
+  'fb-glesv2' : [],
 }
 egl_platform_defines = {
   'dispmanx' : ['MESA_EGL_NO_X11_HEADERS'],
@@ -164,6 +170,7 @@ egl_platform_defines = {
   'wayland' : ['WL_EGL_PLATFORM'],
   'win32' : [],
   'x11' : [],
+  'fb' : ['__linux__','__unix__','EGL_API_FB','_REENTRANT','LINUX'],
 }
 
 includes = ['.', 'scene-ideas', 'scene-terrain'] + platform_includes
