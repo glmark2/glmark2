@@ -1,0 +1,40 @@
+name: build
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  build-meson:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: >
+        sudo apt install meson libdrm-dev libgbm-dev libudev-dev
+        libwayland-dev wayland-protocols libx11-dev
+    - name: Setup
+      run: meson setup build -Dflavors=x11-gl,x11-glesv2,wayland-gl,wayland-glesv2,drm-gl,drm-glesv2
+    - name: Build
+      run: ninja -C build
+    - name: Install
+      run: DESTDIR=/tmp/glmark2-install ninja -C build install
+
+  build-waf:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: >
+        sudo apt install libdrm-dev libgbm-dev libudev-dev
+        libwayland-dev wayland-protocols libx11-dev
+    - name: Setup
+      run: ./waf configure --with-flavors=x11-gl,x11-glesv2,wayland-gl,wayland-glesv2,drm-gl,drm-glesv2
+    - name: Build
+      run: ./waf build
+    - name: Install
+      run: DESTDIR=/tmp/glmark2-install ./waf install
