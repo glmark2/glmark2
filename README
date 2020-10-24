@@ -7,7 +7,7 @@ It is licensed under the GPLv3 (see COPYING).
 
 To build glmark2 for X11/GL(ES2) you need:
 
- * python 2.x (>= 2.4) for the build system (waf)
+ * python 3.x for the build system (waf)
  * libpng 1.2
 
 and for OpenGL 2.0:
