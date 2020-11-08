@@ -51,7 +51,7 @@ else:
 
 if 'WAYLAND_SCANNER_wayland_scanner' in bld.env.keys():
     def wayland_scanner_cmd(arg, src):
-        return '%s %s < %s > ${TGT}' % (bld.env['WAYLAND_SCANNER_wayland_scanner'], arg, src)
+        return '%s %s < %s > ${TGT}' % (bld.env['WAYLAND_SCANNER_wayland_scanner'][0], arg, src)
 
     def wayland_proto_src_path(proto, ver):
         wp_dir = bld.env['WAYLAND_PROTOCOLS_pkgdatadir']

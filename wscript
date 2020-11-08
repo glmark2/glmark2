@@ -227,8 +227,7 @@ def configure_linux(ctx):
         # wayland-protocols >= 1.12 required for xdg-shell stable
         ctx.check_cfg(package = 'wayland-protocols', atleast_version = '1.12',
                       variables = ['pkgdatadir'], uselib_store = 'WAYLAND_PROTOCOLS')
-        ctx.check_cfg(package = 'wayland-scanner', variables = ['wayland_scanner'],
-                      uselib_store = 'WAYLAND_SCANNER')
+        ctx.find_program('wayland-scanner', var = 'WAYLAND_SCANNER_wayland_scanner')
 
     # Prepend CXX flags so that they can be overriden by the
     # CXXFLAGS environment variable
