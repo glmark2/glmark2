@@ -1,8 +1,31 @@
-glmark2 uses the WAF build system.
+Meson build system
+------------------
+
+glmark2 uses the meson build system for the most common build flavors (X11,
+Wayland, DRM).
 
 To configure glmark2 use:
 
-$ ./waf configure --with-flavors=<drm-gl,drm-glesv2,mir-gl,mir-glesv2,wayland-gl,wayland-glesv2,x11-gl,x11-glesv2> [--data-path=DATA_PATH --prefix=PREFIX]
+$ meson setup build -Dflavors=drm-gl,drm-glesv2,wayland-gl,wayland-glesv2,x11-gl,x11-glesv2 [-Ddata-path=DATA_PATH --prefix=PREFIX]
+
+To build use:
+
+$ ninja -C build
+
+To install use:
+
+$ [DESTDIR=<destdir>] ninja -C build install
+
+WAF build system
+----------------
+
+glmark2 previously used the WAF build system, and the builds for some flavors
+(dispmanx, win32, mir) have not been ported to the meson build system. For such
+cases follow the instructions below.
+
+To configure glmark2 use:
+
+$ ./waf configure --with-flavors=dispmanx-glesv2,win32-gl,win32-glesv2,mir-gl,mir-glesv2... [--data-path=DATA_PATH --prefix=PREFIX]
 
 To build use:
 
