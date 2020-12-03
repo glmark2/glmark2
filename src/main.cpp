@@ -164,6 +164,11 @@ main(int argc, char *argv[])
         Options::size = std::pair<int,int>(800, 600);
     }
 
+#if GLMARK2_USE_DISPMANX
+    /* dispmanx can only run fullscreen */
+    Options::size = std::pair<int,int>(-1, -1);
+#endif
+
     // Create the canvas
 #if GLMARK2_USE_X11
     NativeStateX11 native_state;
