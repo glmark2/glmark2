@@ -118,7 +118,7 @@ Options::print_help()
     printf("A benchmark for Open GL (ES) 2.0\n"
            "\n"
            "Options:\n"
-           "  -b, --benchmark BENCH  A benchmark to run: 'scene(:opt1=val1)*'\n"
+           "  -b, --benchmark BENCH  A benchmark or options to run: '(scene)?(:opt1=val1)*'\n"
            "                         (the option can be used multiple times)\n"
            "  -f, --benchmark-file F Load benchmarks to run from a file containing a\n"
            "                         list of benchmark descriptions (one per line)\n"
