@@ -4,7 +4,12 @@ precision mediump float;
 
 uniform sampler2D HeightMap;
 
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+varying highp vec2 TextureCoord;
+#else
 varying vec2 TextureCoord;
+#endif
+
 varying vec3 NormalEye;
 varying vec3 TangentEye;
 varying vec3 BitangentEye;
