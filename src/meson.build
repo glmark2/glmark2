@@ -84,7 +84,7 @@ if need_drm
     native_drm_dep = declare_dependency(
         link_with: native_drm_lib,
         dependencies: libdrm_dep,
-        compile_args: ['-DGLMARK2_USE_DRM'],
+        compile_args: ['-DGLMARK2_USE_DRM', '-D__GBM__'],
         )
 else
     native_drm_dep = declare_dependency()
@@ -119,7 +119,7 @@ if need_wayland
     native_wayland_dep = declare_dependency(
         link_with: native_wayland_lib,
         dependencies: [wayland_client_dep, wayland_egl_dep],
-        compile_args: ['-DGLMARK2_USE_WAYLAND'],
+        compile_args: ['-DGLMARK2_USE_WAYLAND', '-DWL_EGL_PLATFORM'],
         )
 else
     native_wayland_dep = declare_dependency()
@@ -201,18 +201,12 @@ else
 endif
 
 if need_egl
-    wsi_egl_lib = static_library(
-        'wsi-egl',
-        'glad/src/egl.c',
-        include_directories: include_directories('glad/include'),
-        )
     # gl-state-egl builds depend on both the GL type and the native type. To
     # avoid creating all the required combinations explicitly, make this a
     # source dependency which will be built properly as part of the final
     # glmark2 executable.
     wsi_egl_dep = declare_dependency(
-        sources: 'gl-state-egl.cpp',
-        link_with: wsi_egl_lib,
+        sources: ['gl-state-egl.cpp', 'glad/src/egl.c'],
         include_directories: [
             include_directories('glad/include'),
             include_directories('libmatrix'),
@@ -224,17 +218,11 @@ else
 endif
 
 if need_glx
-    wsi_glx_lib = static_library(
-        'wsi-glx',
-        'glad/src/glx.c',
-        include_directories: include_directories('glad/include'),
-        )
     # Although there is a single valid flavor for glx (x11-gl) and we could
     # build gl-state-glx here, make this a source dependency for convenience
     # and parity with gl-state-egl.
     wsi_glx_dep = declare_dependency(
-        sources: 'gl-state-glx.cpp',
-        link_with: wsi_glx_lib,
+        sources: ['gl-state-glx.cpp', 'glad/src/glx.c'],
         include_directories: [
             include_directories('glad/include'),
             include_directories('libmatrix'),

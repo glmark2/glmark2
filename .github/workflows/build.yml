@@ -24,6 +24,45 @@ jobs:
     - name: Install
       run: DESTDIR=/tmp/glmark2-install ninja -C build install
 
+  build-meson-only-drm:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: sudo apt install meson libdrm-dev libgbm-dev libudev-dev
+    - name: Setup
+      run: meson setup build -Dflavors=drm-gl,drm-glesv2
+    - name: Build
+      run: ninja -C build
+    - name: Install
+      run: DESTDIR=/tmp/glmark2-install ninja -C build install
+
+  build-meson-only-wayland:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: sudo apt install meson libwayland-dev wayland-protocols
+    - name: Setup
+      run: meson setup build -Dflavors=wayland-gl,wayland-glesv2
+    - name: Build
+      run: ninja -C build
+    - name: Install
+      run: DESTDIR=/tmp/glmark2-install ninja -C build install
+
+  build-meson-only-x11:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: sudo apt install meson libx11-dev
+    - name: Setup
+      run: meson setup build -Dflavors=x11-gl,x11-glesv2
+    - name: Build
+      run: ninja -C build
+    - name: Install
+      run: DESTDIR=/tmp/glmark2-install ninja -C build install
+
   build-waf:
     runs-on: ubuntu-20.04
     steps:
