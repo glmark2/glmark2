@@ -56,7 +56,7 @@ if need_wayland
     wayland_client_dep = dependency('wayland-client')
     wayland_egl_dep = dependency('wayland-egl')
     wayland_protocols_dep = dependency('wayland-protocols', version : '>= 1.12')
-    wayland_scanner_dep = dependency('wayland-scanner')
+    wayland_scanner_dep = dependency('wayland-scanner', native: true)
 endif
 
 subdir('src')
