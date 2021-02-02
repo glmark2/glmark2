@@ -34,10 +34,14 @@ OverlayRenderer::OverlayRenderer(IRenderer &target, GLfloat opacity) :
 
 
 void
-OverlayRenderer::setup(const LibMatrix::vec2 &size, bool onscreen, bool has_depth)
+OverlayRenderer::setup_onscreen(Canvas &canvas)
+{
+}
+
+void
+OverlayRenderer::setup_offscreen(const LibMatrix::vec2 &size, bool has_depth)
 {
     static_cast<void>(size);
-    static_cast<void>(onscreen);
     static_cast<void>(has_depth);
 }
 

@@ -26,8 +26,8 @@
 
 LibMatrix::vec2 SimplexNoiseRenderer::uv_scale_(1.5f, 1.5);
 
-SimplexNoiseRenderer::SimplexNoiseRenderer(const LibMatrix::vec2 &size) :
-    TextureRenderer(size, *noise_program(true))
+SimplexNoiseRenderer::SimplexNoiseRenderer() :
+    TextureRenderer(*noise_program(true))
 {
     noise_program_ = noise_program(false);
 }

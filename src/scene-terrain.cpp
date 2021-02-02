@@ -64,63 +64,67 @@ public:
         const vec2 bloom_res(256.0f, 256.0f);
         const vec2 grass_res(512.0f, 512.0f);
 
-        height_map_renderer = new SimplexNoiseRenderer(map_res);
-        height_map_renderer->setup(height_map_renderer->size(), false, false);
+        height_map_renderer = new SimplexNoiseRenderer();
+        height_map_renderer->setup_offscreen(map_res, false);
 
-        normal_map_renderer = new NormalFromHeightRenderer(map_res);
-        normal_map_renderer->setup(normal_map_renderer->size(), false, false);
+        normal_map_renderer = new NormalFromHeightRenderer();
+        normal_map_renderer->setup_offscreen(map_res, false);
 
-        specular_map_renderer = new LuminanceRenderer(grass_res);
+        specular_map_renderer = new LuminanceRenderer();
+        specular_map_renderer->setup_offscreen(grass_res, false);
         specular_map_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
                                              GL_REPEAT, GL_REPEAT);
-        specular_map_renderer->setup(specular_map_renderer->size(), false, false);
 
-        terrain_renderer = new TerrainRenderer(screen_res, repeat_overlay);
-        terrain_renderer->setup(terrain_renderer->size(),
-                                !use_bloom && !use_tilt_shift,
-                                true);
+        terrain_renderer = new TerrainRenderer(repeat_overlay);
+        if (!use_bloom && !use_tilt_shift)
+            terrain_renderer->setup_onscreen(canvas);
+        else
+            terrain_renderer->setup_offscreen(screen_res, true);
         terrain_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
                                         GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
         /* Bloom */
         if (use_bloom) {
-            bloom_h_renderer = new BlurRenderer(bloom_res, 2, 4.0,
+            bloom_h_renderer = new BlurRenderer(2, 4.0,
                                                 BlurRenderer::BlurDirectionHorizontal,
                                                 vec2(1.0, 1.0) / screen_res,
                                                 0.0);
+            bloom_h_renderer->setup_offscreen(bloom_res, false);
             bloom_h_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
                                             GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-            bloom_h_renderer->setup(bloom_h_renderer->size(), false, false);
 
-            bloom_v_renderer = new BlurRenderer(bloom_res, 2, 4.0,
+            bloom_v_renderer = new BlurRenderer(2, 4.0,
                                                 BlurRenderer::BlurDirectionVertical,
                                                 vec2(1.0, 1.0) / bloom_res,
                                                 0.0);
+            bloom_v_renderer->setup_offscreen(bloom_res, false);
             bloom_v_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
                                             GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-            bloom_v_renderer->setup(bloom_v_renderer->size(), false, false);
             overlay_renderer = new OverlayRenderer(*terrain_renderer, 0.6);
         }
 
         /* Tilt-shift */
         if (use_tilt_shift) {
-            tilt_h_renderer = new BlurRenderer(screen_res, 4, 2.7,
+            tilt_h_renderer = new BlurRenderer(4, 2.7,
                                                BlurRenderer::BlurDirectionHorizontal,
                                                vec2(1.0, 1.0) / screen_res,
                                                0.5);
+            tilt_h_renderer->setup_offscreen(screen_res, false);
             tilt_h_renderer->setup_texture(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
                                            GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-            tilt_h_renderer->setup(tilt_h_renderer->size(), false, false);
 
-            tilt_v_renderer = new BlurRenderer(screen_res, 4, 2.7,
+            tilt_v_renderer = new BlurRenderer(4, 2.7,
                                                BlurRenderer::BlurDirectionVertical,
                                                vec2(1.0, 1.0) / screen_res,
                                                0.5);
+            tilt_v_renderer->setup_onscreen(canvas);
         }
 
         /* Copy renderer */
-        if (use_bloom && !use_tilt_shift)
-            copy_renderer = new CopyRenderer(screen_res);
+        if (use_bloom && !use_tilt_shift) {
+            copy_renderer = new CopyRenderer();
+            copy_renderer->setup_onscreen(canvas);
+        }
 
         /* Height normal chain */
         height_normal_chain = new RendererChain();
@@ -310,7 +314,7 @@ SceneTerrain::setup()
     /* Create the specular map */
     priv_->specular_map_renderer->render();
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, canvas_.fbo());
     glViewport(0, 0, canvas_.width(), canvas_.height());
 
     currentFrame_ = 0;

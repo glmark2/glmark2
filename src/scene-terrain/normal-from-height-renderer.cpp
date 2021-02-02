@@ -24,15 +24,35 @@
 #include "renderer.h"
 #include "shader-source.h"
 
-NormalFromHeightRenderer::NormalFromHeightRenderer(const LibMatrix::vec2 &size) :
-    TextureRenderer(size, *normal_from_height_program(size, true))
+NormalFromHeightRenderer::NormalFromHeightRenderer() :
+    TextureRenderer(*normal_from_height_program(true))
 {
-    normal_from_height_program_ = normal_from_height_program(size, false);
+    normal_from_height_program_ = normal_from_height_program(false);
+}
+
+void
+NormalFromHeightRenderer::setup_onscreen(Canvas& canvas)
+{
+    TextureRenderer::setup_onscreen(canvas);
+
+    normal_from_height_program_->start();
+    (*normal_from_height_program_)["resolution"] =
+        LibMatrix::vec2(canvas.width(), canvas.height());
+    normal_from_height_program_->stop();
+}
+
+void
+NormalFromHeightRenderer::setup_offscreen(const LibMatrix::vec2 &size, bool has_depth)
+{
+    TextureRenderer::setup_offscreen(size, has_depth);
+
+    normal_from_height_program_->start();
+    (*normal_from_height_program_)["resolution"] = size;
+    normal_from_height_program_->stop();
 }
 
 Program *
-NormalFromHeightRenderer::normal_from_height_program(const LibMatrix::vec2 &size,
-                                                     bool create_new)
+NormalFromHeightRenderer::normal_from_height_program(bool create_new)
 {
     static Program *normal_from_height_program(0);
     if (create_new)
@@ -48,7 +68,6 @@ NormalFromHeightRenderer::normal_from_height_program(const LibMatrix::vec2 &size
 
         normal_from_height_program->start();
         (*normal_from_height_program)["heightMap"] = 0;
-        (*normal_from_height_program)["resolution"] = size;
         (*normal_from_height_program)["height"] = 0.05f;
         (*normal_from_height_program)["uvOffset"] = LibMatrix::vec2(0.0f, 0.0f);
         (*normal_from_height_program)["uvScale"] = LibMatrix::vec2(1.0f, 1.0f);

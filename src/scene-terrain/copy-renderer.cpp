@@ -24,8 +24,8 @@
 #include "renderer.h"
 #include "shader-source.h"
 
-CopyRenderer::CopyRenderer(const LibMatrix::vec2 &size) :
-    TextureRenderer(size, *copy_program(true))
+CopyRenderer::CopyRenderer() :
+    TextureRenderer(*copy_program(true))
 {
     copy_program_ = copy_program(false);
 }

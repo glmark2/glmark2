@@ -24,8 +24,8 @@
 #include "renderer.h"
 #include "shader-source.h"
 
-LuminanceRenderer::LuminanceRenderer(const LibMatrix::vec2 &size) :
-    TextureRenderer(size, *luminance_program(true))
+LuminanceRenderer::LuminanceRenderer() :
+    TextureRenderer(*luminance_program(true))
 {
     luminance_program_ = luminance_program(false);
 }

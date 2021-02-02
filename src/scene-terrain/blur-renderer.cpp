@@ -31,9 +31,9 @@ create_blur_shaders(ShaderSource& vtx_source, ShaderSource& frg_source,
                     unsigned int radius, float sigma, BlurRenderer::BlurDirection direction,
                     float tilt_shift);
 
-BlurRenderer::BlurRenderer(const LibMatrix::vec2 &size, int radius, float sigma,
+BlurRenderer::BlurRenderer(int radius, float sigma,
                            BlurDirection dir, const LibMatrix::vec2 &step, float tilt_shift) :
-        TextureRenderer(size, *blur_program(true, radius, sigma, dir, step, tilt_shift))
+        TextureRenderer(*blur_program(true, radius, sigma, dir, step, tilt_shift))
 {
     blur_program_ = blur_program(false, radius, sigma, dir, step, tilt_shift);
 }

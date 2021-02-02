@@ -21,8 +21,8 @@
  */
 #include "renderer.h"
 
-TextureRenderer::TextureRenderer(const LibMatrix::vec2 &size, Program &program) :
-    BaseRenderer(size), program_(program)
+TextureRenderer::TextureRenderer(Program &program) :
+    BaseRenderer(), program_(program)
 {
     /* Create the mesh (quad) used for rendering */
     create_mesh();

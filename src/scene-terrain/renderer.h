@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "canvas.h"
 #include "mesh.h"
 #include "vec.h"
 #include "program.h"
@@ -36,7 +37,8 @@ public:
     /** 
      * Sets up the renderer's target.
      */
-    virtual void setup(const LibMatrix::vec2 &size, bool onscreen, bool has_depth) = 0;
+    virtual void setup_onscreen(Canvas& canvas) = 0;
+    virtual void setup_offscreen(const LibMatrix::vec2 &size, bool has_depth) = 0;
     /** 
      * Sets up the renderer's target texture (if any).
      */
@@ -81,7 +83,8 @@ public:
     virtual ~RendererChain() {}
 
     /* IRenderer methods */
-    void setup(const LibMatrix::vec2 &size, bool onscreen, bool has_depth);
+    void setup_onscreen(Canvas& canvas);
+    void setup_offscreen(const LibMatrix::vec2 &size, bool has_depth);
     void setup_texture(GLint min_filter, GLint mag_filter,
                        GLint wrap_s, GLint wrap_t);
     void input_texture(GLuint t);
@@ -108,11 +111,12 @@ private:
 class BaseRenderer : public IRenderer
 {
 public:
-    BaseRenderer(const LibMatrix::vec2 &size);
+    BaseRenderer();
     virtual ~BaseRenderer();
 
     /* IRenderer methods */
-    virtual void setup(const LibMatrix::vec2 &size, bool onscreen, bool has_depth);
+    virtual void setup_onscreen(Canvas& canvas);
+    virtual void setup_offscreen(const LibMatrix::vec2 &size, bool has_depth);
     virtual void setup_texture(GLint min_filter, GLint mag_filter,
                                GLint wrap_s, GLint wrap_t);
     virtual void input_texture(GLuint t) { input_texture_ = t; }
@@ -123,7 +127,7 @@ public:
     virtual void render() = 0;
 
 protected:
-    void recreate(bool onscreen, bool has_depth);
+    void recreate(Canvas* canvas, bool has_depth);
     void create_texture();
     void update_texture_parameters();
     void create_fbo(bool has_depth);
@@ -133,6 +137,7 @@ protected:
     GLuint input_texture_;
     GLuint fbo_;
     GLuint depth_renderbuffer_;
+    bool owns_fbo_;
     GLint min_filter_;
     GLint mag_filter_;
     GLint wrap_s_;
@@ -146,7 +151,7 @@ protected:
 class TextureRenderer : public BaseRenderer
 {
 public:
-    TextureRenderer(const LibMatrix::vec2 &size, Program &program);
+    TextureRenderer(Program &program);
     virtual ~TextureRenderer() { }
 
     /* IRenderer/BaseRenderer methods */
@@ -170,7 +175,7 @@ private:
 class CopyRenderer : public TextureRenderer
 {
 public:
-    CopyRenderer(const LibMatrix::vec2 &size);
+    CopyRenderer();
 
     virtual ~CopyRenderer() { delete copy_program_; }
 
@@ -186,7 +191,7 @@ private:
 class SimplexNoiseRenderer : public TextureRenderer
 {
 public:
-    SimplexNoiseRenderer(const LibMatrix::vec2 &size);
+    SimplexNoiseRenderer();
     virtual ~SimplexNoiseRenderer() { delete noise_program_; }
 
     LibMatrix::vec2 uv_scale() { return uv_scale_; }
@@ -204,12 +209,14 @@ private:
 class NormalFromHeightRenderer : public TextureRenderer
 {
 public:
-    NormalFromHeightRenderer(const LibMatrix::vec2 &size);
+    NormalFromHeightRenderer();
     virtual ~NormalFromHeightRenderer() { delete normal_from_height_program_; }
 
+    virtual void setup_onscreen(Canvas& canvas);
+    virtual void setup_offscreen(const LibMatrix::vec2 &size, bool has_depth);
+
 private:
-    static Program *normal_from_height_program(const LibMatrix::vec2 &size, 
-                                               bool create_new);
+    static Program *normal_from_height_program(bool create_new);
 
     Program *normal_from_height_program_;
 };
@@ -220,7 +227,7 @@ private:
 class LuminanceRenderer : public TextureRenderer
 {
 public:
-    LuminanceRenderer(const LibMatrix::vec2 &size);
+    LuminanceRenderer();
     virtual ~LuminanceRenderer() { delete luminance_program_; }
 
 private:
@@ -242,8 +249,8 @@ public:
         BlurDirectionBoth
     };
 
-    BlurRenderer(const LibMatrix::vec2 &size, int radius, float sigma,
-                 BlurDirection dir, const LibMatrix::vec2 &step, float tilt_shift);
+    BlurRenderer(int radius, float sigma, BlurDirection dir,
+                 const LibMatrix::vec2 &step, float tilt_shift);
     virtual ~BlurRenderer() { delete blur_program_; }
 
 private:
@@ -265,7 +272,8 @@ public:
     virtual ~OverlayRenderer() { }
 
     /* IRenderable Methods */
-    void setup(const LibMatrix::vec2 &size, bool onscreen, bool has_depth);
+    virtual void setup_onscreen(Canvas& canvas);
+    virtual void setup_offscreen(const LibMatrix::vec2 &size, bool has_depth);
     void setup_texture(GLint min_filter, GLint mag_filter,
                        GLint wrap_s, GLint wrap_t);
     void input_texture(GLuint t) { input_texture_ = t; }
@@ -293,7 +301,7 @@ private:
 class TerrainRenderer : public BaseRenderer
 {
 public:
-    TerrainRenderer(const LibMatrix::vec2 &size, const LibMatrix::vec2 &repeat_overlay);
+    TerrainRenderer(const LibMatrix::vec2 &repeat_overlay);
     virtual ~TerrainRenderer();
 
     /* IRenderable Methods */

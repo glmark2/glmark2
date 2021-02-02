@@ -21,26 +21,33 @@
  */
 #include "renderer.h"
 
-BaseRenderer::BaseRenderer(const LibMatrix::vec2 &size) :
+BaseRenderer::BaseRenderer() :
     texture_(0), input_texture_(0), fbo_(0), depth_renderbuffer_(0),
-    min_filter_(GL_LINEAR), mag_filter_(GL_LINEAR),
+    owns_fbo_(false), min_filter_(GL_LINEAR), mag_filter_(GL_LINEAR),
     wrap_s_(GL_CLAMP_TO_EDGE), wrap_t_(GL_CLAMP_TO_EDGE)
 {
-    setup(size, true, true);
 }
 
 BaseRenderer::~BaseRenderer()
 {
     glDeleteTextures(1, &texture_);
     glDeleteRenderbuffers(1, &depth_renderbuffer_);
-    glDeleteFramebuffers(1, &fbo_);
+    if (owns_fbo_)
+        glDeleteFramebuffers(1, &fbo_);
 }
 
 void
-BaseRenderer::setup(const LibMatrix::vec2 &size, bool onscreen, bool has_depth)
+BaseRenderer::setup_onscreen(Canvas& canvas)
+{
+    size_ = LibMatrix::vec2(canvas.width(), canvas.height());
+    recreate(&canvas, false);
+}
+
+void
+BaseRenderer::setup_offscreen(const LibMatrix::vec2 &size, bool has_depth)
 {
     size_ = size;
-    recreate(onscreen, has_depth);
+    recreate(nullptr, has_depth);
 }
 
 void
@@ -59,7 +66,7 @@ BaseRenderer::make_current()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
     glViewport(0, 0, size_.x(), size_.y());
-    if (!fbo_ || depth_renderbuffer_) {
+    if (!owns_fbo_ || depth_renderbuffer_) {
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
     }
@@ -79,21 +86,26 @@ BaseRenderer::update_mipmap()
 }
 
 void
-BaseRenderer::recreate(bool onscreen, bool has_depth)
+BaseRenderer::recreate(Canvas* canvas, bool has_depth)
 {
     if (texture_) {
         glDeleteTextures(1, &texture_);
         texture_ = 0;
     }
-    if (fbo_) {
+    if (owns_fbo_ && fbo_) {
         glDeleteRenderbuffers(1, &depth_renderbuffer_);
         depth_renderbuffer_ = 0;
         glDeleteFramebuffers(1, &fbo_);
         fbo_ = 0;
     }
-    if (!onscreen) {
+
+    if (canvas) {
+        fbo_ = canvas->fbo();
+        owns_fbo_ = false;
+    } else {
         create_texture();
         create_fbo(has_depth);
+        owns_fbo_ = true;
     }
 }
 
@@ -131,6 +143,9 @@ BaseRenderer::create_fbo(bool has_depth)
                 size_.x(), size_.y());
     }
 
+    GLint prev_fbo;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
+
     /* Create the FBO and attach the texture and the renderebuffer */
     glGenFramebuffers(1, &fbo_);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
@@ -140,5 +155,6 @@ BaseRenderer::create_fbo(bool has_depth)
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                 GL_RENDERBUFFER, depth_renderbuffer_);
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, prev_fbo);
 }

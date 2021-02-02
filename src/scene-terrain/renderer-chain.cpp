@@ -22,10 +22,15 @@
 #include "renderer.h"
 
 void
-RendererChain::setup(const LibMatrix::vec2 &size, bool onscreen, bool has_depth)
+RendererChain::setup_onscreen(Canvas &canvas)
+{
+    static_cast<void>(canvas);
+}
+
+void
+RendererChain::setup_offscreen(const LibMatrix::vec2 &size, bool has_depth)
 {
     static_cast<void>(size);
-    static_cast<void>(onscreen);
     static_cast<void>(has_depth);
 }
 
