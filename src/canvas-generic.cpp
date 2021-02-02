@@ -103,7 +103,7 @@ CanvasGeneric::update()
     Options::FrameEnd m = Options::frame_end;
 
     if (m == Options::FrameEndDefault) {
-        if (offscreen_)
+        if (offscreen_ || Options::validate)
             m = Options::FrameEndFinish;
         else
             m = Options::FrameEndSwap;
