@@ -124,6 +124,9 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+        GLint prev_fbo;
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
+
         /* Create a FBO */
         glGenFramebuffers(1, &fbo_);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
@@ -146,7 +149,7 @@ public:
             }
         }
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, prev_fbo);
 
         /* Load the shader program when this class if first used */
         if (RenderObject::use_count == 0) {
@@ -381,9 +384,11 @@ Program RenderObject::main_program;
  */
 class RenderScreen : public RenderObject
 {
+    Canvas &canvas_;
 public:
-    RenderScreen(Canvas &canvas) { fbo_ = canvas.fbo(); }
-    virtual void init() {}
+    RenderScreen(Canvas &canvas) : canvas_(canvas) {}
+    virtual void init() { fbo_ = canvas_.fbo(); }
+    virtual void size(const LibMatrix::vec2& size) { size_ = size; clear(); }
     virtual void release() {}
 };
 
