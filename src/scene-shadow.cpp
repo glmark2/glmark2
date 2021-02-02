@@ -54,6 +54,7 @@ class DepthRenderTarget
     unsigned int height_;
     unsigned int tex_;
     unsigned int fbo_;
+    unsigned int canvas_fbo_;
 public:
     DepthRenderTarget() :
         canvas_width_(0),
@@ -63,7 +64,7 @@ public:
         tex_(0),
         fbo_(0) {}
     ~DepthRenderTarget() {}
-    bool setup(unsigned int width, unsigned int height);
+    bool setup(unsigned int canvas_fbo, unsigned int width, unsigned int height);
     void teardown();
     void enable(const mat4& mvp);
     void disable();
@@ -72,7 +73,7 @@ public:
 };
 
 bool
-DepthRenderTarget::setup(unsigned int width, unsigned int height)
+DepthRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigned int height)
 {
     static const string vtx_shader_filename(Options::data_path + "/shaders/depth.vert");
     static const string frg_shader_filename(Options::data_path + "/shaders/depth.frag");
@@ -86,6 +87,7 @@ DepthRenderTarget::setup(unsigned int width, unsigned int height)
 
     canvas_width_ = width;
     canvas_height_ = height;
+    canvas_fbo_ = canvas_fbo;
     width_ = canvas_width_ * 2;
     height_ = canvas_height_ * 2;
 
@@ -121,7 +123,7 @@ DepthRenderTarget::setup(unsigned int width, unsigned int height)
         Log::error("DepthRenderTarget::setup: glCheckFramebufferStatus failed (0x%x)\n", status);
         return false;
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
 
     return true;
 }
@@ -156,7 +158,7 @@ DepthRenderTarget::enable(const mat4& mvp)
 
 void DepthRenderTarget::disable()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
     glViewport(0, 0, canvas_width_, canvas_height_);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
@@ -373,7 +375,7 @@ ShadowPrivate::setup(map<string, Scene::Option>& options)
     float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
     projection_.perspective(fovy, aspect, 2.0, 50.0);
 
-    if (!depthTarget_.setup(canvas_.width(), canvas_.height())) {
+    if (!depthTarget_.setup(canvas_.fbo(), canvas_.width(), canvas_.height())) {
         Log::error("Failed to set up the render target for the depth pass\n");
         return false;
     }
