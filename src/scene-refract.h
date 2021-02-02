@@ -46,6 +46,7 @@ class DistanceRenderTarget
     unsigned int height_;
     unsigned int tex_[2];
     unsigned int fbo_;
+    unsigned int canvas_fbo_;
 public:
     DistanceRenderTarget() :
         canvas_width_(0),
@@ -57,7 +58,7 @@ public:
         tex_[DEPTH] = tex_[COLOR] = 0;
     }
     ~DistanceRenderTarget() {}
-    bool setup(unsigned int width, unsigned int height);
+    bool setup(unsigned int canvas_fbo, unsigned int width, unsigned int height);
     void teardown();
     void enable(const LibMatrix::mat4& mvp);
     void disable();

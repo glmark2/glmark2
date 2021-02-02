@@ -177,7 +177,7 @@ SceneRefract::validate()
 //
 
 bool
-DistanceRenderTarget::setup(unsigned int width, unsigned int height)
+DistanceRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigned int height)
 {
     static const string vtx_shader_filename(Options::data_path + "/shaders/depth.vert");
     static const string frg_shader_filename(Options::data_path + "/shaders/depth.frag");
@@ -193,6 +193,7 @@ DistanceRenderTarget::setup(unsigned int width, unsigned int height)
     canvas_height_ = height;
     width_ = canvas_width_ * 2;
     height_ = canvas_height_ * 2;
+    canvas_fbo_ = canvas_fbo;
 
     // If the texture will be too large for the implemnetation, we need to
     // clamp the dimensions but maintain the aspect ratio.
@@ -236,7 +237,7 @@ DistanceRenderTarget::setup(unsigned int width, unsigned int height)
         Log::error("DistanceRenderTarget::setup: glCheckFramebufferStatus failed (0x%x)\n", status);
         return false;
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
 
     return true;
 }
@@ -273,7 +274,7 @@ DistanceRenderTarget::enable(const mat4& mvp)
 
 void DistanceRenderTarget::disable()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
     glViewport(0, 0, canvas_width_, canvas_height_);
     glCullFace(GL_BACK);
 }
@@ -383,7 +384,7 @@ RefractPrivate::setup(map<string, Scene::Option>& options)
                                       0.0, 0.0, 0.0,
                                       0.0, 1.0, 0.0);
 
-    if (!depthTarget_.setup(canvas_.width(), canvas_.height())) {
+    if (!depthTarget_.setup(canvas_.fbo(), canvas_.width(), canvas_.height())) {
         Log::error("Failed to set up the render target for the depth pass\n");
         return false;
     }
