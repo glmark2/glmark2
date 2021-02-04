@@ -25,7 +25,7 @@ endif
 m_dep = cpp.find_library('m', required : false)
 dl_dep = cpp.find_library('dl')
 libjpeg_dep = dependency('libjpeg')
-libpng_dep = dependency('libpng16')
+libpng_dep = dependency('libpng')
 
 flavors = get_option('flavors')
 if flavors.length() == 0
