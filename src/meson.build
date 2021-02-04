@@ -113,12 +113,12 @@ if need_wayland
         'native-state-wayland.cpp',
         xdg_shell_client_header,
         xdg_shell_private_code,
-        dependencies: [wayland_client_dep, wayland_egl_dep],
+        dependencies: [libmatrix_headers_dep, wayland_client_dep, wayland_cursor_dep, wayland_egl_dep],
         )
 
     native_wayland_dep = declare_dependency(
         link_with: native_wayland_lib,
-        dependencies: [wayland_client_dep, wayland_egl_dep],
+        dependencies: [wayland_client_dep, wayland_cursor_dep, wayland_egl_dep],
         compile_args: ['-DGLMARK2_USE_WAYLAND', '-DWL_EGL_PLATFORM'],
         )
 else

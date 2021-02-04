@@ -21,7 +21,9 @@
  */
 
 #include "native-state-wayland.h"
+#include "log.h"
 
+#include <linux/input.h>
 #include <cstring>
 #include <csignal>
 
@@ -50,9 +52,21 @@ const struct wl_output_listener NativeStateWayland::output_listener_ = {
     NativeStateWayland::output_handle_scale
 };
 
+const struct wl_seat_listener NativeStateWayland::seat_listener_ = {
+    NativeStateWayland::seat_handle_capabilities,
+};
+
+const struct wl_pointer_listener NativeStateWayland::pointer_listener_ = {
+    NativeStateWayland::pointer_handle_enter,
+    NativeStateWayland::pointer_handle_leave,
+    NativeStateWayland::pointer_handle_motion,
+    NativeStateWayland::pointer_handle_button,
+    NativeStateWayland::pointer_handle_axis,
+};
+
 volatile bool NativeStateWayland::should_quit_ = false;
 
-NativeStateWayland::NativeStateWayland() : display_(0), window_(0)
+NativeStateWayland::NativeStateWayland() : cursor_(0), display_(0), window_(0)
 {
 }
 
@@ -68,6 +82,15 @@ NativeStateWayland::~NativeStateWayland()
         if (window_->surface)
             wl_surface_destroy(window_->surface);
         delete window_;
+    }
+
+    if (cursor_) {
+        if (cursor_->cursor_surface)
+            wl_surface_destroy(cursor_->cursor_surface);
+        if (cursor_->cursor_theme)
+            wl_cursor_theme_destroy(cursor_->cursor_theme);
+
+        delete cursor_;
     }
 
     if (display_) {
@@ -121,6 +144,40 @@ NativeStateWayland::registry_handle_global(void *data, struct wl_registry *regis
 
         wl_output_add_listener(my_output->output, &output_listener_, my_output);
         wl_display_roundtrip(that->display_->display);
+    } else if (strcmp(interface, "wl_seat") == 0) {
+        that->display_->seat =
+            static_cast<struct wl_seat *>(
+            wl_registry_bind(registry, id, &wl_seat_interface, 1));
+        wl_seat_add_listener(that->display_->seat, &seat_listener_, that);
+    } else if (strcmp(interface, "wl_shm") == 0) {
+        that->display_->shm =
+            static_cast<struct wl_shm *>(
+                wl_registry_bind(registry, id, &wl_shm_interface, 1));
+
+        struct my_cursor *my_cursor = new struct my_cursor();
+        my_cursor->cursor_surface =
+             wl_compositor_create_surface(that->display_->compositor);
+        my_cursor->cursor_theme = wl_cursor_theme_load(NULL, 32, that->display_->shm);
+
+        if (!my_cursor->cursor_theme) {
+            Log::error("unable to load default theme\n");
+            wl_surface_destroy(my_cursor->cursor_surface);
+            delete my_cursor;
+            return;
+        }
+
+        my_cursor->default_cursor =
+            wl_cursor_theme_get_cursor(my_cursor->cursor_theme, "left_ptr");
+
+        if (!my_cursor->default_cursor) {
+            wl_surface_destroy(my_cursor->cursor_surface);
+            // assume above cursor_theme was set
+            wl_cursor_theme_destroy(my_cursor->cursor_theme);
+            delete my_cursor;
+            return;
+        }
+
+        that->cursor_ = my_cursor;
     }
 }
 
@@ -368,3 +425,89 @@ NativeStateWayland::quit_handler(int /*signum*/)
     should_quit_ = true;
 }
 
+void
+NativeStateWayland::seat_handle_capabilities(void *data, struct wl_seat *seat, uint32_t caps)
+{
+    NativeStateWayland *that = static_cast<NativeStateWayland *>(data);
+
+    if ((caps & WL_SEAT_CAPABILITY_POINTER) && !that->display_->pointer) {
+        that->display_->pointer = wl_seat_get_pointer(seat);
+        wl_pointer_add_listener(that->display_->pointer, &pointer_listener_, that);
+    } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && that->display_->pointer) {
+        wl_pointer_destroy(that->display_->pointer);
+        that->display_->pointer = NULL;
+    }
+}
+
+
+void
+NativeStateWayland::pointer_handle_enter(void *data, struct wl_pointer *pointer,
+                                         uint32_t serial, struct wl_surface *surface,
+                                         wl_fixed_t sx, wl_fixed_t sy)
+{
+    NativeStateWayland *that = static_cast<NativeStateWayland *>(data);
+
+    struct wl_buffer *buffer;
+    struct my_cursor *my_cursor = that->cursor_;
+    struct wl_cursor *cursor;
+    struct wl_cursor_image *image;
+
+    if (!my_cursor)
+        return;
+
+    cursor = my_cursor->default_cursor;
+
+    if (that->window_->properties.fullscreen) {
+        wl_pointer_set_cursor(pointer, serial, NULL, 0, 0);
+    } else {
+        if (cursor) {
+            image = my_cursor->default_cursor->images[0];
+            buffer = wl_cursor_image_get_buffer(image);
+            if (!buffer)
+                return;
+
+            wl_pointer_set_cursor(pointer, serial,
+                                  my_cursor->cursor_surface,
+                                  image->hotspot_x,
+                                  image->hotspot_y);
+            wl_surface_attach(my_cursor->cursor_surface, buffer, 0, 0);
+            wl_surface_damage(my_cursor->cursor_surface, 0, 0,
+                              image->width, image->height);
+            wl_surface_commit(my_cursor->cursor_surface);
+        }
+    }
+}
+
+void
+NativeStateWayland::pointer_handle_leave(void *data, struct wl_pointer *pointer,
+                     uint32_t serial, struct wl_surface *surface)
+{
+}
+
+void
+NativeStateWayland::pointer_handle_motion(void *data, struct wl_pointer *pointer,
+                      uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
+{
+}
+
+void
+NativeStateWayland::pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
+                                          uint32_t serial, uint32_t time, uint32_t button,
+                                          uint32_t state)
+{
+    /* just show that window_ can be used */
+    NativeStateWayland *that = static_cast<NativeStateWayland *>(data);
+
+    if (!that->window_->xdg_toplevel)
+        return;
+
+    if (state == WL_POINTER_BUTTON_STATE_PRESSED && button == BTN_LEFT)
+        xdg_toplevel_move(that->window_->xdg_toplevel,
+                          that->display_->seat, serial);
+}
+
+void
+NativeStateWayland::pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
+                                        uint32_t time, uint32_t axis, wl_fixed_t value)
+{
+}
