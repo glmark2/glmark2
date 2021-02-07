@@ -190,7 +190,7 @@ Program::addShader(unsigned int type, const string& source)
     }
 
     shader.attach(handle_);
-    shaders_.push_back(shader);
+    shaders_.push_back(std::move(shader));
     return;
 }
 
