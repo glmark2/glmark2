@@ -35,7 +35,7 @@ public:
         message_(shader.message_),
         ready_(shader.ready_),
         valid_(shader.valid_) {}
-    Shader(Shader&& shader) :
+    Shader(Shader&& shader) noexcept:
         handle_(std::exchange(shader.handle_, 0)),
         type_(std::exchange(shader.type_, 0)),
         source_(std::move(shader.source_)),
