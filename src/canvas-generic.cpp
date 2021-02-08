@@ -194,7 +194,8 @@ CanvasGeneric::fbo()
 bool
 CanvasGeneric::supports_gl2()
 {
-    std::string gl_version_str(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+    const char *version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+    std::string gl_version_str(version ? version : "");
     int gl_major(0);
 
     size_t point_pos(gl_version_str.find('.'));
