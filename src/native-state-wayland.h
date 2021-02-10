@@ -55,6 +55,7 @@ private:
     static const struct wl_output_listener output_listener_;
     static const struct wl_seat_listener seat_listener_;
     static const struct wl_pointer_listener pointer_listener_;
+    static const struct wl_keyboard_listener keyboard_listener_;
 
     static void
     registry_handle_global(void *data, struct wl_registry *registry,
@@ -115,6 +116,20 @@ private:
     static void pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
                                     uint32_t time, uint32_t axis, wl_fixed_t value);
 
+    static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+                                       uint32_t format, int fd, uint32_t size);
+    static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+                                      uint32_t serial, struct wl_surface *surface,
+                                      struct wl_array *keys);
+    static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+                                      uint32_t serial, struct wl_surface *surface);
+    static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
+                                    uint32_t serial, uint32_t time, uint32_t key,
+                                    uint32_t state);
+    static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+                                          uint32_t serial, uint32_t mods_depressed,
+                                          uint32_t mods_latched, uint32_t mods_locked,
+                                          uint32_t group);
     struct my_output {
         wl_output *output;
         int32_t width, height;
@@ -137,6 +152,7 @@ private:
         wl_shm *shm;
         wl_seat *seat;
         wl_pointer *pointer;
+        wl_keyboard *keyboard;
         struct xdg_wm_base *xdg_wm_base;
         OutputsVector outputs;
     } *display_;

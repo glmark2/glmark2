@@ -26,6 +26,7 @@
 #include <linux/input.h>
 #include <cstring>
 #include <csignal>
+#include <unistd.h>
 
 const struct wl_registry_listener NativeStateWayland::registry_listener_ = {
     NativeStateWayland::registry_handle_global,
@@ -62,6 +63,14 @@ const struct wl_pointer_listener NativeStateWayland::pointer_listener_ = {
     NativeStateWayland::pointer_handle_motion,
     NativeStateWayland::pointer_handle_button,
     NativeStateWayland::pointer_handle_axis,
+};
+
+const struct wl_keyboard_listener NativeStateWayland::keyboard_listener_ = {
+    NativeStateWayland::keyboard_handle_keymap,
+    NativeStateWayland::keyboard_handle_enter,
+    NativeStateWayland::keyboard_handle_leave,
+    NativeStateWayland::keyboard_handle_key,
+    NativeStateWayland::keyboard_handle_modifiers,
 };
 
 volatile bool NativeStateWayland::should_quit_ = false;
@@ -437,6 +446,14 @@ NativeStateWayland::seat_handle_capabilities(void *data, struct wl_seat *seat, u
         wl_pointer_destroy(that->display_->pointer);
         that->display_->pointer = NULL;
     }
+
+    if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !that->display_->keyboard) {
+        that->display_->keyboard = wl_seat_get_keyboard(seat);
+        wl_keyboard_add_listener(that->display_->keyboard, &keyboard_listener_, that);
+    } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && that->display_->keyboard) {
+        wl_keyboard_destroy(that->display_->keyboard);
+        that->display_->keyboard = NULL;
+    }
 }
 
 
@@ -509,5 +526,43 @@ NativeStateWayland::pointer_handle_button(void *data, struct wl_pointer *wl_poin
 void
 NativeStateWayland::pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
                                         uint32_t time, uint32_t axis, wl_fixed_t value)
+{
+}
+
+void
+NativeStateWayland::keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+                                           uint32_t format, int fd, uint32_t size)
+{
+    close(fd);
+}
+
+void
+NativeStateWayland::keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+                                          uint32_t serial, struct wl_surface *surface,
+                                          struct wl_array *keys)
+{
+}
+
+void
+NativeStateWayland::keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+                                          uint32_t serial, struct wl_surface *surface)
+{
+}
+
+void
+NativeStateWayland::keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
+                                        uint32_t serial, uint32_t time, uint32_t key,
+                                        uint32_t state)
+{
+    if (state == WL_KEYBOARD_KEY_STATE_PRESSED &&
+        (key == KEY_ESC || key == KEY_Q))
+        should_quit_ = true;
+}
+
+void
+NativeStateWayland::keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+                                              uint32_t serial, uint32_t mods_depressed,
+                                              uint32_t mods_latched, uint32_t mods_locked,
+                                              uint32_t group)
 {
 }
