@@ -1,0 +1,9 @@
+glmark2 2021.02 (20210215)
+==========================
+
+* Meson build system support for DRM/X11/Wayland builds.
+* Fix precision handling in various fragment shaders.
+* Fix spurious failures when using --validate.
+* Always draw to the correct, offscreen buffer when using --off-screen.
+* Don't prefer framebuffer formats with more than 8 bytes per component.
+* Add basic mouse and keyboard support on Wayland.

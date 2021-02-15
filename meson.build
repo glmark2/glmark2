@@ -2,7 +2,7 @@ project(
     'glmark2',
     ['cpp', 'c'],
     default_options : ['cpp_std=c++14'],
-    version : '2020.04',
+    version : '2021.02',
     meson_version: '>=0.47'
     )
 

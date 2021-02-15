@@ -1,4 +1,4 @@
-.TH @APPNAME@ "1" "April 2020" "@appname@ @appversion@"
+.TH @APPNAME@ "1" "February 2021" "@appname@ @appversion@"
 .SH NAME
 @appname@ \- OpenGL (ES) 2.0 benchmark suite
 .SH SYNOPSIS
