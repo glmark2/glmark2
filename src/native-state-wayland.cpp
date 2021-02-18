@@ -162,31 +162,6 @@ NativeStateWayland::registry_handle_global(void *data, struct wl_registry *regis
         that->display_->shm =
             static_cast<struct wl_shm *>(
                 wl_registry_bind(registry, id, &wl_shm_interface, 1));
-
-        struct my_cursor *my_cursor = new struct my_cursor();
-        my_cursor->cursor_surface =
-             wl_compositor_create_surface(that->display_->compositor);
-        my_cursor->cursor_theme = wl_cursor_theme_load(NULL, 32, that->display_->shm);
-
-        if (!my_cursor->cursor_theme) {
-            Log::error("unable to load default theme\n");
-            wl_surface_destroy(my_cursor->cursor_surface);
-            delete my_cursor;
-            return;
-        }
-
-        my_cursor->default_cursor =
-            wl_cursor_theme_get_cursor(my_cursor->cursor_theme, "left_ptr");
-
-        if (!my_cursor->default_cursor) {
-            wl_surface_destroy(my_cursor->cursor_surface);
-            // assume above cursor_theme was set
-            wl_cursor_theme_destroy(my_cursor->cursor_theme);
-            delete my_cursor;
-            return;
-        }
-
-        that->cursor_ = my_cursor;
     }
 }
 
@@ -335,6 +310,8 @@ NativeStateWayland::init_display()
     wl_registry_add_listener(display_->registry, &registry_listener_, this);
 
     wl_display_roundtrip(display_->display);
+
+    setup_cursor();
 
     return true;
 }
@@ -565,4 +542,36 @@ NativeStateWayland::keyboard_handle_modifiers(void *data, struct wl_keyboard *ke
                                               uint32_t mods_latched, uint32_t mods_locked,
                                               uint32_t group)
 {
+}
+
+void
+NativeStateWayland::setup_cursor()
+{
+    if (!display_->shm)
+        return;
+
+    struct my_cursor *my_cursor = new struct my_cursor();
+    my_cursor->cursor_surface =
+         wl_compositor_create_surface(display_->compositor);
+    my_cursor->cursor_theme = wl_cursor_theme_load(NULL, 32, display_->shm);
+
+    if (!my_cursor->cursor_theme) {
+        Log::error("unable to load default theme\n");
+        wl_surface_destroy(my_cursor->cursor_surface);
+        delete my_cursor;
+        return;
+    }
+
+    my_cursor->default_cursor =
+        wl_cursor_theme_get_cursor(my_cursor->cursor_theme, "left_ptr");
+
+    if (!my_cursor->default_cursor) {
+        wl_surface_destroy(my_cursor->cursor_surface);
+        // assume above cursor_theme was set
+        wl_cursor_theme_destroy(my_cursor->cursor_theme);
+        delete my_cursor;
+        return;
+    }
+
+    cursor_ = my_cursor;
 }

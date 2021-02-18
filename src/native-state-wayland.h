@@ -130,6 +130,8 @@ private:
                                           uint32_t serial, uint32_t mods_depressed,
                                           uint32_t mods_latched, uint32_t mods_locked,
                                           uint32_t group);
+    void setup_cursor();
+
     struct my_output {
         wl_output *output;
         int32_t width, height;
