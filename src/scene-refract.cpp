@@ -223,7 +223,6 @@ DistanceRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigne
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glGenFramebuffers(1, &fbo_);
@@ -439,6 +438,11 @@ RefractPrivate::draw()
         mesh_.render_array();
     }
     depthTarget_.disable();
+
+    // Generate mipmap for the "normal" view of the horse
+    glBindTexture(GL_TEXTURE_2D, depthTarget_.colorTexture());
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     // Draw the "normal" view of the horse
     modelview_.push();
