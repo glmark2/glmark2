@@ -33,9 +33,9 @@
 #include <sstream>
 #include <memory>
 
-#ifdef (__linux__)
+#ifdef __linux__
     #include <byteswap.h>
-#elif
+#else
     inline uint16_t bswap16(uint16_t);
     inline uint32_t bswap32(uint32_t);
 
