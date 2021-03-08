@@ -32,7 +32,27 @@
 #include <fstream>
 #include <sstream>
 #include <memory>
-#include <byteswap.h>
+
+#ifdef (__linux__)
+    #include <byteswap.h>
+#elif
+    inline uint16_t bswap16(uint16_t);
+    inline uint32_t bswap32(uint32_t);
+
+    inline uint16_t bswap16(uint16_t src)
+    {
+	    return ((src & 0x00FF) << 8) |
+	            ((src & 0xFF00) >> 8);
+}
+
+    inline uint32_t bswap32(uint32_t src)
+    {
+        return ((src & 0x000000FF) << 24) |
+                ((src & 0x0000FF00) << 8)  |
+                ((src & 0x00FF0000) >> 8)  |
+                ((src & 0xFF000000) >> 24);
+    }
+#endif
 
 using std::string;
 using std::vector;
@@ -53,20 +73,20 @@ using LibMatrix::uvec3;
 const int isBigEnd=1;
 #define is_bigendian() ((*(char*)&isBigEnd) == 0)
 
-float FloatSwap( float f )
+float FloatSwap(float f)
 {
-  union
-  {
-    float f;
-    unsigned char b[4];
-  } dat1, dat2;
+    union
+    {
+        float f;
+        unsigned char b[4];
+    } dat1, dat2;
 
-  dat1.f = f;
-  dat2.b[0] = dat1.b[3];
-  dat2.b[1] = dat1.b[2];
-  dat2.b[2] = dat1.b[1];
-  dat2.b[3] = dat1.b[0];
-  return dat2.f;
+    dat1.f = f;
+    dat2.b[0] = dat1.b[3];
+    dat2.b[1] = dat1.b[2];
+    dat2.b[2] = dat1.b[1];
+    dat2.b[3] = dat1.b[0];
+    return dat2.f;
 }
 
 /**
@@ -393,14 +413,10 @@ Model::load_3ds(const std::string &filename)
     while (!input_file.eof()) {
         uint16_t chunk_id;
         uint32_t chunk_length;
-		uint32_t swap32t;
-		uint16_t swap16t;
 		
         // Read the chunk header
         input_file.read(reinterpret_cast<char *>(&chunk_id), 2);
-		if(is_bigendian()) {
-			swap16t=__bswap_16(chunk_id); chunk_id=swap16t;
-		}
+        chunk_id = is_bigendian() ? bswap_16(chunk_id) : chunk_id;
 		
 		if (input_file.gcount() == 0) {
             continue;
@@ -413,9 +429,7 @@ Model::load_3ds(const std::string &filename)
 
         //Read the length of the chunk
         read_or_fail(input_file, &chunk_length, 4);
-		if(is_bigendian()) {
-			swap32t=__bswap_32(chunk_length); chunk_length=swap32t;
-		}
+        chunk_length = is_bigendian() ? bswap_32(chunk_length) : chunk_length;
 		
         switch (chunk_id)
         {
@@ -474,9 +488,8 @@ Model::load_3ds(const std::string &filename)
                 {
                 uint16_t qty;
                 read_or_fail(input_file, &qty, sizeof(uint16_t));
-				if(is_bigendian()) {
-					swap16t=__bswap_16(qty); qty=swap16t;
-				}
+                qty= is_bigendian() ? bswap_16(qty) : qty;
+
                 object->vertices.resize(qty);
 
                 for (uint16_t i = 0; i < qty; i++) {
@@ -501,17 +514,16 @@ Model::load_3ds(const std::string &filename)
                 {
                 uint16_t qty;
                 read_or_fail(input_file, &qty, sizeof(uint16_t));
-				if(is_bigendian()) {
-					swap16t=__bswap_16(qty); qty=swap16t;
-				}
+                qty= is_bigendian() ? bswap_16(qty) : qty;
+
 				object->faces.resize(qty);
                 for (uint16_t i = 0; i < qty; i++) {
                     uint16_t f[4];
                     read_or_fail(input_file, f, sizeof(uint16_t) * 4);
                     uvec3& face = object->faces[i].v;
-                    face.x(is_bigendian() ? __bswap_16(f[0]) : f[0]);
-                    face.y(is_bigendian() ? __bswap_16(f[1]) : f[1]);
-                    face.z(is_bigendian() ? __bswap_16(f[2]) : f[2]);
+                    face.x(is_bigendian() ? bswap_16(f[0]) : f[0]);
+                    face.y(is_bigendian() ? bswap_16(f[1]) : f[1]);
+                    face.z(is_bigendian() ? bswap_16(f[2]) : f[2]);
                 }
                 }
                 break;
@@ -527,9 +539,8 @@ Model::load_3ds(const std::string &filename)
                 {
                 uint16_t qty;
                 read_or_fail(input_file, &qty, sizeof(uint16_t));
-				if(is_bigendian()) {
-					swap16t=__bswap_16(qty); qty=swap16t;
-				}
+                qty= is_bigendian() ? bswap_16(qty) : qty;
+
                 for (uint16_t i = 0; i < qty; i++) {
                     float f[2];
 					//float swapf[2];
