@@ -213,21 +213,20 @@ CanvasAndroid::load_proc(void *userdata, const char *name)
 void
 CanvasAndroid::init_gl_extensions()
 {
-    /*
-     * Parse the extensions we care about from the extension string.
-     * Don't even bother to get function pointers until we know the
-     * extension is present.
-     */
-    std::string extString;
-    const char* exts = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
-    if (exts) {
-        extString = exts;
-    }
+    GLExtensions::MapBuffer = glMapBufferOES;
+    GLExtensions::UnmapBuffer = glUnmapBufferOES;
 
-    if (extString.find("GL_OES_mapbuffer") != std::string::npos) {
-        GLExtensions::MapBuffer =
-            reinterpret_cast<PFNGLMAPBUFFEROESPROC>(eglGetProcAddress("glMapBufferOES"));
-        GLExtensions::UnmapBuffer =
-            reinterpret_cast<PFNGLUNMAPBUFFEROESPROC>(eglGetProcAddress("glUnmapBufferOES"));
-    }
+    GLExtensions::GenFramebuffers = glGenFramebuffers;
+    GLExtensions::DeleteFramebuffers = glDeleteFramebuffers;
+    GLExtensions::BindFramebuffer = glBindFramebuffer;
+    GLExtensions::FramebufferTexture2D = glFramebufferTexture2D;
+    GLExtensions::FramebufferRenderbuffer = glFramebufferRenderbuffer;
+    GLExtensions::CheckFramebufferStatus = glCheckFramebufferStatus;
+
+    GLExtensions::GenRenderbuffers = glGenRenderbuffers;
+    GLExtensions::DeleteRenderbuffers = glDeleteRenderbuffers;
+    GLExtensions::BindRenderbuffer = glBindRenderbuffer;
+    GLExtensions::RenderbufferStorage = glRenderbufferStorage;
+
+    GLExtensions::GenerateMipmap = glGenerateMipmap;
 }

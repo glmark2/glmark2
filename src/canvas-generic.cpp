@@ -256,15 +256,15 @@ CanvasGeneric::resize_no_viewport(int width, int height)
     height_ = cur_properties.height;
 
     if (color_renderbuffer_) {
-        glBindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer_);
-        glRenderbufferStorage(GL_RENDERBUFFER, gl_color_format_,
-                              width_, height_);
+        GLExtensions::BindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer_);
+        GLExtensions::RenderbufferStorage(GL_RENDERBUFFER, gl_color_format_,
+                                          width_, height_);
     }
 
     if (depth_renderbuffer_) {
-        glBindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
-        glRenderbufferStorage(GL_RENDERBUFFER, gl_depth_format_,
-                              width_, height_);
+        GLExtensions::BindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
+        GLExtensions::RenderbufferStorage(GL_RENDERBUFFER, gl_depth_format_,
+                                          width_, height_);
     }
 
     projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
@@ -293,10 +293,15 @@ CanvasGeneric::do_make_current()
         return false;
 
     if (offscreen_) {
+        if (!GLExtensions::GenFramebuffers) {
+            Log::error("Off-screen rendering requires GL framebuffer support\n");
+            return false;
+        }
+
         if (!ensure_fbo())
             return false;
 
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
     }
 
     return true;
@@ -392,24 +397,24 @@ CanvasGeneric::ensure_fbo()
             return false;
 
         /* Create a texture for the color attachment  */
-        glGenRenderbuffers(1, &color_renderbuffer_);
-        glBindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer_);
-        glRenderbufferStorage(GL_RENDERBUFFER, gl_color_format_,
-                              width_, height_);
+        GLExtensions::GenRenderbuffers(1, &color_renderbuffer_);
+        GLExtensions::BindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer_);
+        GLExtensions::RenderbufferStorage(GL_RENDERBUFFER, gl_color_format_,
+                                          width_, height_);
 
         /* Create a renderbuffer for the depth attachment */
-        glGenRenderbuffers(1, &depth_renderbuffer_);
-        glBindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
-        glRenderbufferStorage(GL_RENDERBUFFER, gl_depth_format_,
-                              width_, height_);
+        GLExtensions::GenRenderbuffers(1, &depth_renderbuffer_);
+        GLExtensions::BindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
+        GLExtensions::RenderbufferStorage(GL_RENDERBUFFER, gl_depth_format_,
+                                          width_, height_);
 
         /* Create a FBO and set it up */
-        glGenFramebuffers(1, &fbo_);
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                  GL_RENDERBUFFER, color_renderbuffer_);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                                  GL_RENDERBUFFER, depth_renderbuffer_);
+        GLExtensions::GenFramebuffers(1, &fbo_);
+        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+        GLExtensions::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                              GL_RENDERBUFFER, color_renderbuffer_);
+        GLExtensions::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                              GL_RENDERBUFFER, depth_renderbuffer_);
     }
 
     return true;
@@ -419,15 +424,15 @@ void
 CanvasGeneric::release_fbo()
 {
     if (fbo_) {
-        glDeleteFramebuffers(1, &fbo_);
+        GLExtensions::DeleteFramebuffers(1, &fbo_);
         fbo_ = 0;
     }
     if (color_renderbuffer_) {
-        glDeleteRenderbuffers(1, &color_renderbuffer_);
+        GLExtensions::DeleteRenderbuffers(1, &color_renderbuffer_);
         color_renderbuffer_ = 0;
     }
     if (depth_renderbuffer_) {
-        glDeleteRenderbuffers(1, &depth_renderbuffer_);
+        GLExtensions::DeleteRenderbuffers(1, &depth_renderbuffer_);
         depth_renderbuffer_ = 0;
     }
 

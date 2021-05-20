@@ -114,16 +114,16 @@ DepthRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigned i
                  GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glGenFramebuffers(1, &fbo_);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
-                           tex_, 0);
-    unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    GLExtensions::GenFramebuffers(1, &fbo_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    GLExtensions::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+                                       tex_, 0);
+    unsigned int status = GLExtensions::CheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         Log::error("DepthRenderTarget::setup: glCheckFramebufferStatus failed (0x%x)\n", status);
         return false;
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
 
     return true;
 }
@@ -138,7 +138,7 @@ DepthRenderTarget::teardown()
         tex_ = 0;
     }
     if (fbo_) {
-        glDeleteFramebuffers(1, &fbo_);
+        GLExtensions::DeleteFramebuffers(1, &fbo_);
         fbo_ = 0;
     }
 }
@@ -148,8 +148,8 @@ DepthRenderTarget::enable(const mat4& mvp)
 {
     program_.start();
     program_["ModelViewProjectionMatrix"] = mvp;
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    GLExtensions::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
                            tex_, 0);
     glViewport(0, 0, width_, height_);
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -158,7 +158,7 @@ DepthRenderTarget::enable(const mat4& mvp)
 
 void DepthRenderTarget::disable()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
     glViewport(0, 0, canvas_width_, canvas_height_);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
@@ -485,15 +485,24 @@ SceneShadow::supported(bool show_errors)
 {
     static const string oes_depth_texture("GL_OES_depth_texture");
     static const string arb_depth_texture("GL_ARB_depth_texture");
+    bool ret = true;
+
     if (!GLExtensions::support(oes_depth_texture) &&
         !GLExtensions::support(arb_depth_texture)) {
         if (show_errors) {
             Log::error("We do not have the depth texture extension!!!\n");
         }
 
-        return false;
+        ret = false;
     }
-    return true;
+
+    if (!GLExtensions::GenFramebuffers) {
+        if (show_errors)
+            Log::error("SceneShadow requires GL framebuffer support\n");
+        ret = false;
+    }
+
+    return ret;
 }
 
 bool
@@ -512,10 +521,8 @@ bool
 SceneShadow::setup()
 {
     // If the scene isn't supported, don't bother to go through setup.
-    if (!supported(false) || !Scene::setup())
-    {
+    if (!Scene::setup())
         return false;
-    }
 
     priv_ = new ShadowPrivate(canvas_);
     if (!priv_->setup(options_)) {

@@ -58,6 +58,21 @@ GLStateGLX::init_gl_extensions()
 {
     GLExtensions::MapBuffer = glMapBuffer;
     GLExtensions::UnmapBuffer = glUnmapBuffer;
+
+    GLExtensions::GenFramebuffers = glGenFramebuffers;
+    GLExtensions::DeleteFramebuffers = glDeleteFramebuffers;
+    GLExtensions::BindFramebuffer = glBindFramebuffer;
+    GLExtensions::FramebufferTexture2D = glFramebufferTexture2D;
+    GLExtensions::FramebufferRenderbuffer = glFramebufferRenderbuffer;
+    GLExtensions::CheckFramebufferStatus = glCheckFramebufferStatus;
+
+    GLExtensions::GenRenderbuffers = glGenRenderbuffers;
+    GLExtensions::DeleteRenderbuffers = glDeleteRenderbuffers;
+    GLExtensions::BindRenderbuffer = glBindRenderbuffer;
+    GLExtensions::RenderbufferStorage = glRenderbufferStorage;
+
+    GLExtensions::GenerateMipmap = glGenerateMipmap;
+
     return true;
 }
 

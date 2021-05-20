@@ -114,6 +114,21 @@ GLStateWGL::init_gl_extensions()
 {
     GLExtensions::MapBuffer = glMapBuffer;
     GLExtensions::UnmapBuffer = glUnmapBuffer;
+
+    GLExtensions::GenFramebuffers = glGenFramebuffersEXT;
+    GLExtensions::DeleteFramebuffers = glDeleteFramebuffersEXT;
+    GLExtensions::BindFramebuffer = glBindFramebufferEXT;
+    GLExtensions::FramebufferTexture2D = glFramebufferTexture2DEXT;
+    GLExtensions::FramebufferRenderbuffer = glFramebufferRenderbufferEXT;
+    GLExtensions::CheckFramebufferStatus = glCheckFramebufferStatusEXT;
+
+    GLExtensions::GenRenderbuffers = glGenRenderbuffersEXT;
+    GLExtensions::DeleteRenderbuffers = glDeleteRenderbuffersEXT;
+    GLExtensions::BindRenderbuffer = glBindRenderbufferEXT;
+    GLExtensions::RenderbufferStorage = glRenderbufferStorageEXT;
+
+    GLExtensions::GenerateMipmap = glGenerateMipmapEXT;
+
     return true;
 }
 

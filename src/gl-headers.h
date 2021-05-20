@@ -46,6 +46,9 @@
 #ifndef GL_RGB8
 #define GL_RGB8 GL_RGB8_OES
 #endif
+#ifndef GL_GENERATE_MIPMAP
+#define GL_GENERATE_MIPMAP 0x8191
+#endif
 #endif
 
 #include <string>
@@ -64,6 +67,20 @@ struct GLExtensions {
 
     static void* (GLAD_API_PTR *MapBuffer) (GLenum target, GLenum access);
     static GLboolean (GLAD_API_PTR *UnmapBuffer) (GLenum target);
+
+    static void (GLAD_API_PTR *GenFramebuffers)(GLsizei n, GLuint *framebuffers);
+    static void (GLAD_API_PTR *DeleteFramebuffers)(GLsizei n, const GLuint * framebuffers);
+    static void (GLAD_API_PTR *BindFramebuffer)(GLenum target, GLuint framebuffer);
+    static void (GLAD_API_PTR *FramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+    static void (GLAD_API_PTR *FramebufferRenderbuffer)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+    static GLenum (GLAD_API_PTR *CheckFramebufferStatus)(GLenum target);
+
+    static void (GLAD_API_PTR *GenRenderbuffers)(GLsizei n, GLuint * renderbuffers);
+    static void (GLAD_API_PTR *DeleteRenderbuffers)(GLsizei n, const GLuint * renderbuffers);
+    static void (GLAD_API_PTR *BindRenderbuffer)(GLenum target, GLuint renderbuffer);
+    static void (GLAD_API_PTR *RenderbufferStorage)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+
+    static void (GLAD_API_PTR *GenerateMipmap)(GLenum target);
 };
 
 #endif

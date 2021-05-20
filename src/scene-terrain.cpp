@@ -245,8 +245,12 @@ SceneTerrain::supported(bool show_errors)
                    "but GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS is %d\n",
                    vertex_textures);
     }
+
+    if (show_errors && !GLExtensions::GenFramebuffers) {
+        Log::error("SceneTerrain requires GL framebuffer support\n");
+    }
     
-    return vertex_textures > 0;
+    return vertex_textures > 0 && GLExtensions::GenFramebuffers;
 }
 
 bool
@@ -314,7 +318,7 @@ SceneTerrain::setup()
     /* Create the specular map */
     priv_->specular_map_renderer->render();
 
-    glBindFramebuffer(GL_FRAMEBUFFER, canvas_.fbo());
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_.fbo());
     glViewport(0, 0, canvas_.width(), canvas_.height());
 
     currentFrame_ = 0;

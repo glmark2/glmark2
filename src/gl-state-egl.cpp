@@ -340,10 +340,22 @@ GLStateEGL::init_gl_extensions()
         return false;
     }
 
-    if (GLExtensions::support("GL_OES_mapbuffer")) {
-        GLExtensions::MapBuffer = glMapBufferOES;
-        GLExtensions::UnmapBuffer = glUnmapBufferOES;
-    }
+    GLExtensions::MapBuffer = glMapBufferOES;
+    GLExtensions::UnmapBuffer = glUnmapBufferOES;
+
+    GLExtensions::GenFramebuffers = glGenFramebuffers;
+    GLExtensions::DeleteFramebuffers = glDeleteFramebuffers;
+    GLExtensions::BindFramebuffer = glBindFramebuffer;
+    GLExtensions::FramebufferTexture2D = glFramebufferTexture2D;
+    GLExtensions::FramebufferRenderbuffer = glFramebufferRenderbuffer;
+    GLExtensions::CheckFramebufferStatus = glCheckFramebufferStatus;
+
+    GLExtensions::GenRenderbuffers = glGenRenderbuffers;
+    GLExtensions::DeleteRenderbuffers = glDeleteRenderbuffers;
+    GLExtensions::BindRenderbuffer = glBindRenderbuffer;
+    GLExtensions::RenderbufferStorage = glRenderbufferStorage;
+
+    GLExtensions::GenerateMipmap = glGenerateMipmap;
 #elif GLMARK2_USE_GL
     if (!gladLoadGLUserPtr(load_proc, this)) {
         Log::error("Loading GL entry points failed.");
@@ -351,6 +363,20 @@ GLStateEGL::init_gl_extensions()
     }
     GLExtensions::MapBuffer = glMapBuffer;
     GLExtensions::UnmapBuffer = glUnmapBuffer;
+
+    GLExtensions::GenFramebuffers = glGenFramebuffers;
+    GLExtensions::DeleteFramebuffers = glDeleteFramebuffers;
+    GLExtensions::BindFramebuffer = glBindFramebuffer;
+    GLExtensions::FramebufferTexture2D = glFramebufferTexture2D;
+    GLExtensions::FramebufferRenderbuffer = glFramebufferRenderbuffer;
+    GLExtensions::CheckFramebufferStatus = glCheckFramebufferStatus;
+
+    GLExtensions::GenRenderbuffers = glGenRenderbuffers;
+    GLExtensions::DeleteRenderbuffers = glDeleteRenderbuffers;
+    GLExtensions::BindRenderbuffer = glBindRenderbuffer;
+    GLExtensions::RenderbufferStorage = glRenderbufferStorage;
+
+    GLExtensions::GenerateMipmap = glGenerateMipmap;
 #endif
     return true;
 }

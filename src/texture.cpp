@@ -78,6 +78,7 @@ static void
 setup_texture(GLuint *tex, ImageData &image, GLint min_filter, GLint mag_filter)
 {
     GLenum format = image.bpp == 3 ? GL_RGB : GL_RGBA;
+    bool needs_mipmap = min_filter != GL_NEAREST && min_filter != GL_LINEAR;
 
     glGenTextures(1, tex);
     glBindTexture(GL_TEXTURE_2D, *tex);
@@ -85,14 +86,13 @@ setup_texture(GLuint *tex, ImageData &image, GLint min_filter, GLint mag_filter)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    if (needs_mipmap && !GLExtensions::GenerateMipmap)
+        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
     glTexImage2D(GL_TEXTURE_2D, 0, format, image.width, image.height, 0,
                  format, GL_UNSIGNED_BYTE, image.pixels);
 
-    if ((min_filter != GL_NEAREST && min_filter != GL_LINEAR) ||
-        (mag_filter != GL_NEAREST && mag_filter != GL_LINEAR))
-    {
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
+    if (needs_mipmap && GLExtensions::GenerateMipmap)
+        GLExtensions::GenerateMipmap(GL_TEXTURE_2D);
 }
 
 namespace TexturePrivate

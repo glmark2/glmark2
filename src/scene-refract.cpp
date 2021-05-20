@@ -93,15 +93,25 @@ SceneRefract::supported(bool show_errors)
 {
     static const string oes_depth_texture("GL_OES_depth_texture");
     static const string arb_depth_texture("GL_ARB_depth_texture");
+    bool ret = true;
+
     if (!GLExtensions::support(oes_depth_texture) &&
         !GLExtensions::support(arb_depth_texture)) {
         if (show_errors) {
             Log::error("We do not have the depth texture extension!!!\n");
         }
 
-        return false;
+        ret = false;
     }
-    return true;
+
+    if (!GLExtensions::GenFramebuffers)
+    {
+        if (show_errors)
+            Log::error("SceneRefract requires GL framebuffer support\n");
+        ret = false;
+    }
+
+    return ret;
 }
 
 bool
@@ -221,22 +231,24 @@ DistanceRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigne
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    if (!GLExtensions::GenerateMipmap)
+        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glGenFramebuffers(1, &fbo_);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+    GLExtensions::GenFramebuffers(1, &fbo_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    GLExtensions::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
                            tex_[DEPTH], 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+    GLExtensions::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                            tex_[COLOR], 0);
-    unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    unsigned int status = GLExtensions::CheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         Log::error("DistanceRenderTarget::setup: glCheckFramebufferStatus failed (0x%x)\n", status);
         return false;
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
 
     return true;
 }
@@ -251,7 +263,7 @@ DistanceRenderTarget::teardown()
         tex_[DEPTH] = tex_[COLOR] = 0;
     }
     if (fbo_) {
-        glDeleteFramebuffers(1, &fbo_);
+        GLExtensions::DeleteFramebuffers(1, &fbo_);
         fbo_ = 0;
     }
 }
@@ -261,10 +273,10 @@ DistanceRenderTarget::enable(const mat4& mvp)
 {
     program_.start();
     program_["ModelViewProjectionMatrix"] = mvp;
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    GLExtensions::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
                            tex_[DEPTH], 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+    GLExtensions::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                            tex_[COLOR], 0);
     glViewport(0, 0, width_, height_);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -273,7 +285,7 @@ DistanceRenderTarget::enable(const mat4& mvp)
 
 void DistanceRenderTarget::disable()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
     glViewport(0, 0, canvas_width_, canvas_height_);
     glCullFace(GL_BACK);
 }
@@ -441,7 +453,8 @@ RefractPrivate::draw()
 
     // Generate mipmap for the "normal" view of the horse
     glBindTexture(GL_TEXTURE_2D, depthTarget_.colorTexture());
-    glGenerateMipmap(GL_TEXTURE_2D);
+    if (GLExtensions::GenerateMipmap)
+        GLExtensions::GenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Draw the "normal" view of the horse

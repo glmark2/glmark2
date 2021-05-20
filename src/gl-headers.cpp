@@ -24,6 +24,20 @@
 void* (GLAD_API_PTR *GLExtensions::MapBuffer) (GLenum target, GLenum access) = 0;
 GLboolean (GLAD_API_PTR *GLExtensions::UnmapBuffer) (GLenum target) = 0;
 
+void (GLAD_API_PTR *GLExtensions::GenFramebuffers)(GLsizei n, GLuint *framebuffers) = 0;
+void (GLAD_API_PTR *GLExtensions::DeleteFramebuffers)(GLsizei n, const GLuint * framebuffers) = 0;
+void (GLAD_API_PTR *GLExtensions::BindFramebuffer)(GLenum target, GLuint framebuffer) = 0;
+void (GLAD_API_PTR *GLExtensions::FramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) = 0;
+void (GLAD_API_PTR *GLExtensions::FramebufferRenderbuffer)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) = 0;
+GLenum (GLAD_API_PTR *GLExtensions::CheckFramebufferStatus)(GLenum target) = 0;
+
+void (GLAD_API_PTR *GLExtensions::GenRenderbuffers)(GLsizei n, GLuint * renderbuffers) = 0;
+void (GLAD_API_PTR *GLExtensions::DeleteRenderbuffers)(GLsizei n, const GLuint * renderbuffers) = 0;
+void (GLAD_API_PTR *GLExtensions::BindRenderbuffer)(GLenum target, GLuint renderbuffer) = 0;
+void (GLAD_API_PTR *GLExtensions::RenderbufferStorage)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) = 0;
+
+void (GLAD_API_PTR *GLExtensions::GenerateMipmap)(GLenum target) = 0;
+
 bool
 GLExtensions::support(const std::string &ext)
 {

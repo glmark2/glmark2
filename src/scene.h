@@ -466,6 +466,7 @@ class SceneDesktop : public Scene
 {
 public:
     SceneDesktop(Canvas &canvas);
+    bool supported(bool show_errors);
     bool load();
     void unload();
     bool setup();
