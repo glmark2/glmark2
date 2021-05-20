@@ -224,6 +224,7 @@ NativeStateWayland::xdg_toplevel_handle_configure(void *data, struct xdg_topleve
     NativeStateWayland *that = static_cast<NativeStateWayland *>(data);
     uint32_t *state;
     bool want_fullscreen = false;
+    bool want_maximized = false;
     uint32_t scale = 1;
 
     that->window_->waiting_for_configure = false;
@@ -235,34 +236,48 @@ NativeStateWayland::xdg_toplevel_handle_configure(void *data, struct xdg_topleve
          state++) {
         if (*state == XDG_TOPLEVEL_STATE_FULLSCREEN)
             want_fullscreen = true;
+        else if (*state == XDG_TOPLEVEL_STATE_MAXIMIZED)
+            want_maximized = true;
     }
 
-    if (want_fullscreen) {
-        width *= scale;
-        height *= scale;
+    /* If the user requested a particular mode try to honor the request. The only
+     * exception is if the compositor has maximized the surface, in which case
+     * we need to provide a surface with the particular size the compositor
+     * asked for. */
+    if (want_maximized) {
+        that->window_->properties.width = width * scale;
+        that->window_->properties.height = height * scale;
+    } else if (that->window_->properties.fullscreen) {
+        if (want_fullscreen) {
+            that->window_->properties.width = width * scale;
+            that->window_->properties.height = height * scale;
+        } else if (!that->display_->outputs.empty()) {
+            that->window_->properties.width =
+                that->display_->outputs.at(0)->width;
+            that->window_->properties.height =
+                that->display_->outputs.at(0)->height;
+        }
     }
 
-    if (want_fullscreen == that->window_->properties.fullscreen &&
-        (width == 0 || width == that->window_->properties.width) &&
-        (height == 0 || height == that->window_->properties.fullscreen)) {
-        return;
+    width = that->window_->properties.width;
+    height = that->window_->properties.height;
+
+    if (!that->window_->native) {
+        that->window_->native =
+            wl_egl_window_create(that->window_->surface, width, height);
+    } else {
+        wl_egl_window_resize(that->window_->native, width, height, 0, 0);
     }
-
-    that->window_->properties.fullscreen = want_fullscreen;
-    that->window_->properties.width = width;
-    that->window_->properties.height = height;
-
-    if (!that->window_->native)
-        return;
-
-    wl_egl_window_resize(that->window_->native, width, height, 0, 0);
 
     struct wl_region *opaque_reqion = wl_compositor_create_region(that->display_->compositor);
-    wl_region_add(opaque_reqion, 0, 0,
-                  that->window_->properties.width,
-                  that->window_->properties.height);
+    wl_region_add(opaque_reqion, 0, 0, width, height);
     wl_surface_set_opaque_region(that->window_->surface, opaque_reqion);
     wl_region_destroy(opaque_reqion);
+
+    if (wl_surface_get_version(that->window_->surface) >=
+            WL_SURFACE_SET_BUFFER_SCALE_SINCE_VERSION) {
+        wl_surface_set_buffer_scale(that->window_->surface, scale);
+    }
 }
 
 void
@@ -348,30 +363,6 @@ NativeStateWayland::create_window(WindowProperties const& properties)
      * desired size for us is */
     while (window_->waiting_for_configure)
         wl_display_roundtrip(display_->display);
-
-    if (output && window_->properties.fullscreen) {
-        if (window_->properties.width <= 0 ||
-             window_->properties.height <= 0) {
-            window_->properties.width = output->width * output->scale;
-            window_->properties.height = output->height * output->scale;
-        }
-
-        if (wl_proxy_get_version((struct wl_proxy *) output) >=
-            WL_OUTPUT_SCALE_SINCE_VERSION) {
-            wl_surface_set_buffer_scale(window_->surface, output->scale);
-        }
-    }
-
-    window_->native = wl_egl_window_create(window_->surface,
-                                           window_->properties.width,
-                                           window_->properties.height);
-
-    struct wl_region *opaque_reqion = wl_compositor_create_region(display_->compositor);
-    wl_region_add(opaque_reqion, 0, 0,
-                  window_->properties.width,
-                  window_->properties.height);
-    wl_surface_set_opaque_region(window_->surface, opaque_reqion);
-    wl_region_destroy(opaque_reqion);
 
     return true;
 }
