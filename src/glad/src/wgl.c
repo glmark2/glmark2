@@ -14,6 +14,11 @@
 
 #endif /* GLAD_IMPL_UTIL_C_ */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 
 int GLAD_WGL_VERSION_1_0 = 0;
 int GLAD_WGL_ARB_extensions_string = 0;
@@ -115,3 +120,7 @@ int gladLoadWGL(HDC hdc, GLADloadfunc load) {
 }
  
 
+
+#ifdef __cplusplus
+}
+#endif

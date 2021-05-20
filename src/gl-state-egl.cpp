@@ -364,19 +364,19 @@ GLStateEGL::init_gl_extensions()
     GLExtensions::MapBuffer = glMapBuffer;
     GLExtensions::UnmapBuffer = glUnmapBuffer;
 
-    GLExtensions::GenFramebuffers = glGenFramebuffers;
-    GLExtensions::DeleteFramebuffers = glDeleteFramebuffers;
-    GLExtensions::BindFramebuffer = glBindFramebuffer;
-    GLExtensions::FramebufferTexture2D = glFramebufferTexture2D;
-    GLExtensions::FramebufferRenderbuffer = glFramebufferRenderbuffer;
-    GLExtensions::CheckFramebufferStatus = glCheckFramebufferStatus;
+    GLExtensions::GenFramebuffers = glGenFramebuffersEXT;
+    GLExtensions::DeleteFramebuffers = glDeleteFramebuffersEXT;
+    GLExtensions::BindFramebuffer = glBindFramebufferEXT;
+    GLExtensions::FramebufferTexture2D = glFramebufferTexture2DEXT;
+    GLExtensions::FramebufferRenderbuffer = glFramebufferRenderbufferEXT;
+    GLExtensions::CheckFramebufferStatus = glCheckFramebufferStatusEXT;
 
-    GLExtensions::GenRenderbuffers = glGenRenderbuffers;
-    GLExtensions::DeleteRenderbuffers = glDeleteRenderbuffers;
-    GLExtensions::BindRenderbuffer = glBindRenderbuffer;
-    GLExtensions::RenderbufferStorage = glRenderbufferStorage;
+    GLExtensions::GenRenderbuffers = glGenRenderbuffersEXT;
+    GLExtensions::DeleteRenderbuffers = glDeleteRenderbuffersEXT;
+    GLExtensions::BindRenderbuffer = glBindRenderbufferEXT;
+    GLExtensions::RenderbufferStorage = glRenderbufferStorageEXT;
 
-    GLExtensions::GenerateMipmap = glGenerateMipmap;
+    GLExtensions::GenerateMipmap = glGenerateMipmapEXT;
 #endif
     return true;
 }

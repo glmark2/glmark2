@@ -14,6 +14,11 @@
 
 #endif /* GLAD_IMPL_UTIL_C_ */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 
 int GLAD_GL_ES_VERSION_2_0 = 0;
 int GLAD_GL_OES_mapbuffer = 0;
@@ -81,7 +86,6 @@ PFNGLGETATTACHEDSHADERSPROC glad_glGetAttachedShaders = NULL;
 PFNGLGETATTRIBLOCATIONPROC glad_glGetAttribLocation = NULL;
 PFNGLGETBOOLEANVPROC glad_glGetBooleanv = NULL;
 PFNGLGETBUFFERPARAMETERIVPROC glad_glGetBufferParameteriv = NULL;
-PFNGLGETBUFFERPOINTERVPROC glad_glGetBufferPointerv = NULL;
 PFNGLGETBUFFERPOINTERVOESPROC glad_glGetBufferPointervOES = NULL;
 PFNGLGETERRORPROC glad_glGetError = NULL;
 PFNGLGETFLOATVPROC glad_glGetFloatv = NULL;
@@ -113,7 +117,6 @@ PFNGLISSHADERPROC glad_glIsShader = NULL;
 PFNGLISTEXTUREPROC glad_glIsTexture = NULL;
 PFNGLLINEWIDTHPROC glad_glLineWidth = NULL;
 PFNGLLINKPROGRAMPROC glad_glLinkProgram = NULL;
-PFNGLMAPBUFFERPROC glad_glMapBuffer = NULL;
 PFNGLMAPBUFFEROESPROC glad_glMapBufferOES = NULL;
 PFNGLPIXELSTOREIPROC glad_glPixelStorei = NULL;
 PFNGLPOLYGONOFFSETPROC glad_glPolygonOffset = NULL;
@@ -155,7 +158,6 @@ PFNGLUNIFORM4IVPROC glad_glUniform4iv = NULL;
 PFNGLUNIFORMMATRIX2FVPROC glad_glUniformMatrix2fv = NULL;
 PFNGLUNIFORMMATRIX3FVPROC glad_glUniformMatrix3fv = NULL;
 PFNGLUNIFORMMATRIX4FVPROC glad_glUniformMatrix4fv = NULL;
-PFNGLUNMAPBUFFERPROC glad_glUnmapBuffer = NULL;
 PFNGLUNMAPBUFFEROESPROC glad_glUnmapBufferOES = NULL;
 PFNGLUSEPROGRAMPROC glad_glUseProgram = NULL;
 PFNGLVALIDATEPROGRAMPROC glad_glValidateProgram = NULL;
@@ -318,11 +320,8 @@ static void glad_gl_load_GL_ES_VERSION_2_0( GLADuserptrloadfunc load, void* user
 }
 static void glad_gl_load_GL_OES_mapbuffer( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GL_OES_mapbuffer) return;
-    glad_glGetBufferPointerv = (PFNGLGETBUFFERPOINTERVPROC) load(userptr, "glGetBufferPointerv");
     glad_glGetBufferPointervOES = (PFNGLGETBUFFERPOINTERVOESPROC) load(userptr, "glGetBufferPointervOES");
-    glad_glMapBuffer = (PFNGLMAPBUFFERPROC) load(userptr, "glMapBuffer");
     glad_glMapBufferOES = (PFNGLMAPBUFFEROESPROC) load(userptr, "glMapBufferOES");
-    glad_glUnmapBuffer = (PFNGLUNMAPBUFFERPROC) load(userptr, "glUnmapBuffer");
     glad_glUnmapBufferOES = (PFNGLUNMAPBUFFEROESPROC) load(userptr, "glUnmapBufferOES");
 }
 
@@ -493,3 +492,7 @@ int gladLoadGLES2( GLADloadfunc load) {
 
  
 
+
+#ifdef __cplusplus
+}
+#endif

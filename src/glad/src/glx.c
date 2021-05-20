@@ -14,6 +14,11 @@
 
 #endif /* GLAD_IMPL_UTIL_C_ */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 
 int GLAD_GLX_VERSION_1_0 = 0;
 int GLAD_GLX_VERSION_1_1 = 0;
@@ -230,3 +235,7 @@ int gladLoadGLX(Display *display, int screen, GLADloadfunc load) {
 
  
 
+
+#ifdef __cplusplus
+}
+#endif
