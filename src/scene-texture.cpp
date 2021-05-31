@@ -262,6 +262,11 @@ SceneTexture::setup()
 void
 SceneTexture::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Texture.tga";
+        canvas_.write_to_file(name);
+    }
+
     program_.stop();
     program_.release();
 

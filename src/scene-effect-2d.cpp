@@ -367,6 +367,11 @@ SceneEffect2D::setup()
 void
 SceneEffect2D::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Effect2D.tga";
+        canvas_.write_to_file(name);
+    }
+
     mesh_.reset();
 
     program_.stop();
