@@ -170,11 +170,7 @@ SceneLoop::validate()
     if (dist < radius_3d + 0.01) {
         return Scene::ValidationSuccess;
     }
-    else {
-        Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
-                    ref.to_le32(), pixel.to_le32(), dist);
-        return Scene::ValidationFailure;
-    }
-
-    return Scene::ValidationUnknown;
+    Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
+                ref.to_le32(), pixel.to_le32(), dist);
+    return Scene::ValidationFailure;
 }

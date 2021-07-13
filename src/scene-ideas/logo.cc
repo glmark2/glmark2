@@ -612,13 +612,10 @@ SGILogo::getProgram()
     {
         case LOGO_NORMAL:
             return normalProgram_;
-            break;
         case LOGO_FLAT:
             return flatProgram_;
-            break;
         case LOGO_SHADOW:
             return shadowProgram_;
-            break;            
     }
 
     return normalProgram_;
