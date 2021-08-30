@@ -40,7 +40,8 @@ CanvasGeneric::init()
     if (!native_state_.init_display())
         return false;
 
-    gl_state_.init_display(native_state_.display(), visual_config_);
+    if (!gl_state_.init_display(native_state_.display(), visual_config_))
+        return false;
 
     return reset();
 }

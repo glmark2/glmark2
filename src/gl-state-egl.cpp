@@ -396,7 +396,7 @@ GLStateEGL::valid()
     if (!gotValidContext())
         return false;
 
-    if (egl_context_ == eglGetCurrentContext())
+    if (eglGetCurrentContext && egl_context_ == eglGetCurrentContext())
         return true;
 
     if (!eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_)) {
@@ -404,7 +404,7 @@ GLStateEGL::valid()
         return false;
     }
 
-    if (!eglSwapInterval(egl_display_, 0)) {
+    if (!eglSwapInterval || !eglSwapInterval(egl_display_, 0)) {
         Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
     }
 
@@ -574,9 +574,15 @@ GLStateEGL::gotValidDisplay()
 #elif GLMARK2_USE_GL
     EGLenum apiType(EGL_OPENGL_API);
     std::initializer_list<const char *> libNames = { "libGL.so", "libGL.so.1" };
+    if (!GLAD_EGL_VERSION_1_4) {
+        Log::error("EGL version %d.%d does not support the OpenGL API\n",
+                   egl_major, egl_minor);
+        return false;
+    }
 #endif
-    if (!eglBindAPI(apiType)) {
-        Log::error("Failed to bind api EGL_OPENGL_ES_API\n");
+
+    if (eglBindAPI && !eglBindAPI(apiType)) {
+        Log::error("Failed to bind api\n");
         return false;
     }
 
