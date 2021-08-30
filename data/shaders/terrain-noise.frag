@@ -7,23 +7,13 @@
 //               Distributed under the MIT License. See LICENSE file.
 //
 
-#ifdef GL_ES
-#define MEDIUMP mediump
-#else
-#define MEDIUMP
-#endif
-
 uniform float time;
-uniform MEDIUMP vec2 uvScale;
+uniform MEDIUMP_OR_DEFAULT vec2 uvScale;
 varying vec2 vUv;
 
-#ifdef GL_FRAGMENT_PRECISION_HIGH
 // x should be passed as highp since the intermediate multiplications can
 // overflow with mediump
-vec4 permute(highp vec4 x)
-#else
-vec4 permute(vec4 x)
-#endif
+vec4 permute(HIGHP_OR_DEFAULT vec4 x)
 {
     return mod(((x * 34.0) + 1.0) * x, 289.0);
 }

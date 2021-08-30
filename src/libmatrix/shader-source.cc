@@ -488,6 +488,22 @@ ShaderSource::str()
         precision = default_precision(type_);
 
     /* Create the precision statements */
+    std::stringstream precision_macros_ss;
+
+    precision_macros_ss << "#if defined(GL_ES)";
+    if (type_ == ShaderSource::ShaderTypeFragment)
+        precision_macros_ss << " && defined(GL_FRAGMENT_PRECISION_HIGH)";
+    precision_macros_ss << std::endl;
+    precision_macros_ss << "#define HIGHP_OR_DEFAULT highp" << std::endl;
+    precision_macros_ss << "#else" << std::endl;
+    precision_macros_ss << "#define HIGHP_OR_DEFAULT" << std::endl;
+    precision_macros_ss << "#endif" << std::endl;
+    precision_macros_ss << "#if defined(GL_ES)"  << std::endl;
+    precision_macros_ss << "#define MEDIUMP_OR_DEFAULT mediump" << std::endl;
+    precision_macros_ss << "#else" << std::endl;
+    precision_macros_ss << "#define MEDIUMP_OR_DEFAULT" << std::endl;
+    precision_macros_ss << "#endif" << std::endl;
+
     std::stringstream ss;
 
     emit_precision(ss, precision.int_precision, "int");
@@ -501,7 +517,7 @@ ShaderSource::str()
         precision_str.insert(precision_str.size(), "#endif\n");
     }
 
-    return precision_str + source_.str();
+    return precision_macros_ss.str() + precision_str + source_.str();
 }
 
 /**

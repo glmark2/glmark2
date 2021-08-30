@@ -67,12 +67,8 @@ void main() {
     vec3 pointSpecular = vec3( 0.0 );
     for ( int i = 0; i < MAX_POINT_LIGHTS; i ++ ) {
         vec4 lPosition = viewMatrix * vec4( pointLightPosition[ i ], 1.0 );
-#ifdef GL_FRAGMENT_PRECISION_HIGH
         // should be highp for correct behaviour if mediump is implemented as fp16
-        highp vec3 lVector = lPosition.xyz + vViewPosition.xyz;
-#else
-        vec3 lVector = lPosition.xyz + vViewPosition.xyz;
-#endif
+        HIGHP_OR_DEFAULT vec3 lVector = lPosition.xyz + vViewPosition.xyz;
         float lDistance = 1.0;
         if ( pointLightDistance[ i ] > 0.0 )
             lDistance = 1.0 - min( ( length( lVector ) / pointLightDistance[ i ] ), 1.0 );

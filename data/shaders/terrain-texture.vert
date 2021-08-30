@@ -1,11 +1,5 @@
-#ifdef GL_ES
-#define MEDIUMP mediump
-#else
-#define MEDIUMP
-#endif
-
 uniform vec2 uvOffset;
-uniform MEDIUMP vec2 uvScale;
+uniform MEDIUMP_OR_DEFAULT vec2 uvScale;
 
 attribute vec3 position;
 

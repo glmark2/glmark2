@@ -2,13 +2,9 @@ varying vec4 dummy;
 
 void main(void)
 {
-#ifdef GL_FRAGMENT_PRECISION_HIGH
     // should be declared highp since the multiplication can overflow in
     // mediump, particularly if mediump is implemented as fp16
-    highp vec2 FragCoord = gl_FragCoord.xy;
-#else
-    vec2 FragCoord = gl_FragCoord.xy;
-#endif
+    HIGHP_OR_DEFAULT vec2 FragCoord = gl_FragCoord.xy;
     float d = fract(FragCoord.x * FragCoord.y * 0.0001);
 
 $MAIN$

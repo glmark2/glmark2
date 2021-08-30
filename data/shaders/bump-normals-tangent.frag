@@ -1,7 +1,3 @@
-#ifdef GL_ES
-precision mediump float;
-#endif
-
 uniform sampler2D NormalMap;
 
 varying vec2 TextureCoord;

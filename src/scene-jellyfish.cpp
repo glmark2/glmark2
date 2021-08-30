@@ -417,6 +417,9 @@ JellyfishPrivate::initialize()
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source(frg_shader_filename);
 
+    // Use high float precision, if available, in the jellyfish fragment shader
+    frg_source.precision(std::string(",high,,"));
+
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),
         frg_source.str()))
     {

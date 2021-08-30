@@ -1,14 +1,6 @@
-#ifdef GL_ES
-precision mediump float;
-#endif
-
 uniform sampler2D HeightMap;
 
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-varying highp vec2 TextureCoord;
-#else
-varying vec2 TextureCoord;
-#endif
+varying HIGHP_OR_DEFAULT vec2 TextureCoord;
 
 varying vec3 NormalEye;
 varying vec3 TangentEye;
