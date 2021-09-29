@@ -173,6 +173,7 @@ public class EditorActivity extends Activity {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 final EditorItem item = adapter.getItem(itemPos);
                 final EditText input = new EditText(this);
+                input.setSingleLine(true);
                 if (item.value != null)
                     input.setText(item.value);
 
