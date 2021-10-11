@@ -4,6 +4,10 @@ Meson build system
 glmark2 uses the meson build system for the most common build flavors (X11,
 Wayland, DRM).
 
+Linux dependencies:
+
+$ sudo apt install meson cmake libjpeg-dev libpng-dev libdrm-dev libgbm-dev libudev-dev libwayland-dev wayland-protocols
+
 To configure glmark2 use:
 
 $ meson setup build -Dflavors=drm-gl,drm-glesv2,wayland-gl,wayland-glesv2,x11-gl,x11-glesv2 [-Ddata-path=DATA_PATH --prefix=PREFIX]
