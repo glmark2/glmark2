@@ -1,0 +1,9 @@
+glmark2 2021.12 (20211223)
+==========================
+
+* Fix crash with NVIDIA OpenGL driver.
+* Fix issues when running with the Wayland backend under Sway.
+* Gracefully handle missing GL features.
+* Fix model loading on big-endian systems.
+* Support EGL versions < 1.4.
+* Fix crash with the DRM backend when we can't become DRM master.
