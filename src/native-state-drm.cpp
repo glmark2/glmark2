@@ -83,9 +83,21 @@ NativeStateDRM::should_quit()
 void
 NativeStateDRM::flip()
 {
+    if (!crtc_set_ && drmSetMaster(fd_) < 0) {
+        Log::error("Failed to become DRM master "
+                   "(hint: glmark2-drm needs to be run in a VT)\n");
+        should_quit_ = true;
+        return;
+    }
+
     gbm_bo* next = gbm_surface_lock_front_buffer(surface_);
     fb_ = fb_get_from_bo(next);
     unsigned int waiting(1);
+
+    if (!next || !fb_) {
+        Log::error("Failed to get gbm front buffer\n");
+        return;
+    }
 
     if (!crtc_set_) {
         int status = drmModeSetCrtc(fd_, encoder_->crtc_id, fb_->fb_id, 0, 0,
@@ -418,6 +430,10 @@ NativeStateDRM::fb_destroy_callback(gbm_bo* bo, void* data)
 NativeStateDRM::DRMFBState*
 NativeStateDRM::fb_get_from_bo(gbm_bo* bo)
 {
+    if (!bo) {
+        return NULL;
+    }
+
     DRMFBState* fb = reinterpret_cast<DRMFBState*>(gbm_bo_get_user_data(bo));
     if (fb) {
         return fb;
