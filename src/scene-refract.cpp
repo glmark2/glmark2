@@ -154,6 +154,11 @@ SceneRefract::setup()
 void
 SceneRefract::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Refract.tga";
+        canvas_.write_to_file(name);
+    }
+
     // Add scene-specific teardown here
     if (priv_) {
         priv_->teardown();

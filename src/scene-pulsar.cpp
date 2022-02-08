@@ -157,6 +157,11 @@ ScenePulsar::setup()
 void
 ScenePulsar::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Pulsar.tga";
+        canvas_.write_to_file(name);
+    }
+
     program_.stop();
     program_.release();
 

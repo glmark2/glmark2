@@ -543,6 +543,11 @@ SceneShadow::setup()
 void
 SceneShadow::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Shadow.tga";
+        canvas_.write_to_file(name);
+    }
+
     // Add scene-specific teardown here
     if (priv_) {
         priv_->teardown();

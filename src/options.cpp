@@ -42,6 +42,7 @@ bool Options::reuse_context = false;
 bool Options::run_forever = false;
 bool Options::annotate = false;
 bool Options::offscreen = false;
+bool Options::write_file = false;
 GLVisualConfig Options::visual_config;
 
 static struct option long_options[] = {
@@ -57,6 +58,7 @@ static struct option long_options[] = {
     {"run-forever", 0, 0, 0},
     {"size", 1, 0, 0},
     {"fullscreen", 0, 0, 0},
+    {"write-file", 0, 0, 0},
     {"list-scenes", 0, 0, 0},
     {"show-all-options", 0, 0, 0},
     {"debug", 0, 0, 0},
@@ -146,6 +148,7 @@ Options::print_help()
            "      --annotate         Annotate the benchmarks with on-screen information\n"
            "                         (same as -b :show-fps=true:title=#info#)\n"
            "  -d, --debug            Display debug messages\n"
+           "      --write-file       Writes all images to the Screenshots directory on the sdcard\n"
            "  -h, --help             Display help\n");
 }
 
@@ -181,6 +184,8 @@ Options::parse_args(int argc, char **argv)
             Options::frame_end = frame_end_from_str(optarg);
         else if (!strcmp(optname, "off-screen"))
             Options::offscreen = true;
+        else if (!strcmp(optname, "write-file"))
+            Options::write_file = true;
         else if (!strcmp(optname, "visual-config"))
             Options::visual_config = GLVisualConfig(optarg);
         else if (!strcmp(optname, "reuse-context"))

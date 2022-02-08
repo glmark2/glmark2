@@ -78,6 +78,11 @@ SceneJellyfish::setup()
 void
 SceneJellyfish::teardown()
 {
+    if(Options::write_file){
+        std::string name = "/sdcard/DCIM/Screenshots/frame_Jellyfish.tga";
+        canvas_.write_to_file(name);
+    }
+    
     priv_->cleanup();
     Scene::teardown();
 }
