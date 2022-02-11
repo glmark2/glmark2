@@ -101,6 +101,7 @@ fill_escape_vector(const string &str, vector<bool> &esc_vec)
                     state = StateNormal;
                 else
                     esc = true;
+                break;
             default:
                 break;
         }
