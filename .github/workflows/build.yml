@@ -14,9 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies
-      run: >
-        sudo apt install meson libdrm-dev libgbm-dev libudev-dev
-        libwayland-dev wayland-protocols libx11-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install meson libdrm-dev libgbm-dev libudev-dev libwayland-dev wayland-protocols libx11-dev
     - name: Setup
       run: meson setup build -Dflavors=x11-gl,x11-glesv2,wayland-gl,wayland-glesv2,drm-gl,drm-glesv2
     - name: Build
@@ -29,7 +29,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies
-      run: sudo apt install meson libdrm-dev libgbm-dev libudev-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install meson libdrm-dev libgbm-dev libudev-dev
     - name: Setup
       run: meson setup build -Dflavors=drm-gl,drm-glesv2
     - name: Build
@@ -42,7 +44,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies
-      run: sudo apt install meson libwayland-dev wayland-protocols
+      run: |
+        sudo apt-get update
+        sudo apt-get install meson libwayland-dev wayland-protocols
     - name: Setup
       run: meson setup build -Dflavors=wayland-gl,wayland-glesv2
     - name: Build
@@ -55,7 +59,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies
-      run: sudo apt install meson libx11-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install meson libx11-dev
     - name: Setup
       run: meson setup build -Dflavors=x11-gl,x11-glesv2
     - name: Build
@@ -68,9 +74,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies
-      run: >
-        sudo apt install libdrm-dev libgbm-dev libudev-dev
-        libwayland-dev wayland-protocols libx11-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install libdrm-dev libgbm-dev libudev-dev libwayland-dev wayland-protocols libx11-dev
     - name: Setup
       run: ./waf configure --with-flavors=x11-gl,x11-glesv2,wayland-gl,wayland-glesv2,drm-gl,drm-glesv2
     - name: Build
