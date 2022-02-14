@@ -155,6 +155,11 @@ main(int argc, char *argv[])
         return 0;
     }
 
+    if (Options::show_version) {
+        printf("%s\n", GLMARK_VERSION);
+        return 0;
+    }
+
     /* Force 800x600 output for validation */
     if (Options::validate &&
         Options::size != std::pair<int,int>(800, 600))

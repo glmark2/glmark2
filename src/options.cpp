@@ -37,6 +37,7 @@ std::pair<int,int> Options::size(800, 600);
 bool Options::list_scenes = false;
 bool Options::show_all_options = false;
 bool Options::show_debug = false;
+bool Options::show_version = false;
 bool Options::show_help = false;
 bool Options::reuse_context = false;
 bool Options::run_forever = false;
@@ -60,6 +61,7 @@ static struct option long_options[] = {
     {"list-scenes", 0, 0, 0},
     {"show-all-options", 0, 0, 0},
     {"debug", 0, 0, 0},
+    {"version", 0, 0, 0},
     {"help", 0, 0, 0},
     {0, 0, 0, 0}
 };
@@ -146,6 +148,7 @@ Options::print_help()
            "      --annotate         Annotate the benchmarks with on-screen information\n"
            "                         (same as -b :show-fps=true:title=#info#)\n"
            "  -d, --debug            Display debug messages\n"
+           "      --version          Display program version\n"
            "  -h, --help             Display help\n");
 }
 
@@ -197,6 +200,8 @@ Options::parse_args(int argc, char **argv)
             Options::run_forever = true;
         else if (c == 'd' || !strcmp(optname, "debug"))
             Options::show_debug = true;
+        else if (!strcmp(optname, "version"))
+            Options::show_version = true;
         else if (c == 'h' || !strcmp(optname, "help"))
             Options::show_help = true;
     }

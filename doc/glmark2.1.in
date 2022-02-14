@@ -64,6 +64,9 @@ Annotate the benchmarks with on-screen information
 \fB\-d\fR, \fB\-\-debug\fR
 Display debug messages
 .TP
+\fB\-\-version\fR
+Display program version
+.TP
 \fB\-h\fR, \fB\-\-help\fR
 Display help
 .SH BENCHMARKS
