@@ -133,11 +133,22 @@ CanvasGeneric::print_info()
     do_make_current();
 
     std::stringstream ss;
+    GLVisualConfig config;
+    NativeState::WindowProperties win_props;
+
+    gl_state_.getVisualConfig(config);
+    native_state_.window(win_props);
 
     ss << "    OpenGL Information" << std::endl;
-    ss << "    GL_VENDOR:     " << glGetString(GL_VENDOR) << std::endl;
-    ss << "    GL_RENDERER:   " << glGetString(GL_RENDERER) << std::endl;
-    ss << "    GL_VERSION:    " << glGetString(GL_VERSION) << std::endl;
+    ss << "    GL_VENDOR:      " << glGetString(GL_VENDOR) << std::endl;
+    ss << "    GL_RENDERER:    " << glGetString(GL_RENDERER) << std::endl;
+    ss << "    GL_VERSION:     " << glGetString(GL_VERSION) << std::endl;
+    ss << "    Surface Config: " << "buf=" << config.buffer
+       << " r=" << config.red << " g=" << config.green << " b=" << config.blue
+       << " a=" << config.alpha << " depth=" << config.depth
+       << " stencil=" << config.stencil << std::endl;
+    ss << "    Surface Size:   " << win_props.width << "x" << win_props.height
+       << (win_props.fullscreen ? " fullscreen" : " windowed") << std::endl;
 
     Log::info("%s", ss.str().c_str());
 }

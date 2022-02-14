@@ -53,6 +53,7 @@ public:
 private:
     SharedLibrary egl_lib_;
     SharedLibrary gles_lib_;
+    GLVisualConfig chosen_config_;
 
     static GLADapiproc load_proc(void *userdata, const char *name);
     void init_gl_extensions();

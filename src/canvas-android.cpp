@@ -93,25 +93,30 @@ CanvasAndroid::init()
 
     clear();
 
+    eglGetConfigAttrib(egl_display, egl_config, EGL_BUFFER_SIZE, &chosen_config_.buffer);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_RED_SIZE, &chosen_config_.red);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_GREEN_SIZE, &chosen_config_.green);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_BLUE_SIZE, &chosen_config_.blue);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_ALPHA_SIZE, &chosen_config_.alpha);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_DEPTH_SIZE, &chosen_config_.depth);
+    eglGetConfigAttrib(egl_display, egl_config, EGL_STENCIL_SIZE, &chosen_config_.stencil);
+
     if (Options::show_debug) {
-        int buf, red, green, blue, alpha, depth, id, native_id;
+        int id, native_id;
         eglGetConfigAttrib(egl_display, egl_config, EGL_CONFIG_ID, &id);
         eglGetConfigAttrib(egl_display, egl_config, EGL_NATIVE_VISUAL_ID, &native_id);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_BUFFER_SIZE, &buf);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_RED_SIZE, &red);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_GREEN_SIZE, &green);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_BLUE_SIZE, &blue);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_ALPHA_SIZE, &alpha);
-        eglGetConfigAttrib(egl_display, egl_config, EGL_DEPTH_SIZE, &depth);
         Log::debug("EGL chosen config ID: 0x%x Native Visual ID: 0x%x\n"
                    "  Buffer: %d bits\n"
                    "     Red: %d bits\n"
                    "   Green: %d bits\n"
                    "    Blue: %d bits\n"
                    "   Alpha: %d bits\n"
-                   "   Depth: %d bits\n",
+                   "   Depth: %d bits\n"
+                   " Stencil: %d bits\n",
                    id, native_id,
-                   buf, red, green, blue, alpha, depth);
+                   chosen_config_.buffer,
+                   chosen_config_.red, chosen_config_.green, chosen_config_.blue,
+                   chosen_config_.alpha, chosen_config_.depth, chosen_config_.stencil);
     }
 
     return true;
@@ -142,9 +147,15 @@ CanvasAndroid::print_info()
     std::stringstream ss;
 
     ss << "    OpenGL Information" << std::endl;
-    ss << "    GL_VENDOR:     " << glGetString(GL_VENDOR) << std::endl;
-    ss << "    GL_RENDERER:   " << glGetString(GL_RENDERER) << std::endl;
-    ss << "    GL_VERSION:    " << glGetString(GL_VERSION) << std::endl;
+    ss << "    GL_VENDOR:      " << glGetString(GL_VENDOR) << std::endl;
+    ss << "    GL_RENDERER:    " << glGetString(GL_RENDERER) << std::endl;
+    ss << "    GL_VERSION:     " << glGetString(GL_VERSION) << std::endl;
+    ss << "    Surface Config: " << "buf=" << chosen_config_.buffer
+       << " r=" << chosen_config_.red << " g=" << chosen_config_.green
+       << " b=" << chosen_config_.blue << " a=" << chosen_config_.alpha
+       << " depth=" << chosen_config_.depth
+       << " stencil=" << chosen_config_.stencil << std::endl;
+    ss << "    Surface Size:   " << width_ << "x" << height_ << std::endl;
 
     Log::info("%s", ss.str().c_str());
 }
