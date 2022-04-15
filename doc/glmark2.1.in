@@ -27,6 +27,10 @@ Path to glmark2 models, shaders and textures
 \fB\-\-frame-end\fR METHOD
 How to end a frame [default,none,swap,finish,readpixels]
 .TP
+\fB\-\-swap-mode\fR MODE
+How to swap a frame, supported only in the DRM flavor
+[default,mailbox,immediate]
+.TP
 \fB\-\-off-screen\fR
 Render to an off-screen surface
 .TP

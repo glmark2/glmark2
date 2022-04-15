@@ -37,6 +37,13 @@ struct Options {
         FrameEndReadPixels
     };
 
+    enum SwapMode {
+        SwapModeDefault,
+        SwapModeMailbox,
+        SwapModeImmediate,
+        SwapModeFIFO,
+    };
+
     static bool parse_args(int argc, char **argv);
     static void print_help();
 
@@ -45,6 +52,7 @@ struct Options {
     static bool validate;
     static std::string data_path;
     static FrameEnd frame_end;
+    static SwapMode swap_mode;
     static std::pair<int,int> size;
     static bool list_scenes;
     static bool show_all_options;
