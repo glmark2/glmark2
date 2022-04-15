@@ -24,6 +24,7 @@
  */
 #include "native-state-drm.h"
 #include "log.h"
+#include "options.h"
 
 #include <fcntl.h>
 #include <libudev.h>
@@ -90,62 +91,73 @@ NativeStateDRM::flip()
         return;
     }
 
-    gbm_bo* next = gbm_surface_lock_front_buffer(surface_);
-    fb_ = fb_get_from_bo(next);
-    unsigned int waiting(1);
+    if (pending_bo_)
+        gbm_surface_release_buffer(surface_, pending_bo_);
+    pending_bo_ = gbm_surface_lock_front_buffer(surface_);
 
-    if (!next || !fb_) {
+    DRMFBState* pending_fb = fb_get_from_bo(pending_bo_);
+
+    if (!pending_bo_ || !pending_fb) {
         Log::error("Failed to get gbm front buffer\n");
         return;
     }
 
-    if (!crtc_set_) {
-        int status = drmModeSetCrtc(fd_, encoder_->crtc_id, fb_->fb_id, 0, 0,
-                                    &connector_->connector_id, 1, mode_);
-        if (status >= 0) {
-            crtc_set_ = true;
-            bo_ = next;
-        }
-        else {
-            Log::error("Failed to set crtc: %d\n", status);
-        }
-        return;
+    if (Options::swap_mode == Options::SwapModeFIFO || use_async_flip_)
+    {
+        /* When using either FIFO mode (vsync) or an async flip, wait for the
+         * current flip to finish. */
+        while (flipped_bo_ && check_for_page_flip(-1) >= 0)
+            continue;
+    }
+    else
+    {
+        /* When not using async flips, i.e., mailbox-like presentation,
+         * and the flip is still not done, we can continue potentially
+         * without flipping. */
+        check_for_page_flip(0);
     }
 
-    int status = drmModePageFlip(fd_, encoder_->crtc_id, fb_->fb_id,
-                                 DRM_MODE_PAGE_FLIP_EVENT, &waiting);
-    if (status < 0) {
-        Log::error("Failed to enqueue page flip: %d\n", status);
-        return;
-    }
-
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(fd_, &fds);
-    drmEventContext evCtx;
-    memset(&evCtx, 0, sizeof(evCtx));
-    evCtx.version = 2;
-    evCtx.page_flip_handler = page_flip_handler;
-
-    while (waiting) {
-        status = select(fd_ + 1, &fds, 0, 0, 0);
-        if (status < 0) {
-            // Most of the time, select() will return an error because the
-            // user pressed Ctrl-C.  So, only print out a message in debug
-            // mode, and just check for the likely condition and release
-            // the current buffer object before getting out.
-            Log::debug("Error in select\n");
-            if (should_quit()) {
-                gbm_surface_release_buffer(surface_, bo_);
-                bo_ = next;
+    /* If a flip is not in progress we can schedule another one. */
+    if (!flipped_bo_) {
+        if (!crtc_set_) {
+            int status = drmModeSetCrtc(fd_, encoder_->crtc_id, pending_fb->fb_id, 0, 0,
+                                        &connector_->connector_id, 1, mode_);
+            if (status >= 0) {
+                crtc_set_ = true;
+                if (presented_bo_)
+                    gbm_surface_release_buffer(surface_, presented_bo_);
+                presented_bo_ = pending_bo_;
+                flipped_bo_ = nullptr;
+                pending_bo_ = nullptr;
+            }
+            else {
+                Log::error("Failed to set crtc: %d\n", status);
             }
             return;
         }
-        drmHandleEvent(fd_, &evCtx);
+
+        uint32_t flip_flags = DRM_MODE_PAGE_FLIP_EVENT;
+        if (use_async_flip_)
+            flip_flags |= DRM_MODE_PAGE_FLIP_ASYNC;
+
+        int status = drmModePageFlip(fd_, encoder_->crtc_id, pending_fb->fb_id,
+                                     flip_flags, this);
+        if (status < 0) {
+            Log::error("Failed to enqueue page flip: %d\n", status);
+            return;
+        }
+
+        flipped_bo_ = pending_bo_;
+        pending_bo_ = nullptr;
     }
 
-    gbm_surface_release_buffer(surface_, bo_);
-    bo_ = next;
+    /* We need to ensure our surface has a free buffer, otherwise GL will
+     * have no buffer to render on. */
+    while (!gbm_surface_has_free_buffers(surface_) &&
+           check_for_page_flip(-1) >= 0)
+    {
+        continue;
+    }
 }
 
 /*******************
@@ -591,6 +603,19 @@ NativeStateDRM::init()
         }
     }
 
+    uint64_t cap_async;
+    if (Options::swap_mode == Options::SwapModeDefault ||
+        Options::swap_mode == Options::SwapModeImmediate) {
+        use_async_flip_ = drmGetCap(fd_, DRM_CAP_ASYNC_PAGE_FLIP, &cap_async) == 0 &&
+                          cap_async == 1;
+        if (!use_async_flip_) {
+            Log::info("Warning: DRM_CAP_ASYNC_PAGE_FLIP not supported, falling"
+                      " back to 'mailbox' mode for SwapInterval(0).");
+        }
+    } else {
+        use_async_flip_ = false;
+    }
+
     signal(SIGINT, &NativeStateDRM::quit_handler);
 
     return true;
@@ -607,8 +632,11 @@ NativeStateDRM::quit_handler(int /*signo*/)
 void
 NativeStateDRM::page_flip_handler(int/*  fd */, unsigned int /* frame */, unsigned int /* sec */, unsigned int /* usec */, void* data)
 {
-    unsigned int* waiting = reinterpret_cast<unsigned int*>(data);
-    *waiting = 0;
+    NativeStateDRM* state = reinterpret_cast<NativeStateDRM*>(data);
+    if (state->presented_bo_)
+        gbm_surface_release_buffer(state->surface_, state->presented_bo_);
+    state->presented_bo_ = state->flipped_bo_;
+    state->flipped_bo_ = nullptr;
 }
 
 void
@@ -650,4 +678,25 @@ NativeStateDRM::cleanup()
     }
     fd_ = 0;
     mode_ = 0;
+}
+
+int
+NativeStateDRM::check_for_page_flip(int timeout_ms)
+{
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(fd_, &fds);
+
+    drmEventContext evCtx;
+    memset(&evCtx, 0, sizeof(evCtx));
+    evCtx.version = 2;
+    evCtx.page_flip_handler = page_flip_handler;
+
+    struct timeval timeout = {0, timeout_ms * 1000};
+    int status = select(fd_ + 1, &fds, 0, 0,
+                        timeout_ms < 0 ? nullptr : &timeout);
+    if (status == 1)
+        drmHandleEvent(fd_, &evCtx);
+
+    return status;
 }

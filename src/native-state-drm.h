@@ -45,9 +45,11 @@ public:
         mode_(0),
         dev_(0),
         surface_(0),
-        bo_(0),
-        fb_(0),
-        crtc_set_(false) {}
+        pending_bo_(0),
+        flipped_bo_(0),
+        presented_bo_(0),
+        crtc_set_(false),
+        use_async_flip_(false) {}
     ~NativeStateDRM() { cleanup(); }
 
     bool init_display();
@@ -76,6 +78,7 @@ private:
     bool init_gbm();
     bool init();
     void cleanup();
+    int check_for_page_flip(int timeout_ms);
 
     int fd_;
     drmModeRes* resources_;
@@ -85,9 +88,11 @@ private:
     drmModeModeInfo* mode_;
     gbm_device* dev_;
     gbm_surface* surface_;
-    gbm_bo* bo_;
-    DRMFBState* fb_;
+    gbm_bo* pending_bo_;
+    gbm_bo* flipped_bo_;
+    gbm_bo* presented_bo_;
     bool crtc_set_;
+    bool use_async_flip_;
 };
 
 #endif /* GLMARK2_NATIVE_STATE_DRM_H_ */

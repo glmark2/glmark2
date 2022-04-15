@@ -33,6 +33,7 @@ std::vector<std::string> Options::benchmark_files;
 bool Options::validate = false;
 std::string Options::data_path = std::string(GLMARK_DATA_PATH);
 Options::FrameEnd Options::frame_end = Options::FrameEndDefault;
+Options::SwapMode Options::swap_mode = Options::SwapModeDefault;
 std::pair<int,int> Options::size(800, 600);
 bool Options::list_scenes = false;
 bool Options::show_all_options = false;
@@ -52,6 +53,7 @@ static struct option long_options[] = {
     {"validate", 0, 0, 0},
     {"data-path", 1, 0, 0},
     {"frame-end", 1, 0, 0},
+    {"swap-mode", 1, 0, 0},
     {"off-screen", 0, 0, 0},
     {"visual-config", 1, 0, 0},
     {"reuse-context", 0, 0, 0},
@@ -114,6 +116,28 @@ frame_end_from_str(const std::string &str)
     return m;
 }
 
+/**
+ * Parses a swap mode string
+ *
+ * @param str the string to parse
+ *
+ * @return the parsed swap mode
+ */
+static Options::SwapMode
+swap_mode_from_str(const std::string &str)
+{
+    Options::SwapMode m = Options::SwapModeDefault;
+
+    if (str == "immediate")
+        m = Options::SwapModeImmediate;
+    else if (str == "mailbox")
+        m = Options::SwapModeMailbox;
+    else if (str == "fifo")
+        m = Options::SwapModeFIFO;
+
+    return m;
+}
+
 void
 Options::print_help()
 {
@@ -130,6 +154,8 @@ Options::print_help()
            "      --data-path PATH   Path to glmark2 models, shaders and textures\n"
            "                         Default: " GLMARK_DATA_PATH "\n"
            "      --frame-end METHOD How to end a frame [default,none,swap,finish,readpixels]\n"
+           "      --swap-mode MODE   How to swap a frame, supported only in the DRM flavor\n"
+           "                         [default,immediate,mailbox,fifo]\n"
            "      --off-screen       Render to an off-screen surface\n"
            "      --visual-config C  The visual configuration to use for the rendering\n"
            "                         target: 'red=R:green=G:blue=B:alpha=A:buffer=BUF'.\n"
@@ -182,6 +208,8 @@ Options::parse_args(int argc, char **argv)
             Options::data_path = std::string(optarg);
         else if (!strcmp(optname, "frame-end"))
             Options::frame_end = frame_end_from_str(optarg);
+        else if (!strcmp(optname, "swap-mode"))
+            Options::swap_mode = swap_mode_from_str(optarg);
         else if (!strcmp(optname, "off-screen"))
             Options::offscreen = true;
         else if (!strcmp(optname, "visual-config"))
