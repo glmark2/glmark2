@@ -36,6 +36,7 @@ endif
 flavors_str = ', '.join(flavors)
 need_x11 = flavors_str.contains('x11-')
 need_drm = flavors_str.contains('drm-')
+need_gbm = flavors_str.contains('gbm-')
 need_wayland = flavors_str.contains('wayland-')
 need_gl = flavors_str.contains('-gl')
 need_glesv2 = flavors_str.contains('-glesv2')
@@ -55,6 +56,10 @@ if need_drm
     if gbm_dep.version().version_compare('>= 17.1')
         add_global_arguments('-DGBM_HAS_PLANES', language : 'cpp')
     endif
+endif
+
+if need_gbm
+    gbm_dep = dependency('gbm')
 endif
 
 if need_wayland

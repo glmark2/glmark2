@@ -90,6 +90,21 @@ else
     native_drm_dep = declare_dependency()
 endif
 
+if need_gbm
+    native_gbm_lib = static_library(
+        'native-gbm',
+        'native-state-gbm.cpp',
+        dependencies: [gbm_dep, gbm_dep, libmatrix_headers_dep],
+        )
+    native_gbm_dep = declare_dependency(
+        link_with: native_gbm_lib,
+        dependencies: gbm_dep,
+        compile_args: ['-DGLMARK2_USE_GBM', '-D__GBM__'],
+        )
+else
+    native_gbm_dep = declare_dependency()
+endif
+
 if need_wayland
     wayland_scanner = find_program(wayland_scanner_dep.get_pkgconfig_variable('wayland_scanner'))
     wayland_protocols_dir = wayland_protocols_dep.get_pkgconfig_variable('pkgdatadir')
@@ -237,6 +252,8 @@ endif
 flavor_info = {
   'drm-gl' : ['glmark2-drm', native_drm_dep, gl_gl_dep, wsi_egl_dep],
   'drm-glesv2' : ['glmark2-es2-drm', native_drm_dep, gl_glesv2_dep, wsi_egl_dep],
+  'gbm-gl' : ['glmark2-gbm', native_gbm_dep, gl_gl_dep, wsi_egl_dep],
+  'gbm-glesv2' : ['glmark2-es2-gbm', native_gbm_dep, gl_glesv2_dep, wsi_egl_dep],
   'wayland-gl' : ['glmark2-wayland', native_wayland_dep, gl_gl_dep, wsi_egl_dep],
   'wayland-glesv2' : ['glmark2-es2-wayland', native_wayland_dep, gl_glesv2_dep, wsi_egl_dep],
   'x11-gl' : ['glmark2', native_x11_dep, gl_gl_dep, wsi_glx_dep],
