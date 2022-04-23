@@ -36,6 +36,7 @@ endif
 flavors_str = ', '.join(flavors)
 need_x11 = flavors_str.contains('x11-')
 need_drm = flavors_str.contains('drm-')
+need_gbm = flavors_str.contains('gbm-')
 need_wayland = flavors_str.contains('wayland-')
 need_gl = flavors_str.contains('-gl')
 need_glesv2 = flavors_str.contains('-glesv2')
@@ -50,6 +51,10 @@ if need_drm
     libdrm_dep = dependency('libdrm')
     gbm_dep = dependency('gbm')
     libudev_dep = dependency('libudev')
+endif
+
+if need_gbm
+    gbm_dep = dependency('gbm')
 endif
 
 if need_wayland
