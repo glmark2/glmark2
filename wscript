@@ -224,6 +224,13 @@ def configure_linux(ctx):
             ctx.check_cfg(package = pkg, uselib_store = uselib, atleast_version=atleast,
                           args = '--cflags --libs', mandatory = mandatory)
 
+    if list_contains(ctx.options.flavors, 'drm'):
+        try:
+            # gbm >= 17.1 required for multiplane
+            ctx.check_cfg(package = 'gbm', atleast_version = '17.1')
+            ctx.env.append_unique('DEFINES', 'GBM_HAS_PLANES')
+        except: pass
+
     if list_contains(ctx.options.flavors, 'wayland'):
         # wayland-protocols >= 1.12 required for xdg-shell stable
         ctx.check_cfg(package = 'wayland-protocols', atleast_version = '1.12',

@@ -51,10 +51,19 @@ NativeStateDRM::display()
 }
 
 bool
-NativeStateDRM::create_window(WindowProperties const& /*properties*/)
+NativeStateDRM::create_window(WindowProperties const& properties)
 {
     if (!dev_) {
         Log::error("Error: DRM device has not been initialized!\n");
+        return false;
+    }
+
+    /* egl config's native visual id is drm fourcc */
+    surface_ = gbm_surface_create(dev_, mode_->hdisplay, mode_->vdisplay,
+                                  properties.visual_id,
+                                  GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+    if (!surface_) {
+        Log::error("Failed to create GBM surface\n");
         return false;
     }
 
@@ -453,10 +462,25 @@ NativeStateDRM::fb_get_from_bo(gbm_bo* bo)
 
     unsigned int width = gbm_bo_get_width(bo);
     unsigned int height = gbm_bo_get_height(bo);
-    unsigned int stride = gbm_bo_get_stride(bo);
-    unsigned int handle = gbm_bo_get_handle(bo).u32;
+    unsigned int handles[4] = { 0, }, strides[4] = { 0, }, offsets[4] = { 0, };
+    unsigned int format = gbm_bo_get_format(bo);
     unsigned int fb_id(0);
-    int status = drmModeAddFB(fd_, width, height, 24, 32, stride, handle, &fb_id);
+    int status;
+
+#ifdef GBM_HAS_PLANES
+    int i;
+    for (i = 0; i < gbm_bo_get_plane_count(bo); i++) {
+        handles[i] = gbm_bo_get_handle_for_plane(bo, i).u32;
+        strides[i] = gbm_bo_get_stride_for_plane(bo, i);
+        offsets[i] = gbm_bo_get_offset(bo, i);
+    }
+#else
+    handles[0] = gbm_bo_get_handle(bo).u32;
+    strides[0] = gbm_bo_get_stride(bo);
+#endif
+
+    status = drmModeAddFB2(fd_, width, height, format, handles,
+                           strides, offsets, &fb_id, 0);
     if (status < 0) {
         Log::error("Failed to create FB: %d\n", status);
         return 0;
@@ -477,14 +501,6 @@ NativeStateDRM::init_gbm()
     dev_ = gbm_create_device(fd_);
     if (!dev_) {
         Log::error("Failed to create GBM device\n");
-        return false;
-    }
-
-    surface_ = gbm_surface_create(dev_, mode_->hdisplay, mode_->vdisplay,
-                                  GBM_FORMAT_XRGB8888,
-                                  GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
-    if (!surface_) {
-        Log::error("Failed to create GBM surface\n");
         return false;
     }
 
