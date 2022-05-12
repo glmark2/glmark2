@@ -50,6 +50,11 @@ if need_drm
     libdrm_dep = dependency('libdrm')
     gbm_dep = dependency('gbm')
     libudev_dep = dependency('libudev')
+
+    # gbm >= 17.1 required for multiplane
+    if gbm_dep.version().version_compare('>= 17.1')
+        add_global_arguments('-DGBM_HAS_PLANES', language : 'cpp')
+    endif
 endif
 
 if need_wayland
