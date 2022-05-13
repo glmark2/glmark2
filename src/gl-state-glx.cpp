@@ -103,7 +103,7 @@ GLStateGLX::valid()
     if (!init_gl_extensions())
         return false;
 
-    unsigned int desired_swap(0);
+    unsigned int desired_swap(Options::swap_mode == Options::SwapModeFIFO ? 1 : 0);
     unsigned int actual_swap(-1);
     if (glXSwapIntervalEXT) {
         glXSwapIntervalEXT(xdpy_, xwin_, desired_swap);

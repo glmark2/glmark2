@@ -404,7 +404,8 @@ GLStateEGL::valid()
         return false;
     }
 
-    if (!eglSwapInterval || !eglSwapInterval(egl_display_, 0)) {
+    if (Options::swap_mode != Options::SwapModeFIFO &&
+        (!eglSwapInterval || !eglSwapInterval(egl_display_, 0))) {
         Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
     }
 

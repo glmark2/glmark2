@@ -28,8 +28,8 @@ Path to glmark2 models, shaders and textures
 How to end a frame [default,none,swap,finish,readpixels]
 .TP
 \fB\-\-swap-mode\fR MODE
-How to swap a frame, supported only in the DRM flavor
-[default,mailbox,immediate]
+How to swap a frame, all modes supported only in the DRM flavor, 'fifo'
+available in all flavors to force vsync [default,immediate,mailbox,fifo]
 .TP
 \fB\-\-off-screen\fR
 Render to an off-screen surface
