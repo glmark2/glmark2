@@ -40,7 +40,7 @@ SceneJellyfish::SceneJellyfish(Canvas& canvas) :
 
 SceneJellyfish::~SceneJellyfish()
 {
-    delete priv_;
+
 }
 
 bool
@@ -79,6 +79,7 @@ void
 SceneJellyfish::teardown()
 {
     priv_->cleanup();
+    delete priv_;
     Scene::teardown();
 }
 

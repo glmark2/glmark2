@@ -410,6 +410,7 @@ SGILogo::~SGILogo()
     if (valid_)
     {
         glDeleteBuffers(2, &bufferObjects_[0]);
+        glDeleteTextures(1, &textureName_);
     }
 }
 

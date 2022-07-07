@@ -405,6 +405,7 @@ RefractPrivate::setup(map<string, Scene::Option>& options)
 void
 RefractPrivate::teardown()
 {
+    glDeleteTextures(1, &texture_);
     depthTarget_.teardown();
     program_.stop();
     program_.release();
