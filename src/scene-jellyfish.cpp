@@ -79,6 +79,8 @@ void
 SceneJellyfish::teardown()
 {
     priv_->cleanup();
+    delete priv_;
+    priv_ = 0;
     Scene::teardown();
 }
 
