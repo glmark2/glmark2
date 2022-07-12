@@ -40,7 +40,7 @@ SceneJellyfish::SceneJellyfish(Canvas& canvas) :
 
 SceneJellyfish::~SceneJellyfish()
 {
-    delete priv_;
+
 }
 
 bool
