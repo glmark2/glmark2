@@ -5,6 +5,7 @@ plugins {
 android {
     compileSdkVersion 33
     buildToolsVersion "33.0.0"
+    ndkVersion "25.1.8937393"
 
     splits {
         abi {
@@ -12,12 +13,6 @@ android {
             reset()
             include 'arm64-v8a', 'x86_64', 'armeabi-v7a', 'x86'
             universalApk = true
-        }
-    }
-
-    sourceSets {
-        main {
-            jniLibs.srcDirs = ['libs']
         }
     }
 
@@ -36,7 +31,19 @@ android {
         targetSdkVersion 33
         versionCode 1
         versionName "2021.12"
+        externalNativeBuild {
+            ndkBuild {
+                arguments 'APP_STL=c++_static', '-j16'
+            }
+        }
     }
+
+    externalNativeBuild {
+        ndkBuild {
+            path "src/main/jni/Android.ndk.mk"
+        }
+    }
+
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
