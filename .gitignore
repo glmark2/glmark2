@@ -1,3 +1,5 @@
 .lock-waf*
 waflib/**/*.pyc
 build/
+.idea/
+.gradle/
