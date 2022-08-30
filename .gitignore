@@ -3,3 +3,4 @@ waflib/**/*.pyc
 build/
 .idea/
 .gradle/
+local.properties
