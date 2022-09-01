@@ -336,7 +336,7 @@ GLStateEGL::init_gl_extensions()
 {
 #if GLMARK2_USE_GLESv2
     if (!gladLoadGLES2UserPtr(load_proc, this)) {
-        Log::error("Loading GLESv2 entry points failed.");
+        Log::error("Loading GLESv2 entry points failed.\n");
         return false;
     }
 
@@ -358,7 +358,7 @@ GLStateEGL::init_gl_extensions()
     GLExtensions::GenerateMipmap = glGenerateMipmap;
 #elif GLMARK2_USE_GL
     if (!gladLoadGLUserPtr(load_proc, this)) {
-        Log::error("Loading GL entry points failed.");
+        Log::error("Loading GL entry points failed.\n");
         return false;
     }
     GLExtensions::MapBuffer = glMapBuffer;
