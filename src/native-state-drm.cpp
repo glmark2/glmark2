@@ -679,7 +679,7 @@ NativeStateDRM::init()
                           cap_async == 1;
         if (!use_async_flip_) {
             Log::info("Warning: DRM_CAP_ASYNC_PAGE_FLIP not supported, falling"
-                      " back to 'mailbox' mode for SwapInterval(0).");
+                      " back to 'mailbox' mode for SwapInterval(0).\n");
         }
     } else {
         use_async_flip_ = false;

@@ -75,7 +75,7 @@ CanvasAndroid::init()
     }
 
     if (!gladLoadGLES2UserPtr(load_proc, &gles_lib_)) {
-        Log::error("Loading GLESv2 entry points failed.");
+        Log::error("Loading GLESv2 entry points failed.\n");
         return false;
     }
 
