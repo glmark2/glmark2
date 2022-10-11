@@ -605,6 +605,7 @@ GLStateEGL::get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config)
     eglGetConfigAttrib(egl_display_, config, EGL_ALPHA_SIZE, &visual_config.alpha);
     eglGetConfigAttrib(egl_display_, config, EGL_DEPTH_SIZE, &visual_config.depth);
     eglGetConfigAttrib(egl_display_, config, EGL_STENCIL_SIZE, &visual_config.stencil);
+    eglGetConfigAttrib(egl_display_, config, EGL_SAMPLES, &visual_config.samples);
 }
 
 EGLConfig
@@ -654,6 +655,7 @@ GLStateEGL::gotValidConfig()
         EGL_ALPHA_SIZE, requested_visual_config_.alpha,
         EGL_DEPTH_SIZE, requested_visual_config_.depth,
         EGL_STENCIL_SIZE, requested_visual_config_.stencil,
+        EGL_SAMPLES, requested_visual_config_.samples,
 #if GLMARK2_USE_GLESv2
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 #elif GLMARK2_USE_GL

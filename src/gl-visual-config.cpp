@@ -26,7 +26,7 @@
 #include <vector>
 
 GLVisualConfig::GLVisualConfig(const std::string &s) :
-    red(1), green(1), blue(1), alpha(1), depth(1), stencil(0), buffer(1)
+    red(1), green(1), blue(1), alpha(1), depth(1), stencil(0), buffer(1), samples(0)
 {
     std::vector<std::string> elems;
 
@@ -54,6 +54,8 @@ GLVisualConfig::GLVisualConfig(const std::string &s) :
                 stencil = Util::fromString<int>(opt[1]);
             else if (opt[0] == "buf" || opt[0] == "buffer")
                 buffer = Util::fromString<int>(opt[1]);
+            else if (opt[0] == "ms" || opt[0] == "samples")
+                samples = Util::fromString<int>(opt[1]);
         }
         else
             Log::info("Warning: ignoring invalid option string '%s' "

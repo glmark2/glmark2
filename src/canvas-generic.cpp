@@ -146,7 +146,8 @@ CanvasGeneric::print_info()
     ss << "    Surface Config: " << "buf=" << config.buffer
        << " r=" << config.red << " g=" << config.green << " b=" << config.blue
        << " a=" << config.alpha << " depth=" << config.depth
-       << " stencil=" << config.stencil << std::endl;
+       << " stencil=" << config.stencil << " samples=" << config.samples
+       << std::endl;
     ss << "    Surface Size:   " << win_props.width << "x" << win_props.height
        << (win_props.fullscreen ? " fullscreen" : " windowed") << std::endl;
 
