@@ -19,20 +19,55 @@
 
 #include "native-state-gbm.h"
 #include "log.h"
+#include "options.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <cstring>
+
+namespace
+{
+
+std::string const drm_device_opt{"drm-device"};
+
+std::string get_drm_device_option()
+{
+    std::string drm_device{"/dev/dri/renderD128"};
+
+    for (auto const& opt : Options::winsys_options)
+    {
+        if (opt.name == drm_device_opt)
+            drm_device = opt.value;
+    }
+
+    return drm_device;
+}
+
+}
+
+NativeStateGBM::NativeStateGBM() :
+    fd_(0),
+    dev_(0),
+    surface_(0)
+{
+    Options::winsys_options_help =
+       "  drm-device=DRM-DEVICE  The DRM device to use (default: /dev/dri/renderD128)\n";
+}
 
 bool
 NativeStateGBM::init_display()
 {
+    std::string drm_device;
+
     if (dev_)
         return true;
 
-    // TODO: The user should be able to define which device node to open.
-    int fd = open("/dev/dri/renderD128", O_RDWR);
+    drm_device = get_drm_device_option();
+
+    int fd = open(drm_device.c_str(), O_RDWR);
     if (fd < 0) {
-        Log::error("Failed to find a suitable GBM device\n");
+        Log::error("Failed to open DRM device %s. Reason: %s\n",
+                   drm_device.c_str(), strerror(errno));
         return false;
     }
 

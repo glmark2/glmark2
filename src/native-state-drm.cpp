@@ -26,6 +26,7 @@
 #include "log.h"
 #include "options.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <libudev.h>
 #include <cstring>
@@ -34,6 +35,45 @@
 /******************
  * Public methods *
  ******************/
+
+namespace
+{
+
+std::string const drm_device_opt{"drm-device"};
+
+std::string get_drm_device_option()
+{
+    std::string drm_device{""};
+
+    for (auto const& opt : Options::winsys_options)
+    {
+        if (opt.name == drm_device_opt)
+            drm_device = opt.value;
+    }
+
+    return drm_device;
+}
+
+}
+
+NativeStateDRM::NativeStateDRM() :
+    fd_(0),
+    resources_(0),
+    connector_(0),
+    encoder_(0),
+    crtc_(0),
+    mode_(0),
+    dev_(0),
+    surface_(0),
+    pending_bo_(0),
+    flipped_bo_(0),
+    presented_bo_(0),
+    crtc_set_(false),
+    use_async_flip_(false)
+{
+    Options::winsys_options_help =
+       "  drm-device=DRM-DEVICE  The DRM device to use (autodetected if unspecified)\n";
+}
 
 bool
 NativeStateDRM::init_display()
@@ -510,10 +550,23 @@ NativeStateDRM::init_gbm()
 bool
 NativeStateDRM::init()
 {
-    // TODO: The user should be able to define *exactly* which device
-    //       node to open and the program should try to open only
-    //       this node, in order to take care of unknown use cases.
-    int fd = open_using_udev_scan();
+    int fd = -1;
+    std::string drm_device = get_drm_device_option();
+
+    if (valid_drm_node_path(drm_device)) {
+        Log::debug("Trying to use DRM node %s from --winsys-options\n",
+                   drm_device.c_str());
+        fd = open(drm_device.c_str(), O_RDWR);
+        if (!valid_fd(fd)) {
+            Log::error("Tried to use '%s' but failed.\nReason : %s\n",
+                       drm_device.c_str(), strerror(errno));
+            return false;
+        }
+    }
+
+    if (!valid_fd(fd)) {
+        fd = open_using_udev_scan();
+    }
 
     if (!valid_fd(fd)) {
         fd = open_using_module_checking();

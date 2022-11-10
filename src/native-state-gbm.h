@@ -28,10 +28,7 @@
 class NativeStateGBM : public NativeState
 {
 public:
-    NativeStateGBM() :
-        fd_(0),
-        dev_(0),
-        surface_(0) {}
+    NativeStateGBM();
     ~NativeStateGBM() { cleanup(); }
 
     bool init_display();

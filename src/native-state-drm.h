@@ -36,20 +36,7 @@
 class NativeStateDRM : public NativeState
 {
 public:
-    NativeStateDRM() :
-        fd_(0),
-        resources_(0),
-        connector_(0),
-        encoder_(0),
-        crtc_(0),
-        mode_(0),
-        dev_(0),
-        surface_(0),
-        pending_bo_(0),
-        flipped_bo_(0),
-        presented_bo_(0),
-        crtc_set_(false),
-        use_async_flip_(false) {}
+    NativeStateDRM();
     ~NativeStateDRM() { cleanup(); }
 
     bool init_display();
