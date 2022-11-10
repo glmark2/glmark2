@@ -29,6 +29,11 @@
 #include "gl-visual-config.h"
 
 struct Options {
+    struct WindowSystemOption {
+        std::string name;
+        std::string value;
+    };
+
     enum FrameEnd {
         FrameEndDefault,
         FrameEndNone,
@@ -64,6 +69,8 @@ struct Options {
     static bool annotate;
     static bool offscreen;
     static GLVisualConfig visual_config;
+    static std::vector<WindowSystemOption> winsys_options;
+    static std::string winsys_options_help;
 };
 
 #endif /* OPTIONS_H_ */

@@ -146,6 +146,22 @@ do_validation(Canvas &canvas)
 int
 main(int argc, char *argv[])
 {
+#if GLMARK2_USE_X11
+    NativeStateX11 native_state;
+#elif GLMARK2_USE_DRM
+    NativeStateDRM native_state;
+#elif GLMARK2_USE_GBM
+    NativeStateGBM native_state;
+#elif GLMARK2_USE_MIR
+    NativeStateMir native_state;
+#elif GLMARK2_USE_WAYLAND
+    NativeStateWayland native_state;
+#elif GLMARK2_USE_DISPMANX
+    NativeStateDispmanx native_state;
+#elif GLMARK2_USE_WIN32
+    NativeStateWin32 native_state;
+#endif
+
     if (!Options::parse_args(argc, argv))
         return 1;
 
@@ -172,22 +188,6 @@ main(int argc, char *argv[])
     }
 
     // Create the canvas
-#if GLMARK2_USE_X11
-    NativeStateX11 native_state;
-#elif GLMARK2_USE_DRM
-    NativeStateDRM native_state;
-#elif GLMARK2_USE_GBM
-    NativeStateGBM native_state;
-#elif GLMARK2_USE_MIR
-    NativeStateMir native_state;
-#elif GLMARK2_USE_WAYLAND
-    NativeStateWayland native_state;
-#elif GLMARK2_USE_DISPMANX
-    NativeStateDispmanx native_state;
-#elif GLMARK2_USE_WIN32
-    NativeStateWin32 native_state;
-#endif
-
 #if GLMARK2_USE_EGL
     GLStateEGL gl_state;
 #elif GLMARK2_USE_GLX

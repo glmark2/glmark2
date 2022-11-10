@@ -45,6 +45,8 @@ bool Options::run_forever = false;
 bool Options::annotate = false;
 bool Options::offscreen = false;
 GLVisualConfig Options::visual_config;
+std::vector<Options::WindowSystemOption> Options::winsys_options;
+std::string Options::winsys_options_help;
 
 static struct option long_options[] = {
     {"annotate", 0, 0, 0},
@@ -60,6 +62,7 @@ static struct option long_options[] = {
     {"run-forever", 0, 0, 0},
     {"size", 1, 0, 0},
     {"fullscreen", 0, 0, 0},
+    {"winsys-options", 1, 0, 0},
     {"list-scenes", 0, 0, 0},
     {"show-all-options", 0, 0, 0},
     {"debug", 0, 0, 0},
@@ -138,6 +141,27 @@ swap_mode_from_str(const std::string &str)
     return m;
 }
 
+std::vector<Options::WindowSystemOption>
+winsys_options_from_str(std::string const& str)
+{
+    std::vector<Options::WindowSystemOption> ret;
+    std::vector<std::string> opts;
+
+    Util::split(str, ':', opts, Util::SplitModeNormal);
+
+    for (auto const& opt : opts)
+    {
+        std::vector<std::string> kv;
+        Util::split(opt, '=', kv, Util::SplitModeNormal);
+        if (kv.size() == 2)
+            ret.push_back({kv[0], kv[1]});
+        else
+            throw std::runtime_error{"Invalid window system option '" + opt + "'"};
+    }
+
+    return ret;
+}
+
 void
 Options::print_help()
 {
@@ -166,6 +190,8 @@ Options::print_help()
            "                         (by default, each scene gets its own context)\n"
            "  -s, --size WxH         Size of the output window (default: 800x600)\n"
            "      --fullscreen       Run in fullscreen mode (equivalent to --size -1x-1)\n"
+           "      --winsys-options O A list of 'opt=value' pairs for window system specific\n"
+           "                         options, separated by ':'\n"
            "  -l, --list-scenes      Display information about the available scenes\n"
            "                         and their options\n"
            "      --show-all-options Show all scene option values used for benchmarks\n"
@@ -177,6 +203,12 @@ Options::print_help()
            "  -d, --debug            Display debug messages\n"
            "      --version          Display program version\n"
            "  -h, --help             Display help\n");
+
+    if (Options::winsys_options_help.empty())
+        return;
+
+    printf("\nWindow System options (pass in --winsys-options):\n%s",
+           Options::winsys_options_help.c_str());
 }
 
 bool
@@ -221,6 +253,8 @@ Options::parse_args(int argc, char **argv)
             parse_size(optarg, Options::size);
         else if (!strcmp(optname, "fullscreen"))
             Options::size = std::pair<int,int>(-1, -1);
+        else if (!strcmp(optname, "winsys-options"))
+            Options::winsys_options = winsys_options_from_str(optarg);
         else if (c == 'l' || !strcmp(optname, "list-scenes"))
             Options::list_scenes = true;
         else if (!strcmp(optname, "show-all-options"))
