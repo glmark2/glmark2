@@ -227,6 +227,7 @@ GLStateGLX::ensure_glx_fbconfig()
         GLX_DEPTH_SIZE, requested_visual_config_.depth,
         GLX_STENCIL_SIZE, requested_visual_config_.stencil,
         GLX_BUFFER_SIZE, requested_visual_config_.buffer,
+        GLX_SAMPLES, requested_visual_config_.samples,
         GLX_DOUBLEBUFFER, True,
         None
     };
@@ -255,7 +256,7 @@ GLStateGLX::ensure_glx_fbconfig()
     XFree(fbc);
 
     if (Options::show_debug) {
-        int buf, red, green, blue, alpha, depth, stencil, id, native_id;
+        int buf, red, green, blue, alpha, depth, stencil, id, native_id, samples;
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_FBCONFIG_ID, &id);
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_VISUAL_ID, &native_id);
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_BUFFER_SIZE, &buf);
@@ -265,6 +266,7 @@ GLStateGLX::ensure_glx_fbconfig()
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_ALPHA_SIZE, &alpha);
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_DEPTH_SIZE, &depth);
         glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_STENCIL_SIZE, &stencil);
+        glXGetFBConfigAttrib(xdpy_, glx_fbconfig_, GLX_SAMPLES, &samples);
         Log::debug("GLX chosen config ID: 0x%x Native Visual ID: 0x%x\n"
                    "  Buffer: %d bits\n"
                    "     Red: %d bits\n"
@@ -272,9 +274,10 @@ GLStateGLX::ensure_glx_fbconfig()
                    "    Blue: %d bits\n"
                    "   Alpha: %d bits\n"
                    "   Depth: %d bits\n"
-                   " Stencil: %d bits\n",
+                   " Stencil: %d bits\n"
+                   " Samples: %d\n",
                    id, native_id,
-                   buf, red, green, blue, alpha, depth, stencil);
+                   buf, red, green, blue, alpha, depth, stencil, samples);
     }
 
 
@@ -311,6 +314,7 @@ GLStateGLX::get_glvisualconfig_glx(const GLXFBConfig config, GLVisualConfig &vis
     glXGetFBConfigAttrib(xdpy_, config, GLX_ALPHA_SIZE, &visual_config.alpha);
     glXGetFBConfigAttrib(xdpy_, config, GLX_DEPTH_SIZE, &visual_config.depth);
     glXGetFBConfigAttrib(xdpy_, config, GLX_STENCIL_SIZE, &visual_config.stencil);
+    glXGetFBConfigAttrib(xdpy_, config, GLX_SAMPLES, &visual_config.samples);
 }
 
 GLXFBConfig
