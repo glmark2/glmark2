@@ -257,6 +257,7 @@ flavor_info = {
   'wayland-gl' : ['glmark2-wayland', native_wayland_dep, gl_gl_dep, wsi_egl_dep],
   'wayland-glesv2' : ['glmark2-es2-wayland', native_wayland_dep, gl_glesv2_dep, wsi_egl_dep],
   'x11-gl' : ['glmark2', native_x11_dep, gl_gl_dep, wsi_glx_dep],
+  'x11-gl-egl' : ['glmark2-egl', native_x11_dep, gl_gl_dep, wsi_egl_dep],
   'x11-glesv2' : ['glmark2-es2', native_x11_dep, gl_glesv2_dep, wsi_egl_dep],
 }
 
