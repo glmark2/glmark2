@@ -40,7 +40,7 @@ need_gbm = flavors_str.contains('gbm-')
 need_wayland = flavors_str.contains('wayland-')
 need_gl = flavors_str.contains('-gl')
 need_glesv2 = flavors_str.contains('-glesv2')
-need_egl = need_drm or need_wayland or need_glesv2
+need_egl = need_drm or need_wayland or need_glesv2 or flavors_str.contains('-egl')
 need_glx = flavors.contains('x11-gl')
 
 if need_x11
