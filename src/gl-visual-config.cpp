@@ -26,7 +26,7 @@
 #include <vector>
 
 GLVisualConfig::GLVisualConfig(const std::string &s) :
-    red(1), green(1), blue(1), alpha(1), depth(1), stencil(0), buffer(1), samples(0)
+    id(0), red(1), green(1), blue(1), alpha(1), depth(1), stencil(0), buffer(1), samples(0)
 {
     std::vector<std::string> elems;
 
@@ -56,6 +56,8 @@ GLVisualConfig::GLVisualConfig(const std::string &s) :
                 buffer = Util::fromString<int>(opt[1]);
             else if (opt[0] == "ms" || opt[0] == "samples")
                 samples = Util::fromString<int>(opt[1]);
+            else if (opt[0] == "id" )
+                id = Util::fromString<int>(opt[1]);
         }
         else
             Log::info("Warning: ignoring invalid option string '%s' "
@@ -68,6 +70,11 @@ int
 GLVisualConfig::match_score(const GLVisualConfig &target) const
 {
     int score(0);
+
+    /* A target config id trumps all other considerations and must match
+     * exactly. */
+    if (target.id)
+        return target.id == id ? 1000 : -1000;
 
     /* 
      * R,G,B,A integer values are at most 8 bits wide (for current widespread

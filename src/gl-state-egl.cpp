@@ -598,6 +598,7 @@ GLStateEGL::gotValidDisplay()
 void
 GLStateEGL::get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config)
 {
+    eglGetConfigAttrib(egl_display_, config, EGL_CONFIG_ID, &visual_config.id);
     eglGetConfigAttrib(egl_display_, config, EGL_BUFFER_SIZE, &visual_config.buffer);
     eglGetConfigAttrib(egl_display_, config, EGL_RED_SIZE, &visual_config.red);
     eglGetConfigAttrib(egl_display_, config, EGL_GREEN_SIZE, &visual_config.green);

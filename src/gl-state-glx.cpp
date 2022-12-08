@@ -303,6 +303,7 @@ GLStateGLX::ensure_glx_context()
 void
 GLStateGLX::get_glvisualconfig_glx(const GLXFBConfig config, GLVisualConfig &visual_config)
 {
+    glXGetFBConfigAttrib(xdpy_, config, GLX_FBCONFIG_ID, &visual_config.id);
     glXGetFBConfigAttrib(xdpy_, config, GLX_BUFFER_SIZE, &visual_config.buffer);
     glXGetFBConfigAttrib(xdpy_, config, GLX_RED_SIZE, &visual_config.red);
     glXGetFBConfigAttrib(xdpy_, config, GLX_GREEN_SIZE, &visual_config.green);

@@ -36,8 +36,10 @@ Render to an off-screen surface
 .TP
 \fB--visual-config\fR
 The visual configuration to use for the rendering target:
-\'red=R:green=G:blue=B:alpha=A:buffer=BUF'. The parameters may be defined
-in any order, and any omitted parameters assume a default value of '1'
+\'id=ID:red=R:green=G:blue=B:alpha=A:buffer=BUF:stencil=STENCIL:samples=SAMPLES'.
+The parameters may be defined in any order, and any omitted parameters assume a
+default value of '0' (id, stencil, samples) or '1' (red, green, blue, alpha, buffer).
+If 'id' is set to a non-zero value, all other parameters are ignored
 .TP
 \fB\-\-reuse\-context\fR
 Use a single context for all scenes
