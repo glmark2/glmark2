@@ -130,9 +130,16 @@ GLVisualConfig::score_component(int component, int target, int scale) const
          * otherwise the smallest positive difference from target.
          */
         int diff = std::abs(scale) * (component - target);
-        score = scale < 0 ? MAXIMUM_COMPONENT_SCORE - diff : diff;
-        score = std::min(MAXIMUM_COMPONENT_SCORE, score);
-        score = std::max(0, score);
+        if (diff > 0)
+        {
+            score = scale < 0 ? MAXIMUM_COMPONENT_SCORE - diff : diff;
+            score = std::min(MAXIMUM_COMPONENT_SCORE, score);
+            score = std::max(0, score);
+        }
+        else
+        {
+            score = 0;
+        }
     }
 
     return score;
