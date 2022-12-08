@@ -636,7 +636,7 @@ GLStateEGL::select_best_config(std::vector<EGLConfig>& configs)
         }
     }
 
-    return best_config;
+    return best_score > 0 ? best_config : 0;
 }
 
 bool
@@ -682,6 +682,10 @@ GLStateEGL::gotValidConfig()
 
     // Select the best matching config
     egl_config_ = select_best_config(configs);
+    if (!egl_config_) {
+        Log::error("Failed to find suitable EGL config\n");
+        return false;
+    }
 
     vector<EglConfig> configVec;
     for (vector<EGLConfig>::const_iterator configIt = configs.begin();

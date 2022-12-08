@@ -244,6 +244,10 @@ GLStateGLX::ensure_glx_fbconfig()
 
     /* Select the best matching config */
     glx_fbconfig_ = select_best_config(configs);
+    if (!glx_fbconfig_) {
+        Log::error("Failed to find suitable GLX FB config\n");
+        return false;
+    }
 
     XFree(fbc);
 
@@ -337,7 +341,7 @@ GLStateGLX::select_best_config(std::vector<GLXFBConfig> configs)
         }
     }
 
-    return best_config;
+    return best_score > 0 ? best_config : 0;
 }
 
 GLADapiproc
