@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <istream>
+#include <iomanip>
 #include <sstream>
 #include <stdint.h>
 
@@ -105,7 +106,7 @@ struct Util {
     {
         std::stringstream ss(asString);
         T retVal = T();
-        ss >> retVal;
+        ss >> std::setbase(0) >> retVal;
         return retVal;
     }
     /**
