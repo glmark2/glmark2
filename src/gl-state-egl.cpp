@@ -649,13 +649,6 @@ GLStateEGL::gotValidConfig()
         return false;
 
     const EGLint config_attribs[] = {
-        EGL_RED_SIZE, requested_visual_config_.red,
-        EGL_GREEN_SIZE, requested_visual_config_.green,
-        EGL_BLUE_SIZE, requested_visual_config_.blue,
-        EGL_ALPHA_SIZE, requested_visual_config_.alpha,
-        EGL_DEPTH_SIZE, requested_visual_config_.depth,
-        EGL_STENCIL_SIZE, requested_visual_config_.stencil,
-        EGL_SAMPLES, requested_visual_config_.samples,
 #if GLMARK2_USE_GLESv2
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 #elif GLMARK2_USE_GL

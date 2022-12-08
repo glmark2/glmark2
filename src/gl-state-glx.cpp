@@ -220,14 +220,6 @@ GLStateGLX::ensure_glx_fbconfig()
         GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
         GLX_RENDER_TYPE, GLX_RGBA_BIT,
         GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
-        GLX_RED_SIZE, requested_visual_config_.red,
-        GLX_GREEN_SIZE, requested_visual_config_.green,
-        GLX_BLUE_SIZE, requested_visual_config_.blue,
-        GLX_ALPHA_SIZE, requested_visual_config_.alpha,
-        GLX_DEPTH_SIZE, requested_visual_config_.depth,
-        GLX_STENCIL_SIZE, requested_visual_config_.stencil,
-        GLX_BUFFER_SIZE, requested_visual_config_.buffer,
-        GLX_SAMPLES, requested_visual_config_.samples,
         GLX_DOUBLEBUFFER, True,
         None
     };
