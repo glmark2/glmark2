@@ -107,8 +107,7 @@ Benchmark::setup_scene()
     scene_.reset_options();
     load_options();
 
-    scene_.load();
-    scene_.setup();
+    scene_.prepare();
 
     return scene_;
 }
@@ -116,8 +115,7 @@ Benchmark::setup_scene()
 void
 Benchmark::teardown_scene()
 {
-    scene_.teardown();
-    scene_.unload();
+    scene_.finish();
 }
 
 bool

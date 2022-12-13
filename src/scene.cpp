@@ -219,6 +219,18 @@ Scene::set_option_default(const string &opt, const string &val)
     return true;
 }
 
+bool
+Scene::prepare()
+{
+    return load() && setup();
+}
+
+void
+Scene::finish()
+{
+    teardown();
+    unload();
+}
 
 string
 Scene::construct_title(const string &title)

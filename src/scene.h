@@ -83,44 +83,6 @@ public:
     virtual bool supported(bool show_errors);
 
     /**
-     * Performs option-independent resource loading and configuration.
-     *
-     * It should be safe to call ::load() (and the corresponding ::unload())
-     * only once per program execution, although you may choose to do so more
-     * times to better manage resource consumption.
-     *
-     * @return whether loading succeeded
-     */
-    virtual bool load();
-
-    /**
-     * Performs option-independent resource unloading.
-     */
-    virtual void unload();
-
-    /**
-     * Performs option-dependent resource loading and configuration.
-     *
-     * This method also prepares a scene for a benchmark run.
-     * It should be called just before running a scene/benchmark.
-     *
-     * The base Scene::setup() method also checks whether a scene
-     * configuration is supported by calling ::supported(true).
-     *
-     * @return whether setting the scene up succeeded
-     */
-    virtual bool setup();
-
-    /**
-     * Performs option-dependent resource unloading.
-     *
-     * This method should be called just after running a scene/benchmark.
-     *
-     * @return the operation status
-     */
-    virtual void teardown();
-
-    /**
      * Updates the scene state.
      */
     virtual void update();
@@ -201,6 +163,16 @@ public:
     const std::map<std::string, Option> &options() { return options_; }
 
     /**
+     * Prepare for a benchmarking run.
+     */
+    bool prepare();
+
+    /**
+     * Finish a benchmarking run.
+     */
+    void finish();
+
+    /**
      * Gets a dummy scene object reference.
      *
      * @return the dummy Scene
@@ -225,6 +197,44 @@ public:
 protected:
     Scene(Canvas &pCanvas, const std::string &name);
     std::string construct_title(const std::string &title);
+
+    /**
+     * Performs option-independent resource loading and configuration.
+     *
+     * It should be safe to call ::load() (and the corresponding ::unload())
+     * only once per program execution, although you may choose to do so more
+     * times to better manage resource consumption.
+     *
+     * @return whether loading succeeded
+     */
+    virtual bool load();
+
+    /**
+     * Performs option-independent resource unloading.
+     */
+    virtual void unload();
+
+    /**
+     * Performs option-dependent resource loading and configuration.
+     *
+     * This method also prepares a scene for a benchmark run.
+     * It should be called just before running a scene/benchmark.
+     *
+     * The base Scene::setup() method also checks whether a scene
+     * configuration is supported by calling ::supported(true).
+     *
+     * @return whether setting the scene up succeeded
+     */
+    virtual bool setup();
+
+    /**
+     * Performs option-dependent resource unloading.
+     *
+     * This method should be called just after running a scene/benchmark.
+     *
+     * @return the operation status
+     */
+    virtual void teardown();
 
     Canvas &canvas_;
     std::string name_;
