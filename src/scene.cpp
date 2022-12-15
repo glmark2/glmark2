@@ -97,25 +97,7 @@ Scene::unload()
 bool
 Scene::setup()
 {
-    duration_ = Util::fromString<double>(options_["duration"].value);
-    nframes_ = Util::fromString<unsigned>(options_["nframes"].value);
-
-    ShaderSource::default_precision(
-            ShaderSource::Precision(options_["vertex-precision"].value),
-            ShaderSource::ShaderTypeVertex
-            );
-
-    ShaderSource::default_precision(
-            ShaderSource::Precision(options_["fragment-precision"].value),
-            ShaderSource::ShaderTypeFragment
-            );
-
-    currentFrame_ = 0;
-    running_ = false;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
-
-    return supported(true);
+    return true;
 }
 
 void
@@ -222,7 +204,35 @@ Scene::set_option_default(const string &opt, const string &val)
 bool
 Scene::prepare()
 {
-    return load() && setup();
+    duration_ = Util::fromString<double>(options_["duration"].value);
+    nframes_ = Util::fromString<unsigned>(options_["nframes"].value);
+
+    ShaderSource::default_precision(
+            ShaderSource::Precision(options_["vertex-precision"].value),
+            ShaderSource::ShaderTypeVertex
+            );
+
+    ShaderSource::default_precision(
+            ShaderSource::Precision(options_["fragment-precision"].value),
+            ShaderSource::ShaderTypeFragment
+            );
+
+    currentFrame_ = 0;
+    running_ = false;
+    startTime_ = 0;
+    lastUpdateTime_ = 0;
+
+    if (!supported(true))
+        return false;
+
+    if (!load() || !setup())
+        return false;
+
+    running_ = true;
+    startTime_ = Util::get_timestamp_us() / 1000000.0;
+    lastUpdateTime_ = startTime_;
+
+    return true;
 }
 
 void

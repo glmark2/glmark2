@@ -285,7 +285,6 @@ SceneEffect2D::load()
 {
     Texture::load("effect-2d", &texture_,
                   GL_NEAREST, GL_NEAREST, 0);
-    running_ = false;
 
     return true;
 }
@@ -299,9 +298,6 @@ SceneEffect2D::unload()
 bool
 SceneEffect2D::setup()
 {
-    if (!Scene::setup())
-        return false;
-
     Texture::find_textures();
 
     static const std::string vtx_shader_filename(Options::data_path + "/shaders/effect-2d.vert");
@@ -356,11 +352,6 @@ SceneEffect2D::setup()
     // Load texture sampler value
     program_["Texture0"] = 0;
 
-    currentFrame_ = 0;
-    running_ = true;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
-
     return true;
 }
 
@@ -371,8 +362,6 @@ SceneEffect2D::teardown()
 
     program_.stop();
     program_.release();
-
-    Scene::teardown();
 }
 
 void

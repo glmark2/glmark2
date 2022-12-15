@@ -44,33 +44,12 @@ SceneJellyfish::~SceneJellyfish()
 }
 
 bool
-SceneJellyfish::load()
-{
-    running_ = false;
-    return true;
-}
-
-void
-SceneJellyfish::unload()
-{
-}
-
-bool
 SceneJellyfish::setup()
 {
-    if (!Scene::setup())
-        return false;
-
     // Set up our private object that does all of the lifting
     priv_ = new JellyfishPrivate();
     if (!priv_->initialize())
         return false;
-
-    // Set core scene timing after actual initialization so we don't measure
-    // set up time.
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
-    running_ = true;
 
     return true;
 }
@@ -81,7 +60,6 @@ SceneJellyfish::teardown()
     priv_->cleanup();
     delete priv_;
     priv_ = 0;
-    Scene::teardown();
 }
 
 void

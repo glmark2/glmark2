@@ -93,8 +93,6 @@ SceneTexture::load()
 {
     rotationSpeed_ = LibMatrix::vec3(36.0f, 36.0f, 36.0f);
 
-    running_ = false;
-
     return true;
 }
 
@@ -107,9 +105,6 @@ SceneTexture::unload()
 bool
 SceneTexture::setup()
 {
-    if (!Scene::setup())
-        return false;
-
     static const std::string vtx_shader_filename(Options::data_path + "/shaders/light-basic.vert");
     static const std::string vtx_shader_texgen_filename(Options::data_path + "/shaders/light-basic-texgen.vert");
     static const std::string frg_shader_filename(Options::data_path + "/shaders/light-basic-tex.frag");
@@ -250,11 +245,7 @@ SceneTexture::setup()
     }
     mesh_.set_attrib_locations(attrib_locations);
 
-    currentFrame_ = 0;
     rotation_ = LibMatrix::vec3();
-    running_ = true;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
 
     return true;
 }
@@ -266,8 +257,6 @@ SceneTexture::teardown()
     program_.release();
 
     glDeleteTextures(1, &texture_);
-
-    Scene::teardown();
 }
 
 void

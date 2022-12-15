@@ -43,7 +43,6 @@ bool
 SceneGrid::load()
 {
     rotationSpeed_ = 36.0f;
-    running_ = false;
 
     return true;
 }
@@ -56,9 +55,6 @@ SceneGrid::unload()
 bool
 SceneGrid::setup()
 {
-    if (!Scene::setup())
-        return false;
-
     int grid_size(Util::fromString<int>(options_["grid-size"].value));
     double grid_length(Util::fromString<double>(options_["grid-length"].value));
 
@@ -77,7 +73,6 @@ SceneGrid::setup()
                     grid_size > 1 ? spacing : 0);
     mesh_.build_vbo();
 
-    currentFrame_ = 0;
     rotation_ = 0.0f;
 
     return true;
@@ -89,8 +84,6 @@ SceneGrid::teardown()
     program_.stop();
     program_.release();
     mesh_.reset();
-
-    Scene::teardown();
 }
 
 void

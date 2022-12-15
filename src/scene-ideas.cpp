@@ -213,35 +213,14 @@ SceneIdeas::~SceneIdeas()
 }
 
 bool
-SceneIdeas::load()
-{
-    running_ = false;
-    return true;
-}
-
-void
-SceneIdeas::unload()
-{
-}
-
-bool
 SceneIdeas::setup()
 {
-    if (!Scene::setup())
-        return false;
-
     priv_ = new SceneIdeasPrivate();
     priv_->initialize(options_);
     if (!priv_->valid())
         return false;
 
     priv_->update_projection(canvas_.projection());
-
-    // Core Scene state
-    currentFrame_ = 0;
-    running_ = true;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
 
     return true;
 }
@@ -410,5 +389,4 @@ SceneIdeas::teardown()
 {
     delete priv_;
     priv_ = 0;
-    Scene::teardown();
 }

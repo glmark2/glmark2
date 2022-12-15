@@ -255,6 +255,8 @@ class SceneDefaultOptions : public Scene
 public:
     SceneDefaultOptions(Canvas &pCanvas) : Scene(pCanvas, "") {}
     bool set_option(const std::string &opt, const std::string &val);
+
+protected:
     bool setup();
 
 private:
@@ -265,10 +267,6 @@ class SceneBuild : public Scene
 {
 public:
     SceneBuild(Canvas &pCanvas);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
@@ -276,6 +274,11 @@ public:
     ~SceneBuild();
 
 protected:
+    bool load();
+    void unload();
+    bool setup();
+    void teardown();
+
     Program program_;
     LibMatrix::mat4 perspective_;
     LibMatrix::vec3 centerVec_;
@@ -293,10 +296,6 @@ class SceneTexture : public Scene
 {
 public:
     SceneTexture(Canvas &pCanvas);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
@@ -304,6 +303,11 @@ public:
     ~SceneTexture();
 
 protected:
+    bool load();
+    void unload();
+    bool setup();
+    void teardown();
+
     Program program_;
     Mesh mesh_;
     GLuint texture_;
@@ -321,10 +325,6 @@ class SceneShading : public Scene
 {
 public:
     SceneShading(Canvas &pCanvas);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
@@ -332,6 +332,11 @@ public:
     ~SceneShading();
 
 protected:
+    bool load();
+    void unload();
+    bool setup();
+    void teardown();
+
     Program program_;
     float radius_;
     bool orientModel_;
@@ -348,17 +353,18 @@ class SceneGrid : public Scene
 {
 public:
     SceneGrid(Canvas &pCanvas, const std::string &name);
-    virtual bool load();
-    virtual void unload();
-    virtual bool setup();
-    virtual void teardown();
-    virtual void update();
-    virtual void draw();
+    void update();
+    void draw();
     virtual ValidationResult validate();
 
     ~SceneGrid();
 
 protected:
+    bool load();
+    void unload();
+    bool setup();
+    void teardown();
+
     Program program_;
     Mesh mesh_;
     float rotation_;
@@ -369,40 +375,42 @@ class SceneConditionals : public SceneGrid
 {
 public:
     SceneConditionals(Canvas &pCanvas);
-    bool setup();
     ValidationResult validate();
 
     ~SceneConditionals();
+
+protected:
+    bool setup();
 };
 
 class SceneFunction : public SceneGrid
 {
 public:
     SceneFunction(Canvas &pCanvas);
-    bool setup();
     ValidationResult validate();
 
     ~SceneFunction();
+
+protected:
+    bool setup();
 };
 
 class SceneLoop : public SceneGrid
 {
 public:
     SceneLoop(Canvas &pCanvas);
-    bool setup();
     ValidationResult validate();
 
     ~SceneLoop();
+
+protected:
+    bool setup();
 };
 
 class SceneBump : public Scene
 {
 public:
     SceneBump(Canvas &pCanvas);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
@@ -410,6 +418,11 @@ public:
     ~SceneBump();
 
 protected:
+    bool load();
+    void unload();
+    bool setup();
+    void teardown();
+
     Program program_;
     Mesh mesh_;
     GLuint texture_;
@@ -426,10 +439,6 @@ class SceneEffect2D : public Scene
 {
 public:
     SceneEffect2D(Canvas &pCanvas);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
@@ -437,8 +446,12 @@ public:
     ~SceneEffect2D();
 
 protected:
-    Program program_;
+    bool load();
+    void unload();
+    bool setup();
+    void teardown();
 
+    Program program_;
     Mesh mesh_;
     GLuint texture_;
 };
@@ -447,10 +460,6 @@ class ScenePulsar : public Scene
 {
 public:
     ScenePulsar(Canvas &pCanvas);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
@@ -458,6 +467,11 @@ public:
     ~ScenePulsar();
 
 protected:
+    bool load();
+    void unload();
+    bool setup();
+    void teardown();
+
     int numQuads_;
     Program program_;
     Mesh mesh_;
@@ -477,15 +491,15 @@ class SceneDesktop : public Scene
 public:
     SceneDesktop(Canvas &canvas);
     bool supported(bool show_errors);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
 
     ~SceneDesktop();
+
+protected:
+    bool setup();
+    void teardown();
 
 private:
     SceneDesktopPrivate *priv_;
@@ -498,10 +512,6 @@ class SceneBuffer : public Scene
 public:
     SceneBuffer(Canvas &canvas);
     bool supported(bool show_errors);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
@@ -509,6 +519,8 @@ public:
     ~SceneBuffer();
 
 private:
+    bool setup();
+    void teardown();
     SceneBufferPrivate *priv_;
 };
 
@@ -518,15 +530,15 @@ class SceneIdeas : public Scene
 {
 public:
     SceneIdeas(Canvas &pCanvas);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
 
     ~SceneIdeas();
+
+protected:
+    bool setup();
+    void teardown();
 
 private:
     SceneIdeasPrivate* priv_;
@@ -539,15 +551,15 @@ class SceneTerrain : public Scene
 public:
     SceneTerrain(Canvas &pCanvas);
     bool supported(bool show_errors);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
 
     ~SceneTerrain();
+
+protected:
+    bool setup();
+    void teardown();
 
 private:
     SceneTerrainPrivate* priv_;
@@ -560,13 +572,13 @@ class SceneJellyfish : public Scene
 public:
     SceneJellyfish(Canvas &pCanvas);
     ~SceneJellyfish();
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
+
+protected:
+    bool setup();
+    void teardown();
 };
 
 class ShadowPrivate;
@@ -576,13 +588,13 @@ class SceneShadow : public Scene
 public:
     SceneShadow(Canvas& canvas);
     bool supported(bool show_errors);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
+
+protected:
+    bool setup();
+    void teardown();
 };
 
 class RefractPrivate;
@@ -592,26 +604,19 @@ class SceneRefract : public Scene
 public:
     SceneRefract(Canvas& canvas);
     bool supported(bool show_errors);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
     void update();
     void draw();
     ValidationResult validate();
+
+protected:
+    bool setup();
+    void teardown();
 };
 
 class SceneClear : public Scene
 {
 public:
     SceneClear(Canvas &pCanvas);
-    bool load();
-    void unload();
-    bool setup();
-    void teardown();
-    void update();
-    void draw();
-    ValidationResult validate();
 };
 
 #endif

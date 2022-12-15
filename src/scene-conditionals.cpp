@@ -114,10 +114,6 @@ SceneConditionals::setup()
     attrib_locations.push_back(program_["position"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    running_ = true;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
-
     return true;
 }
 

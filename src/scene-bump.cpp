@@ -49,8 +49,6 @@ SceneBump::load()
 {
     rotationSpeed_ = 36.0f;
 
-    running_ = false;
-
     return true;
 }
 
@@ -289,9 +287,6 @@ SceneBump::setup_model_height()
 bool
 SceneBump::setup()
 {
-    if (!Scene::setup())
-        return false;
-
     const std::string &bump_render = options_["bump-render"].value;
     Texture::find_textures();
     Model::find_models();
@@ -318,11 +313,7 @@ SceneBump::setup()
     program_["NormalMap"] = 0;
     program_["HeightMap"] = 0;
 
-    currentFrame_ = 0;
     rotation_ = 0.0;
-    running_ = true;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
 
     return true;
 }
@@ -337,8 +328,6 @@ SceneBump::teardown()
 
     glDeleteTextures(1, &texture_);
     texture_ = 0;
-
-    Scene::teardown();
 }
 
 void

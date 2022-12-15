@@ -76,8 +76,6 @@ SceneShading::load()
 {
     rotationSpeed_ = 36.0f;
 
-    running_ = false;
-
     return true;
 }
 
@@ -136,9 +134,6 @@ get_fragment_shader_source(const string& frg_file, unsigned int lights)
 bool
 SceneShading::setup()
 {
-    if (!Scene::setup())
-        return false;
-
     static const LibMatrix::vec4 lightPosition(20.0f, 20.0f, 10.0f, 1.0f);
     static const LibMatrix::vec4 materialDiffuse(0.0f, 0.0f, 1.0f, 1.0f);
 
@@ -261,11 +256,7 @@ SceneShading::setup()
     attrib_locations.push_back(program_["normal"].location());
     mesh_.set_attrib_locations(attrib_locations);
 
-    currentFrame_ = 0;
     rotation_ = 0.0f;
-    running_ = true;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
 
     return true;
 }
@@ -275,8 +266,6 @@ SceneShading::teardown()
 {
     program_.stop();
     program_.release();
-
-    Scene::teardown();
 }
 
 void

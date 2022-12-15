@@ -254,27 +254,8 @@ SceneTerrain::supported(bool show_errors)
 }
 
 bool
-SceneTerrain::load()
-{
-    Scene::load();
-
-    running_ = false;
-
-    return true;
-}
-
-void
-SceneTerrain::unload()
-{
-    Scene::unload();
-}
-
-bool
 SceneTerrain::setup()
 {
-    if (!Scene::setup())
-        return false;
-
     /* Parse options */
     float repeat = Util::fromString<double>(options_["repeat-overlay"].value);
     LibMatrix::vec2 repeat_overlay(repeat, repeat);
@@ -321,10 +302,6 @@ SceneTerrain::setup()
     GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_.fbo());
     glViewport(0, 0, canvas_.width(), canvas_.height());
 
-    currentFrame_ = 0;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    running_ = true;
-
     return true;
 }
 
@@ -333,7 +310,6 @@ SceneTerrain::teardown()
 {
     delete priv_;
     priv_ = 0;
-    Scene::teardown();
 }
 
 void

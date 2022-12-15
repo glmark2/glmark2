@@ -70,8 +70,6 @@ SceneBuild::load()
 {
     rotationSpeed_ = 36.0f;
 
-    running_ = false;
-
     return true;
 }
 
@@ -85,9 +83,6 @@ bool
 SceneBuild::setup()
 {
     using LibMatrix::vec3;
-
-    if (!Scene::setup())
-        return false;
 
     /* Set up shaders */
     static const std::string vtx_shader_filename(Options::data_path + "/shaders/light-basic.vert");
@@ -185,11 +180,7 @@ SceneBuild::setup()
 
     program_.start();
 
-    currentFrame_ = 0;
     rotation_ = 0.0;
-    running_ = true;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
 
     return true;
 }
@@ -201,8 +192,6 @@ SceneBuild::teardown()
     program_.release();
 
     mesh_.reset();
-
-    Scene::teardown();
 }
 
 void

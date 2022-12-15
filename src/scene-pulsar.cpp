@@ -64,8 +64,6 @@ ScenePulsar::load()
 {
     scale_ = vec3(1.0, 1.0, 1.0);
 
-    running_ = false;
-
     return true;
 }
 
@@ -77,9 +75,6 @@ ScenePulsar::unload()
 bool
 ScenePulsar::setup()
 {
-    if (!Scene::setup())
-        return false;
-
     // Disable back-face culling
     glDisable(GL_CULL_FACE);
     // Enable alpha blending
@@ -145,12 +140,6 @@ ScenePulsar::setup()
 
     program_.start();
 
-    currentFrame_ = 0;
-
-    running_ = true;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
-
     return true;
 }
 
@@ -171,8 +160,6 @@ ScenePulsar::teardown()
     glDisable(GL_BLEND);
 
     mesh_.reset();
-
-    Scene::teardown();
 }
 
 void

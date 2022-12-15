@@ -823,22 +823,8 @@ SceneDesktop::supported(bool show_errors)
 }
 
 bool
-SceneDesktop::load()
-{
-    return true;
-}
-
-void
-SceneDesktop::unload()
-{
-}
-
-bool
 SceneDesktop::setup()
 {
-    if (!Scene::setup())
-        return false;
-
     /* Parse the options */
     unsigned int windows(0);
     unsigned int passes(0);
@@ -906,11 +892,6 @@ SceneDesktop::setup()
      */
     priv_->screen.make_current();
 
-    currentFrame_ = 0;
-    running_ = true;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
-
     return true;
 }
 
@@ -934,8 +915,6 @@ SceneDesktop::teardown()
 
     priv_->desktop.release();
     priv_->screen.release();
-
-    Scene::teardown();
 }
 
 void

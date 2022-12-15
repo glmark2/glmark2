@@ -343,25 +343,9 @@ SceneBuffer::supported(bool show_errors)
 }
 
 bool
-SceneBuffer::load()
-{
-    running_ = false;
-
-    return true;
-}
-
-void
-SceneBuffer::unload()
-{
-}
-
-bool
 SceneBuffer::setup()
 {
     using LibMatrix::vec3;
-
-    if (!Scene::setup())
-        return false;
 
     bool interleave = (options_["interleave"].value == "true");
     Mesh::VBOUpdateMethod update_method;
@@ -405,11 +389,6 @@ SceneBuffer::setup()
 
     glDisable(GL_CULL_FACE);
 
-    currentFrame_ = 0;
-    running_ = true;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
-
     return true;
 }
 
@@ -420,8 +399,6 @@ SceneBuffer::teardown()
     priv_->wave = 0;
 
     glEnable(GL_CULL_FACE);
-
-    Scene::teardown();
 }
 
 void

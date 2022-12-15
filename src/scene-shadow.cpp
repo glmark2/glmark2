@@ -506,37 +506,14 @@ SceneShadow::supported(bool show_errors)
 }
 
 bool
-SceneShadow::load()
-{
-    running_ = false;
-    return true;
-}
-
-void
-SceneShadow::unload()
-{
-}
-
-bool
 SceneShadow::setup()
 {
-    // If the scene isn't supported, don't bother to go through setup.
-    if (!Scene::setup())
-        return false;
-
     priv_ = new ShadowPrivate(canvas_);
     if (!priv_->setup(options_)) {
         delete priv_;
         priv_ = 0;
         return false;
     }
-
-    // Set core scene timing after actual initialization so we don't measure
-    // set up time.
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
-    running_ = true;
-
     return true;
 }
 
@@ -548,7 +525,6 @@ SceneShadow::teardown()
         priv_->teardown();
         delete priv_;
     }
-    Scene::teardown();
 }
 
 void
