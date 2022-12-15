@@ -144,6 +144,16 @@ Scene::average_fps()
     return currentFrame_ / elapsed_time;
 }
 
+Scene::Stats
+Scene::stats()
+{
+    Stats stats;
+
+    stats.average_frame_time = (lastUpdateTime_ - startTime_) / currentFrame_;
+
+    return stats;
+}
+
 bool
 Scene::set_option(const string &opt, const string &val)
 {

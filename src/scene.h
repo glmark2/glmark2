@@ -64,6 +64,10 @@ public:
         bool set;
     };
 
+    struct Stats {
+        double average_frame_time;
+    };
+
     /**
      * The result of a validation check.
      */
@@ -138,6 +142,13 @@ public:
      * @return the average FPS value
      */
     unsigned average_fps();
+
+    /**
+     * Gets the statistics for this scene.
+     *
+     * @return the statistics
+     */
+    Stats stats();
 
     /**
      * Gets the name of the scene.

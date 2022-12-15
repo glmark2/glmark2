@@ -154,8 +154,11 @@ MainLoop::log_scene_result()
                                          " Set up failed\n");
 
     if (scene_setup_status_ == SceneSetupStatusSuccess) {
-        Log::info(format_fps.c_str(), scene_->average_fps(),
-                                      1000.0 / scene_->average_fps());
+        Scene::Stats stats = scene_->stats();
+
+        Log::info(format_fps.c_str(),
+                  static_cast<unsigned>(ceil(1.0 / stats.average_frame_time)),
+                  1000.0 * stats.average_frame_time);
     }
     else if (scene_setup_status_ == SceneSetupStatusUnsupported) {
         Log::info(format_unsupported.c_str());
