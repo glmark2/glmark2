@@ -532,7 +532,7 @@ SceneShadow::update()
 {
     Scene::update();
     // Add scene-specific update here
-    priv_->update(lastUpdateTime_ - startTime_);
+    priv_->update(realTime_.elapsed());
 }
 
 void

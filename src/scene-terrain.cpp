@@ -317,8 +317,7 @@ SceneTerrain::update()
 {
     Scene::update();
 
-    double now = Util::get_timestamp_us() / 1000000.0;
-    float diff = now - startTime_;
+    float diff = realTime_.elapsed();
     float scale = priv_->terrain_renderer->repeat_overlay().x() /
                   priv_->height_map_renderer->uv_scale().x();
 

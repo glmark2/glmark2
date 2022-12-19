@@ -247,11 +247,16 @@ protected:
      */
     virtual void teardown();
 
+    struct ElapsedTime {
+        double start = 0.0;
+        double lastUpdate = 0.0;
+        double elapsed() { return lastUpdate - start; }
+    };
+
     Canvas &canvas_;
     std::string name_;
     std::map<std::string, Option> options_;
-    double startTime_;
-    double lastUpdateTime_;
+    ElapsedTime realTime_;
     unsigned currentFrame_;
     bool running_;
     double duration_;      // Duration of run in seconds

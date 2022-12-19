@@ -921,7 +921,7 @@ void
 SceneDesktop::update()
 {
     double current_time = Util::get_timestamp_us() / 1000000.0;
-    double dt = current_time - lastUpdateTime_;
+    double dt = current_time - realTime_.lastUpdate;
 
     Scene::update();
 

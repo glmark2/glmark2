@@ -199,9 +199,7 @@ SceneBuild::update()
 {
     Scene::update();
 
-    double elapsed_time = lastUpdateTime_ - startTime_;
-
-    rotation_ = rotationSpeed_ * elapsed_time;
+    rotation_ = rotationSpeed_ * realTime_.elapsed();
 }
 
 void

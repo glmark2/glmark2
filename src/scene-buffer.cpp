@@ -406,9 +406,7 @@ SceneBuffer::update()
 {
     Scene::update();
 
-    double elapsed_time = lastUpdateTime_ - startTime_;
-
-    priv_->wave->update(elapsed_time);
+    priv_->wave->update(realTime_.elapsed());
 }
 
 void

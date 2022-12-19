@@ -42,8 +42,7 @@ name(nam), value(val), default_value(val), description(desc), set(false)
 
 Scene::Scene(Canvas &pCanvas, const string &name) :
     canvas_(pCanvas), name_(name),
-    startTime_(0), lastUpdateTime_(0), currentFrame_(0),
-    running_(0), duration_(0), nframes_(0)
+    currentFrame_(0), running_(0), duration_(0), nframes_(0)
 {
     options_["duration"] = Scene::Option("duration", "10.0",
                                          "The duration of each benchmark in seconds");
@@ -108,14 +107,11 @@ Scene::teardown()
 void
 Scene::update()
 {
-    double current_time = Util::get_timestamp_us() / 1000000.0;
-    double elapsed_time = current_time - startTime_;
+    realTime_.lastUpdate = Util::get_timestamp_us() / 1000000.0;
 
     currentFrame_++;
 
-    lastUpdateTime_ = current_time;
-
-    if (elapsed_time >= duration_)
+    if (realTime_.elapsed() >= duration_)
         running_ = false;
 
     if (nframes_ > 0 && currentFrame_ >= nframes_)
@@ -140,8 +136,7 @@ Scene::info_string(const string &title)
 unsigned
 Scene::average_fps()
 {
-    double elapsed_time = lastUpdateTime_ - startTime_;
-    return currentFrame_ / elapsed_time;
+    return currentFrame_ / realTime_.elapsed();
 }
 
 Scene::Stats
@@ -149,7 +144,7 @@ Scene::stats()
 {
     Stats stats;
 
-    stats.average_frame_time = (lastUpdateTime_ - startTime_) / currentFrame_;
+    stats.average_frame_time = realTime_.elapsed() / currentFrame_;
 
     return stats;
 }
@@ -229,8 +224,7 @@ Scene::prepare()
 
     currentFrame_ = 0;
     running_ = false;
-    startTime_ = 0;
-    lastUpdateTime_ = 0;
+    realTime_.start = realTime_.lastUpdate = 0;
 
     if (!supported(true))
         return false;
@@ -239,8 +233,7 @@ Scene::prepare()
         return false;
 
     running_ = true;
-    startTime_ = Util::get_timestamp_us() / 1000000.0;
-    lastUpdateTime_ = startTime_;
+    realTime_.start = realTime_.lastUpdate = Util::get_timestamp_us() / 1000000.0;
 
     return true;
 }
