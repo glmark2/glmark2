@@ -51,6 +51,7 @@ struct Options {
 
     enum Results {
         ResultsFps = 1,
+        ResultsCpu = 2,
     };
 
     static bool parse_args(int argc, char **argv);

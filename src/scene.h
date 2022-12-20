@@ -66,6 +66,8 @@ public:
 
     struct Stats {
         double average_frame_time;
+        double average_user_time;
+        double average_system_time;
     };
 
     /**
@@ -262,6 +264,8 @@ protected:
     std::string name_;
     std::map<std::string, Option> options_;
     ElapsedTime realTime_;
+    ElapsedTime userTime_;
+    ElapsedTime systemTime_;
     unsigned currentFrame_;
     bool running_;
     double duration_;      // Duration of run in seconds

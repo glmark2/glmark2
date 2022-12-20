@@ -28,6 +28,7 @@
 #include "util.h"
 #include <sstream>
 #include <algorithm>
+#include <sys/resource.h>
 
 using std::stringstream;
 using std::string;
@@ -145,6 +146,8 @@ Scene::stats()
     Stats stats;
 
     stats.average_frame_time = realTime_.elapsed() / currentFrame_;
+    stats.average_user_time = userTime_.elapsed() / currentFrame_;
+    stats.average_system_time = systemTime_.elapsed() / currentFrame_;
 
     return stats;
 }
@@ -225,6 +228,8 @@ Scene::prepare()
     currentFrame_ = 0;
     running_ = false;
     realTime_.start = realTime_.lastUpdate = 0;
+    userTime_.start = userTime_.lastUpdate = 0;
+    systemTime_.start = systemTime_.lastUpdate = 0;
 
     if (!supported(true))
         return false;
@@ -235,6 +240,8 @@ Scene::prepare()
     running_ = true;
     update_elapsed_times();
     realTime_.start = realTime_.lastUpdate;
+    userTime_.start = userTime_.lastUpdate;
+    systemTime_.start = systemTime_.lastUpdate;
 
     return true;
 }
@@ -323,4 +330,11 @@ void
 Scene::update_elapsed_times()
 {
     realTime_.lastUpdate = Util::get_timestamp_us() / 1000000.0;
+
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+    userTime_.lastUpdate = usage.ru_utime.tv_sec +
+                           usage.ru_utime.tv_usec / 1000000.0;
+    systemTime_.lastUpdate = usage.ru_stime.tv_sec +
+                             usage.ru_stime.tv_usec / 1000000.0;
 }

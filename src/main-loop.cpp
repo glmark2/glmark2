@@ -148,6 +148,10 @@ MainLoop::log_scene_result()
 {
     static const std::string format_fps(Log::continuation_prefix +
                                         " FPS: %u FrameTime: %.3f ms");
+    static const std::string format_frame(Log::continuation_prefix +
+                                          " FrameTime: %.3f ms");
+    static const std::string format_cpu(Log::continuation_prefix +
+                                        " (User: %.3f ms, System: %.3f ms)");
     static const std::string format_unsupported(Log::continuation_prefix +
                                                 " Unsupported\n");
     static const std::string format_fail(Log::continuation_prefix +
@@ -164,7 +168,17 @@ MainLoop::log_scene_result()
                       static_cast<unsigned>(ceil(1.0 / stats.average_frame_time)),
                       1000.0 * stats.average_frame_time);
         }
-        else if (Options::results == 0)
+
+        if (Options::results & Options::ResultsCpu)
+        {
+            if (!(Options::results & Options::ResultsFps))
+                Log::info(format_frame.c_str(), 1000.0 * stats.average_frame_time);
+            Log::info(format_cpu.c_str(),
+                      1000.0 * stats.average_user_time,
+                      1000.0 * stats.average_system_time);
+        }
+
+        if (Options::results == 0)
         {
             Log::info(format_done.c_str());
         }
