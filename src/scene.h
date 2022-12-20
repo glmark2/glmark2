@@ -68,6 +68,7 @@ public:
         double average_frame_time;
         double average_user_time;
         double average_system_time;
+        double cpu_busy_percent;
     };
 
     /**
@@ -266,6 +267,7 @@ protected:
     ElapsedTime realTime_;
     ElapsedTime userTime_;
     ElapsedTime systemTime_;
+    ElapsedTime idleTime_;
     unsigned currentFrame_;
     bool running_;
     double duration_;      // Duration of run in seconds

@@ -151,7 +151,7 @@ MainLoop::log_scene_result()
     static const std::string format_frame(Log::continuation_prefix +
                                           " FrameTime: %.3f ms");
     static const std::string format_cpu(Log::continuation_prefix +
-                                        " (User: %.3f ms, System: %.3f ms)");
+                                        " (User: %.3f ms, System: %.3f ms) CpuBusy: %d%%");
     static const std::string format_unsupported(Log::continuation_prefix +
                                                 " Unsupported\n");
     static const std::string format_fail(Log::continuation_prefix +
@@ -175,7 +175,8 @@ MainLoop::log_scene_result()
                 Log::info(format_frame.c_str(), 1000.0 * stats.average_frame_time);
             Log::info(format_cpu.c_str(),
                       1000.0 * stats.average_user_time,
-                      1000.0 * stats.average_system_time);
+                      1000.0 * stats.average_system_time,
+                      static_cast<int>(100.0 * stats.cpu_busy_percent));
         }
 
         if (Options::results == 0)

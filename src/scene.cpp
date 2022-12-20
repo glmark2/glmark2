@@ -27,8 +27,10 @@
 #include "options.h"
 #include "util.h"
 #include <sstream>
+#include <fstream>
 #include <algorithm>
 #include <sys/resource.h>
+#include <unistd.h>
 
 using std::stringstream;
 using std::string;
@@ -144,10 +146,16 @@ Scene::Stats
 Scene::stats()
 {
     Stats stats;
+    int nproc = sysconf(_SC_NPROCESSORS_ONLN);
 
     stats.average_frame_time = realTime_.elapsed() / currentFrame_;
     stats.average_user_time = userTime_.elapsed() / currentFrame_;
     stats.average_system_time = systemTime_.elapsed() / currentFrame_;
+    if (idleTime_.lastUpdate == 0.0)
+        stats.cpu_busy_percent = 0.0;
+    else
+        stats.cpu_busy_percent = 1.0 - idleTime_.elapsed() /
+                                       (nproc * realTime_.elapsed());
 
     return stats;
 }
@@ -242,6 +250,7 @@ Scene::prepare()
     realTime_.start = realTime_.lastUpdate;
     userTime_.start = userTime_.lastUpdate;
     systemTime_.start = systemTime_.lastUpdate;
+    idleTime_.start = idleTime_.lastUpdate;
 
     return true;
 }
@@ -337,4 +346,10 @@ Scene::update_elapsed_times()
                            usage.ru_utime.tv_usec / 1000000.0;
     systemTime_.lastUpdate = usage.ru_stime.tv_sec +
                              usage.ru_stime.tv_usec / 1000000.0;
+
+    double uptime, idle;
+    std::ifstream ifs("/proc/uptime");
+    ifs >> uptime >> idle;
+    if (!ifs.fail())
+        idleTime_.lastUpdate = idle;
 }
