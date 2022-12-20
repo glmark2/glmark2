@@ -45,6 +45,7 @@ bool Options::run_forever = false;
 bool Options::annotate = false;
 bool Options::offscreen = false;
 GLVisualConfig Options::visual_config;
+Options::Results Options::results = Options::ResultsFps;
 std::vector<Options::WindowSystemOption> Options::winsys_options;
 std::string Options::winsys_options_help;
 
@@ -62,6 +63,7 @@ static struct option long_options[] = {
     {"run-forever", 0, 0, 0},
     {"size", 1, 0, 0},
     {"fullscreen", 0, 0, 0},
+    {"results", 1, 0, 0},
     {"winsys-options", 1, 0, 0},
     {"list-scenes", 0, 0, 0},
     {"show-all-options", 0, 0, 0},
@@ -141,6 +143,25 @@ swap_mode_from_str(const std::string &str)
     return m;
 }
 
+Options::Results
+results_from_str(std::string const& str)
+{
+    std::vector<std::string> results_vec;
+    Options::Results results = static_cast<Options::Results>(0);
+
+    Util::split(str, ':', results_vec, Util::SplitModeNormal);
+
+    for (auto const& res : results_vec)
+    {
+        if (res == "fps")
+            results = static_cast<Options::Results>(results | Options::ResultsFps);
+        else
+            throw std::runtime_error{"Invalid result type '" + res + "'"};
+    }
+
+    return results;
+}
+
 std::vector<Options::WindowSystemOption>
 winsys_options_from_str(std::string const& str)
 {
@@ -193,6 +214,8 @@ Options::print_help()
            "                         (by default, each scene gets its own context)\n"
            "  -s, --size WxH         Size of the output window (default: 800x600)\n"
            "      --fullscreen       Run in fullscreen mode (equivalent to --size -1x-1)\n"
+           "      --results RESULTS  The types of results to report for each benchmark,\n"
+           "                         as a ':' separated list [fps]\n"
            "      --winsys-options O A list of 'opt=value' pairs for window system specific\n"
            "                         options, separated by ':'\n"
            "  -l, --list-scenes      Display information about the available scenes\n"
@@ -256,6 +279,8 @@ Options::parse_args(int argc, char **argv)
             parse_size(optarg, Options::size);
         else if (!strcmp(optname, "fullscreen"))
             Options::size = std::pair<int,int>(-1, -1);
+        else if (!strcmp(optname, "results"))
+            Options::results = results_from_str(optarg);
         else if (!strcmp(optname, "winsys-options"))
             Options::winsys_options = winsys_options_from_str(optarg);
         else if (c == 'l' || !strcmp(optname, "list-scenes"))

@@ -147,18 +147,29 @@ void
 MainLoop::log_scene_result()
 {
     static const std::string format_fps(Log::continuation_prefix +
-                                        " FPS: %u FrameTime: %.3f ms\n");
+                                        " FPS: %u FrameTime: %.3f ms");
     static const std::string format_unsupported(Log::continuation_prefix +
                                                 " Unsupported\n");
     static const std::string format_fail(Log::continuation_prefix +
                                          " Set up failed\n");
+    static const std::string format_done(Log::continuation_prefix + " done");
+    static const std::string format_newline(Log::continuation_prefix + "\n");
 
     if (scene_setup_status_ == SceneSetupStatusSuccess) {
         Scene::Stats stats = scene_->stats();
 
-        Log::info(format_fps.c_str(),
-                  static_cast<unsigned>(ceil(1.0 / stats.average_frame_time)),
-                  1000.0 * stats.average_frame_time);
+        if (Options::results & Options::ResultsFps)
+        {
+            Log::info(format_fps.c_str(),
+                      static_cast<unsigned>(ceil(1.0 / stats.average_frame_time)),
+                      1000.0 * stats.average_frame_time);
+        }
+        else if (Options::results == 0)
+        {
+            Log::info(format_done.c_str());
+        }
+
+        Log::info(format_newline.c_str());
     }
     else if (scene_setup_status_ == SceneSetupStatusUnsupported) {
         Log::info(format_unsupported.c_str());

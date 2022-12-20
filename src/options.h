@@ -49,6 +49,10 @@ struct Options {
         SwapModeFIFO,
     };
 
+    enum Results {
+        ResultsFps = 1,
+    };
+
     static bool parse_args(int argc, char **argv);
     static void print_help();
 
@@ -69,6 +73,7 @@ struct Options {
     static bool annotate;
     static bool offscreen;
     static GLVisualConfig visual_config;
+    static Results results;
     static std::vector<WindowSystemOption> winsys_options;
     static std::string winsys_options_help;
 };
