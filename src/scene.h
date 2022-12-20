@@ -247,6 +247,11 @@ protected:
      */
     virtual void teardown();
 
+    /**
+     * Updates the elapsed times for this benchmark run.
+     */
+    void update_elapsed_times();
+
     struct ElapsedTime {
         double start = 0.0;
         double lastUpdate = 0.0;

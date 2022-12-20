@@ -233,7 +233,8 @@ Scene::prepare()
         return false;
 
     running_ = true;
-    realTime_.start = realTime_.lastUpdate = Util::get_timestamp_us() / 1000000.0;
+    update_elapsed_times();
+    realTime_.start = realTime_.lastUpdate;
 
     return true;
 }
@@ -241,6 +242,7 @@ Scene::prepare()
 void
 Scene::finish()
 {
+    update_elapsed_times();
     teardown();
     unload();
 }
@@ -315,4 +317,10 @@ Scene::load_shaders_from_strings(Program &program,
     }
 
     return true;
+}
+
+void
+Scene::update_elapsed_times()
+{
+    realTime_.lastUpdate = Util::get_timestamp_us() / 1000000.0;
 }

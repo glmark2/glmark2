@@ -112,12 +112,12 @@ MainLoop::step()
      * in draw() may have changed the state.
      */
     if (!scene_->running() || should_quit) {
+        (*bench_iter_)->teardown_scene();
         if (scene_setup_status_ == SceneSetupStatusSuccess) {
             score_ += scene_->average_fps();
             benchmarks_run_++;
         }
         log_scene_result();
-        (*bench_iter_)->teardown_scene();
         scene_ = 0;
         next_benchmark();
     }
