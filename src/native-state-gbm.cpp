@@ -151,6 +151,10 @@ NativeStateGBM::should_quit()
 void
 NativeStateGBM::flip()
 {
+    gbm_bo* front_bo;
+
+    front_bo = gbm_surface_lock_front_buffer(surface_);
+    gbm_surface_release_buffer(surface_, front_bo);
 }
 
 void
