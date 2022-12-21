@@ -36,6 +36,8 @@ using std::stringstream;
 using std::string;
 using std::map;
 
+double Scene::shaderCompilationTime_ = 0.0;
+
 Scene::Option::Option(const std::string &nam, const std::string &val, const std::string &desc,
                       const std::string &values) :
 name(nam), value(val), default_value(val), description(desc), set(false)
@@ -156,6 +158,7 @@ Scene::stats()
     else
         stats.cpu_busy_percent = 1.0 - idleTime_.elapsed() /
                                        (nproc * realTime_.elapsed());
+    stats.shader_compilation_time = shaderCompilationTime_;
 
     return stats;
 }
@@ -238,6 +241,7 @@ Scene::prepare()
     realTime_.start = realTime_.lastUpdate = 0;
     userTime_.start = userTime_.lastUpdate = 0;
     systemTime_.start = systemTime_.lastUpdate = 0;
+    shaderCompilationTime_ = 0.0;
 
     if (!supported(true))
         return false;
@@ -296,6 +300,8 @@ Scene::load_shaders_from_strings(Program &program,
                                  const std::string &vtx_shader_filename,
                                  const std::string &frg_shader_filename)
 {
+    double shaderStartTime = Util::get_timestamp_us() / 1000000.0;
+
     program.init();
 
     Log::debug("Loading vertex shader from file %s:\n%s",
@@ -331,6 +337,8 @@ Scene::load_shaders_from_strings(Program &program,
         program.release();
         return false;
     }
+
+    shaderCompilationTime_ += Util::get_timestamp_us() / 1000000.0 - shaderStartTime;
 
     return true;
 }

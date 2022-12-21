@@ -152,6 +152,8 @@ MainLoop::log_scene_result()
                                           " FrameTime: %.3f ms");
     static const std::string format_cpu(Log::continuation_prefix +
                                         " (User: %.3f ms, System: %.3f ms) CpuBusy: %d%%");
+    static const std::string format_shader(Log::continuation_prefix +
+                                           " ShaderCompTime: %.3f ms");
     static const std::string format_unsupported(Log::continuation_prefix +
                                                 " Unsupported\n");
     static const std::string format_fail(Log::continuation_prefix +
@@ -177,6 +179,12 @@ MainLoop::log_scene_result()
                       1000.0 * stats.average_user_time,
                       1000.0 * stats.average_system_time,
                       static_cast<int>(100.0 * stats.cpu_busy_percent));
+        }
+
+        if (Options::results & Options::ResultsShader)
+        {
+            Log::info(format_shader.c_str(),
+                      1000.0 * stats.shader_compilation_time);
         }
 
         if (Options::results == 0)

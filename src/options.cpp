@@ -157,6 +157,8 @@ results_from_str(std::string const& str)
             results = static_cast<Options::Results>(results | Options::ResultsFps);
         else if (res == "cpu")
             results = static_cast<Options::Results>(results | Options::ResultsCpu);
+        else if (res == "shader")
+            results = static_cast<Options::Results>(results | Options::ResultsShader);
         else
             throw std::runtime_error{"Invalid result type '" + res + "'"};
     }
@@ -217,7 +219,7 @@ Options::print_help()
            "  -s, --size WxH         Size of the output window (default: 800x600)\n"
            "      --fullscreen       Run in fullscreen mode (equivalent to --size -1x-1)\n"
            "      --results RESULTS  The types of results to report for each benchmark,\n"
-           "                         as a ':' separated list [fps,cpu]\n"
+           "                         as a ':' separated list [fps,cpu,shader]\n"
            "      --winsys-options O A list of 'opt=value' pairs for window system specific\n"
            "                         options, separated by ':'\n"
            "  -l, --list-scenes      Display information about the available scenes\n"

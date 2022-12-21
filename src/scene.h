@@ -69,6 +69,7 @@ public:
         double average_user_time;
         double average_system_time;
         double cpu_busy_percent;
+        double shader_compilation_time;
     };
 
     /**
@@ -261,6 +262,7 @@ protected:
         double elapsed() { return lastUpdate - start; }
     };
 
+    static double shaderCompilationTime_;
     Canvas &canvas_;
     std::string name_;
     std::map<std::string, Option> options_;
