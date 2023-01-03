@@ -271,6 +271,7 @@ string
 Scene::construct_title(const string &title)
 {
     stringstream ss;
+    bool first_option = true;
 
     if (title == "") {
         for (map<string, Option>::iterator iter = options_.begin();
@@ -279,12 +280,16 @@ Scene::construct_title(const string &title)
         {
             if (Options::show_all_options || iter->second.set)
             {
-                ss << iter->first << "=" << iter->second.value << ":";
+                if (first_option)
+                    first_option = false;
+                else
+                    ss << ":";
+                ss << iter->first << "=" << iter->second.value;
             }
         }
 
         if (ss.str().empty())
-            ss << "<default>:";
+            ss << "<default>";
     }
     else
         ss << title;

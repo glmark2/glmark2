@@ -139,7 +139,7 @@ MainLoop::draw()
 void
 MainLoop::log_scene_info()
 {
-    Log::info("%s", scene_->info_string().c_str());
+    Log::info("%s:", scene_->info_string().c_str());
     Log::flush();
 }
 
