@@ -24,6 +24,7 @@
 #include "log.h"
 
 #include <fstream>
+#include <sstream>
 
 namespace
 {
@@ -43,6 +44,64 @@ public:
         static_cast<void>(name);
         static_cast<void>(value);
     }
+};
+
+std::string escape_csv_text(const std::string &str)
+{
+    std::stringstream ss;
+
+    for (auto c : str)
+    {
+        switch (c)
+        {
+            case '"': ss << "\"\""; break;
+            default: ss << c; break;
+        }
+    }
+
+    return ss.str();
+}
+
+class CSVResultsFile : public ResultsFile
+{
+public:
+    CSVResultsFile(std::ofstream &&fs) : fs{std::move(fs)} {}
+
+    std::string type() override { return "CSV"; }
+
+    void begin() override {}
+    void end() override {}
+
+    void begin_info() override
+    {
+        first_field = true;
+    }
+
+    void end_info() override
+    {
+        fs << std::endl;
+    }
+
+    void begin_benchmark() override
+    {
+        first_field = true;
+    }
+
+    void end_benchmark() override
+    {
+        fs << std::endl;
+    }
+
+    void add_field(const std::string &name, const std::string &value) override
+    {
+        static_cast<void>(name);
+        fs << (first_field ? "\"" : ",\"") << escape_csv_text(value) << "\"";
+        first_field = false;
+    }
+
+private:
+    std::ofstream fs;
+    bool first_field = true;
 };
 
 std::string get_file_extension(const std::string &str)
@@ -81,9 +140,20 @@ bool ResultsFile::init(const std::string &file)
         return false;
     }
 
-    Log::error("Results file type %s is not supported\n", file.c_str());
+    if (ext == ".csv")
+    {
+        ResultsFile::singleton = std::make_unique<CSVResultsFile>(std::move(fs));
+    }
+    else
+    {
+        Log::error("Results file type %s is not supported\n", file.c_str());
+        return false;
+    }
 
-    return false;
+    Log::debug("Writing results to %s file %s\n",
+               ResultsFile::get().type().c_str(), file.c_str());
+
+    return true;
 }
 
 ResultsFile& ResultsFile::get()

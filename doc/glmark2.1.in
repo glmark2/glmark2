@@ -55,7 +55,7 @@ Run in fullscreen mode (equivalent to --size -1x-1)
 The types of results to report for each benchmark, as a ':' separated list [fps,cpu,shader]
 .TP
 \fB\-\-results-file\fR RESULTS-FILE
-The file to save the results to, in the format determined by the file extension
+The file to save the results to, in the format determined by the file extension [csv]
 .TP
 \fB\-\-winsys-options\fR OPTS
 A list of 'opt=value' pairs for window system specific options, separated by ':'
