@@ -183,6 +183,7 @@ for name in bld.env.keys():
             lib          = platform_libs + flavor_libs[flavor],
             includes     = ['.'] + platform_includes,
             defines      = common_defines + flavor_defines[flavor] +
+                           ['GLMARK2_EXECUTABLE="%s"' % target] +
                            egl_platform_defines[egl_platform],
             depends_on   = flavor_depends_on[flavor]
             )

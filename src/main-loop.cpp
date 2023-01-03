@@ -23,6 +23,7 @@
 #include "main-loop.h"
 #include "util.h"
 #include "log.h"
+#include "results-file.h"
 
 #include <string>
 #include <sstream>
@@ -139,8 +140,14 @@ MainLoop::draw()
 void
 MainLoop::log_scene_info()
 {
-    Log::info("%s:", scene_->info_string().c_str());
+    std::string info_string = scene_->info_string();
+
+    Log::info("%s:", info_string.c_str());
     Log::flush();
+
+    ResultsFile &results_file = ResultsFile::get();
+    results_file.begin_benchmark();
+    results_file.add_field("name", info_string);
 }
 
 void
@@ -160,6 +167,7 @@ MainLoop::log_scene_result()
                                          " Set up failed\n");
     static const std::string format_done(Log::continuation_prefix + " done");
     static const std::string format_newline(Log::continuation_prefix + "\n");
+    ResultsFile &results_file = ResultsFile::get();
 
     if (scene_setup_status_ == SceneSetupStatusSuccess) {
         Scene::Stats stats = scene_->stats();
@@ -172,6 +180,8 @@ MainLoop::log_scene_result()
                 Util::toString(1000.0 * stats.average_frame_time, 3);
 
             Log::info(format_fps.c_str(), fps.c_str(), frame_time.c_str());
+            results_file.add_field("fps", fps);
+            results_file.add_field("frame_time", frame_time);
         }
 
         if (Options::results & Options::ResultsCpu)
@@ -182,6 +192,7 @@ MainLoop::log_scene_result()
                     Util::toString(1000.0 * stats.average_frame_time, 3);
 
                 Log::info(format_frame.c_str(), frame_time.c_str());
+                results_file.add_field("frame_time", frame_time);
             }
 
             std::string user_time =
@@ -193,6 +204,9 @@ MainLoop::log_scene_result()
 
             Log::info(format_cpu.c_str(),
                       user_time.c_str(), system_time.c_str(), cpu_busy.c_str());
+            results_file.add_field("user_time", user_time);
+            results_file.add_field("system_time", system_time);
+            results_file.add_field("cpu_busy", cpu_busy);
         }
 
         if (Options::results & Options::ResultsShader)
@@ -201,6 +215,7 @@ MainLoop::log_scene_result()
                 Util::toString(1000.0 * stats.shader_compilation_time, 3);
 
             Log::info(format_shader.c_str(), shader_time.c_str());
+            results_file.add_field("shader_comp_time", shader_time);
         }
 
         if (Options::results == 0)
@@ -209,13 +224,18 @@ MainLoop::log_scene_result()
         }
 
         Log::info(format_newline.c_str());
+        results_file.add_field("status", "Success");
     }
     else if (scene_setup_status_ == SceneSetupStatusUnsupported) {
         Log::info(format_unsupported.c_str());
+        results_file.add_field("status", "Unsupported");
     }
     else {
         Log::info(format_fail.c_str());
+        results_file.add_field("status", "Failure");
     }
+
+    results_file.end_benchmark();
 }
 
 void
@@ -366,6 +386,7 @@ void
 MainLoopValidation::log_scene_result()
 {
     static const std::string format(Log::continuation_prefix + " Validation: %s\n");
+    ResultsFile &results_file = ResultsFile::get();
     std::string result;
 
     switch(scene_->validate()) {
@@ -383,4 +404,7 @@ MainLoopValidation::log_scene_result()
     }
 
     Log::info(format.c_str(), result.c_str());
+    results_file.add_field("status", result);
+
+    results_file.end_benchmark();
 }

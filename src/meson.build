@@ -14,6 +14,7 @@ common_sources = [
     'mesh.cpp',
     'model.cpp',
     'options.cpp',
+    'results-file.cpp',
     'scene-buffer.cpp',
     'scene-build.cpp',
     'scene-bump.cpp',
@@ -276,6 +277,7 @@ foreach flavor : flavors
         binary,
         ['main.cpp', 'canvas-generic.cpp'],
         dependencies: [common_dep, native_dep, gl_dep, wsi_dep],
+        cpp_args: ['-DGLMARK2_EXECUTABLE="@0@"'.format(binary)],
         install: true,
     )
 endforeach

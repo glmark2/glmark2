@@ -31,6 +31,7 @@
 #include "main-loop.h"
 #include "benchmark-collection.h"
 #include "scene-collection.h"
+#include "results-file.h"
 
 #include "canvas-generic.h"
 
@@ -143,6 +144,19 @@ do_validation(Canvas &canvas)
     while (loop.step());
 }
 
+std::string get_full_command_line(int argc, char *argv[])
+{
+    std::stringstream ss;
+
+    for (int i = 0; i < argc; i++)
+    {
+        if (i > 0) ss << " ";
+        ss << argv[i];
+    }
+
+    return ss.str();
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -216,11 +230,21 @@ main(int argc, char *argv[])
         return 1;
     }
 
+    ResultsFile &results_file = ResultsFile::get();
+
+    results_file.begin();
+    results_file.begin_info();
+    results_file.add_field("cmdline", get_full_command_line(argc, argv));
+    results_file.add_field("executable", GLMARK2_EXECUTABLE);
+    results_file.add_field("version", GLMARK_VERSION);
+
     Log::info("=======================================================\n");
     Log::info("    glmark2 %s\n", GLMARK_VERSION);
     Log::info("=======================================================\n");
     canvas.print_info();
     Log::info("=======================================================\n");
+
+    results_file.end_info();
 
     canvas.visible(true);
 
@@ -228,6 +252,8 @@ main(int argc, char *argv[])
         do_validation(canvas);
     else
         do_benchmark(canvas);
+
+    results_file.end();
 
     return 0;
 }

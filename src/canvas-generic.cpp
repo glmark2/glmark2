@@ -26,6 +26,7 @@
 #include "log.h"
 #include "options.h"
 #include "util.h"
+#include "results-file.h"
 
 #include <fstream>
 #include <sstream>
@@ -163,6 +164,13 @@ CanvasGeneric::print_info()
     ss << "    Surface Size:   " << surf_size << std::endl;
 
     Log::info("%s", ss.str().c_str());
+
+    ResultsFile &results_file = ResultsFile::get();
+    results_file.add_field("gl_vendor", gl_vendor);
+    results_file.add_field("gl_renderer", gl_renderer);
+    results_file.add_field("gl_version", gl_version);
+    results_file.add_field("surface_config", surf_config);
+    results_file.add_field("surface_size", surf_size);
 }
 
 Canvas::Pixel
