@@ -30,6 +30,7 @@ class ResultsFile {
 public:
     virtual ~ResultsFile() = default;
     static ResultsFile& get();
+    static bool init(const std::string &file);
 
     virtual std::string type() = 0;
     virtual void begin() = 0;

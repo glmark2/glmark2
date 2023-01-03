@@ -182,6 +182,11 @@ main(int argc, char *argv[])
     /* Initialize Log class */
     Log::init(Util::appname_from_path(argv[0]), Options::show_debug);
 
+    if (!ResultsFile::init(Options::results_file)) {
+        Log::error("%s: Could not initialize results file\n", __FUNCTION__);
+        return 1;
+    }
+
     if (Options::show_help) {
         Options::print_help();
         return 0;

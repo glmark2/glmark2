@@ -46,6 +46,7 @@ bool Options::annotate = false;
 bool Options::offscreen = false;
 GLVisualConfig Options::visual_config;
 Options::Results Options::results = Options::ResultsFps;
+std::string Options::results_file;
 std::vector<Options::WindowSystemOption> Options::winsys_options;
 std::string Options::winsys_options_help;
 
@@ -64,6 +65,7 @@ static struct option long_options[] = {
     {"size", 1, 0, 0},
     {"fullscreen", 0, 0, 0},
     {"results", 1, 0, 0},
+    {"results-file", 1, 0, 0},
     {"winsys-options", 1, 0, 0},
     {"list-scenes", 0, 0, 0},
     {"show-all-options", 0, 0, 0},
@@ -220,6 +222,8 @@ Options::print_help()
            "      --fullscreen       Run in fullscreen mode (equivalent to --size -1x-1)\n"
            "      --results RESULTS  The types of results to report for each benchmark,\n"
            "                         as a ':' separated list [fps,cpu,shader]\n"
+           "      --results-file F   The file to save the results to, in the format determined\n"
+           "                         by the file extension\n"
            "      --winsys-options O A list of 'opt=value' pairs for window system specific\n"
            "                         options, separated by ':'\n"
            "  -l, --list-scenes      Display information about the available scenes\n"
@@ -285,6 +289,8 @@ Options::parse_args(int argc, char **argv)
             Options::size = std::pair<int,int>(-1, -1);
         else if (!strcmp(optname, "results"))
             Options::results = results_from_str(optarg);
+        else if (!strcmp(optname, "results-file"))
+            Options::results_file = optarg;
         else if (!strcmp(optname, "winsys-options"))
             Options::winsys_options = winsys_options_from_str(optarg);
         else if (c == 'l' || !strcmp(optname, "list-scenes"))

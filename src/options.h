@@ -76,6 +76,7 @@ struct Options {
     static bool offscreen;
     static GLVisualConfig visual_config;
     static Results results;
+    static std::string results_file;
     static std::vector<WindowSystemOption> winsys_options;
     static std::string winsys_options_help;
 };

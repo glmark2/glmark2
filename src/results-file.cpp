@@ -21,6 +21,9 @@
  */
 
 #include "results-file.h"
+#include "log.h"
+
+#include <fstream>
 
 namespace
 {
@@ -42,10 +45,46 @@ public:
     }
 };
 
+std::string get_file_extension(const std::string &str)
+{
+    auto i = str.rfind('.');
+    if (i != std::string::npos)
+        return str.substr(i);
+    else
+        return {};
+}
+
 }
 
 std::unique_ptr<ResultsFile> ResultsFile::singleton =
     std::make_unique<NullResultsFile>();
+
+bool ResultsFile::init(const std::string &file)
+{
+    std::ofstream fs{file};
+    std::unique_ptr<ResultsFile> results_file;
+    std::string ext = get_file_extension(file);
+
+    if (file.empty())
+        return true;
+
+    if (!fs)
+    {
+        Log::error("Failed to open results file %s\n", file.c_str());
+        return false;
+    }
+
+    if (ext.empty())
+    {
+        Log::error("Failed to determine results file type for %s\n",
+                   file.c_str());
+        return false;
+    }
+
+    Log::error("Results file type %s is not supported\n", file.c_str());
+
+    return false;
+}
 
 ResultsFile& ResultsFile::get()
 {
