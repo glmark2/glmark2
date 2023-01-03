@@ -139,17 +139,28 @@ CanvasGeneric::print_info()
     gl_state_.getVisualConfig(config);
     native_state_.window(win_props);
 
-    ss << "    OpenGL Information" << std::endl;
-    ss << "    GL_VENDOR:      " << glGetString(GL_VENDOR) << std::endl;
-    ss << "    GL_RENDERER:    " << glGetString(GL_RENDERER) << std::endl;
-    ss << "    GL_VERSION:     " << glGetString(GL_VERSION) << std::endl;
-    ss << "    Surface Config: " << "buf=" << config.buffer
+    std::string gl_vendor = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
+    std::string gl_renderer = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+    std::string gl_version = reinterpret_cast<const char *>(glGetString(GL_VERSION));
+
+    ss << "buf=" << config.buffer
        << " r=" << config.red << " g=" << config.green << " b=" << config.blue
        << " a=" << config.alpha << " depth=" << config.depth
-       << " stencil=" << config.stencil << " samples=" << config.samples
-       << std::endl;
-    ss << "    Surface Size:   " << win_props.width << "x" << win_props.height
-       << (win_props.fullscreen ? " fullscreen" : " windowed") << std::endl;
+       << " stencil=" << config.stencil << " samples=" << config.samples;
+    std::string surf_config = ss.str();
+
+    ss.str("");
+    ss << win_props.width << "x" << win_props.height
+       << (win_props.fullscreen ? " fullscreen" : " windowed");
+    std::string surf_size = ss.str();
+
+    ss.str("");
+    ss << "    OpenGL Information" << std::endl;
+    ss << "    GL_VENDOR:      " << gl_vendor << std::endl;
+    ss << "    GL_RENDERER:    " << gl_renderer << std::endl;
+    ss << "    GL_VERSION:     " << gl_version << std::endl;
+    ss << "    Surface Config: " << surf_config << std::endl;
+    ss << "    Surface Size:   " << surf_size << std::endl;
 
     Log::info("%s", ss.str().c_str());
 }
