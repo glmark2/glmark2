@@ -147,13 +147,13 @@ void
 MainLoop::log_scene_result()
 {
     static const std::string format_fps(Log::continuation_prefix +
-                                        " FPS: %u FrameTime: %.3f ms");
+                                        " FPS: %s FrameTime: %s ms");
     static const std::string format_frame(Log::continuation_prefix +
-                                          " FrameTime: %.3f ms");
+                                          " FrameTime: %s ms");
     static const std::string format_cpu(Log::continuation_prefix +
-                                        " (User: %.3f ms, System: %.3f ms) CpuBusy: %d%%");
+                                        " (User: %s ms, System: %s ms) CpuBusy: %s%%");
     static const std::string format_shader(Log::continuation_prefix +
-                                           " ShaderCompTime: %.3f ms");
+                                           " ShaderCompTime: %s ms");
     static const std::string format_unsupported(Log::continuation_prefix +
                                                 " Unsupported\n");
     static const std::string format_fail(Log::continuation_prefix +
@@ -166,25 +166,41 @@ MainLoop::log_scene_result()
 
         if (Options::results & Options::ResultsFps)
         {
-            Log::info(format_fps.c_str(),
-                      static_cast<unsigned>(ceil(1.0 / stats.average_frame_time)),
-                      1000.0 * stats.average_frame_time);
+            std::string fps =
+                Util::toString(static_cast<unsigned>(ceil(1.0 / stats.average_frame_time)));
+            std::string frame_time =
+                Util::toString(1000.0 * stats.average_frame_time, 3);
+
+            Log::info(format_fps.c_str(), fps.c_str(), frame_time.c_str());
         }
 
         if (Options::results & Options::ResultsCpu)
         {
             if (!(Options::results & Options::ResultsFps))
-                Log::info(format_frame.c_str(), 1000.0 * stats.average_frame_time);
+            {
+                std::string frame_time =
+                    Util::toString(1000.0 * stats.average_frame_time, 3);
+
+                Log::info(format_frame.c_str(), frame_time.c_str());
+            }
+
+            std::string user_time =
+                Util::toString(1000.0 * stats.average_user_time, 3);
+            std::string system_time =
+                Util::toString(1000.0 * stats.average_system_time, 3);
+            std::string cpu_busy =
+                Util::toString(static_cast<int>(100.0 * stats.cpu_busy_percent));
+
             Log::info(format_cpu.c_str(),
-                      1000.0 * stats.average_user_time,
-                      1000.0 * stats.average_system_time,
-                      static_cast<int>(100.0 * stats.cpu_busy_percent));
+                      user_time.c_str(), system_time.c_str(), cpu_busy.c_str());
         }
 
         if (Options::results & Options::ResultsShader)
         {
-            Log::info(format_shader.c_str(),
-                      1000.0 * stats.shader_compilation_time);
+            std::string shader_time =
+                Util::toString(1000.0 * stats.shader_compilation_time, 3);
+
+            Log::info(format_shader.c_str(), shader_time.c_str());
         }
 
         if (Options::results == 0)

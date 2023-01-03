@@ -123,6 +123,19 @@ struct Util {
         return ss.str();
     }
     /**
+     * toString() - Converts a double type to a string with precision.
+     *
+     * @t:         a double value to be converted to a string
+     * @precision: the precision to use for the conversion
+     */
+    static std::string
+    toString(double t, int precision)
+    {
+        std::stringstream ss;
+        ss << std::fixed << std::setprecision(precision) << t;
+        return ss.str();
+    }
+    /**
      * appname_from_path() - get the name of an executable from an absolute path
      *
      * @path:   absolute path of the running application (argv[0])
