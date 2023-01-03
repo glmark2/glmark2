@@ -223,7 +223,7 @@ Options::print_help()
            "      --results RESULTS  The types of results to report for each benchmark,\n"
            "                         as a ':' separated list [fps,cpu,shader]\n"
            "      --results-file F   The file to save the results to, in the format determined\n"
-           "                         by the file extension [csv]\n"
+           "                         by the file extension [csv,xml]\n"
            "      --winsys-options O A list of 'opt=value' pairs for window system specific\n"
            "                         options, separated by ':'\n"
            "  -l, --list-scenes      Display information about the available scenes\n"

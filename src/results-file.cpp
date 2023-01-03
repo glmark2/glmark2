@@ -104,6 +104,72 @@ private:
     bool first_field = true;
 };
 
+std::string xml_text_escape(const std::string &str)
+{
+    std::stringstream ss;
+
+    for (auto c : str)
+    {
+        switch (c)
+        {
+            case '<': ss << "&lt;"; break;
+            case '>': ss << "&gt;"; break;
+            case '&': ss << "&amp;"; break;
+            default: ss << c; break;
+        }
+    }
+
+    return ss.str();
+}
+
+class XMLResultsFile : public ResultsFile
+{
+public:
+    XMLResultsFile(std::ofstream &&fs) : fs{std::move(fs)} {}
+
+    std::string type() override { return "XML"; }
+
+    void begin() override
+    {
+        fs << "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" << std::endl;
+        fs << "<glmark2>" << std::endl;
+    }
+
+    void end() override
+    {
+        fs << "</glmark2>" << std::endl;
+    }
+
+    void begin_info() override
+    {
+        fs << "  <info>" << std::endl;
+    }
+
+    void end_info() override
+    {
+        fs << "  </info>" << std::endl;
+    }
+
+    void begin_benchmark() override
+    {
+        fs << "  <benchmark>" << std::endl;
+    }
+
+    void end_benchmark() override
+    {
+        fs << "  </benchmark>" << std::endl;
+    }
+
+    void add_field(const std::string &name, const std::string &value) override
+    {
+        std::string escaped = xml_text_escape(value);
+        fs << "     <" << name << ">" << escaped << "</" << name << ">" << std::endl;
+    }
+
+private:
+    std::ofstream fs;
+};
+
 std::string get_file_extension(const std::string &str)
 {
     auto i = str.rfind('.');
@@ -143,6 +209,10 @@ bool ResultsFile::init(const std::string &file)
     if (ext == ".csv")
     {
         ResultsFile::singleton = std::make_unique<CSVResultsFile>(std::move(fs));
+    }
+    else if (ext == ".xml")
+    {
+        ResultsFile::singleton = std::make_unique<XMLResultsFile>(std::move(fs));
     }
     else
     {
