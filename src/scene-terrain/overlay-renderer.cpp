@@ -36,6 +36,7 @@ OverlayRenderer::OverlayRenderer(IRenderer &target, GLfloat opacity) :
 void
 OverlayRenderer::setup_onscreen(Canvas &canvas)
 {
+    static_cast<void>(canvas);
 }
 
 void
