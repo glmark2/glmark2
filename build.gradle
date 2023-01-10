@@ -1,0 +1,7 @@
+plugins {
+    id 'com.android.application' version '7.2.2' apply false
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

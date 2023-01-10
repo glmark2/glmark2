@@ -1,0 +1,70 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdkVersion 33
+    buildToolsVersion "33.0.0"
+    ndkVersion "25.1.8937393"
+
+    splits {
+        abi {
+            enable = true
+            reset()
+            include 'arm64-v8a', 'x86_64', 'armeabi-v7a', 'x86'
+            universalApk = true
+        }
+    }
+
+    signingConfigs {
+        sign {
+            storeFile file(signStoreFile)
+            storePassword signStorePassword
+            keyAlias signkeyAlias
+            keyPassword signkeyPassword
+        }
+    }
+
+    defaultConfig {
+        applicationId "org.linaro.glmark2"
+        minSdkVersion 21
+        targetSdkVersion 33
+        versionCode 2
+        versionName "2021.12"
+        externalNativeBuild {
+            ndkBuild {
+                arguments 'APP_STL=c++_static', '-j8'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path "src/main/jni/Android.mk"
+        }
+    }
+
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    lint {
+        abortOnError true
+        checkReleaseBuilds false
+        disable 'MissingTranslation'
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.sign
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    namespace 'org.linaro.glmark2'
+}
