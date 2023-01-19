@@ -1,0 +1,12 @@
+glmark2 2023.01 (20230119)
+==========================
+
+* Add gbm-gl/glesv2 flavors for GBM offscreen rendering.
+* Add x11-gl-egl flavor that uses EGL under X11.
+* Implement SwapInterval 0 for the DRM backend.
+* Support multisampled configs in --visual-config.
+* Support explicitly specifying the config id in --visual-config.
+* Add CPU time and shader compilation time to available results.
+* Add --results to specify which kind of results to report.
+* Add --results-file to export results to XML or CSV.
+* Add --version command-line option.
