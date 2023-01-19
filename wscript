@@ -11,8 +11,6 @@ FLAVORS = {
     'dispmanx-glesv2' : 'glmark2-es2-dispmanx',
     'drm-gl' : 'glmark2-drm',
     'drm-glesv2' : 'glmark2-es2-drm',
-    'mir-gl' : 'glmark2-mir',
-    'mir-glesv2' : 'glmark2-es2-mir',
     'wayland-gl' : 'glmark2-wayland',
     'wayland-glesv2' : 'glmark2-es2-wayland',
     'win32-gl': 'glmark2-win32',
@@ -212,7 +210,6 @@ def configure_linux(ctx):
                 ('libdrm','drm', None, list_contains(ctx.options.flavors, 'drm')),
                 ('gbm','gbm', None, list_contains(ctx.options.flavors, 'drm')),
                 ('libudev', 'udev', None, list_contains(ctx.options.flavors, 'drm')),
-                ('mirclient','mirclient', '0.13', list_contains(ctx.options.flavors, 'mir')),
                 ('wayland-client','wayland-client', None, list_contains(ctx.options.flavors, 'wayland')),
                 ('wayland-cursor','wayland-cursor', None, list_contains(ctx.options.flavors, 'wayland')),
                 ('wayland-egl','wayland-egl', None, list_contains(ctx.options.flavors, 'wayland'))]

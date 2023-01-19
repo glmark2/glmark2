@@ -41,8 +41,6 @@
 #include "native-state-drm.h"
 #elif GLMARK2_USE_GBM
 #include "native-state-gbm.h"
-#elif GLMARK2_USE_MIR
-#include "native-state-mir.h"
 #elif GLMARK2_USE_WAYLAND
 #include "native-state-wayland.h"
 #elif GLMARK2_USE_DISPMANX
@@ -166,8 +164,6 @@ main(int argc, char *argv[])
     NativeStateDRM native_state;
 #elif GLMARK2_USE_GBM
     NativeStateGBM native_state;
-#elif GLMARK2_USE_MIR
-    NativeStateMir native_state;
 #elif GLMARK2_USE_WAYLAND
     NativeStateWayland native_state;
 #elif GLMARK2_USE_DISPMANX
