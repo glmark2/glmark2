@@ -120,6 +120,12 @@ MainLoop::step()
         }
         log_scene_result();
         scene_ = 0;
+        if (!Options::reuse_context) {
+            /**
+             * When the benchmark is finished we should destroy the context
+             **/
+            canvas_.reset();
+        }
         next_benchmark();
     }
 
