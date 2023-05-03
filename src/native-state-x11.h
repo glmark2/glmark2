@@ -29,7 +29,7 @@
 class NativeStateX11 : public NativeState
 {
 public:
-    NativeStateX11() : xdpy_(0), xwin_(0), properties_() {}
+    NativeStateX11();
     ~NativeStateX11();
 
     bool init_display();

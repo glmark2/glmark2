@@ -22,6 +22,8 @@
  */
 #include "native-state-x11.h"
 #include "log.h"
+#include "options.h"
+#include "util.h"
 
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
@@ -30,6 +32,49 @@
 /******************
  * Public methods *
  ******************/
+
+namespace
+{
+
+std::string const x11_position_opt{"position"};
+
+std::string get_x11_position_option()
+{
+    std::string position{""};
+
+    for (auto const& opt : Options::winsys_options)
+    {
+        if (opt.name == x11_position_opt)
+            position = opt.value;
+    }
+
+    return position;
+}
+
+std::pair<int,int> parse_pos(const std::string &str)
+{
+    std::pair<int,int> pos {0, 0};
+    std::vector<std::string> d;
+    Util::split(str, ',', d, Util::SplitModeNormal);
+
+    if (d.size() > 1) {
+        pos.first = Util::fromString<int>(d[0]);
+        pos.second = Util::fromString<int>(d[1]);
+    }
+
+    return pos;
+}
+
+}
+
+NativeStateX11::NativeStateX11() :
+    xdpy_(0),
+    xwin_(0),
+    properties_()
+{
+    Options::winsys_options_help =
+       "  position=x,y  position of the output window on screen\n";
+}
 
 NativeStateX11::~NativeStateX11()
 {
@@ -61,6 +106,9 @@ bool
 NativeStateX11::create_window(WindowProperties const& properties)
 {
     static const char *win_name("glmark2 " GLMARK_VERSION);
+    std::string x11_position = get_x11_position_option();
+    bool has_x11_position = !x11_position.empty();
+    int x = 0, y = 0;
 
     if (!xdpy_) {
         Log::error("Error: X11 Display has not been initialized!\n");
@@ -113,8 +161,18 @@ NativeStateX11::create_window(WindowProperties const& properties)
         return false;
     }
 
-    Log::debug("Creating XWindow W: %d H: %d VisualID: 0x%x\n",
-               properties_.width, properties_.height, vis_info->visualid);
+    if (has_x11_position) {
+        std::pair<int, int> pos = parse_pos(x11_position);
+        x = pos.first;
+        y = pos.second;
+        Log::debug("Creating XWindow X: %d Y: %d W: %d H: %d VisualID: 0x%x\n",
+                   x, y, properties_.width, properties_.height, vis_info->visualid);
+    }
+    else {
+        Log::debug("Creating XWindow W: %d H: %d VisualID: 0x%x\n",
+                   properties_.width, properties_.height, vis_info->visualid);
+    }
+
 
     /* window attributes */
     XSetWindowAttributes attr;
@@ -127,7 +185,7 @@ NativeStateX11::create_window(WindowProperties const& properties)
     attr.event_mask = KeyPressMask;
     mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
-    xwin_ = XCreateWindow(xdpy_, root, 0, 0, properties_.width, properties_.height,
+    xwin_ = XCreateWindow(xdpy_, root, x, y, properties_.width, properties_.height,
                           0, vis_info->depth, InputOutput,
                           vis_info->visual, mask, &attr);
 
@@ -158,6 +216,12 @@ NativeStateX11::create_window(WindowProperties const& properties)
         sizehints.max_width  = properties_.width;
         sizehints.max_height = properties_.height;
         sizehints.flags = PMaxSize | PMinSize;
+
+        if (has_x11_position) {
+            sizehints.x = x;
+            sizehints.y = y;
+            sizehints.flags |=  PPosition;
+        }
 
         XSetWMProperties(xdpy_, xwin_, NULL, NULL,
                          NULL, 0, &sizehints, NULL, NULL);
