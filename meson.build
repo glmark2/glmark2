@@ -23,7 +23,8 @@ if extras_path != ''
 endif
 
 m_dep = cpp.find_library('m', required : false)
-dl_dep = cpp.find_library('dl')
+dl_dep = cpp.find_library('dl', required : false)
+thread_dep = dependency('threads')
 libjpeg_dep = dependency('libjpeg')
 libpng_dep = dependency('libpng')
 
