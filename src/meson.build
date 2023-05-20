@@ -71,6 +71,7 @@ libmatrix_headers_dep = declare_dependency(
 common_deps = [
     m_dep,
     dl_dep,
+    thread_dep,
     libjpeg_dep,
     libpng_dep,
     libmatrix_headers_dep,
