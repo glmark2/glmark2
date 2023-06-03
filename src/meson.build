@@ -245,6 +245,7 @@ if need_glx
             include_directories('libmatrix'),
             ],
         compile_args: ['-DGLMARK2_USE_GLX'],
+        dependencies: x11_dep,
         )
 else
     wsi_glx_dep = declare_dependency()
