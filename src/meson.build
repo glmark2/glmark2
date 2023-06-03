@@ -240,6 +240,7 @@ if need_glx
     # and parity with gl-state-egl.
     wsi_glx_dep = declare_dependency(
         sources: ['gl-state-glx.cpp', 'glad/src/glx.c'],
+        dependencies: x11_dep,
         include_directories: [
             include_directories('glad/include'),
             include_directories('libmatrix'),
