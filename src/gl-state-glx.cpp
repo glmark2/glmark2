@@ -342,7 +342,13 @@ GLStateGLX::select_best_config(std::vector<GLXFBConfig> configs)
         }
     }
 
-    return best_score > 0 ? best_config : 0;
+    if (best_score <= 0) {
+        Log::warning("Unable to find a good GLX FB config, will continue with the best match,\n"
+                     "but you should verify that the config values are acceptable.\n"
+                     "Tip: Use --visual-config to request a different config\n");
+    }
+
+    return best_config;
 }
 
 GLADapiproc

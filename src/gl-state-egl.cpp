@@ -635,7 +635,13 @@ GLStateEGL::select_best_config(std::vector<EGLConfig>& configs)
         }
     }
 
-    return best_score > 0 ? best_config : 0;
+    if (best_score <= 0) {
+        Log::warning("Unable to find a good EGL config, will continue with the best match,\n"
+                     "but you should verify that the config values are acceptable.\n"
+                     "Tip: Use --visual-config to request a different config\n");
+    }
+
+    return best_config;
 }
 
 bool
