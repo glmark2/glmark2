@@ -635,7 +635,7 @@ GLStateEGL::select_best_config(std::vector<EGLConfig>& configs)
         }
     }
 
-    return best_score > 0 ? best_config : 0;
+    return best_score > INT_MIN ? best_config : 0;
 }
 
 bool
