@@ -26,7 +26,7 @@
 #include <vector>
 
 GLVisualConfig::GLVisualConfig(const std::string &s) :
-    id(0), red(1), green(1), blue(1), alpha(1), depth(1), stencil(0), buffer(1), samples(0)
+    GLVisualConfig()
 {
     std::vector<std::string> elems;
 
@@ -85,7 +85,7 @@ GLVisualConfig::match_score(const GLVisualConfig &target) const
     score += score_component(blue, target.blue, 4);
     score += score_component(alpha, target.alpha, 4);
     score += score_component(depth, target.depth, 1);
-    score += score_component(stencil, target.stencil, 0);
+    score += score_component(stencil, target.stencil, 1);
     score += score_component(buffer, target.buffer, 1);
     score += score_component(samples, target.samples, -1);
 
@@ -135,11 +135,14 @@ GLVisualConfig::score_component(int component, int target, int scale) const
          * score for all components ranges from [0,MAXIMUM_COMPONENT_SCORE).
          * If scale > 0, we reward the largest positive difference from target,
          * otherwise the smallest positive difference from target.
+         * We also reward the smallest positive difference from the target,
+         * if the target < 0, i.e., we don't care about this value.
          */
         int diff = std::abs(scale) * (component - target);
         if (diff > 0)
         {
-            score = scale < 0 ? MAXIMUM_COMPONENT_SCORE - diff : diff;
+            score = (scale < 0 || target < 0) ?
+                    MAXIMUM_COMPONENT_SCORE - diff : diff;
             score = std::min(MAXIMUM_COMPONENT_SCORE, score);
             score = std::max(0, score);
         }
