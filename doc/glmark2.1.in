@@ -41,6 +41,10 @@ The parameters may be defined in any order, and any omitted parameters assume a
 default value of '0' (id, stencil, samples) or '1' (red, green, blue, alpha, buffer).
 If 'id' is set to a non-zero value, all other parameters are ignored
 .TP
+\fB--good-config\fR
+Require a config that meets all the requested component requirements
+(see --visual-config)
+.TP
 \fB\-\-reuse\-context\fR
 Use a single context for all scenes
 (by default, each scene gets its own context)

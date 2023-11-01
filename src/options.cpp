@@ -45,6 +45,7 @@ bool Options::run_forever = false;
 bool Options::annotate = false;
 bool Options::offscreen = false;
 GLVisualConfig Options::visual_config;
+bool Options::good_config = false;
 Options::Results Options::results = Options::ResultsFps;
 std::string Options::results_file;
 std::vector<Options::WindowSystemOption> Options::winsys_options;
@@ -60,6 +61,7 @@ static struct option long_options[] = {
     {"swap-mode", 1, 0, 0},
     {"off-screen", 0, 0, 0},
     {"visual-config", 1, 0, 0},
+    {"good-config", 0, 0, 0},
     {"reuse-context", 0, 0, 0},
     {"run-forever", 0, 0, 0},
     {"size", 1, 0, 0},
@@ -216,6 +218,8 @@ Options::print_help()
            "                         default value of '0' (id, stencil, samples) or '1' (red,\n"
            "                         green, blue, alpha, buffer). If 'id' is set to a non-zero\n"
            "                         value, all other parameters are ignored\n"
+           "      --good-config      Require a config that meets all the requested component\n"
+           "                         requirements (see --visual-config)\n"
            "      --reuse-context    Use a single context for all scenes\n"
            "                         (by default, each scene gets its own context)\n"
            "  -s, --size WxH         Size of the output window (default: 800x600)\n"
@@ -281,6 +285,8 @@ Options::parse_args(int argc, char **argv)
             Options::offscreen = true;
         else if (!strcmp(optname, "visual-config"))
             Options::visual_config = GLVisualConfig(optarg);
+        else if (!strcmp(optname, "good-config"))
+            Options::good_config = true;
         else if (!strcmp(optname, "reuse-context"))
             Options::reuse_context = true;
         else if (c == 's' || !strcmp(optname, "size"))

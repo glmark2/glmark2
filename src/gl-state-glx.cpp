@@ -343,6 +343,8 @@ GLStateGLX::select_best_config(std::vector<GLXFBConfig> configs)
     }
 
     if (best_score <= 0) {
+        if (Options::good_config)
+            return NULL;
         Log::warning("Unable to find a good GLX FB config, will continue with the best match,\n"
                      "but you should verify that the config values are acceptable.\n"
                      "Tip: Use --visual-config to request a different config\n");
