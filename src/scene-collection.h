@@ -24,7 +24,9 @@
 #define GLMARK2_SCENE_COLLECTION_H_
 
 #include <vector>
+#include "benchmark.h"
 #include "scene.h"
+#include "util.h"
 
 
 class SceneCollection
