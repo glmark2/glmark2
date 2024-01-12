@@ -29,7 +29,7 @@
 #include "gl-visual-config.h"
 
 struct Options {
-    struct WindowSystemOption {
+    struct Pair {
         std::string name;
         std::string value;
     };
@@ -55,6 +55,7 @@ struct Options {
         ResultsShader = 4,
     };
 
+    static std::vector<Pair> get_options_from_description(const std::string &s, int skip);
     static bool parse_args(int argc, char **argv);
     static void print_help();
 
@@ -78,8 +79,9 @@ struct Options {
     static bool good_config;
     static Results results;
     static std::string results_file;
-    static std::vector<WindowSystemOption> winsys_options;
+    static std::vector<Pair> winsys_options;
     static std::string winsys_options_help;
+    static std::vector<Pair> default_options;
 };
 
 #endif /* OPTIONS_H_ */

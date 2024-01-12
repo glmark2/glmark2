@@ -48,11 +48,13 @@ GLVisualConfig Options::visual_config;
 bool Options::good_config = false;
 Options::Results Options::results = Options::ResultsFps;
 std::string Options::results_file;
-std::vector<Options::WindowSystemOption> Options::winsys_options;
+std::vector<Options::Pair> Options::winsys_options;
 std::string Options::winsys_options_help;
+std::vector<Options::Pair> Options::default_options;
 
 static struct option long_options[] = {
     {"annotate", 0, 0, 0},
+    {"default-options", 1, 0, 0},
     {"benchmark", 1, 0, 0},
     {"benchmark-file", 1, 0, 0},
     {"validate", 0, 0, 0},
@@ -170,22 +172,25 @@ results_from_str(std::string const& str)
     return results;
 }
 
-std::vector<Options::WindowSystemOption>
-winsys_options_from_str(std::string const& str)
+std::vector<Options::Pair>
+Options::get_options_from_description(std::string const& str, int first)
 {
-    std::vector<Options::WindowSystemOption> ret;
+    std::vector<Options::Pair> ret;
     std::vector<std::string> opts;
 
     Util::split(str, ':', opts, Util::SplitModeNormal);
 
-    for (auto const& opt : opts)
+    for (std::vector<std::string>::const_iterator iter = opts.begin() + first;
+         iter != opts.end();
+         iter++)
     {
+        auto const& opt = *iter;
         std::vector<std::string> kv;
         Util::split(opt, '=', kv, Util::SplitModeNormal);
         if (kv.size() == 2)
             ret.push_back({kv[0], kv[1]});
         else
-            throw std::runtime_error{"Invalid window system option '" + opt + "'"};
+            throw std::runtime_error{"Invalid option '" + opt + "'"};
     }
 
     return ret;
@@ -202,6 +207,9 @@ Options::print_help()
            "  -f, --benchmark-file F Load benchmarks to run from a file containing a\n"
            "                         list of benchmark descriptions (one per line)\n"
            "                         (the option can be used multiple times)\n"
+           "      --default-options O Default options to be used in all benchmarks unless:\n"
+           "                         overridden by specific --benchmark description:\n"
+           "                         --default-options=nframes=10:show-fps=true\n"
            "      --validate         Run a quick output validation test instead of \n"
            "                         running the benchmarks\n"
            "      --data-path PATH   Path to glmark2 models, shaders and textures\n"
@@ -273,6 +281,8 @@ Options::parse_args(int argc, char **argv)
             Options::benchmarks.push_back(optarg);
         else if (c == 'f' || !strcmp(optname, "benchmark-file"))
             Options::benchmark_files.push_back(optarg);
+        else if (!strcmp(optname, "default-options"))
+            Options::default_options = get_options_from_description(optarg, 0);
         else if (!strcmp(optname, "validate"))
             Options::validate = true;
         else if (!strcmp(optname, "data-path"))
@@ -298,7 +308,7 @@ Options::parse_args(int argc, char **argv)
         else if (!strcmp(optname, "results-file"))
             Options::results_file = optarg;
         else if (!strcmp(optname, "winsys-options"))
-            Options::winsys_options = winsys_options_from_str(optarg);
+            Options::winsys_options = Options::get_options_from_description(optarg, 0);
         else if (c == 'l' || !strcmp(optname, "list-scenes"))
             Options::list_scenes = true;
         else if (!strcmp(optname, "show-all-options"))

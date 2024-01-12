@@ -26,6 +26,7 @@
 #include <string>
 #include <map>
 
+#include "options.h"
 #include "scene.h"
 
 /**
@@ -36,15 +37,13 @@
 class Benchmark
 {
 public:
-    typedef std::pair<std::string, std::string> OptionPair;
-
     /**
      * Creates a benchmark using a scene object reference.
      *
      * @param scene the scene to use
      * @param options the options to use
      */
-    Benchmark(Scene &scene, const std::vector<OptionPair> &options);
+    Benchmark(Scene &scene, const std::vector<Options::Pair> &options);
 
     /**
      * Creates a benchmark using a scene name.
@@ -55,7 +54,7 @@ public:
      * @param name the name of the scene to use
      * @param options the options to use
      */
-    Benchmark(const std::string &name, const std::vector<OptionPair> &options);
+    Benchmark(const std::string &name, const std::vector<Options::Pair> &options);
 
     /**
      * Creates a benchmark from a description string.
@@ -116,7 +115,7 @@ public:
 
 private:
     Scene &scene_;
-    std::vector<OptionPair> options_;
+    std::vector<Options::Pair> options_;
 
     void load_options();
 
