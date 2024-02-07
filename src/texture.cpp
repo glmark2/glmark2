@@ -111,7 +111,7 @@ Texture::load(const std::string &textureName, GLuint *pTexture, ...)
     }
 
     // Pull the pathname out of the descriptor and use it for the PNG load.
-    TextureDescriptor* desc = textureIt->second;
+    TextureDescriptor* desc = textureIt->second.get();
     const std::string& filename = desc->pathname();
     ImageData image;
 
@@ -206,8 +206,8 @@ Texture::find_textures()
         }
 
         string name(curPath, namePos, extPos - namePos);
-        TextureDescriptor* desc = new TextureDescriptor(name, curPath, type);
-        TexturePrivate::textureMap.insert(std::make_pair(name, desc));
+        std::unique_ptr<TextureDescriptor> desc(new TextureDescriptor(name, curPath, type));
+        TexturePrivate::textureMap.insert(std::make_pair(name, std::move(desc)));
     }
 
     return TexturePrivate::textureMap;
