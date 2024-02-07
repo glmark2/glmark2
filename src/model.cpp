@@ -873,8 +873,8 @@ Model::find_models()
         }
 
         string name(curPath, namePos, extPos - namePos);
-        ModelDescriptor* desc = new ModelDescriptor(name, format, curPath);
-        ModelPrivate::modelMap.insert(std::make_pair(name, desc));
+        std::unique_ptr<ModelDescriptor> desc(new ModelDescriptor(name, format, curPath));
+        ModelPrivate::modelMap.insert(std::make_pair(name, std::move(desc)));
     }
 
     return ModelPrivate::modelMap;
@@ -900,7 +900,7 @@ Model::load(const string& modelName)
         return retVal;
     }
 
-    ModelDescriptor* desc = modelIt->second;
+    ModelDescriptor* desc = modelIt->second.get();
     switch (desc->format())
     {
         case MODEL_INVALID:

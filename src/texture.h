@@ -28,6 +28,7 @@
 
 #include <string>
 #include <map>
+#include <memory>
 
 /**
  * A descriptor for a texture file.
@@ -56,7 +57,7 @@ private:
     TextureDescriptor();
 };
 
-typedef std::map<std::string, TextureDescriptor*> TextureMap;
+typedef std::map<std::string, std::unique_ptr<TextureDescriptor>> TextureMap;
 
 class Texture
 {
