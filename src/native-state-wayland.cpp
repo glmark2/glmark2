@@ -112,6 +112,14 @@ NativeStateWayland::~NativeStateWayland()
             wl_output_destroy((*it)->output);
             delete *it;
         }
+        if (display_->pointer)
+            wl_pointer_release(display_->pointer);
+        if (display_->keyboard)
+            wl_keyboard_release(display_->keyboard);
+        if (display_->seat)
+            wl_seat_release(display_->seat);
+        if (display_->shm)
+            wl_shm_destroy(display_->shm);
         if (display_->compositor)
             wl_compositor_destroy(display_->compositor);
         if (display_->registry)
