@@ -30,6 +30,11 @@
  * Public methods *
  ******************/
 
+GLStateGLX::~GLStateGLX()
+{
+    reset();
+}
+
 bool
 GLStateGLX::init_display(void* native_display, GLVisualConfig& visual_config)
 {
@@ -130,6 +135,8 @@ GLStateGLX::reset()
 {
     if (glx_context_)
     {
+        if (glx_context_ == glXGetCurrentContext())
+            glXMakeCurrent(xdpy_, 0, 0);
         glXDestroyContext(xdpy_, glx_context_);
         glx_context_ = 0;
     }

@@ -35,6 +35,11 @@
  * Public methods *
  ******************/
 
+CanvasGeneric::~CanvasGeneric()
+{
+    release_fbo();
+}
+
 bool
 CanvasGeneric::init()
 {

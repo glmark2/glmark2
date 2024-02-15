@@ -296,6 +296,8 @@ EglConfig::print() const
 
 GLStateEGL::~GLStateEGL()
 {
+    reset();
+
     if(egl_display_ != nullptr){
         if(!eglTerminate(egl_display_))
             Log::error("eglTerminate failed\n");
@@ -425,6 +427,10 @@ GLStateEGL::reset()
 
     if (!egl_context_) {
         return true;
+    }
+
+    if (eglGetCurrentContext && egl_context_ == eglGetCurrentContext()) {
+        eglMakeCurrent(egl_display_, 0, 0, 0);
     }
 
     if (EGL_FALSE == eglDestroyContext(egl_display_, egl_context_)) {
