@@ -32,6 +32,8 @@ public:
     static void debug(const char *fmt, ...);
     // Emit an error message
     static void error(const char *fmt, ...);
+    // Emit a warning message
+    static void warning(const char *fmt, ...);
     // Explicit flush of the log buffer
     static void flush();
     // A prefix constant that informs the logging infrastructure that the log

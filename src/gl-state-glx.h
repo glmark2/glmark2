@@ -37,6 +37,7 @@ class GLStateGLX : public GLState
 public:
     GLStateGLX()
         : xdpy_(0), xwin_(0), glx_fbconfig_(0), glx_context_(0) {}
+    ~GLStateGLX();
 
     bool valid();
     bool init_display(void* native_display, GLVisualConfig& config_pref);

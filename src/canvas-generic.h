@@ -41,6 +41,7 @@ public:
           gl_color_format_(0), gl_depth_format_(0),
           color_renderbuffer_(0), depth_renderbuffer_(0), fbo_(0),
           window_initialized_(false) {}
+    ~CanvasGeneric();
 
     bool init();
     bool reset();

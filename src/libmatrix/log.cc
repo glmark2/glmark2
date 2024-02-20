@@ -39,6 +39,7 @@ static const string terminal_color_normal("\033[0m");
 static const string terminal_color_red("\033[1;31m");
 static const string terminal_color_cyan("\033[36m");
 static const string terminal_color_yellow("\033[33m");
+static const string terminal_color_magenta("\033[35m");
 static const string empty;
 
 static void
@@ -163,6 +164,26 @@ Log::error(const char *fmt, ...)
 
     if (extra_out_)
         print_prefixed_message(*extra_out_, empty, errprefix, fmt, ap);
+
+    va_end(ap);
+}
+
+void
+Log::warning(const char *fmt, ...)
+{
+    static const string warnprefix("Warning");
+    va_list ap;
+    va_start(ap, fmt);
+
+#ifndef ANDROID
+    static const string& warncolor(isatty(fileno(stderr)) ? terminal_color_magenta : empty);
+    print_prefixed_message(std::cerr, warncolor, warnprefix, fmt, ap);
+#else
+    __android_log_vprint(ANDROID_LOG_WARN, appname_.c_str(), fmt, ap);
+#endif
+
+    if (extra_out_)
+        print_prefixed_message(*extra_out_, empty, warnprefix, fmt, ap);
 
     va_end(ap);
 }

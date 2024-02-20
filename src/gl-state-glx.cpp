@@ -30,6 +30,11 @@
  * Public methods *
  ******************/
 
+GLStateGLX::~GLStateGLX()
+{
+    reset();
+}
+
 bool
 GLStateGLX::init_display(void* native_display, GLVisualConfig& visual_config)
 {
@@ -130,6 +135,8 @@ GLStateGLX::reset()
 {
     if (glx_context_)
     {
+        if (glx_context_ == glXGetCurrentContext())
+            glXMakeCurrent(xdpy_, 0, 0);
         glXDestroyContext(xdpy_, glx_context_);
         glx_context_ = 0;
     }
@@ -342,7 +349,15 @@ GLStateGLX::select_best_config(std::vector<GLXFBConfig> configs)
         }
     }
 
-    return best_score > 0 ? best_config : 0;
+    if (best_score <= 0) {
+        if (Options::good_config)
+            return NULL;
+        Log::warning("Unable to find a good GLX FB config, will continue with the best match,\n"
+                     "but you should verify that the config values are acceptable.\n"
+                     "Tip: Use --visual-config to request a different config\n");
+    }
+
+    return best_config;
 }
 
 GLADapiproc

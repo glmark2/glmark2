@@ -29,6 +29,7 @@
 #include <vector>
 #include <map>
 #include "vec.h"
+#include <memory>
 
 // Forward declare the mesh object.  We don't need the whole header here.
 class Mesh;
@@ -60,7 +61,7 @@ public:
     ModelFormat format() const { return format_; }
 };
 
-typedef std::map<std::string, ModelDescriptor*> ModelMap;
+typedef std::map<std::string, std::unique_ptr<ModelDescriptor>> ModelMap;
 
 /**
  * A model as loaded from a 3D object data file.

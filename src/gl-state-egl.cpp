@@ -296,6 +296,8 @@ EglConfig::print() const
 
 GLStateEGL::~GLStateEGL()
 {
+    reset();
+
     if(egl_display_ != nullptr){
         if(!eglTerminate(egl_display_))
             Log::error("eglTerminate failed\n");
@@ -425,6 +427,10 @@ GLStateEGL::reset()
 
     if (!egl_context_) {
         return true;
+    }
+
+    if (eglGetCurrentContext && egl_context_ == eglGetCurrentContext()) {
+        eglMakeCurrent(egl_display_, 0, 0, 0);
     }
 
     if (EGL_FALSE == eglDestroyContext(egl_display_, egl_context_)) {
@@ -635,7 +641,15 @@ GLStateEGL::select_best_config(std::vector<EGLConfig>& configs)
         }
     }
 
-    return best_score > 0 ? best_config : 0;
+    if (best_score <= 0) {
+        if (Options::good_config)
+            return NULL;
+        Log::warning("Unable to find a good EGL config, will continue with the best match,\n"
+                     "but you should verify that the config values are acceptable.\n"
+                     "Tip: Use --visual-config to request a different config\n");
+    }
+
+    return best_config;
 }
 
 bool
