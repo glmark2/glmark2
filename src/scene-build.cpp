@@ -109,34 +109,6 @@ SceneBuild::setup()
     if(!modelLoaded)
         return false;
 
-    // Now that we're successfully loaded, there are a few quirks about
-    // some of the known models that we need to account for.  The draw
-    // logic for the scene wants to rotate the model around the Y axis.
-    // Most of our models are described this way.  Some need adjustment
-    // (an additional rotation that gets the model into the correct
-    // orientation).
-    //
-    // Here's a summary:
-    //
-    // Angel rotates around the Y axis
-    // Armadillo rotates around the Y axis
-    // Buddha rotates around the X axis
-    // Bunny rotates around the Y axis
-    // Dragon rotates around the X axis
-    // Horse rotates around the Y axis
-    if (whichModel == "buddha" || whichModel == "dragon")
-    {
-        orientModel_ = true;
-        orientationAngle_ = -90.0;
-        orientationVec_ = vec3(1.0, 0.0, 0.0);
-    }
-    else if (whichModel == "armadillo")
-    {
-        orientModel_ = true;
-        orientationAngle_ = 180.0; 
-        orientationVec_ = vec3(0.0, 1.0, 0.0);
-    }
-
     if (model.needNormals())
         model.calculate_normals();
 
