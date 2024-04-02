@@ -312,17 +312,11 @@ RefractPrivate::setup(map<string, Scene::Option>& options)
     // Bunny rotates around the Y axis
     // Dragon rotates around the X axis
     // Horse rotates around the Y axis
-    if (whichModel == "buddha" || whichModel == "dragon")
+    if (whichModel == "buddha")
     {
         orientModel_ = true;
         orientationAngle_ = -90.0;
         orientationVec_ = vec3(1.0, 0.0, 0.0);
-    }
-    else if (whichModel == "armadillo")
-    {
-        orientModel_ = true;
-        orientationAngle_ = 180.0; 
-        orientationVec_ = vec3(0.0, 1.0, 0.0);
     }
 
     if (model.needNormals())
