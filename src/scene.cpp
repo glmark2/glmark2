@@ -29,7 +29,15 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#ifdef _WIN32
+#include <windows.h>
+struct rusage {
+    timeval ru_utime; // user time used
+    timeval ru_stime; // system time used
+};
+#else
 #include <sys/resource.h>
+#endif
 #include <unistd.h>
 
 using std::stringstream;
@@ -148,7 +156,14 @@ Scene::Stats
 Scene::stats()
 {
     Stats stats;
-    int nproc = sysconf(_SC_NPROCESSORS_ONLN);
+    int nproc = 1;
+    #ifdef _WIN32
+        SYSTEM_INFO sysinfo;
+        GetSystemInfo(&sysinfo);
+        nproc = sysinfo.dwNumberOfProcessors;
+    #else
+        nproc = sysconf(_SC_NPROCESSORS_ONLN);
+    #endif
 
     stats.average_frame_time = realTime_.elapsed() / currentFrame_;
     stats.average_user_time = userTime_.elapsed() / currentFrame_;
@@ -354,15 +369,44 @@ Scene::update_elapsed_times()
     realTime_.lastUpdate = Util::get_timestamp_us() / 1000000.0;
 
     struct rusage usage;
-    getrusage(RUSAGE_SELF, &usage);
-    userTime_.lastUpdate = usage.ru_utime.tv_sec +
-                           usage.ru_utime.tv_usec / 1000000.0;
-    systemTime_.lastUpdate = usage.ru_stime.tv_sec +
-                             usage.ru_stime.tv_usec / 1000000.0;
+    #ifdef _WIN32
+        FILETIME creationTime, exitTime, kernelTime, userTime;
+        ULARGE_INTEGER user, kernel;
+        GetProcessTimes(GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime);
 
-    double uptime, idle;
-    std::ifstream ifs("/proc/uptime");
-    ifs >> uptime >> idle;
-    if (!ifs.fail())
+        // convert FILETIME to ULARGE_INTEGER
+        user.LowPart = userTime.dwLowDateTime;
+        user.HighPart = userTime.dwHighDateTime;
+        kernel.LowPart = kernelTime.dwLowDateTime;
+        kernel.HighPart = kernelTime.dwHighDateTime;
+
+        // Windows GetProcessTimes() return 100 nano sec. Convert to sec
+        usage.ru_utime.tv_sec = user.QuadPart / 10000000;
+        usage.ru_utime.tv_usec = (user.QuadPart % 10000000) * 10;
+        usage.ru_stime.tv_sec = kernel.QuadPart / 10000000;
+        usage.ru_stime.tv_usec = (kernel.QuadPart % 10000000) * 10;
+    #else
+        getrusage(RUSAGE_SELF, &usage);
+    #endif
+
+    userTime_.lastUpdate = usage.ru_utime.tv_sec + usage.ru_utime.tv_usec / 1000000.0;
+    systemTime_.lastUpdate = usage.ru_stime.tv_sec + usage.ru_stime.tv_usec / 1000000.0;
+
+    double uptime, idle = 0.0;
+
+    #ifdef _WIN32
+        // Get System Idle Time in Windows
+        // Windows does not provide an API to get system idle time. This is only an estimation
+        FILETIME idleTime;
+        GetSystemTimes(nullptr, nullptr, &idleTime);
+        ULARGE_INTEGER ulIdleTime;
+        ulIdleTime.LowPart = idleTime.dwLowDateTime;
+        ulIdleTime.HighPart = idleTime.dwHighDateTime;
+        idle = ulIdleTime.QuadPart / 10000000.0; // 转换为秒
         idleTime_.lastUpdate = idle;
+    #else
+        std::ifstream ifs("/proc/uptime");
+        ifs >> uptime >> idle;
+        if (!ifs.fail()) idleTime_.lastUpdate = idle;
+    #endif
 }
