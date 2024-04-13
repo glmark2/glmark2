@@ -231,8 +231,8 @@ NativeStateX11::create_window(WindowProperties const& properties)
     XStoreName(xdpy_ , xwin_,  win_name);
 
     /* Gracefully handle Window Delete event from window manager */
-    Atom wmDelete = XInternAtom(xdpy_, "WM_DELETE_WINDOW", True);
-    XSetWMProtocols(xdpy_, xwin_, &wmDelete, 1);
+    wm_delete_window_ = XInternAtom(xdpy_, "WM_DELETE_WINDOW", True);
+    XSetWMProtocols(xdpy_, xwin_, &wm_delete_window_, 1);
 
     return true;
 }
@@ -266,8 +266,10 @@ NativeStateX11::should_quit()
             return true;
     }
     else if (event.type == ClientMessage) {
-        /* Window Delete event from window manager */
-        return true;
+        if ((Atom)event.xclient.data.l[0] == wm_delete_window_) {
+            /* Window Delete event from window manager */
+            return true;
+        }
     }
 
     return false;
