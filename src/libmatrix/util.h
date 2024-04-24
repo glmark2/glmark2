@@ -145,6 +145,8 @@ struct Util {
     static std::string
     appname_from_path(const std::string& path);
 
+    static unsigned int get_num_processors();
+
 #ifdef ANDROID
     static void android_set_asset_manager(AAssetManager *asset_manager);
     static AAssetManager *android_get_asset_manager(void);

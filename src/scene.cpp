@@ -30,7 +30,6 @@
 #include <fstream>
 #include <algorithm>
 #include <sys/resource.h>
-#include <unistd.h>
 
 using std::stringstream;
 using std::string;
@@ -148,7 +147,7 @@ Scene::Stats
 Scene::stats()
 {
     Stats stats;
-    int nproc = sysconf(_SC_NPROCESSORS_ONLN);
+    int nproc = Util::get_num_processors();
 
     stats.average_frame_time = realTime_.elapsed() / currentFrame_;
     stats.average_user_time = userTime_.elapsed() / currentFrame_;

@@ -18,6 +18,11 @@
 #else
 #include <filesystem>
 #endif
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 #include "log.h"
 #include "util.h"
@@ -322,3 +327,15 @@ Util::list_files(const std::string& dirName, std::vector<std::string>& fileVec)
     AAssetDir_close(dir);
 }
 #endif
+
+unsigned int
+Util::get_num_processors()
+{
+#ifdef _WIN32
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    return sysinfo.dwNumberOfProcessors;
+#else
+    return sysconf(_SC_NPROCESSORS_ONLN);
+#endif
+}
