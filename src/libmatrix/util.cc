@@ -365,3 +365,23 @@ Util::get_process_times(double *user_sec, double *system_sec)
     *system_sec = usage.ru_stime.tv_sec + usage.ru_stime.tv_usec / 1e6;
 #endif
 }
+
+double
+Util::get_idle_time()
+{
+#ifdef _WIN32
+    FILETIME idleTime;
+    GetSystemTimes(&idleTime, nullptr, nullptr);
+    ULARGE_INTEGER ulIdleTime;
+    ulIdleTime.LowPart = idleTime.dwLowDateTime;
+    ulIdleTime.HighPart = idleTime.dwHighDateTime;
+    // FILETIME contains the number of 100 nsec intervals.
+    return ulIdleTime.QuadPart / 1e7;
+#else
+    double uptime, idle;
+    std::ifstream ifs("/proc/uptime");
+    ifs >> uptime >> idle;
+    if (!ifs.fail()) return idle;
+    return 0.0;
+#endif
+}
