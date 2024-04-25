@@ -2,7 +2,7 @@ Meson build system
 ------------------
 
 glmark2 uses the meson build system for the most common build flavors (X11,
-Wayland, DRM).
+Wayland, DRM, win32).
 
 To configure glmark2 use:
 
@@ -20,12 +20,12 @@ WAF build system
 ----------------
 
 glmark2 previously used the WAF build system, and the builds for some flavors
-(dispmanx, win32) have not been ported to the meson build system. For such
+(dispmanx) have not been ported to the meson build system. For such
 cases follow the instructions below.
 
 To configure glmark2 use:
 
-$ ./waf configure --with-flavors=dispmanx-glesv2,win32-gl,win32-glesv2... [--data-path=DATA_PATH --prefix=PREFIX]
+$ ./waf configure --with-flavors=dispmanx-glesv2... [--data-path=DATA_PATH --prefix=PREFIX]
 
 To build use:
 
