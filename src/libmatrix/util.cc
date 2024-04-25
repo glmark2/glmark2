@@ -16,7 +16,7 @@
 #ifdef ANDROID
 #include <android/asset_manager.h>
 #else
-#include <dirent.h>
+#include <filesystem>
 #endif
 
 #include "log.h"
@@ -253,26 +253,8 @@ Util::get_resource(const std::string &path)
 void
 Util::list_files(const std::string& dirName, std::vector<std::string>& fileVec)
 {
-    DIR* dir = opendir(dirName.c_str());
-    if (!dir)
-    {
-        Log::error("Failed to open models directory '%s'\n", dirName.c_str());
-        return;
-    }
-
-    struct dirent* entry = readdir(dir);
-    while (entry)
-    {
-        std::string pathname(dirName + "/");
-        pathname += std::string(entry->d_name);
-        // Skip '.' and '..'
-        if (entry->d_name[0] != '.')
-        {
-            fileVec.push_back(pathname);
-        }
-        entry = readdir(dir);
-    }
-    closedir(dir);
+    for (const auto& entry : std::filesystem::directory_iterator{dirName})
+        fileVec.push_back(entry.path().string());
 }
 
 #else

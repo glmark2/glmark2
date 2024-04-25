@@ -136,7 +136,7 @@ def configure_win32(ctx):
     if ctx.env.CXX_NAME != 'msvc':
         if ctx.options.debug:
             ctx.env.prepend_value('CXXFLAGS', '-g')
-        ctx.env.prepend_value('CXXFLAGS', '-std=c++14 -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
+        ctx.env.prepend_value('CXXFLAGS', '-std=c++17 -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
     else:
         ctx.env.prepend_value('CXXFLAGS', '/EHsc /wd4312'.split(' '))
 
@@ -241,7 +241,7 @@ def configure_linux(ctx):
         ctx.env.prepend_value('CXXFLAGS', '-O2')
     if ctx.options.debug:
         ctx.env.prepend_value('CXXFLAGS', '-g')
-    ctx.env.prepend_value('CXXFLAGS', '-std=c++14 -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
+    ctx.env.prepend_value('CXXFLAGS', '-std=c++17 -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
 
     ctx.env.HAVE_EXTRAS = False
     if ctx.options.extras_path is not None:
