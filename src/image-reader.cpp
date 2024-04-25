@@ -52,7 +52,7 @@ struct PNGReaderPrivate
     unsigned int row_stride;
 };
 
-PNGReader::PNGReader(const std::string& filename):
+PNGReader::PNGReader(const std::filesystem::path& filename):
     priv_(new PNGReaderPrivate())
 {
     priv_->png_error = !init(filename);
@@ -111,7 +111,7 @@ PNGReader::pixelBytes() const
 
 
 bool
-PNGReader::init(const std::string& filename)
+PNGReader::init(const std::filesystem::path& filename)
 {
     static const int png_transforms = PNG_TRANSFORM_STRIP_16 |
                                       PNG_TRANSFORM_GRAY_TO_RGB |
@@ -207,7 +207,7 @@ struct JPEGIStreamSourceMgr
     std::istream *is;
     JOCTET buffer[BUFFER_SIZE];
 
-    JPEGIStreamSourceMgr(const std::string& filename) : is(0)
+    JPEGIStreamSourceMgr(const std::filesystem::path& filename) : is(0)
     {
         is = Util::get_resource(filename);
 
@@ -283,7 +283,7 @@ struct JPEGIStreamSourceMgr
 
 struct JPEGReaderPrivate
 {
-    JPEGReaderPrivate(const std::string& filename) :
+    JPEGReaderPrivate(const std::filesystem::path& filename) :
         source_mgr(filename), jpeg_error(false) {}
 
     struct jpeg_decompress_struct cinfo;
@@ -293,7 +293,7 @@ struct JPEGReaderPrivate
 };
 
 
-JPEGReader::JPEGReader(const std::string& filename) :
+JPEGReader::JPEGReader(const std::filesystem::path& filename) :
     priv_(new JPEGReaderPrivate(filename))
 {
     priv_->jpeg_error = !init(filename);
@@ -354,7 +354,7 @@ JPEGReader::pixelBytes() const
 }
 
 bool
-JPEGReader::init(const std::string& filename)
+JPEGReader::init(const std::filesystem::path& filename)
 {
     Log::debug("Reading JPEG file %s\n", filename.c_str());
 

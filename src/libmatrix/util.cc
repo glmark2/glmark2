@@ -15,8 +15,6 @@
 #include <chrono>
 #ifdef ANDROID
 #include <android/asset_manager.h>
-#else
-#include <filesystem>
 #endif
 #ifdef _WIN32
 #include <windows.h>
@@ -232,33 +230,28 @@ Util::get_timestamp_us()
             std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
-std::string
-Util::appname_from_path(const std::string& path)
-{
-    std::string::size_type slashPos = path.rfind("/");
-    std::string::size_type startPos(0);
-    if (slashPos != std::string::npos)
-    {
-        startPos = slashPos + 1;
-    }
-    return std::string(path, startPos, std::string::npos);
-}
-
 #ifndef ANDROID
 
 std::istream *
-Util::get_resource(const std::string &path)
+Util::get_resource(const std::filesystem::path &path)
 {
-    std::ifstream *ifs = new std::ifstream(path.c_str(), std::ios::binary);
+    std::ifstream *ifs = new std::ifstream(path, std::ios::binary);
 
     return static_cast<std::istream *>(ifs);
 }
 
 void
-Util::list_files(const std::string& dirName, std::vector<std::string>& fileVec)
+Util::list_files(const std::filesystem::path& dirName,
+                 std::vector<std::filesystem::path>& fileVec)
 {
-    for (const auto& entry : std::filesystem::directory_iterator{dirName})
-        fileVec.push_back(entry.path().string());
+    try
+    {
+        for (const auto& entry : std::filesystem::directory_iterator{dirName})
+            fileVec.push_back(entry.path());
+    }
+    catch (...)
+    {
+    }
 }
 
 #else
@@ -278,9 +271,9 @@ Util::android_get_asset_manager()
 }
 
 std::istream *
-Util::get_resource(const std::string &path)
+Util::get_resource(const std::filesystem::path &path)
 {
-    std::string path2(path);
+    std::string path2 = path.string();
     /* Remove leading '/' from path name, it confuses the AssetManager */
     if (path2.size() > 0 && path2[0] == '/')
         path2.erase(0, 1);
@@ -302,10 +295,11 @@ Util::get_resource(const std::string &path)
 }
 
 void
-Util::list_files(const std::string& dirName, std::vector<std::string>& fileVec)
+Util::list_files(const std::filesystem::path& dirName,
+                 std::vector<std::filesystem::path>& fileVec)
 {
     AAssetManager *mgr(Util::android_get_asset_manager());
-    std::string dir_name(dirName);
+    std::string dir_name = dirName.string();
 
     /* Remove leading '/' from path, it confuses the AssetManager */
     if (dir_name.size() > 0 && dir_name[0] == '/')

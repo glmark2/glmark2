@@ -112,16 +112,15 @@ Texture::load(const std::string &textureName, GLuint *pTexture, ...)
 
     // Pull the pathname out of the descriptor and use it for the PNG load.
     TextureDescriptor* desc = textureIt->second.get();
-    const std::string& filename = desc->pathname();
     ImageData image;
 
     if (desc->filetype() == TextureDescriptor::FileTypePNG) {
-        PNGReader reader(filename);
+        PNGReader reader(desc->pathname());
         if (!image.load(reader))
             return false;
     }
     else if (desc->filetype() == TextureDescriptor::FileTypeJPEG) {
-        JPEGReader reader(filename);
+        JPEGReader reader(desc->pathname());
         if (!image.load(reader))
             return false;
     }
@@ -150,62 +149,24 @@ Texture::find_textures()
     {
         return TexturePrivate::textureMap;
     }
-    vector<string> pathVec;
+    vector<std::filesystem::path> pathVec;
     string dataDir(Options::data_path + "/textures");
     Util::list_files(dataDir, pathVec);
     // Now that we have a list of all of the image files available to us,
     // let's go through and pull out the names and what format they're in
     // so the scene can decide which ones to use.
-    for(vector<string>::const_iterator pathIt = pathVec.begin();
-        pathIt != pathVec.end();
-        pathIt++)
+    for(const auto &curPath : pathVec)
     {
-        const string& curPath = *pathIt;
-        string::size_type namePos(0);
-        string::size_type slashPos = curPath.rfind("/");
-        if (slashPos != string::npos)
-        {
-            // Advance to the first character after the last slash
-            namePos = slashPos + 1;
-        }
-
-        // Find the position of the extension
-        string::size_type pngExtPos = curPath.rfind(".png");
-        string::size_type jpgExtPos = curPath.rfind(".jpg");
-        string::size_type extPos(string::npos);
-
-        // Select the extension that's closer to the end of the file name
-        if (pngExtPos == string::npos)
-        {
-            extPos = jpgExtPos;
-        }
-        else if (jpgExtPos == string::npos)
-        {
-            extPos = pngExtPos;
-        }
-        else
-        {
-            extPos = std::max(pngExtPos, jpgExtPos);
-        }
-
-        if (extPos == string::npos)
-        {
-            // We can't trivially determine it's an image file so skip it...
-            continue;
-        }
+        auto ext = curPath.extension();
+        auto name = curPath.stem().string();
 
         // Set the file type based on the extension
         TextureDescriptor::FileType type(TextureDescriptor::FileTypeUnknown);
-        if (extPos == pngExtPos)
-        {
+        if (ext == ".png")
             type = TextureDescriptor::FileTypePNG;
-        }
-        else if (extPos == jpgExtPos)
-        {
+        else if (ext == ".jpg")
             type = TextureDescriptor::FileTypeJPEG;
-        }
 
-        string name(curPath, namePos, extPos - namePos);
         std::unique_ptr<TextureDescriptor> desc(new TextureDescriptor(name, curPath, type));
         TexturePrivate::textureMap.insert(std::make_pair(name, std::move(desc)));
     }

@@ -176,7 +176,7 @@ main(int argc, char *argv[])
         return 1;
 
     /* Initialize Log class */
-    Log::init(Util::appname_from_path(argv[0]), Options::show_debug);
+    Log::init(std::filesystem::path(argv[0]).stem().string(), Options::show_debug);
 
     if (!ResultsFile::init(Options::results_file)) {
         Log::error("%s: Could not initialize results file\n", __FUNCTION__);

@@ -20,6 +20,7 @@
  *  Alexandros Frantzis
  */
 #include <string>
+#include <filesystem>
 
 class ImageReader
 {
@@ -37,7 +38,7 @@ struct PNGReaderPrivate;
 class PNGReader : public ImageReader
 {
 public:
-    PNGReader(const std::string& filename);
+    PNGReader(const std::filesystem::path& filename);
 
     virtual ~PNGReader();
     bool error();
@@ -48,7 +49,7 @@ public:
     unsigned int pixelBytes() const;
 
 private:
-    bool init(const std::string& filename);
+    bool init(const std::filesystem::path& filename);
     void finish();
 
     PNGReaderPrivate *priv_;
@@ -59,7 +60,7 @@ struct JPEGReaderPrivate;
 class JPEGReader : public ImageReader
 {
 public:
-    JPEGReader(const std::string& filename);
+    JPEGReader(const std::filesystem::path& filename);
 
     virtual ~JPEGReader();
     bool error();
@@ -69,7 +70,7 @@ public:
     unsigned int pixelBytes() const;
 
 private:
-    bool init(const std::string& filename);
+    bool init(const std::filesystem::path& filename);
     void finish();
 
     JPEGReaderPrivate *priv_;

@@ -18,6 +18,7 @@
 #include <istream>
 #include <iomanip>
 #include <sstream>
+#include <filesystem>
 #include <stdint.h>
 
 #ifdef ANDROID
@@ -65,7 +66,7 @@ struct Util {
      * Returns a pointer to an input stream, which must be deleted when no
      * longer in use.
      */
-    static std::istream *get_resource(const std::string &path);
+    static std::istream *get_resource(const std::filesystem::path &path);
     /**
      * list_files() - Get a list of the files in a given directory.
      *
@@ -75,7 +76,8 @@ struct Util {
      * Obtains a list of the files in @dirName, and returns them in the string
      * vector @fileVec.
      */
-    static void list_files(const std::string& dirName, std::vector<std::string>& fileVec);
+    static void list_files(const std::filesystem::path& dirName,
+                           std::vector<std::filesystem::path>& fileVec);
     /**
      * dispose_pointer_vector() - cleans up a vector of pointers
      *
@@ -135,15 +137,6 @@ struct Util {
         ss << std::fixed << std::setprecision(precision) << t;
         return ss.str();
     }
-    /**
-     * appname_from_path() - get the name of an executable from an absolute path
-     *
-     * @path:   absolute path of the running application (argv[0])
-     *
-     * Returns the last portion of @path (everything after the final '/').
-     */
-    static std::string
-    appname_from_path(const std::string& path);
 
     static unsigned int get_num_processors();
     static void get_process_times(double *user_sec, double *system_sec);

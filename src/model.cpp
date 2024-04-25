@@ -371,7 +371,7 @@ Model::calculate_normals()
  * @return whether loading succeeded
  */
 bool
-Model::load_3ds(const std::string &filename)
+Model::load_3ds(const std::filesystem::path &filename)
 {
     Object *object(0);
 
@@ -693,7 +693,7 @@ Model::obj_get_face(const string& source, Face& f)
  * @return whether loading succeeded
  */
 bool
-Model::load_obj(const std::string &filename)
+Model::load_obj(const std::filesystem::path &filename)
 {
     Log::debug("Loading model from obj file '%s'\n", filename.c_str());
 
@@ -829,7 +829,7 @@ Model::find_models()
     {
         return ModelPrivate::modelMap;
     }
-    vector<string> pathVec;
+    vector<std::filesystem::path> pathVec;
     string dataDir(Options::data_path + "/models");
     Util::list_files(dataDir, pathVec);
 #ifdef GLMARK_EXTRAS_PATH
@@ -840,39 +840,17 @@ Model::find_models()
     // Now that we have a list of all of the model files available to us,
     // let's go through and pull out the names and what format they're in
     // so the scene can decide which ones to use.
-    for(vector<string>::const_iterator pathIt = pathVec.begin();
-        pathIt != pathVec.end();
-        pathIt++)
+    for(const auto &curPath : pathVec)
     {
-        const string& curPath = *pathIt;
-        string::size_type namePos(0);
-        string::size_type slashPos = curPath.rfind("/");
-        if (slashPos != string::npos)
-        {
-            // Advance to the first character after the last slash
-            namePos = slashPos + 1;
-        }
+        auto ext = curPath.extension();
+        auto name = curPath.stem().string();
 
         ModelFormat format(MODEL_INVALID);
-        string::size_type extPos = curPath.rfind(".3ds");
-        if (extPos == string::npos)
-        {
-            // It's not a 3ds model
-            extPos = curPath.rfind(".obj");
-            if (extPos == string::npos)
-            {
-                // It's not an obj model either, so skip it.
-                continue;
-            }
-            format = MODEL_OBJ;
-        }
-        else
-        {
-            // It's a 3ds model
+        if (ext == ".3ds")
             format = MODEL_3DS;
-        }
+        else if (ext == ".obj")
+            format = MODEL_OBJ;
 
-        string name(curPath, namePos, extPos - namePos);
         std::unique_ptr<ModelDescriptor> desc(new ModelDescriptor(name, format, curPath));
         ModelPrivate::modelMap.insert(std::make_pair(name, std::move(desc)));
     }
