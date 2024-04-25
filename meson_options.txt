@@ -6,6 +6,8 @@ option('flavors', type : 'array',
            'gbm-glesv2',
            'wayland-gl',
            'wayland-glesv2',
+           'win32-gl',
+           'win32-glesv2',
            'x11-gl',
            'x11-glesv2',
            'x11-gl-egl'

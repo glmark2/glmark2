@@ -76,7 +76,14 @@ common_deps = [
     libpng_dep,
     libmatrix_headers_dep,
 ]
-    
+
+# The include/ directory contains some POSIX functionality missing from msvc.
+if cpp.get_id() == 'msvc'
+    common_deps += declare_dependency(
+        include_directories: include_directories('include'),
+        )
+endif    
+
 if need_drm
     native_drm_lib = static_library(
         'native-drm',
@@ -140,6 +147,21 @@ if need_wayland
         )
 else
     native_wayland_dep = declare_dependency()
+endif
+
+if need_win32
+    native_win32_lib = static_library(
+        'native-win32',
+        'native-state-win32.cpp',
+        dependencies: libmatrix_headers_dep,
+        )
+
+    native_win32_dep = declare_dependency(
+        link_with: native_win32_lib,
+        compile_args: ['-DGLMARK2_USE_WIN32'],
+        )
+else
+    native_win32_dep = declare_dependency()
 endif
 
 if need_x11
@@ -251,6 +273,20 @@ else
     wsi_glx_dep = declare_dependency()
 endif
 
+if need_wgl
+    wsi_wgl_dep = declare_dependency(
+        sources: ['gl-state-wgl.cpp', 'glad/src/wgl.c'],
+        include_directories: [
+            include_directories('glad/include'),
+            include_directories('libmatrix'),
+            ],
+        compile_args: ['-DGLMARK2_USE_WGL'],
+        dependencies: opengl32_dep
+        )
+else
+    wsi_wgl_dep = declare_dependency()
+endif
+
 # Flavor info : [ binary, native, gl, wsi ]
 flavor_info = {
   'drm-gl' : ['glmark2-drm', native_drm_dep, gl_gl_dep, wsi_egl_dep],
@@ -259,6 +295,8 @@ flavor_info = {
   'gbm-glesv2' : ['glmark2-es2-gbm', native_gbm_dep, gl_glesv2_dep, wsi_egl_dep],
   'wayland-gl' : ['glmark2-wayland', native_wayland_dep, gl_gl_dep, wsi_egl_dep],
   'wayland-glesv2' : ['glmark2-es2-wayland', native_wayland_dep, gl_glesv2_dep, wsi_egl_dep],
+  'win32-gl' : ['glmark2-win32', native_win32_dep, gl_gl_dep, wsi_wgl_dep],
+  'win32-glesv2' : ['glmark2-es2-win32', native_win32_dep, gl_glesv2_dep, wsi_egl_dep],
   'x11-gl' : ['glmark2', native_x11_dep, gl_gl_dep, wsi_glx_dep],
   'x11-gl-egl' : ['glmark2-egl', native_x11_dep, gl_gl_dep, wsi_egl_dep],
   'x11-glesv2' : ['glmark2-es2', native_x11_dep, gl_glesv2_dep, wsi_egl_dep],
