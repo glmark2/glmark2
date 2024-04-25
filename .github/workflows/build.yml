@@ -84,6 +84,21 @@ jobs:
     - name: Install
       run: DESTDIR=/tmp/glmark2-install ninja -C build install
 
+  build-meson-win32-msvc:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install meson
+      run: pip install meson ninja
+    - name: Setup
+      run: meson setup --vsenv build -Dflavors='win32-gl,win32-glesv2'
+    - name: Build
+      run: meson compile -C build
+
   build-waf:
     runs-on: ubuntu-20.04
     steps:
