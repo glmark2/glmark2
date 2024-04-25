@@ -69,6 +69,21 @@ jobs:
     - name: Install
       run: DESTDIR=/tmp/glmark2-install ninja -C build install
 
+  build-meson-win32-mingw:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install meson mingw-w64
+    - name: Setup
+      run: meson setup --cross-file .github/x86_64-w64-mingw32.txt build -Dflavors=win32-gl,win32-glesv2
+    - name: Build
+      run: ninja -C build
+    - name: Install
+      run: DESTDIR=/tmp/glmark2-install ninja -C build install
+
   build-waf:
     runs-on: ubuntu-20.04
     steps:
