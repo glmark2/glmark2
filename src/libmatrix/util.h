@@ -147,6 +147,7 @@ struct Util {
 
     static unsigned int get_num_processors();
     static void get_process_times(double *user_sec, double *system_sec);
+    static double get_idle_time();
 
 #ifdef ANDROID
     static void android_set_asset_manager(AAssetManager *asset_manager);

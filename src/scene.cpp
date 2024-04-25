@@ -27,7 +27,6 @@
 #include "options.h"
 #include "util.h"
 #include <sstream>
-#include <fstream>
 #include <algorithm>
 
 using std::stringstream;
@@ -351,10 +350,5 @@ Scene::update_elapsed_times()
 {
     realTime_.lastUpdate = Util::get_timestamp_us() / 1000000.0;
     Util::get_process_times(&userTime_.lastUpdate, &systemTime_.lastUpdate);
-
-    double uptime, idle;
-    std::ifstream ifs("/proc/uptime");
-    ifs >> uptime >> idle;
-    if (!ifs.fail())
-        idleTime_.lastUpdate = idle;
+    idleTime_.lastUpdate = Util::get_idle_time();
 }
