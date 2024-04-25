@@ -28,7 +28,6 @@
 #include "lamp.h"
 #include "util.h"
 #include "log.h"
-#include <sys/time.h>
 
 using LibMatrix::Stack4;
 using LibMatrix::mat4;
@@ -45,10 +44,9 @@ public:
         valid_(false),
         currentSpeed_(1.0), // Real time.
         currentTime_(START_TIME_),
-        timeOffset_(START_TIME_)
+        timeOffset_(START_TIME_),
+        startTime_(0)
     {
-        startTime_.tv_sec = 0;
-        startTime_.tv_nsec = 0; 
     }
     ~SceneIdeasPrivate()
     {
@@ -69,7 +67,7 @@ private:
     float currentSpeed_;
     float currentTime_;
     float timeOffset_;
-    struct timespec startTime_;
+    uint64_t startTime_;
     static const float CYCLE_TIME_;
     static const float TIME_;
     static const float START_TIME_;
@@ -163,17 +161,15 @@ void
 SceneIdeasPrivate::reset_time()
 {
     timeOffset_ = START_TIME_;
-    clock_gettime(CLOCK_MONOTONIC, &startTime_);
+    startTime_ = Util::get_timestamp_us();
 }
 
 void
 SceneIdeasPrivate::update_time()
 {
     // Compute new time
-    struct timespec current = {0, 0};
-    clock_gettime(CLOCK_MONOTONIC, &current);
-    float timediff = (current.tv_sec - startTime_.tv_sec) + 
-        static_cast<double>(current.tv_nsec - startTime_.tv_nsec) / 1000000000.0;
+    uint64_t current = Util::get_timestamp_us();
+    float timediff = (current - startTime_) / 1000000.0;
     float sceneTime = timediff * currentSpeed_ + timeOffset_;
 
     // Keep the current time in [START_TIME_..CYCLE_TIME_)
