@@ -146,6 +146,7 @@ struct Util {
     appname_from_path(const std::string& path);
 
     static unsigned int get_num_processors();
+    static void get_process_times(double *user_sec, double *system_sec);
 
 #ifdef ANDROID
     static void android_set_asset_manager(AAssetManager *asset_manager);

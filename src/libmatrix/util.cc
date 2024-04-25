@@ -22,6 +22,7 @@
 #include <windows.h>
 #else
 #include <unistd.h>
+#include <sys/resource.h>
 #endif
 
 #include "log.h"
@@ -337,5 +338,30 @@ Util::get_num_processors()
     return sysinfo.dwNumberOfProcessors;
 #else
     return sysconf(_SC_NPROCESSORS_ONLN);
+#endif
+}
+
+void
+Util::get_process_times(double *user_sec, double *system_sec)
+{
+#ifdef _WIN32
+    FILETIME creationTime, exitTime, kernelTime, userTime;
+    ULARGE_INTEGER user, kernel;
+
+    GetProcessTimes(GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime);
+    // convert FILETIME to ULARGE_INTEGER
+    user.LowPart = userTime.dwLowDateTime;
+    user.HighPart = userTime.dwHighDateTime;
+    kernel.LowPart = kernelTime.dwLowDateTime;
+    kernel.HighPart = kernelTime.dwHighDateTime;
+    // FILETIME contains the number of 100 nsec intervals.
+    *user_sec = user.QuadPart / 1e7;
+    *system_sec = kernel.QuadPart / 1e7;
+#else
+    struct rusage usage;
+
+    getrusage(RUSAGE_SELF, &usage);
+    *user_sec = usage.ru_utime.tv_sec + usage.ru_utime.tv_usec / 1e6;
+    *system_sec = usage.ru_stime.tv_sec + usage.ru_stime.tv_usec / 1e6;
 #endif
 }

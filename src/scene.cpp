@@ -29,7 +29,6 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
-#include <sys/resource.h>
 
 using std::stringstream;
 using std::string;
@@ -351,13 +350,7 @@ void
 Scene::update_elapsed_times()
 {
     realTime_.lastUpdate = Util::get_timestamp_us() / 1000000.0;
-
-    struct rusage usage;
-    getrusage(RUSAGE_SELF, &usage);
-    userTime_.lastUpdate = usage.ru_utime.tv_sec +
-                           usage.ru_utime.tv_usec / 1000000.0;
-    systemTime_.lastUpdate = usage.ru_stime.tv_sec +
-                             usage.ru_stime.tv_usec / 1000000.0;
+    Util::get_process_times(&userTime_.lastUpdate, &systemTime_.lastUpdate);
 
     double uptime, idle;
     std::ifstream ifs("/proc/uptime");
