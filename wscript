@@ -203,7 +203,7 @@ def configure_linux(ctx):
 
         ctx.check_cxx(lib = 'brcmGLESv2', uselib_store = 'glesv2', libpath='/opt/vc/lib')
         ctx.check_cxx(lib = ['brcmEGL', 'brcmGLESv2'], uselib_store = 'egl', libpath='/opt/vc/lib')
-        ctx.check_cxx(lib = ['bcm_host', 'vcos', 'vchiq_arm'], uselib_store = 'dispmanx', libpath='/opt/vc/lib')
+        ctx.check_cxx(lib = ['brcmEGL', 'brcmGLESv2', 'vchostif', 'bcm_host', 'vcos', 'vchiq_arm'], uselib_store = 'dispmanx', libpath='/opt/vc/lib')
 
     # Check optional packages
     opt_pkgs = [('x11', 'x11', None, list_contains(ctx.options.flavors, 'x11')),

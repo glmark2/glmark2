@@ -23,13 +23,25 @@
 #include "native-state-dispmanx.h"
 #include "log.h"
 
+#include "EGL/egl.h"
+
 #include <cstring>
 #include <csignal>
 
+struct NativeStateDispmanx::Private
+{
+    Private()
+    {
+	memset(&egl_dispmanx_window, 0, sizeof(egl_dispmanx_window));
+    }
+
+    EGL_DISPMANX_WINDOW_T egl_dispmanx_window;
+};
+
 NativeStateDispmanx::NativeStateDispmanx()
+    : priv{std::make_unique<Private>()}
 {
     memset(&properties_, 0, sizeof(properties_));
-    memset(&egl_dispmanx_window, 0, sizeof(egl_dispmanx_window));
 }
 
 NativeStateDispmanx::~NativeStateDispmanx()
@@ -99,9 +111,9 @@ NativeStateDispmanx::create_window(WindowProperties const& properties)
 					       0 /*clamp*/,
 					       DISPMANX_NO_ROTATE);
 
-    egl_dispmanx_window.element = dispmanx_element;
-    egl_dispmanx_window.width = dst_rect.width;
-    egl_dispmanx_window.height = dst_rect.height;
+    priv->egl_dispmanx_window.element = dispmanx_element;
+    priv->egl_dispmanx_window.width = dst_rect.width;
+    priv->egl_dispmanx_window.height = dst_rect.height;
     vc_dispmanx_update_submit_sync(dispmanx_update);
 
     return true;
@@ -111,7 +123,7 @@ void*
 NativeStateDispmanx::window(WindowProperties &properties)
 {
     properties = properties_;
-    return &egl_dispmanx_window;
+    return &priv->egl_dispmanx_window;
 }
 
 void
