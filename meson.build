@@ -47,6 +47,7 @@ endif
 
 if need_x11
     x11_dep = dependency('x11')
+    xrandr_dep = dependency('xrandr')
 endif
 
 if need_drm
