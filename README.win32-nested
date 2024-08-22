@@ -1,0 +1,27 @@
+Build
+-----
+
+$ meson setup -Dflavors=win32-gl -Dcpp_link_args="-static -static-libgcc -static-libstdc++" -Ddata-path=. --cross-file i686-w64-mingw32.txt build-win32
+$ ninja -C build-win32
+
+Install
+-------
+
+$ cp -R build-win32/src/glmark2-win32.exe data/shaders data/textures data/models/ <TARGET_DIR>
+
+Running
+-------
+
+Run from within <TARGET_DIR> or use --data-path=<TARGET_DIR> comman-line option so that glmark2
+can find the data.
+
+Usage
+-----
+
+key 1: Show/Hide top window
+key 2: Show/Hide intermediate window
+key 3: Show/Hide child window
+
+left mouse button: move child window to top left
+right mouse button: move child window to bottom right
+middle mouse button: Toggle between intermediate window being a child of top window or a toplevel itself

@@ -20,6 +20,7 @@
  *  Jamie Madill
  */
 #include "native-state-win32.h"
+#include "log.h"
 
 static const char *win_name("glmark2 " GLMARK_VERSION);
 static const char *child_win_name("glmark2 " GLMARK_VERSION " child");
@@ -87,10 +88,13 @@ NativeStateWin32::init_display()
         parentStyle, CW_USEDEFAULT, CW_USEDEFAULT,
         sizeRect.right - sizeRect.left, sizeRect.bottom - sizeRect.top,
         nullptr, nullptr, GetModuleHandle(nullptr), this);
-
-    child_window_ = CreateWindowExA(0, child_win_name, win_name, WS_CHILD, 0, 0,
-        static_cast<int>(initial_width), static_cast<int>(initial_height),
+    intermediate_window_ = CreateWindowExA(0, child_win_name, win_name, WS_CHILD,
+        0, 0, static_cast<int>(initial_width), static_cast<int>(initial_height),
         parent_window_, nullptr, GetModuleHandle(nullptr), this);
+    child_window_ = CreateWindowExA(0, child_win_name, win_name, WS_CHILD,
+        static_cast<int>(initial_width/4), static_cast<int>(initial_height/4),
+        static_cast<int>(initial_width/2), static_cast<int>(initial_height/2),
+        intermediate_window_, nullptr, GetModuleHandle(nullptr), this);
 
     native_display_ = GetDC(child_window_);
     if (!native_display_)
@@ -132,7 +136,12 @@ NativeStateWin32::create_window(WindowProperties const& properties)
         return false;
     }
 
-    if (!MoveWindow(child_window_, 0, 0, properties.width, properties.height, FALSE))
+    if (!MoveWindow(intermediate_window_, 0, 0, properties.width, properties.height, FALSE))
+    {
+        return false;
+    }
+
+    if (!MoveWindow(child_window_, properties.width/4, properties.height/4, properties.width/2, properties.height/2, FALSE))
     {
         return false;
     }
@@ -157,6 +166,10 @@ NativeStateWin32::visible(bool visible)
         ShowWindow(parent_window_, flag);
     }
 
+    if (intermediate_window_)
+    {
+        ShowWindow(intermediate_window_, flag);
+    }
     if (child_window_)
     {
         ShowWindow(child_window_, flag);
@@ -238,6 +251,73 @@ NativeStateWin32::wnd_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
             case WM_CLOSE:
             case WM_DESTROY:
                 window->should_quit_ = true;
+                break;
+            case WM_KEYDOWN:
+                {
+                    HWND target;
+                    switch (wParam)
+                    {
+                        case '1': target = window->parent_window_; break;
+                        case '2': target = window->intermediate_window_; break;
+                        case '3': target = window->child_window_; break;
+                        default: target = NULL;
+                    }
+                    LONG style = GetWindowLong(target, GWL_STYLE);
+                    if (style & WS_VISIBLE)
+                    {
+                        Log::info("[glmark2] Hiding %p\n", target);
+                        ShowWindow(target, SW_HIDE);
+                        Log::info("[glmark2] Hiding %p done\n", target);
+                    }
+                    else
+                    {
+                        Log::info("[glmark2] Showing %p\n", target);
+                        ShowWindow(target, SW_SHOW);
+                        Log::info("[glmark2] Showing %p done\n", target);
+                    }
+                }
+                break;
+            case WM_LBUTTONDOWN:
+                Log::info("[glmark2] Moving %p to 0,0\n", window->child_window_);
+                SetWindowPos(window->child_window_, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+                Log::info("[glmark2] Moving %p to 0,0 done\n", window->child_window_);
+                break;
+            case WM_RBUTTONDOWN:
+                Log::info("[glmark2] Moving %p to %d,%d\n", window->child_window_,
+                          window->properties_.width / 2, window->properties_.height/2);
+                SetWindowPos(window->child_window_, 0, window->properties_.width / 2, window->properties_.height/2, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+                Log::info("[glmark2] Moving %p to %d,%d done\n", window->child_window_,
+                          window->properties_.width / 2, window->properties_.height/2);
+                break;
+            case WM_MBUTTONDOWN:
+                {
+                    LONG style = GetWindowLong(window->intermediate_window_, GWL_STYLE);
+                    if (style & WS_CHILD)
+                    {
+                        Log::info("[glmark2] Making %p toplevel (SetParent)\n", window->intermediate_window_);
+                        SetParent(window->intermediate_window_, NULL);
+                        style &= ~WS_CHILD;
+                        style |= WS_POPUPWINDOW | WS_CAPTION;
+                        Log::info("[glmark2] Making %p toplevel 2 SetWindowLong\n", window->intermediate_window_);
+                        SetWindowLong(window->intermediate_window_, GWL_STYLE, style);
+                        Log::info("[glmark2] Making %p toplevel 3 SetWindowPos\n", window->intermediate_window_);
+                        SetWindowPos(window->intermediate_window_, 0, 500, 500, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+                        Log::info("[glmark2] Making %p toplevel done\n", window->intermediate_window_);
+                    }
+                    else
+                    {
+                        Log::info("[glmark2] Making %p child (SetWindowLong)\n", window->intermediate_window_);
+                        style |= WS_CHILD;
+                        style &= ~WS_POPUPWINDOW;
+                        style &= ~WS_CAPTION;
+                        SetWindowLong(window->intermediate_window_, GWL_STYLE, style);
+                        Log::info("[glmark2] Making %p child 2 SetParent\n", window->intermediate_window_);
+                        SetParent(window->intermediate_window_, window->parent_window_);
+                        Log::info("[glmark2] Making %p child 3 SetWindowPos\n", window->intermediate_window_);
+                        SetWindowPos(window->intermediate_window_, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+                        Log::info("[glmark2] Making %p child done\n", window->intermediate_window_);
+                    }
+                }
                 break;
             default:
                 break;

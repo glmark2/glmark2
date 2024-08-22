@@ -47,6 +47,7 @@ private:
     static LRESULT CALLBACK wnd_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     HWND parent_window_;
+    HWND intermediate_window_;
     HWND child_window_;
     HDC native_display_;
     WindowProperties properties_;
