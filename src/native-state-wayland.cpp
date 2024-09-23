@@ -112,6 +112,12 @@ NativeStateWayland::~NativeStateWayland()
             wl_output_destroy((*it)->output);
             delete *it;
         }
+        if (display_->content_type) {
+            wp_content_type_v1_destroy(display_->content_type);
+        }
+        if (display_->content_type_manager) {
+            wp_content_type_manager_v1_destroy(display_->content_type_manager);
+        }
         if (display_->pointer)
             wl_pointer_release(display_->pointer);
         if (display_->keyboard)
@@ -170,6 +176,10 @@ NativeStateWayland::registry_handle_global(void *data, struct wl_registry *regis
         that->display_->shm =
             static_cast<struct wl_shm *>(
                 wl_registry_bind(registry, id, &wl_shm_interface, 1));
+    } else if (strcmp(interface, "wp_content_type_manager_v1") == 0) {
+        that->display_->content_type_manager =
+            static_cast<struct wp_content_type_manager_v1 *>(
+            wl_registry_bind(registry, id, &wp_content_type_manager_v1_interface, 1));
     }
 }
 
@@ -354,6 +364,14 @@ NativeStateWayland::create_window(WindowProperties const& properties)
     window_->properties = properties;
 
     window_->surface = wl_compositor_create_surface(display_->compositor);
+    if (display_->content_type_manager) {
+        if (display_->content_type)
+            wp_content_type_v1_destroy(display_->content_type);
+
+        display_->content_type = wp_content_type_manager_v1_get_surface_content_type(
+            display_->content_type_manager, window_->surface);
+        wp_content_type_v1_set_content_type(display_->content_type, WP_CONTENT_TYPE_V1_TYPE_GAME);
+    }
     window_->xdg_surface = xdg_wm_base_get_xdg_surface(display_->xdg_wm_base,
                                                        window_->surface);
     xdg_surface_add_listener(window_->xdg_surface, &xdg_surface_listener_, this);

@@ -132,11 +132,27 @@ if need_wayland
         output: 'xdg-shell-protocol.c',
         )
 
+    content_type_xml_path = wayland_protocols_dir + '/staging/content-type/content-type-v1.xml'
+    content_type_client_header = custom_target(
+      'content-type-v1 client-header',
+      command: [ wayland_scanner, 'client-header', '@INPUT@', '@OUTPUT@' ],
+      input: content_type_xml_path,
+      output: 'content-type-v1-client-protocol.h',
+      )
+    content_type_private_code = custom_target(
+      'content-type-v1 private-code',
+      command: [ wayland_scanner, 'private-code', '@INPUT@', '@OUTPUT@' ],
+      input: content_type_xml_path,
+      output: 'content-type-v1-protocol.c',
+      )
+
     native_wayland_lib = static_library(
         'native-wayland',
         'native-state-wayland.cpp',
         xdg_shell_client_header,
         xdg_shell_private_code,
+        content_type_client_header,
+        content_type_private_code,
         dependencies: [libmatrix_headers_dep, wayland_client_dep, wayland_cursor_dep, wayland_egl_dep],
         )
 
