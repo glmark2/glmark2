@@ -315,7 +315,7 @@ SceneBuffer::SceneBuffer(Canvas &pCanvas) :
     options_["columns"] = Scene::Option("columns", "100",
                                        "The number of mesh subdivisions length-wise");
     options_["rows"] = Scene::Option("rows", "20",
-                                      "The number of mesh subdisivisions width-wise");
+                                      "The number of mesh subdivisions width-wise");
     options_["buffer-usage"] = Scene::Option("buffer-usage", "static",
                                              "How the buffer will be used",
                                              "static,stream,dynamic");
