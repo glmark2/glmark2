@@ -6,7 +6,7 @@ Wayland, DRM, win32).
 
 To configure glmark2 use:
 
-$ meson setup build -Dflavors=drm-gl,drm-glesv2,wayland-gl,wayland-glesv2,x11-gl,x11-glesv2 [-Ddata-path=DATA_PATH --prefix=PREFIX]
+$ meson setup build -Dflavors=drm-gl,drm-glesv2,wayland-gl,wayland-glesv2,x11-gl,x11-glesv2,win32-gl,win32-glesv2 [-Ddata-path=DATA_PATH --prefix=PREFIX]
 
 To build use:
 
