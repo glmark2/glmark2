@@ -1,3 +1,11 @@
+Git submodule update
+------------------
+Since 2014.12 this project added xxhash git submodule for gl frame buffer data hash calculation.
+After clone the project, run below command to init the submodule:
+
+$ git submodule update --init --recursive
+
+
 Meson build system
 ------------------
 

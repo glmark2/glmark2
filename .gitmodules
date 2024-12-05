@@ -1,0 +1,6 @@
+[submodule "src/xxhash"]
+	path = src/xxhash
+	url = https://github.com/Cyan4973/xxHash.git
+[submodule "src/libxxhash"]
+	path = src/libxxhash
+	url = https://github.com/Cyan4973/xxHash.git
