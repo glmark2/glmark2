@@ -28,6 +28,7 @@
 #include "lamp.h"
 #include "util.h"
 #include "log.h"
+#include "options.h"
 
 using LibMatrix::Stack4;
 using LibMatrix::mat4;
@@ -40,7 +41,8 @@ using std::map;
 class SceneIdeasPrivate
 {
 public:
-    SceneIdeasPrivate() :
+    SceneIdeasPrivate(SceneIdeas& sceneIdeas) :
+        sceneIdeas_(sceneIdeas),
         valid_(false),
         currentSpeed_(1.0), // Real time.
         currentTime_(START_TIME_),
@@ -59,6 +61,7 @@ public:
     bool valid() { return valid_; }
 
 private:
+    SceneIdeas& sceneIdeas_;
     void postIdle();
     void initLights();
     bool valid_;
@@ -169,7 +172,9 @@ SceneIdeasPrivate::update_time()
 {
     // Compute new time
     uint64_t current = Util::get_timestamp_us();
-    float timediff = (current - startTime_) / 1000000.0;
+    float timediff = Options::popping_frame ?
+        sceneIdeas_.currentFrame_ / Options::TIMEFACTOR * Options::popping_frame :
+        (current - startTime_) / 1000000.0;
     float sceneTime = timediff * currentSpeed_ + timeOffset_;
 
     // Keep the current time in [START_TIME_..CYCLE_TIME_)
@@ -211,7 +216,7 @@ SceneIdeas::~SceneIdeas()
 bool
 SceneIdeas::setup()
 {
-    priv_ = new SceneIdeasPrivate();
+    priv_ = new SceneIdeasPrivate(*this);
     priv_->initialize(options_);
     if (!priv_->valid())
         return false;

@@ -47,7 +47,7 @@ bool
 SceneJellyfish::setup()
 {
     // Set up our private object that does all of the lifting
-    priv_ = new JellyfishPrivate();
+    priv_ = new JellyfishPrivate(*this);
     if (!priv_->initialize())
         return false;
 
@@ -68,6 +68,7 @@ SceneJellyfish::update()
     Scene::update();
     priv_->update_viewport(LibMatrix::vec2(canvas_.width(), canvas_.height()));
     priv_->update_time();
+    printf("in SceneJellyfish %p: currentFrame_ %d\n", (void *) priv_, currentFrame_);
 }
 
 void
@@ -321,7 +322,8 @@ JellyfishPrivate::load_obj(const std::string &filename)
     return true;
 }
 
-JellyfishPrivate::JellyfishPrivate() :
+JellyfishPrivate::JellyfishPrivate(SceneJellyfish& sceneJellyfish) :
+    sceneJellyfish_(sceneJellyfish),
     positionLocation_(0),
     normalLocation_(0),
     colorLocation_(0),
@@ -500,9 +502,17 @@ void
 JellyfishPrivate::update_time()
 {
     double now = Util::get_timestamp_us() / 1000.0;
-    double elapsedTime = now - lastUpdateTime_;
+    double elapsedTime;
+    
+    if (Options::popping_frame){
+        elapsedTime = sceneJellyfish_.currentFrame_ % 8 / 10 + 8;
+        currentTime_ = sceneJellyfish_.currentFrame_ / Options::TIMEFACTOR * Options::popping_frame + 60000;
+    }
+    else {
+        elapsedTime = now - lastUpdateTime_;
+        currentTime_ = static_cast<uint64_t>(now) % 100000000 / 1000.0;
+    }
     rotation_ += (2.0 * elapsedTime) / 1000.0;
-    currentTime_ = static_cast<uint64_t>(now) % 100000000 / 1000.0;
     whichCaustic_ = static_cast<uint64_t>(currentTime_ * 30) % 32 + 1;
     lastUpdateTime_ = now;
 }

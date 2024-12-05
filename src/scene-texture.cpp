@@ -264,7 +264,9 @@ SceneTexture::update()
 {
     Scene::update();
 
-    rotation_ = rotationSpeed_ * realTime_.elapsed();
+    rotation_ = Options::popping_frame ?
+        rotationSpeed_ * currentFrame_ / Options::TIMEFACTOR * Options::popping_frame :
+        rotationSpeed_ * realTime_.elapsed();
 }
 
 void

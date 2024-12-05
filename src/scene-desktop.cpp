@@ -921,8 +921,9 @@ void
 SceneDesktop::update()
 {
     double current_time = Util::get_timestamp_us() / 1000000.0;
-    double dt = current_time - realTime_.lastUpdate;
-
+    double dt = Options::popping_frame ?
+        currentFrame_ / Options::TIMEFACTOR * Options::popping_frame * 0.1:
+        current_time - realTime_.lastUpdate;
     Scene::update();
 
     std::vector<RenderObject *>& windows(priv_->windows);

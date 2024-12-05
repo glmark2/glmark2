@@ -39,7 +39,8 @@ struct Options {
         FrameEndNone,
         FrameEndSwap,
         FrameEndFinish,
-        FrameEndReadPixels
+        FrameEndReadPixels,
+        FrameEndXxhash
     };
 
     enum SwapMode {
@@ -76,6 +77,8 @@ struct Options {
     static bool offscreen;
     static GLVisualConfig visual_config;
     static bool good_config;
+    static float popping_frame;
+    static float TIMEFACTOR;
     static Results results;
     static std::string results_file;
     static std::vector<WindowSystemOption> winsys_options;
