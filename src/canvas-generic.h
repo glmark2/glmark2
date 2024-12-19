@@ -47,7 +47,7 @@ public:
     bool reset();
     void visible(bool visible);
     void clear();
-    void update();
+    void update(std::string, int);
     void print_info();
     Pixel read_pixel(int x, int y);
     void write_to_file(std::string &filename);

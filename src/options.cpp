@@ -27,6 +27,7 @@
 
 #include "options.h"
 #include "util.h"
+#include "pixels-hash.h"
 
 std::vector<std::string> Options::benchmarks;
 std::vector<std::string> Options::benchmark_files;
@@ -45,6 +46,7 @@ bool Options::run_forever = false;
 bool Options::annotate = false;
 bool Options::offscreen = false;
 float Options::popping_frame = 0;
+int Options::step = 0;
 float Options::TIMEFACTOR = 2000;
 GLVisualConfig Options::visual_config;
 bool Options::good_config = false;
@@ -115,15 +117,27 @@ static Options::FrameEnd
 frame_end_from_str(const std::string &str)
 {
     Options::FrameEnd m = Options::FrameEndDefault;
-
     if (str == "swap")
         m = Options::FrameEndSwap;
     else if (str == "finish")
         m = Options::FrameEndFinish;
     else if (str == "readpixels")
         m = Options::FrameEndReadPixels;
-    else if (str == "xxhash")
+    else if (str.rfind("xxhash")==0) {
         m = Options::FrameEndXxhash;
+
+        std::vector<std::string> d;
+        Util::split(str, ':', d, Util::SplitModeNormal);
+
+        /*
+        * Parse the second element (step). If there is none, default to 10
+        */
+        if (d.size() > 1)
+            Options::step = Util::fromString<int>(d[1]);
+        else
+            Options::step = 10;
+        printf("step is %d\n", Options::step);
+    }
     else if (str == "none")
         m = Options::FrameEndNone;
 
@@ -211,7 +225,10 @@ Options::print_help()
            "                         running the benchmarks\n"
            "      --data-path PATH   Path to glmark2 models, shaders and textures\n"
            "                         Default: " GLMARK_DATA_PATH "\n"
-           "      --frame-end METHOD How to end a frame [default,none,swap,finish,readpixels,xxhash]\n"
+           "      --frame-end METHOD How to end a frame [default,none,swap,finish,readpixels,xxhash:10]\n"
+           "                           Specifically, xxhash:10 means using xxhash to calculate image pixels checksum,\n"
+           "                           every 10 frames. Default value is 10 if omitted.\n"
+           "                           Suggedst to co-work with option --popping-frame to get a consistent result.\n"    
            "      --swap-mode MODE   How to swap a frame, all modes supported only in the DRM\n"
            "                         flavor, 'fifo' available in all flavors to force vsync\n"
            "                         [default,immediate,mailbox,fifo]\n"
@@ -332,6 +349,12 @@ Options::parse_args(int argc, char **argv)
         else if (c == 'h' || !strcmp(optname, "help"))
             Options::show_help = true;
     }
-
+    if (Options::frame_end == Options::FrameEndXxhash) {
+        // Allocate memory to receive frame buffer pixels data for hash calculation.
+        // Make the request only once here in the begining instead of request before each buffer read
+        // to reduce bulky memory request overhead (making handres of MB space takes time nowadays)
+        if (!PixelHash::allocatePixelsBuffer())
+            return false;
+    }
     return true;
 }

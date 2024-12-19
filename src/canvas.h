@@ -130,7 +130,7 @@ public:
      *
      * This method should be implemented in derived classes.
      */
-    virtual void update() {}
+    virtual void update(std::string, int) {}
 
     /**
      * Prints information about the canvas.

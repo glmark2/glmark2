@@ -27,6 +27,8 @@
 #include "options.h"
 #include "util.h"
 #include "results-file.h"
+#include "pixels-hash.h"
+#include "main-loop.h"
 
 #include <fstream>
 #include <sstream>
@@ -105,7 +107,7 @@ CanvasGeneric::clear()
 }
 
 void
-CanvasGeneric::update()
+CanvasGeneric::update(std::string sceneName, int frameNum)
 {
     Options::FrameEnd m = Options::frame_end;
 
@@ -118,6 +120,11 @@ CanvasGeneric::update()
 
     switch(m) {
         case Options::FrameEndSwap:
+            gl_state_.swap();
+            native_state_.flip();
+            break;
+        case Options::FrameEndXxhash:
+            PixelHash::calcXxhash(sceneName, frameNum);
             gl_state_.swap();
             native_state_.flip();
             break;

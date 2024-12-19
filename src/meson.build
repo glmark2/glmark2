@@ -60,7 +60,8 @@ common_sources = [
     'scene-texture.cpp',
     'shared-library.cpp',
     'text-renderer.cpp',
-    'texture.cpp'
+    'texture.cpp',
+    'pixels-hash.cpp'
 ]
 
 libmatrix_headers_dep = declare_dependency(
@@ -316,7 +317,7 @@ foreach flavor : flavors
     executable(
         binary,
         ['main.cpp', 'canvas-generic.cpp'],
-        dependencies: [common_dep, native_dep, gl_dep, wsi_dep],
+        dependencies: [common_dep, native_dep, gl_dep, wsi_dep, xxhash_dep],
         cpp_args: ['-DGLMARK2_EXECUTABLE="@0@"'.format(binary)],
         install: true,
     )

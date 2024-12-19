@@ -68,7 +68,6 @@ SceneJellyfish::update()
     Scene::update();
     priv_->update_viewport(LibMatrix::vec2(canvas_.width(), canvas_.height()));
     priv_->update_time();
-    printf("in SceneJellyfish %p: currentFrame_ %d\n", (void *) priv_, currentFrame_);
 }
 
 void

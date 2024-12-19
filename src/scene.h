@@ -45,6 +45,9 @@
  */
 class Scene
 {
+    friend class MainLoop;
+    friend class MainLoopValidation;
+    friend class MainLoopDecoration;
 public:
     virtual ~Scene();
 
