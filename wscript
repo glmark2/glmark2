@@ -132,11 +132,11 @@ def configure_win32(ctx):
     # Prepend CXX flags so that they can be overriden by the
     # CXXFLAGS environment variable
     if ctx.options.opt:
-        ctx.env.prepend_value('CXXFLAGS', '-O2')
+        ctx.env.prepend_value('CXXFLAGS', '-O3')
     if ctx.env.CXX_NAME != 'msvc':
         if ctx.options.debug:
             ctx.env.prepend_value('CXXFLAGS', '-g')
-        ctx.env.prepend_value('CXXFLAGS', '-std=c++17 -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
+        ctx.env.prepend_value('CXXFLAGS', '-std=c++26 -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
     else:
         ctx.env.prepend_value('CXXFLAGS', '/EHsc /wd4312'.split(' '))
 
@@ -238,10 +238,10 @@ def configure_linux(ctx):
     # Prepend CXX flags so that they can be overriden by the
     # CXXFLAGS environment variable
     if ctx.options.opt:
-        ctx.env.prepend_value('CXXFLAGS', '-O2')
+        ctx.env.prepend_value('CXXFLAGS', '-O3')
     if ctx.options.debug:
         ctx.env.prepend_value('CXXFLAGS', '-g')
-    ctx.env.prepend_value('CXXFLAGS', '-std=c++17 -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
+    ctx.env.prepend_value('CXXFLAGS', '-std=c++26 -Wall -Wextra -Wnon-virtual-dtor'.split(' '))
 
     ctx.env.HAVE_EXTRAS = False
     if ctx.options.extras_path is not None:
