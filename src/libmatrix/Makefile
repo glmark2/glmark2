@@ -1,4 +1,8 @@
-CXXFLAGS = -Wall -Werror -pedantic -O3
+COMMON_FLAGS = -std=gnu++26 -Wall -Werror -pedantic -march=native -O3
+ifeq ($(shell uname -m), x86_64)
+COMMON_FLAGS += -mfpmath=sse
+endif
+CXXFLAGS  ?= $(COMMON_FLAGS)
 LIBMATRIX = libmatrix.a
 LIBSRCS = mat.cc program.cc log.cc util.cc shader-source.cc
 LIBOBJS = $(LIBSRCS:.cc=.o)
