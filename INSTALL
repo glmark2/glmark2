@@ -1,3 +1,11 @@
+Git submodule update
+------------------
+Since 2014.12 this project added xxhash git submodule for gl frame buffer data hash calculation.
+After clone the project, run below command to init the submodule:
+
+$ git submodule update --init --recursive
+
+
 Meson build system
 ------------------
 
@@ -6,7 +14,7 @@ Wayland, DRM, win32).
 
 To configure glmark2 use:
 
-$ meson setup build -Dflavors=drm-gl,drm-glesv2,wayland-gl,wayland-glesv2,x11-gl,x11-glesv2 [-Ddata-path=DATA_PATH --prefix=PREFIX]
+$ meson setup build -Dflavors=drm-gl,drm-glesv2,wayland-gl,wayland-glesv2,x11-gl,x11-glesv2,win32-gl,win32-glesv2 [-Ddata-path=DATA_PATH --prefix=PREFIX]
 
 To build use:
 

@@ -134,7 +134,7 @@ MainLoop::draw()
     scene_->draw();
     scene_->update();
 
-    canvas_.update();
+    canvas_.update(scene_->name(), scene_->currentFrame_);
 }
 
 void
@@ -288,7 +288,7 @@ MainLoopDecoration::draw()
     if (show_title_)
         title_renderer_->render();
 
-    canvas_.update();
+    canvas_.update(scene_->name(), scene_->currentFrame_);
 }
 
 void
@@ -377,7 +377,7 @@ MainLoopValidation::draw()
 
     scene_->draw();
 
-    canvas_.update();
+    canvas_.update(scene_->name(), scene_->currentFrame_);
 
     scene_->running(false);
 }

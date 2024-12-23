@@ -167,8 +167,9 @@ ScenePulsar::update()
 {
     Scene::update();
 
-    double elapsed_time = realTime_.elapsed();
-
+    double elapsed_time = Options::popping_frame ?
+        currentFrame_ / Options::TIMEFACTOR * Options::popping_frame :
+        realTime_.elapsed();
     for (int i = 0; i < numQuads_; i++) {
         rotations_[i] = rotationSpeeds_[i] * (elapsed_time * 60);
     }

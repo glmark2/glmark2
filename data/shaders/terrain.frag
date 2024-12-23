@@ -20,8 +20,8 @@ uniform vec3 ambientLightColor;
 uniform mat4 viewMatrix;
 
 #define MAX_POINT_LIGHTS 1
-//#define USE_FOG
-//#define FOG_EXP2
+#define USE_FOG
+#define FOG_EXP2
 
 #if MAX_POINT_LIGHTS > 0
 uniform vec3 pointLightColor[ MAX_POINT_LIGHTS ];

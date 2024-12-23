@@ -2,7 +2,7 @@ project(
     'glmark2',
     ['cpp', 'c'],
     default_options : ['cpp_std=c++17'],
-    version : '2023.01',
+    version : '2024.12',
     meson_version: '>=0.47'
     )
 
@@ -95,6 +95,20 @@ else
     libjpeg_dep = dependency('libjpeg')
     libpng_dep = dependency('libpng')
 endif
+
+# git submodule src/xxhash
+# put the meson build file here so as not to smudge the submodule src code
+xxhash_sources = files(
+  'src/libxxhash/xxhash.c'
+)
+xxhash_lib = static_library('xxhash', xxhash_sources,
+    include_directories: include_directories('src/libxxhash'),
+    install: false
+)
+xxhash_dep = declare_dependency(
+    link_with: xxhash_lib,
+    include_directories: include_directories('src/libxxhash')
+)
 
 subdir('src')
 subdir('data')

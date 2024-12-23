@@ -29,6 +29,7 @@
 #include "texture.h"
 #include "shader-source.h"
 #include "renderer.h"
+#include "options.h"
 
 using LibMatrix::vec2;
 using LibMatrix::vec3;
@@ -317,7 +318,9 @@ SceneTerrain::update()
 {
     Scene::update();
 
-    float diff = realTime_.elapsed();
+    float diff = Options::popping_frame ?
+        currentFrame_ / Options::TIMEFACTOR * Options::popping_frame :
+        realTime_.elapsed();
     float scale = priv_->terrain_renderer->repeat_overlay().x() /
                   priv_->height_map_renderer->uv_scale().x();
 

@@ -532,7 +532,9 @@ SceneShadow::update()
 {
     Scene::update();
     // Add scene-specific update here
-    priv_->update(realTime_.elapsed());
+    priv_->update(Options::popping_frame ?
+        currentFrame_ / Options::TIMEFACTOR * Options::popping_frame :
+        realTime_.elapsed());
 }
 
 void

@@ -17,6 +17,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install meson libdrm-dev libgbm-dev libudev-dev libwayland-dev wayland-protocols libx11-dev
+    - name: InitGitSubmodule
+      run: git submodule update --init --recursive
     - name: Setup
       run: meson setup build -Dflavors=x11-gl,x11-glesv2,x11-gl-egl,wayland-gl,wayland-glesv2,drm-gl,drm-glesv2
     - name: Build
@@ -32,6 +34,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install meson libdrm-dev libgbm-dev libudev-dev
+    - name: InitGitSubmodule
+      run: git submodule update --init --recursive
     - name: Setup
       run: meson setup build -Dflavors=drm-gl,drm-glesv2
     - name: Build
@@ -47,6 +51,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install meson libwayland-dev wayland-protocols
+    - name: InitGitSubmodule
+      run: git submodule update --init --recursive
     - name: Setup
       run: meson setup build -Dflavors=wayland-gl,wayland-glesv2
     - name: Build
@@ -62,6 +68,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install meson libx11-dev
+    - name: InitGitSubmodule
+      run: git submodule update --init --recursive
     - name: Setup
       run: meson setup build -Dflavors=x11-gl,x11-glesv2,x11-gl-egl
     - name: Build
@@ -77,6 +85,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install meson mingw-w64
+    - name: InitGitSubmodule
+      run: git submodule update --init --recursive
     - name: Setup
       run: meson setup --cross-file .github/x86_64-w64-mingw32.txt build -Dflavors=win32-gl,win32-glesv2
     - name: Build
@@ -92,6 +102,8 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
+    - name: InitGitSubmodule
+      run: git submodule update --init --recursive
     - name: Install meson
       run: pip install meson ninja
     - name: Setup
@@ -107,6 +119,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install libdrm-dev libgbm-dev libudev-dev libwayland-dev wayland-protocols libx11-dev
+    - name: InitGitSubmodule
+      run: git submodule update --init --recursive
     - name: Setup
       run: ./waf configure --with-flavors=x11-gl,x11-glesv2,wayland-gl,wayland-glesv2,drm-gl,drm-glesv2
     - name: Build

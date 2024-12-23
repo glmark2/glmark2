@@ -406,7 +406,9 @@ SceneBuffer::update()
 {
     Scene::update();
 
-    priv_->wave->update(realTime_.elapsed());
+    priv_->wave->update(Options::popping_frame ?
+        ((double) currentFrame_) / Options::TIMEFACTOR * Options::popping_frame :
+        realTime_.elapsed());
 }
 
 void

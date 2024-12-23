@@ -84,6 +84,7 @@ class JellyfishPrivate
     unsigned int bufferObjects_[2];
     unsigned int textureObjects_[33];
     unsigned int whichCaustic_;
+    SceneJellyfish& sceneJellyfish_;
     std::map<std::string, unsigned int> causticMap_;
 
     // Program state, including attributes, uniforms, and, locations.
@@ -112,7 +113,7 @@ class JellyfishPrivate
     int blendFuncDst_;
 
 public:
-    JellyfishPrivate();
+    JellyfishPrivate(SceneJellyfish&);
     ~JellyfishPrivate();
     bool initialize();
     void update_viewport(const LibMatrix::vec2& viewport);

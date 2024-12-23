@@ -45,6 +45,9 @@
  */
 class Scene
 {
+    friend class MainLoop;
+    friend class MainLoopValidation;
+    friend class MainLoopDecoration;
 public:
     virtual ~Scene();
 
@@ -557,6 +560,7 @@ class SceneIdeasPrivate;
 
 class SceneIdeas : public Scene
 {
+    friend class SceneIdeasPrivate;
 public:
     SceneIdeas(Canvas &pCanvas);
     void update();
@@ -597,6 +601,7 @@ private:
 class JellyfishPrivate;
 class SceneJellyfish : public Scene
 {
+    friend class JellyfishPrivate;
     JellyfishPrivate* priv_;
 public:
     SceneJellyfish(Canvas &pCanvas);
