@@ -7,7 +7,7 @@ It is licensed under the GPLv3 (see COPYING).
 
 To build glmark2 you need:
 
- * meson (>= 0.47) or python3 (if you are using WAF for building)
+ * meson (>= 0.47)
  * libpng 1.6
  * Window system development files for the flavors you want to build
    (e.g, X11, Wayland, drm)
