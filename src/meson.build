@@ -84,6 +84,21 @@ if cpp.get_id() == 'msvc'
         )
 endif    
 
+if need_dispmanx
+    native_dispmanx_lib = static_library(
+        'native-dispmanx',
+        'native-state-dispmanx.cpp',
+        dependencies: [bcm_host_dep, libmatrix_headers_dep],
+        )
+
+    native_dispmanx_dep = declare_dependency(
+        link_with: native_dispmanx_lib,
+        compile_args: ['-DGLMARK2_USE_DISPMANX'],
+        )
+else
+    native_dispmanx_dep = declare_dependency()
+endif
+
 if need_drm
     native_drm_lib = static_library(
         'native-drm',
@@ -289,6 +304,7 @@ endif
 
 # Flavor info : [ binary, native, gl, wsi ]
 flavor_info = {
+  'dispmanx-glesv2' : ['glmark2-es2-dispmanx', native_dispmanx_dep, gl_glesv2_dep, wsi_egl_dep],
   'drm-gl' : ['glmark2-drm', native_drm_dep, gl_gl_dep, wsi_egl_dep],
   'drm-glesv2' : ['glmark2-es2-drm', native_drm_dep, gl_glesv2_dep, wsi_egl_dep],
   'gbm-gl' : ['glmark2-gbm', native_gbm_dep, gl_gl_dep, wsi_egl_dep],

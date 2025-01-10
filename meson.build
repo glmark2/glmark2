@@ -39,8 +39,9 @@ need_egl = need_drm or need_wayland or need_glesv2 or flavors_str.contains('-egl
 need_glx = flavors.contains('x11-gl')
 need_win32 = flavors_str.contains('win32-')
 need_wgl = 'win32-gl' in flavors
+need_dispmanx = flavors_str.contains('dispmanx-')
 
-if need_win32 and (need_x11 or need_gbm or need_drm or need_wayland)
+if need_win32 and (need_x11 or need_gbm or need_drm or need_wayland or need_dispmanx)
     error('Simultaneous Windows and non-Windows builds are not supported')
 endif
 
@@ -69,6 +70,10 @@ if need_wayland
     wayland_egl_dep = dependency('wayland-egl')
     wayland_protocols_dep = dependency('wayland-protocols', version : '>= 1.12')
     wayland_scanner_dep = dependency('wayland-scanner', native: true)
+endif
+
+if need_dispmanx
+    bcm_host_dep = dependency('bcm_host')
 endif
 
 if need_win32

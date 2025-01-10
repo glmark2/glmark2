@@ -1,5 +1,6 @@
 option('flavors', type : 'array',
        choices : [
+           'dispmanx-glesv2',
            'drm-gl',
            'drm-glesv2',
            'gbm-gl',
