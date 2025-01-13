@@ -23,11 +23,7 @@
 #ifndef GLMARK2_NATIVE_STATE_DISPMANX_H_
 #define GLMARK2_NATIVE_STATE_DISPMANX_H_
 
-#include <vector>
 #include "bcm_host.h"
-#include "GLES/gl.h"
-#include "EGL/egl.h"
-#include "EGL/eglext.h"
 
 #include "native-state.h"
 
@@ -46,6 +42,12 @@ public:
     void flip();
 
 private:
+    typedef struct {
+        DISPMANX_ELEMENT_HANDLE_T element;
+        int width;   /* This is necessary because dispmanx elements are not queriable. */
+        int height;
+    } EGL_DISPMANX_WINDOW_T;
+
     DISPMANX_DISPLAY_HANDLE_T dispmanx_display;
     DISPMANX_UPDATE_HANDLE_T dispmanx_update;
     DISPMANX_ELEMENT_HANDLE_T dispmanx_element;

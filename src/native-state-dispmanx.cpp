@@ -24,7 +24,6 @@
 #include "log.h"
 
 #include <cstring>
-#include <csignal>
 
 NativeStateDispmanx::NativeStateDispmanx()
 {
@@ -46,7 +45,7 @@ NativeStateDispmanx::init_display()
 void*
 NativeStateDispmanx::display()
 {
-    return EGL_DEFAULT_DISPLAY;
+    return nullptr;
 }
 
 bool

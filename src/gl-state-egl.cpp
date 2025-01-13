@@ -313,7 +313,11 @@ GLStateEGL::init_display(void* native_display, GLVisualConfig& visual_config)
 #if defined(WIN32)
     if (!egl_lib_.open("libEGL.dll")) {
 #else
-    if (!egl_lib_.open_from_alternatives({"libEGL.so", "libEGL.so.1" })) {
+    if (!egl_lib_.open_from_alternatives({
+#if GLMARK2_USE_DISPMANX
+            "libbrcmEGL.so",
+#endif
+            "libEGL.so", "libEGL.so.1" })) {
 #endif
         Log::error("Error loading EGL library\n");
         return false;
@@ -574,7 +578,11 @@ GLStateEGL::gotValidDisplay()
 #if defined(WIN32)
     std::initializer_list<const char *> libNames = { "libGLESv2.dll" };
 #else
-    std::initializer_list<const char *> libNames = { "libGLESv2.so", "libGLESv2.so.2" };
+    std::initializer_list<const char *> libNames = {
+#if GLMARK2_USE_DISPMANX
+        "libbrcmGLESv2.so",
+#endif
+        "libGLESv2.so", "libGLESv2.so.2" };
 #endif
 #elif GLMARK2_USE_GL
     EGLenum apiType(EGL_OPENGL_API);
