@@ -25,6 +25,7 @@
 #ifndef GLMARK2_MESH_H_
 #define GLMARK2_MESH_H_
 
+#include <utility>
 #include <vector>
 #include "vec.h"
 #include "gl-headers.h"
