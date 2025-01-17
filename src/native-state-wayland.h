@@ -28,6 +28,7 @@
 #include <wayland-egl.h>
 #include <wayland-cursor.h>
 #include "xdg-shell-client-protocol.h"
+#include "content-type-v1-client-protocol.h"
 
 #include "native-state.h"
 
@@ -157,6 +158,8 @@ private:
         wl_keyboard *keyboard;
         struct xdg_wm_base *xdg_wm_base;
         OutputsVector outputs;
+        struct wp_content_type_v1 *content_type;
+        struct wp_content_type_manager_v1 *content_type_manager;
     } *display_;
 
     struct my_window {
