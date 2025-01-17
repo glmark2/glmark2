@@ -69,6 +69,21 @@ jobs:
     - name: Install
       run: DESTDIR=/tmp/glmark2-install ninja -C build install
 
+  build-meson-only-dispmanx:
+    runs-on: ubuntu-22.04-arm
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install meson libraspberrypi-dev
+    - name: Setup
+      run: meson setup build -Dflavors=dispmanx-glesv2
+    - name: Build
+      run: ninja -C build
+    - name: Install
+      run: DESTDIR=/tmp/glmark2-install ninja -C build install
+
   build-meson-win32-mingw:
     runs-on: ubuntu-20.04
     steps:
