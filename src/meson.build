@@ -183,7 +183,7 @@ if need_x11
     native_x11_lib = static_library(
         'native-x11',
         'native-state-x11.cpp',
-        dependencies: [x11_dep, libmatrix_headers_dep],
+        dependencies: [x11_dep, libmatrix_headers_dep, xrandr_dep],
         )
 
     native_x11_dep = declare_dependency(
