@@ -186,7 +186,7 @@ public:
             RenderObject::main_program.release();
     }
 
-    void make_current()
+    virtual void make_current()
     {
         GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
         glViewport(0, 0, size_.x(), size_.y());
@@ -387,7 +387,12 @@ class RenderScreen : public RenderObject
     Canvas &canvas_;
 public:
     RenderScreen(Canvas &canvas) : canvas_(canvas) {}
-    virtual void init() { fbo_ = canvas_.fbo(); }
+    virtual void init() {}
+    virtual void make_current()
+    {
+        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_.fbo());
+        glViewport(0, 0, size_.x(), size_.y());
+    }
     virtual void size(const LibMatrix::vec2& size) { size_ = size; clear(); }
     virtual void release() {}
 };

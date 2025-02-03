@@ -47,24 +47,21 @@ static const vec4 lightPosition(0.0f, 3.0f, 2.0f, 1.0f);
 //
 class DepthRenderTarget
 {
+    Canvas& canvas_;
     Program program_;
-    unsigned int canvas_width_;
-    unsigned int canvas_height_;
     unsigned int width_;
     unsigned int height_;
     unsigned int tex_;
     unsigned int fbo_;
-    unsigned int canvas_fbo_;
 public:
-    DepthRenderTarget() :
-        canvas_width_(0),
-        canvas_height_(0),
+    DepthRenderTarget(Canvas& canvas) :
+        canvas_(canvas),
         width_(0),
         height_(0),
         tex_(0),
         fbo_(0) {}
     ~DepthRenderTarget() {}
-    bool setup(unsigned int canvas_fbo, unsigned int width, unsigned int height);
+    bool setup();
     void teardown();
     void enable(const mat4& mvp);
     void disable();
@@ -73,7 +70,7 @@ public:
 };
 
 bool
-DepthRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigned int height)
+DepthRenderTarget::setup()
 {
     static const string vtx_shader_filename(Options::data_path + "/shaders/depth.vert");
     static const string frg_shader_filename(Options::data_path + "/shaders/depth.frag");
@@ -85,11 +82,8 @@ DepthRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigned i
         return false;
     }
 
-    canvas_width_ = width;
-    canvas_height_ = height;
-    canvas_fbo_ = canvas_fbo;
-    width_ = canvas_width_ * 2;
-    height_ = canvas_height_ * 2;
+    width_ = canvas_.width() * 2;
+    height_ = canvas_.height() * 2;
 
     // If the texture will be too large for the implemnetation, we need to
     // clamp the dimensions but maintain the aspect ratio.
@@ -97,11 +91,11 @@ DepthRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigned i
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &tex_size);
     unsigned int max_size = static_cast<unsigned int>(tex_size);
     if (max_size < width_ || max_size < height_) {
-        float aspect = static_cast<float>(width) / static_cast<float>(height);
+        float aspect = static_cast<float>(canvas_.width()) / static_cast<float>(canvas_.height());
         width_ = max_size;
         height_ = width_ / aspect;
         Log::debug("DepthRenderTarget::setup: original texture size (%u x %u), clamped to (%u x %u)\n",
-            canvas_width_ * 2, canvas_height_ * 2, width_, height_);
+            canvas_.width() * 2, canvas_.height() * 2, width_, height_);
     }
 
     glGenTextures(1, &tex_);
@@ -123,7 +117,7 @@ DepthRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigned i
         Log::error("DepthRenderTarget::setup: glCheckFramebufferStatus failed (0x%x)\n", status);
         return false;
     }
-    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_.fbo());
 
     return true;
 }
@@ -158,8 +152,8 @@ DepthRenderTarget::enable(const mat4& mvp)
 
 void DepthRenderTarget::disable()
 {
-    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
-    glViewport(0, 0, canvas_width_, canvas_height_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_.fbo());
+    glViewport(0, 0, canvas_.width(), canvas_.height());
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
@@ -301,6 +295,7 @@ class ShadowPrivate
 public:
     ShadowPrivate(Canvas& canvas) :
         canvas_(canvas),
+        depthTarget_(canvas),
         radius_(0.0),
         rotation_(0.0),
         rotationSpeed_(36.0),
@@ -375,7 +370,7 @@ ShadowPrivate::setup(map<string, Scene::Option>& options)
     float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
     projection_.perspective(fovy, aspect, 2.0, 50.0);
 
-    if (!depthTarget_.setup(canvas_.fbo(), canvas_.width(), canvas_.height())) {
+    if (!depthTarget_.setup()) {
         Log::error("Failed to set up the render target for the depth pass\n");
         return false;
     }
