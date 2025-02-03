@@ -25,6 +25,8 @@
 
 #include "canvas.h"
 
+#include <vector>
+
 class GLState;
 class NativeState;
 
@@ -39,8 +41,7 @@ public:
         : Canvas(width, height),
           native_state_(native_state), gl_state_(gl_state), native_window_(0),
           gl_color_format_(0), gl_depth_format_(0),
-          color_renderbuffer_(0), depth_renderbuffer_(0), fbo_(0),
-          window_initialized_(false) {}
+          current_fbo_index_(0), window_initialized_(false) {}
     ~CanvasGeneric();
 
     bool init();
@@ -64,14 +65,21 @@ private:
     void release_fbo();
     const char *get_gl_format_str(GLenum f);
 
+    struct FBO {
+        FBO(GLsizei width, GLsizei height, GLuint color_format, GLuint depth_format);
+        ~FBO();
+        GLuint color_renderbuffer;
+        GLuint depth_renderbuffer;
+        GLuint fbo;
+    };
+
     NativeState& native_state_;
     GLState& gl_state_;
     void* native_window_;
     GLenum gl_color_format_;
     GLenum gl_depth_format_;
-    GLuint color_renderbuffer_;
-    GLuint depth_renderbuffer_;
-    GLuint fbo_;
+    std::vector<FBO> fbos_;
+    int current_fbo_index_;
     bool window_initialized_;
 };
 

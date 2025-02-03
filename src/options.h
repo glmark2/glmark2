@@ -74,7 +74,7 @@ struct Options {
     static bool reuse_context;
     static bool run_forever;
     static bool annotate;
-    static bool offscreen;
+    static unsigned int offscreen;
     static GLVisualConfig visual_config;
     static bool good_config;
     static Results results;

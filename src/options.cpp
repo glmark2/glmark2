@@ -43,7 +43,7 @@ bool Options::show_help = false;
 bool Options::reuse_context = false;
 bool Options::run_forever = false;
 bool Options::annotate = false;
-bool Options::offscreen = false;
+unsigned int Options::offscreen = 0;
 GLVisualConfig Options::visual_config;
 bool Options::good_config = false;
 Options::Results Options::results = Options::ResultsFps;
@@ -59,7 +59,7 @@ static struct option long_options[] = {
     {"data-path", 1, 0, 0},
     {"frame-end", 1, 0, 0},
     {"swap-mode", 1, 0, 0},
-    {"off-screen", 0, 0, 0},
+    {"off-screen", 2, 0, 0},
     {"visual-config", 1, 0, 0},
     {"good-config", 0, 0, 0},
     {"reuse-context", 0, 0, 0},
@@ -191,6 +191,27 @@ winsys_options_from_str(std::string const& str)
     return ret;
 }
 
+unsigned int
+offscreen_from_str(std::string const& str)
+{
+    int ret = 0;
+    try
+    {
+        ret = std::stol(str);
+        if (ret < 0) throw std::runtime_error{""};
+    }
+    catch (...)
+    {
+        throw std::runtime_error{"Invalid offscreen option value '" + str + "'"};
+    }
+
+    /* Don't allow too many offscreen buffers to avoid exhausting memory. */
+    if (ret > 10)
+        throw std::runtime_error{"Too large offscreen option value '" + str + "'"};
+
+    return ret;
+}
+
 void
 Options::print_help()
 {
@@ -210,7 +231,8 @@ Options::print_help()
            "      --swap-mode MODE   How to swap a frame, all modes supported only in the DRM\n"
            "                         flavor, 'fifo' available in all flavors to force vsync\n"
            "                         [default,immediate,mailbox,fifo]\n"
-           "      --off-screen       Render to an off-screen surface\n"
+           "      --off-screen(=NUM) Render to an off-screen surface, cycling between NUM\n"
+           "                         buffers (default: 3)\n"
            "      --visual-config C  The visual configuration to use for the rendering\n"
            "                         target: 'id=ID:red=R:green=G:blue=B:alpha=A:buffer=BUF:\n"
            "                         stencil=STENCIL:samples=SAMPLES'. The parameters may be\n"
@@ -282,7 +304,7 @@ Options::parse_args(int argc, char **argv)
         else if (!strcmp(optname, "swap-mode"))
             Options::swap_mode = swap_mode_from_str(optarg);
         else if (!strcmp(optname, "off-screen"))
-            Options::offscreen = true;
+            Options::offscreen = optarg ? offscreen_from_str(optarg) : 3;
         else if (!strcmp(optname, "visual-config"))
             Options::visual_config = GLVisualConfig(optarg);
         else if (!strcmp(optname, "good-config"))

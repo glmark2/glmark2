@@ -238,7 +238,7 @@ public:
      *
      * This takes effect after the next init()/reset().
      */
-    void offscreen(bool offscreen) { offscreen_ = offscreen; }
+    void offscreen(unsigned int offscreen) { offscreen_ = offscreen; }
 
     /**
      * Sets the preferred visual configuration.
@@ -249,12 +249,12 @@ public:
 
 protected:
     Canvas(int width, int height) :
-        width_(width), height_(height), offscreen_(false) {}
+        width_(width), height_(height), offscreen_(0) {}
 
     int width_;
     int height_;
     LibMatrix::mat4 projection_;
-    bool offscreen_;
+    unsigned int offscreen_;
     GLVisualConfig visual_config_;
 };
 
