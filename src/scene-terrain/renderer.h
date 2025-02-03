@@ -132,12 +132,12 @@ protected:
     void update_texture_parameters();
     void create_fbo(bool has_depth);
 
+    Canvas *canvas_;
     LibMatrix::vec2 size_;
     GLuint texture_;
     GLuint input_texture_;
     GLuint fbo_;
     GLuint depth_renderbuffer_;
-    bool owns_fbo_;
     GLint min_filter_;
     GLint mag_filter_;
     GLint wrap_s_;

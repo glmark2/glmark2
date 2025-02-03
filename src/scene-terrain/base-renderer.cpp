@@ -23,7 +23,7 @@
 
 BaseRenderer::BaseRenderer() :
     texture_(0), input_texture_(0), fbo_(0), depth_renderbuffer_(0),
-    owns_fbo_(false), min_filter_(GL_LINEAR), mag_filter_(GL_LINEAR),
+    min_filter_(GL_LINEAR), mag_filter_(GL_LINEAR),
     wrap_s_(GL_CLAMP_TO_EDGE), wrap_t_(GL_CLAMP_TO_EDGE)
 {
 }
@@ -32,7 +32,7 @@ BaseRenderer::~BaseRenderer()
 {
     glDeleteTextures(1, &texture_);
     GLExtensions::DeleteRenderbuffers(1, &depth_renderbuffer_);
-    if (owns_fbo_)
+    if (fbo_)
         GLExtensions::DeleteFramebuffers(1, &fbo_);
 }
 
@@ -64,9 +64,13 @@ BaseRenderer::setup_texture(GLint min_filter, GLint mag_filter,
 void
 BaseRenderer::make_current()
 {
-    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    if (canvas_)
+        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_->fbo());
+    else
+        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
     glViewport(0, 0, size_.x(), size_.y());
-    if (!owns_fbo_ || depth_renderbuffer_) {
+    if (canvas_ || depth_renderbuffer_) {
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
     }
@@ -93,20 +97,17 @@ BaseRenderer::recreate(Canvas* canvas, bool has_depth)
         glDeleteTextures(1, &texture_);
         texture_ = 0;
     }
-    if (owns_fbo_ && fbo_) {
+    if (fbo_) {
         GLExtensions::DeleteRenderbuffers(1, &depth_renderbuffer_);
         depth_renderbuffer_ = 0;
         GLExtensions::DeleteFramebuffers(1, &fbo_);
         fbo_ = 0;
     }
+    canvas_ = canvas;
 
-    if (canvas) {
-        fbo_ = canvas->fbo();
-        owns_fbo_ = false;
-    } else {
+    if (!canvas_) {
         create_texture();
         create_fbo(has_depth);
-        owns_fbo_ = true;
     }
 }
 

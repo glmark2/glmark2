@@ -39,18 +39,15 @@ class DistanceRenderTarget
         DEPTH = 0,
         COLOR
     };
+    Canvas& canvas_;
     Program program_;
-    unsigned int canvas_width_;
-    unsigned int canvas_height_;
     unsigned int width_;
     unsigned int height_;
     unsigned int tex_[2];
     unsigned int fbo_;
-    unsigned int canvas_fbo_;
 public:
-    DistanceRenderTarget() :
-        canvas_width_(0),
-        canvas_height_(0),
+    DistanceRenderTarget(Canvas& canvas) :
+        canvas_(canvas),
         width_(0),
         height_(0),
         fbo_(0)
@@ -58,7 +55,7 @@ public:
         tex_[DEPTH] = tex_[COLOR] = 0;
     }
     ~DistanceRenderTarget() {}
-    bool setup(unsigned int canvas_fbo, unsigned int width, unsigned int height);
+    bool setup();
     void teardown();
     void enable(const LibMatrix::mat4& mvp);
     void disable();
@@ -89,6 +86,7 @@ class RefractPrivate
 public:
     RefractPrivate(Canvas& canvas) :
         canvas_(canvas),
+        depthTarget_(canvas),
         orientModel_(false),
         orientationAngle_(0.0),
         radius_(0.0),
