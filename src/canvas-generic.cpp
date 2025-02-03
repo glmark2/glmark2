@@ -37,7 +37,6 @@
 
 CanvasGeneric::~CanvasGeneric()
 {
-    release_fbo();
 }
 
 bool
@@ -131,6 +130,11 @@ CanvasGeneric::update()
         default:
             break;
     }
+
+    if (offscreen_) {
+        current_fbo_index_ = (current_fbo_index_ + 1) % fbos_.size();
+        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbos_[current_fbo_index_].fbo);
+    }
 }
 
 void
@@ -220,7 +224,7 @@ CanvasGeneric::resize(int width, int height)
 unsigned int
 CanvasGeneric::fbo()
 {
-    return fbo_;
+    return fbos_.empty() ? 0 : fbos_[current_fbo_index_].fbo;
 }
 
 
@@ -292,16 +296,11 @@ CanvasGeneric::resize_no_viewport(int width, int height)
     width_ = cur_properties.width;
     height_ = cur_properties.height;
 
-    if (color_renderbuffer_) {
-        GLExtensions::BindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer_);
-        GLExtensions::RenderbufferStorage(GL_RENDERBUFFER, gl_color_format_,
-                                          width_, height_);
-    }
-
-    if (depth_renderbuffer_) {
-        GLExtensions::BindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
-        GLExtensions::RenderbufferStorage(GL_RENDERBUFFER, gl_depth_format_,
-                                          width_, height_);
+    if (!fbos_.empty())
+    {
+        // Clear FBOs so that they are recreated (if needed) with the correct size
+        fbos_.clear();
+        ensure_fbo();
     }
 
     projection_ = LibMatrix::Mat4::perspective(60.0, width_ / static_cast<float>(height_),
@@ -338,7 +337,7 @@ CanvasGeneric::do_make_current()
         if (!ensure_fbo())
             return false;
 
-        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbos_[current_fbo_index_].fbo);
     }
 
     return true;
@@ -429,29 +428,18 @@ CanvasGeneric::ensure_gl_formats()
 bool
 CanvasGeneric::ensure_fbo()
 {
-    if (!fbo_) {
+    if (fbos_.size() != offscreen_) {
+        fbos_.clear();
+
         if (!ensure_gl_formats())
             return false;
 
-        /* Create a texture for the color attachment  */
-        GLExtensions::GenRenderbuffers(1, &color_renderbuffer_);
-        GLExtensions::BindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer_);
-        GLExtensions::RenderbufferStorage(GL_RENDERBUFFER, gl_color_format_,
-                                          width_, height_);
+        for (unsigned int i = 0; i < offscreen_; ++i) {
+            fbos_.emplace_back(width_, height_, gl_color_format_,
+                               gl_depth_format_);
+        }
 
-        /* Create a renderbuffer for the depth attachment */
-        GLExtensions::GenRenderbuffers(1, &depth_renderbuffer_);
-        GLExtensions::BindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
-        GLExtensions::RenderbufferStorage(GL_RENDERBUFFER, gl_depth_format_,
-                                          width_, height_);
-
-        /* Create a FBO and set it up */
-        GLExtensions::GenFramebuffers(1, &fbo_);
-        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
-        GLExtensions::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                              GL_RENDERBUFFER, color_renderbuffer_);
-        GLExtensions::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                                              GL_RENDERBUFFER, depth_renderbuffer_);
+        current_fbo_index_ = 0;
     }
 
     return true;
@@ -460,21 +448,10 @@ CanvasGeneric::ensure_fbo()
 void
 CanvasGeneric::release_fbo()
 {
-    if (fbo_) {
-        GLExtensions::DeleteFramebuffers(1, &fbo_);
-        fbo_ = 0;
-    }
-    if (color_renderbuffer_) {
-        GLExtensions::DeleteRenderbuffers(1, &color_renderbuffer_);
-        color_renderbuffer_ = 0;
-    }
-    if (depth_renderbuffer_) {
-        GLExtensions::DeleteRenderbuffers(1, &depth_renderbuffer_);
-        depth_renderbuffer_ = 0;
-    }
-
+    fbos_.clear();
     gl_color_format_ = 0;
     gl_depth_format_ = 0;
+    current_fbo_index_ = 0;
 }
 
 const char *
@@ -496,4 +473,37 @@ CanvasGeneric::get_gl_format_str(GLenum f)
     }
 
     return str;
+}
+
+CanvasGeneric::FBO::FBO(GLsizei width, GLsizei height, GLuint color_format,
+                        GLuint depth_format)
+{
+    GLExtensions::GenRenderbuffers(1, &color_renderbuffer);
+    GLExtensions::BindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer);
+    GLExtensions::RenderbufferStorage(GL_RENDERBUFFER, color_format,
+                                      width, height);
+
+    /* Create a renderbuffer for the depth attachment */
+    GLExtensions::GenRenderbuffers(1, &depth_renderbuffer);
+    GLExtensions::BindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer);
+    GLExtensions::RenderbufferStorage(GL_RENDERBUFFER, depth_format,
+                                      width, height);
+
+    /* Create a FBO and set it up */
+    GLExtensions::GenFramebuffers(1, &fbo);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo);
+    GLExtensions::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                          GL_RENDERBUFFER, color_renderbuffer);
+    GLExtensions::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                          GL_RENDERBUFFER, depth_renderbuffer);
+}
+
+CanvasGeneric::FBO::~FBO()
+{
+    if (fbo)
+        GLExtensions::DeleteFramebuffers(1, &fbo);
+    if (color_renderbuffer)
+        GLExtensions::DeleteRenderbuffers(1, &color_renderbuffer);
+    if (depth_renderbuffer)
+        GLExtensions::DeleteRenderbuffers(1, &depth_renderbuffer);
 }
