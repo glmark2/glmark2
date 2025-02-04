@@ -176,6 +176,17 @@ GLStateGLX::getVisualConfig(GLVisualConfig& vc)
     get_glvisualconfig_glx(glx_fbconfig_, vc);
 }
 
+bool GLStateGLX::supports_sync()
+{
+    return false;
+}
+
+std::unique_ptr<GLStateSync>
+GLStateGLX::sync()
+{
+    return nullptr;
+}
+
 /*******************
  * Private methods *
  *******************/

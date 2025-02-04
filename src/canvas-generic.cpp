@@ -109,7 +109,15 @@ CanvasGeneric::update()
     Options::FrameEnd m = Options::frame_end;
 
     if (m == Options::FrameEndDefault) {
-        if (offscreen_ || Options::validate)
+        if (offscreen_) {
+            if (gl_sync_supported_) {
+                fbo_syncs_[current_fbo_index_] = gl_state_.sync();
+                m = Options::FrameEndNone;
+            } else {
+                m = Options::FrameEndFinish;
+            }
+        }
+        else if (Options::validate)
             m = Options::FrameEndFinish;
         else
             m = Options::FrameEndSwap;
@@ -133,6 +141,10 @@ CanvasGeneric::update()
 
     if (offscreen_) {
         current_fbo_index_ = (current_fbo_index_ + 1) % fbos_.size();
+        if (fbo_syncs_[current_fbo_index_]) {
+            fbo_syncs_[current_fbo_index_]->wait();
+            fbo_syncs_[current_fbo_index_].reset();
+        }
         GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbos_[current_fbo_index_].fbo);
     }
 }
@@ -337,6 +349,14 @@ CanvasGeneric::do_make_current()
         if (!ensure_fbo())
             return false;
 
+        gl_sync_supported_ = gl_state_.supports_sync();
+        if (!gl_sync_supported_ && Options::frame_end == Options::FrameEndDefault) {
+            static bool warned = false;
+            if (!warned) {
+                Log::warning("Sync objects not supported, falling back to glFinish\n");
+                warned = true;
+            }
+        }
         GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbos_[current_fbo_index_].fbo);
     }
 
@@ -430,6 +450,7 @@ CanvasGeneric::ensure_fbo()
 {
     if (fbos_.size() != offscreen_) {
         fbos_.clear();
+        fbo_syncs_.clear();
 
         if (!ensure_gl_formats())
             return false;
@@ -438,6 +459,7 @@ CanvasGeneric::ensure_fbo()
             fbos_.emplace_back(width_, height_, gl_color_format_,
                                gl_depth_format_);
         }
+        fbo_syncs_.resize(offscreen_);
 
         current_fbo_index_ = 0;
     }
@@ -449,6 +471,7 @@ void
 CanvasGeneric::release_fbo()
 {
     fbos_.clear();
+    fbo_syncs_.clear();
     gl_color_format_ = 0;
     gl_depth_format_ = 0;
     current_fbo_index_ = 0;
