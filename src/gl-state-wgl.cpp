@@ -176,6 +176,17 @@ GLStateWGL::getVisualConfig(GLVisualConfig& vc)
     vc.stencil = 8;
 }
 
+bool GLStateWGL::supports_sync()
+{
+    return false;
+}
+
+std::unique_ptr<GLStateSync>
+GLStateWGL::sync()
+{
+    return nullptr;
+}
+
 /*******************
  * Private methods *
  *******************/

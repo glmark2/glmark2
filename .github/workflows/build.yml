@@ -18,7 +18,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install meson libdrm-dev libgbm-dev libudev-dev libwayland-dev wayland-protocols libx11-dev
     - name: Setup
-      run: meson setup build -Dflavors=x11-gl,x11-glesv2,x11-gl-egl,wayland-gl,wayland-glesv2,drm-gl,drm-glesv2
+      run: meson setup build -Dflavors=x11-gl,x11-glesv2,x11-gl-egl,wayland-gl,wayland-glesv2,drm-gl,drm-glesv2,null-gl,null-glesv2
     - name: Build
       run: ninja -C build
     - name: Install
@@ -64,6 +64,21 @@ jobs:
         sudo apt-get install meson libx11-dev
     - name: Setup
       run: meson setup build -Dflavors=x11-gl,x11-glesv2,x11-gl-egl
+    - name: Build
+      run: ninja -C build
+    - name: Install
+      run: DESTDIR=/tmp/glmark2-install ninja -C build install
+
+  build-meson-only-null:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install meson
+    - name: Setup
+      run: meson setup build -Dflavors=null-gl,null-glesv2
     - name: Build
       run: ninja -C build
     - name: Install

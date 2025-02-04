@@ -1,3 +1,6 @@
+/**
+ * SPDX-License-Identifier: (WTFPL OR CC0-1.0) AND Apache-2.0
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,6 +33,7 @@ int GLAD_EGL_EXT_platform_base = 0;
 int GLAD_EGL_KHR_platform_gbm = 0;
 int GLAD_EGL_KHR_platform_wayland = 0;
 int GLAD_EGL_KHR_platform_x11 = 0;
+int GLAD_EGL_MESA_platform_surfaceless = 0;
 
 
 
@@ -188,6 +192,7 @@ static int glad_egl_find_extensions_egl(EGLDisplay display) {
     GLAD_EGL_KHR_platform_gbm = glad_egl_has_extension(extensions, "EGL_KHR_platform_gbm");
     GLAD_EGL_KHR_platform_wayland = glad_egl_has_extension(extensions, "EGL_KHR_platform_wayland");
     GLAD_EGL_KHR_platform_x11 = glad_egl_has_extension(extensions, "EGL_KHR_platform_x11");
+    GLAD_EGL_MESA_platform_surfaceless = glad_egl_has_extension(extensions, "EGL_MESA_platform_surfaceless");
 
     return 1;
 }
@@ -251,6 +256,7 @@ int gladLoadEGLUserPtr(EGLDisplay display, GLADuserptrloadfunc load, void* userp
 
     if (!glad_egl_find_extensions_egl(display)) return 0;
     glad_egl_load_EGL_EXT_platform_base(load, userptr);
+
 
     return version;
 }

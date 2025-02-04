@@ -5,7 +5,7 @@ glmark2 uses the meson build system.
 
 To configure glmark2 use (with only the flavors you need):
 
-$ meson setup build -Dflavors=dispmanx-glesv2,drm-gl,drm-glesv2,wayland-gl,wayland-glesv2,x11-gl,x11-glesv2 [-Ddata-path=DATA_PATH --prefix=PREFIX]
+$ meson setup build -Dflavors=dispmanx-glesv2,drm-gl,drm-glesv2,null-gl,null-glesv2,wayland-gl,wayland-glesv2,x11-gl,x11-glesv2 [-Ddata-path=DATA_PATH --prefix=PREFIX]
 
 To build use:
 

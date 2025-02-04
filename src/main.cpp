@@ -47,6 +47,8 @@
 #include "native-state-dispmanx.h"
 #elif GLMARK2_USE_WIN32
 #include "native-state-win32.h"
+#elif GLMARK2_USE_NULL
+#include "native-state-null.h"
 #endif
 
 #if GLMARK2_USE_EGL
@@ -170,6 +172,8 @@ main(int argc, char *argv[])
     NativeStateDispmanx native_state;
 #elif GLMARK2_USE_WIN32
     NativeStateWin32 native_state;
+#elif GLMARK2_USE_NULL
+    NativeStateNull native_state;
 #endif
 
     if (!Options::parse_args(argc, argv))
@@ -202,6 +206,14 @@ main(int argc, char *argv[])
         Options::size = std::pair<int,int>(800, 600);
     }
 
+#if GLMARK2_USE_NULL
+    if (!Options::offscreen)
+    {
+        Log::error("null native system requires --off-screen option\n");
+        return 1;
+    }
+#endif
+
     // Create the canvas
 #if GLMARK2_USE_EGL
     GLStateEGL gl_state;
@@ -209,6 +221,8 @@ main(int argc, char *argv[])
     GLStateGLX gl_state;
 #elif GLMARK2_USE_WGL
     GLStateWGL gl_state;
+#elif GLMARK2_USE_FBO
+    GLStateFBO gl_state;
 #endif
 
     CanvasGeneric canvas(native_state, gl_state, Options::size.first, Options::size.second);

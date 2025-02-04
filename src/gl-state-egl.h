@@ -155,6 +155,8 @@ public:
     // Performs a config search, returning a native visual ID on success
     bool gotNativeConfig(intptr_t& vid);
     void getVisualConfig(GLVisualConfig& vc);
+    bool supports_sync();
+    std::unique_ptr<GLStateSync> sync();
 };
 
 #endif // GLMARK2_GL_STATE_EGL_H_

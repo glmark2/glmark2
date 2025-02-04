@@ -162,7 +162,7 @@ SceneRefract::validate()
 //
 
 bool
-DistanceRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigned int height)
+DistanceRenderTarget::setup()
 {
     static const string vtx_shader_filename(Options::data_path + "/shaders/depth.vert");
     static const string frg_shader_filename(Options::data_path + "/shaders/depth.frag");
@@ -174,11 +174,8 @@ DistanceRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigne
         return false;
     }
 
-    canvas_width_ = width;
-    canvas_height_ = height;
-    width_ = canvas_width_ * 2;
-    height_ = canvas_height_ * 2;
-    canvas_fbo_ = canvas_fbo;
+    width_ = canvas_.width() * 2;
+    height_ = canvas_.height() * 2;
 
     // If the texture will be too large for the implemnetation, we need to
     // clamp the dimensions but maintain the aspect ratio.
@@ -186,11 +183,11 @@ DistanceRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigne
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &tex_size);
     unsigned int max_size = static_cast<unsigned int>(tex_size);
     if (max_size < width_ || max_size < height_) {
-        float aspect = static_cast<float>(width) / static_cast<float>(height);
+        float aspect = static_cast<float>(canvas_.width()) / static_cast<float>(canvas_.height());
         width_ = max_size;
         height_ = width_ / aspect;
         Log::debug("DistanceRenderTarget::setup: original texture size (%u x %u), clamped to (%u x %u)\n",
-            canvas_width_ * 2, canvas_height_ * 2, width_, height_);
+            canvas_.width() * 2, canvas_.height() * 2, width_, height_);
     }
 
     glGenTextures(2, &tex_[0]);
@@ -223,7 +220,7 @@ DistanceRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigne
         Log::error("DistanceRenderTarget::setup: glCheckFramebufferStatus failed (0x%x)\n", status);
         return false;
     }
-    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_.fbo());
 
     return true;
 }
@@ -260,8 +257,8 @@ DistanceRenderTarget::enable(const mat4& mvp)
 
 void DistanceRenderTarget::disable()
 {
-    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
-    glViewport(0, 0, canvas_width_, canvas_height_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_.fbo());
+    glViewport(0, 0, canvas_.width(), canvas_.height());
     glCullFace(GL_BACK);
 }
 
@@ -370,7 +367,7 @@ RefractPrivate::setup(map<string, Scene::Option>& options)
                                       0.0, 0.0, 0.0,
                                       0.0, 1.0, 0.0);
 
-    if (!depthTarget_.setup(canvas_.fbo(), canvas_.width(), canvas_.height())) {
+    if (!depthTarget_.setup()) {
         Log::error("Failed to set up the render target for the depth pass\n");
         return false;
     }

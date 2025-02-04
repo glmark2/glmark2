@@ -47,6 +47,8 @@ public:
     void swap();
     bool gotNativeConfig(intptr_t& vid);
     void getVisualConfig(GLVisualConfig& vc);
+    bool supports_sync();
+    std::unique_ptr<GLStateSync> sync();
 
 private:
     bool check_glx_version();
