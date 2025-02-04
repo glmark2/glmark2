@@ -479,6 +479,34 @@ GLStateEGL::getVisualConfig(GLVisualConfig& vc)
     get_glvisualconfig(egl_config_, vc);
 }
 
+struct GLStateSyncEGL : public GLStateSync
+{
+    GLStateSyncEGL(EGLDisplay display)
+        : display(display),
+          sync(eglCreateSync(display, EGL_SYNC_FENCE, NULL))
+    {
+    }
+    ~GLStateSyncEGL() override { eglDestroySync(display, sync); }
+    void wait() override
+    {
+        eglClientWaitSync(display, sync, EGL_SYNC_FLUSH_COMMANDS_BIT,
+                          EGL_FOREVER);
+    }
+    EGLDisplay display;
+    EGLSync sync;
+};
+
+bool GLStateEGL::supports_sync()
+{
+    return eglCreateSync && eglClientWaitSync && eglDestroySync;
+}
+
+std::unique_ptr<GLStateSync>
+GLStateEGL::sync()
+{
+    return std::make_unique<GLStateSyncEGL>(egl_display_);
+}
+
 /******************************
  * GLStateEGL private methods *
  *****************************/

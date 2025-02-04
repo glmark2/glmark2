@@ -23,8 +23,16 @@
 #define GLMARK2_GL_STATE_H_
 
 #include <stdint.h>
+#include <memory>
 
 class GLVisualConfig;
+
+class GLStateSync
+{
+public:
+    virtual ~GLStateSync() = default;
+    virtual void wait() = 0;
+};
 
 class GLState
 {
@@ -39,6 +47,8 @@ public:
     virtual void swap() = 0;
     virtual bool gotNativeConfig(intptr_t& vid) = 0;
     virtual void getVisualConfig(GLVisualConfig& vc) = 0;
+    virtual bool supports_sync() = 0;
+    virtual std::unique_ptr<GLStateSync> sync() = 0;
 };
 
 #endif /* GLMARK2_GL_STATE_H_ */
