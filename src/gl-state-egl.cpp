@@ -410,10 +410,12 @@ GLStateEGL::valid()
         return false;
     }
 
+#if !GLMARK2_USE_NULL
     if (Options::swap_mode != Options::SwapModeFIFO &&
         (!eglSwapInterval || !eglSwapInterval(egl_display_, 0))) {
         Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
     }
+#endif
 
     if (!init_gl_extensions()) {
         return false;
@@ -517,6 +519,8 @@ GLStateEGL::sync()
 #define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_WAYLAND_KHR
 #elif  GLMARK2_USE_DRM
 #define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_GBM_KHR
+#elif  GLMARK2_USE_NULL
+#define GLMARK2_NATIVE_EGL_DISPLAY_ENUM EGL_PLATFORM_SURFACELESS_MESA
 #else
 // Platforms not in the above platform enums fall back to eglGetDisplay.
 #define GLMARK2_NATIVE_EGL_DISPLAY_ENUM 0
@@ -703,6 +707,12 @@ GLStateEGL::gotValidConfig()
 #elif GLMARK2_USE_GL
         EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
 #endif
+#if GLMARK2_USE_NULL
+        // For the null native system, which uses the surfaceless EGL platform,
+        // we request a pbuffer so that we get a valid config, although we
+        // are not actually going to use a pbuffer.
+        EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+#endif
         EGL_NONE
     };
 
@@ -771,6 +781,10 @@ GLStateEGL::gotValidConfig()
 bool
 GLStateEGL::gotValidSurface()
 {
+#if GLMARK2_USE_NULL
+    egl_surface_ = EGL_NO_SURFACE;
+    return true;
+#else
     if (egl_surface_)
         return true;
 
@@ -787,6 +801,7 @@ GLStateEGL::gotValidSurface()
     }
 
     return true;
+#endif
 }
 
 bool
