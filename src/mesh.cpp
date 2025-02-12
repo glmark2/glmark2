@@ -25,6 +25,7 @@
 #include "log.h"
 #include "gl-headers.h"
 
+#include <algorithm>
 
 Mesh::Mesh() :
     vertex_size_(0), interleave_(false), vbo_update_method_(VBOUpdateMethodMap),
