@@ -125,7 +125,7 @@ NativeStateGBM::create_window(WindowProperties const& properties)
 void*
 NativeStateGBM::window(WindowProperties& properties)
 {
-    properties = WindowProperties(width, height, true, 0);
+    properties = WindowProperties(width, height, true, 0, {});
     return static_cast<void*>(surface_);
 }
 

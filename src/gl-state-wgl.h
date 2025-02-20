@@ -38,7 +38,7 @@ public:
     bool valid();
     bool reset();
     void swap();
-    bool gotNativeConfig(intptr_t& vid);
+    bool gotNativeConfig(intptr_t& vid, std::vector<uint64_t>& mods);
     void getVisualConfig(GLVisualConfig& vc);
     bool supports_sync();
     std::unique_ptr<GLStateSync> sync();

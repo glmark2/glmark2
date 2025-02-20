@@ -153,7 +153,7 @@ public:
     bool reset();
     void swap();
     // Performs a config search, returning a native visual ID on success
-    bool gotNativeConfig(intptr_t& vid);
+    bool gotNativeConfig(intptr_t& vid, std::vector<uint64_t>& mods);
     void getVisualConfig(GLVisualConfig& vc);
     bool supports_sync();
     std::unique_ptr<GLStateSync> sync();

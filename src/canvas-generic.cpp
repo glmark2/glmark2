@@ -276,14 +276,15 @@ CanvasGeneric::resize_no_viewport(int width, int height)
     bool request_fullscreen = (width == -1 && height == -1);
 
     intptr_t vid;
-    if (!gl_state_.gotNativeConfig(vid))
+    std::vector<uint64_t> mods;
+    if (!gl_state_.gotNativeConfig(vid, mods))
     {
         Log::error("Error: Couldn't get GL visual config!\n");
         return false;
     }
 
     NativeState::WindowProperties properties(width, height,
-                                             request_fullscreen, vid);
+                                             request_fullscreen, vid, mods);
     NativeState::WindowProperties cur_properties;
 
     native_state_.window(cur_properties);

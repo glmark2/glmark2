@@ -115,7 +115,7 @@ NativeStateDRM::window(WindowProperties& properties)
 {
     properties = WindowProperties(mode_->hdisplay,
                                   mode_->vdisplay,
-                                  true, 0);
+                                  true, 0, {});
     return static_cast<void*>(surface_);
 }
 

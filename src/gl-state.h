@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <vector>
 
 class GLVisualConfig;
 
@@ -45,7 +46,7 @@ public:
     virtual bool valid() = 0;
     virtual bool reset() = 0;
     virtual void swap() = 0;
-    virtual bool gotNativeConfig(intptr_t& vid) = 0;
+    virtual bool gotNativeConfig(intptr_t& vid, std::vector<uint64_t>& mods) = 0;
     virtual void getVisualConfig(GLVisualConfig& vc) = 0;
     virtual bool supports_sync() = 0;
     virtual std::unique_ptr<GLStateSync> sync() = 0;

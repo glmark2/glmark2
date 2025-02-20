@@ -151,7 +151,7 @@ GLStateGLX::swap()
 }
 
 bool
-GLStateGLX::gotNativeConfig(intptr_t& vid)
+GLStateGLX::gotNativeConfig(intptr_t& vid, std::vector<uint64_t>& mods)
 {
     if (!ensure_glx_fbconfig())
         return false;

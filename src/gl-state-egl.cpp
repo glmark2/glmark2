@@ -455,7 +455,7 @@ GLStateEGL::swap()
 }
 
 bool
-GLStateEGL::gotNativeConfig(intptr_t& vid)
+GLStateEGL::gotNativeConfig(intptr_t& vid, std::vector<uint64_t>& mods)
 {
     if (!gotValidConfig())
         return false;

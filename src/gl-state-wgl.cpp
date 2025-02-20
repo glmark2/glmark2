@@ -158,7 +158,7 @@ GLStateWGL::swap()
 }
 
 bool
-GLStateWGL::gotNativeConfig(intptr_t& vid)
+GLStateWGL::gotNativeConfig(intptr_t& vid, std::vector<uint64_t>& mods)
 {
     vid = 1;
     return true;
