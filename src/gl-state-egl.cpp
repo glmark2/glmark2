@@ -32,10 +32,22 @@
 using std::vector;
 using std::string;
 
-GLADapiproc load_egl_func(void *userdata, const char *name)
+namespace
 {
+
+GLADapiproc load_proc(void *userdata, const char *name)
+{
+    if (eglGetProcAddress) {
+        GLADapiproc sym = reinterpret_cast<GLADapiproc>(eglGetProcAddress(name));
+        if (sym) {
+            return sym;
+        }
+    }
+
     SharedLibrary *lib = reinterpret_cast<SharedLibrary *>(userdata);
     return reinterpret_cast<GLADapiproc>(lib->load(name));
+}
+
 }
 
 /****************************
@@ -341,7 +353,7 @@ bool
 GLStateEGL::init_gl_extensions()
 {
 #if GLMARK2_USE_GLESv2
-    if (!gladLoadGLES2UserPtr(load_proc, this)) {
+    if (!gladLoadGLES2UserPtr(load_proc, &gl_lib_)) {
         Log::error("Loading GLESv2 entry points failed.\n");
         return false;
     }
@@ -363,7 +375,7 @@ GLStateEGL::init_gl_extensions()
 
     GLExtensions::GenerateMipmap = glGenerateMipmap;
 #elif GLMARK2_USE_GL
-    if (!gladLoadGLUserPtr(load_proc, this)) {
+    if (!gladLoadGLUserPtr(load_proc, &gl_lib_)) {
         Log::error("Loading GL entry points failed.\n");
         return false;
     }
@@ -597,8 +609,8 @@ GLStateEGL::gotValidDisplay()
         return false;
     }
 
-    /* Reinitialize GLAD with a known display */
-    if (gladLoadEGLUserPtr(egl_display_, load_egl_func, &egl_lib_) == 0) {
+    /* Initialize GLAD with a known display */
+    if (gladLoadEGLUserPtr(egl_display_, load_proc, &egl_lib_) == 0) {
         Log::error("Loading EGL entry points failed\n");
         return false;
     }
@@ -832,18 +844,4 @@ GLStateEGL::gotValidContext()
     }
 
     return true;
-}
-
-GLADapiproc
-GLStateEGL::load_proc(void *userptr, const char* name)
-{
-    if (eglGetProcAddress) {
-        GLADapiproc sym = reinterpret_cast<GLADapiproc>(eglGetProcAddress(name));
-        if (sym) {
-            return sym;
-        }
-    }
-
-    GLStateEGL* state = reinterpret_cast<GLStateEGL*>(userptr);
-    return reinterpret_cast<GLADapiproc>(state->gl_lib_.load(name));
 }
