@@ -100,10 +100,18 @@ else
 endif
 
 if need_drm
+    if cpp.has_function('gbm_surface_create_with_modifiers2', dependencies: gbm_dep)
+        gbm_mods2_dep = declare_dependency(
+            compile_args: ['-DHAVE_GBM_SURFACE_CREATE_WITH_MODIFIERS2']
+            )
+    else
+        gbm_mods2_dep = declare_dependency()
+    endif
     native_drm_lib = static_library(
         'native-drm',
         'native-state-drm.cpp',
-        dependencies: [libdrm_dep, libudev_dep, gbm_dep, libmatrix_headers_dep],
+        dependencies: [libdrm_dep, libudev_dep, gbm_dep, libmatrix_headers_dep,
+                       gbm_mods2_dep],
         )
     native_drm_dep = declare_dependency(
         link_with: native_drm_lib,

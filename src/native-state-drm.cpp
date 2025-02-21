@@ -26,11 +26,15 @@
 #include "log.h"
 #include "options.h"
 
+#include <drm_fourcc.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <libudev.h>
 #include <cstring>
 #include <string>
+#include <memory>
+#include <optional>
+#include <algorithm>
 
 /******************
  * Public methods *
@@ -52,6 +56,82 @@ std::string get_drm_device_option()
     }
 
     return drm_device;
+}
+
+std::optional<uint64_t> drm_props_get_value(int drm_fd, drmModeObjectProperties *props,
+                                            char const* name)
+{
+    for (uint32_t i = 0; i < props->count_props; ++i)
+    {
+        auto const prop =
+            std::unique_ptr<drmModePropertyRes, decltype(&drmModeFreeProperty)>{
+                drmModeGetProperty(drm_fd, props->props[i]),
+                drmModeFreeProperty};
+        if (!prop) continue;
+        if (!strcmp(prop->name, name))
+            return {props->prop_values[i]};
+    }
+
+    return std::nullopt;
+}
+
+std::vector<uint64_t> drm_get_supported_mods_for_format(int drm_fd, uint32_t format,
+                                                        uint32_t crtc_index)
+{
+    std::vector<uint64_t> supported_mods;
+    auto const res =
+        std::unique_ptr<drmModePlaneRes, decltype(&drmModeFreePlaneResources)>{
+            drmModeGetPlaneResources(drm_fd),
+            drmModeFreePlaneResources};
+    if (!res)
+        return {};
+
+    for (uint32_t i = 0; i < res->count_planes; ++i)
+    {
+        auto const plane = std::unique_ptr<drmModePlane, decltype(&drmModeFreePlane)>{
+            drmModeGetPlane(drm_fd, res->planes[i]),
+            drmModeFreePlane};
+        if (!plane || !(plane->possible_crtcs & (1 << crtc_index)))
+            continue;
+        auto const props =
+            std::unique_ptr<drmModeObjectProperties, decltype(&drmModeFreeObjectProperties)>{
+                drmModeObjectGetProperties(drm_fd, res->planes[i], DRM_MODE_OBJECT_PLANE),
+                drmModeFreeObjectProperties};
+        if (!props)
+            continue;
+        auto const type = drm_props_get_value(drm_fd, props.get(), "type").value_or(0);
+        if (type != DRM_PLANE_TYPE_PRIMARY)
+            continue;
+        auto const blob_id = drm_props_get_value(drm_fd, props.get(), "IN_FORMATS").value_or(0);
+        if (!blob_id)
+            continue;
+        auto const blob =
+            std::unique_ptr<drmModePropertyBlobRes, decltype(&drmModeFreePropertyBlob)>{
+                drmModeGetPropertyBlob(drm_fd, blob_id),
+                drmModeFreePropertyBlob};
+        if (!blob)
+            continue;
+
+        auto const data = static_cast<struct drm_format_modifier_blob*>(blob->data);
+        auto const fmts = reinterpret_cast<uint32_t*>(
+            reinterpret_cast<char*>(data) + data->formats_offset);
+        auto const mods = reinterpret_cast<struct drm_format_modifier*>(
+            reinterpret_cast<char*>(data) + data->modifiers_offset);
+        auto const fmt_p = std::find(fmts, fmts + data->count_formats, format);
+        if (fmt_p == fmts + data->count_formats)
+            continue;
+        auto const fmt_mask = 1 << (fmt_p - fmts);
+
+        for (uint32_t m = 0; m < data->count_modifiers; ++m)
+        {
+            if (mods[m].formats & fmt_mask)
+                supported_mods.push_back(mods[m].modifier);
+        }
+
+        break;
+    }
+
+    return supported_mods;
 }
 
 }
@@ -98,14 +178,51 @@ NativeStateDRM::create_window(WindowProperties const& properties)
         return false;
     }
 
+    auto const crtc_index =
+        std::distance(
+            resources_->crtcs,
+            std::find(resources_->crtcs, resources_->crtcs + resources_->count_crtcs,
+                crtc_->crtc_id));
     /* egl config's native visual id is drm fourcc */
-    surface_ = gbm_surface_create(dev_, mode_->hdisplay, mode_->vdisplay,
-                                  properties.visual_id,
-                                  GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+    uint32_t format = properties.visual_id;
+    auto drm_mods = drm_get_supported_mods_for_format(fd_, format, crtc_index);
+    auto gl_mods = properties.modifiers;
+    std::vector<uint64_t> mods;
+
+    // Find the modifiers supported by both DRM and GL
+    for (auto mod : drm_mods)
+    {
+        if (std::find(gl_mods.begin(), gl_mods.end(), mod) != gl_mods.end())
+            mods.push_back(mod);
+    }
+
+    if (mods.empty() || (mods.size() == 1 && mods[0] == DRM_FORMAT_MOD_INVALID))
+    {
+        surface_ = gbm_surface_create(
+            dev_, mode_->hdisplay, mode_->vdisplay,
+            format, GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+    }
+    else
+    {
+#if HAVE_GBM_SURFACE_CREATE_WITH_MODIFIERS2
+        surface_ = gbm_surface_create_with_modifiers2(
+            dev_, mode_->hdisplay, mode_->vdisplay,
+            format, mods.data(), mods.size(),
+            GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+#else
+        surface_ = gbm_surface_create_with_modifiers(
+                dev_, mode_->hdisplay, mode_->vdisplay,
+                format, mods.data(), mods.size());
+#endif
+    }
+
     if (!surface_) {
         Log::error("Failed to create GBM surface\n");
         return false;
     }
+
+    Log::debug("Created gbm_surface with format=0x%x and %s modifiers\n",
+               format, mods.empty() ? "implicit" : "explicit");
 
     return true;
 }
@@ -578,6 +695,8 @@ NativeStateDRM::init()
     }
 
     fd_ = fd;
+
+    drmSetClientCap(fd_, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
 
     resources_ = drmModeGetResources(fd);
     if (!resources_) {
