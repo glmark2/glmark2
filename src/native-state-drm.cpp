@@ -620,24 +620,34 @@ NativeStateDRM::fb_get_from_bo(gbm_bo* bo)
     unsigned int width = gbm_bo_get_width(bo);
     unsigned int height = gbm_bo_get_height(bo);
     unsigned int handles[4] = { 0, }, strides[4] = { 0, }, offsets[4] = { 0, };
+    uint64_t modifiers[4] = {0};
     unsigned int format = gbm_bo_get_format(bo);
+    uint64_t modifier = gbm_bo_get_modifier(bo);
     unsigned int fb_id(0);
+    uint64_t addfb2_mods = 0;
     int status;
 
-#ifdef GBM_HAS_PLANES
-    int i;
-    for (i = 0; i < gbm_bo_get_plane_count(bo); i++) {
+    drmGetCap(fd_, DRM_CAP_ADDFB2_MODIFIERS, &addfb2_mods);
+
+    for (int i = 0; i < gbm_bo_get_plane_count(bo); i++) {
         handles[i] = gbm_bo_get_handle_for_plane(bo, i).u32;
         strides[i] = gbm_bo_get_stride_for_plane(bo, i);
         offsets[i] = gbm_bo_get_offset(bo, i);
+        modifiers[i] = modifier;
     }
-#else
-    handles[0] = gbm_bo_get_handle(bo).u32;
-    strides[0] = gbm_bo_get_stride(bo);
-#endif
 
-    status = drmModeAddFB2(fd_, width, height, format, handles,
-                           strides, offsets, &fb_id, 0);
+    if (addfb2_mods && modifier != DRM_FORMAT_MOD_INVALID)
+    {
+        status =
+            drmModeAddFB2WithModifiers(fd_, width, height, format, handles,
+                                       strides, offsets, modifiers,
+                                       &fb_id, DRM_MODE_FB_MODIFIERS);
+    }
+    else
+    {
+        status = drmModeAddFB2(fd_, width, height, format, handles,
+                               strides, offsets, &fb_id, 0);
+    }
     if (status < 0) {
         Log::error("Failed to create FB: %d\n", status);
         return 0;
