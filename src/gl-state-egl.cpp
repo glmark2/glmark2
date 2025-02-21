@@ -480,6 +480,23 @@ GLStateEGL::gotNativeConfig(intptr_t& vid, std::vector<uint64_t>& mods)
         return false;
     }
 
+    if (eglQueryDmaBufModifiersEXT)
+    {
+        EGLint num_mods = 0;
+        if (eglQueryDmaBufModifiersEXT(egl_display_, native_id, 0, nullptr,
+                                       nullptr, &num_mods) &&
+            num_mods > 0)
+        {
+            mods.resize(num_mods);
+            if (!eglQueryDmaBufModifiersEXT(egl_display_, native_id, mods.size(),
+                                            mods.data(), nullptr, &num_mods) ||
+                num_mods <= 0)
+            {
+                mods.clear();
+            }
+        }
+    }
+
     vid = native_id;
     return true;
 }
