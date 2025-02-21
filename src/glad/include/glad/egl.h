@@ -5,7 +5,7 @@
  *
  * Generator: C/C++
  * Specification: egl
- * Extensions: 5
+ * Extensions: 6
  *
  * APIs:
  *  - egl=1.5
@@ -19,10 +19,10 @@
  *  - ON_DEMAND = False
  *
  * Commandline:
- *    --api='egl=1.5' --extensions='EGL_EXT_platform_base,EGL_KHR_platform_gbm,EGL_KHR_platform_wayland,EGL_KHR_platform_x11,EGL_MESA_platform_surfaceless' c
+ *    --api='egl=1.5' --extensions='EGL_EXT_image_dma_buf_import_modifiers,EGL_EXT_platform_base,EGL_KHR_platform_gbm,EGL_KHR_platform_wayland,EGL_KHR_platform_x11,EGL_MESA_platform_surfaceless' c
  *
  * Online:
- *    http://glad.sh/#api=egl%3D1.5&extensions=EGL_EXT_platform_base%2CEGL_KHR_platform_gbm%2CEGL_KHR_platform_wayland%2CEGL_KHR_platform_x11%2CEGL_MESA_platform_surfaceless&generator=c&options=
+ *    http://glad.sh/#api=egl%3D1.5&extensions=EGL_EXT_image_dma_buf_import_modifiers%2CEGL_EXT_platform_base%2CEGL_KHR_platform_gbm%2CEGL_KHR_platform_wayland%2CEGL_KHR_platform_x11%2CEGL_MESA_platform_surfaceless&generator=c&options=
  *
  */
 
@@ -202,6 +202,17 @@ typedef void (*GLADpostcallback)(void *ret, const char *name, GLADapiproc apipro
 #define EGL_DEFAULT_DISPLAY EGL_CAST(EGLNativeDisplayType,0)
 #define EGL_DEPTH_SIZE 0x3025
 #define EGL_DISPLAY_SCALING 10000
+#define EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT 0x3444
+#define EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT 0x3443
+#define EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT 0x3446
+#define EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT 0x3445
+#define EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT 0x3448
+#define EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT 0x3447
+#define EGL_DMA_BUF_PLANE3_FD_EXT 0x3440
+#define EGL_DMA_BUF_PLANE3_MODIFIER_HI_EXT 0x344A
+#define EGL_DMA_BUF_PLANE3_MODIFIER_LO_EXT 0x3449
+#define EGL_DMA_BUF_PLANE3_OFFSET_EXT 0x3441
+#define EGL_DMA_BUF_PLANE3_PITCH_EXT 0x3442
 #define EGL_DONT_CARE EGL_CAST(EGLint,-1)
 #define EGL_DRAW 0x3059
 #define EGL_EXTENSIONS 0x3055
@@ -398,6 +409,8 @@ GLAD_API_CALL int GLAD_EGL_VERSION_1_3;
 GLAD_API_CALL int GLAD_EGL_VERSION_1_4;
 #define EGL_VERSION_1_5 1
 GLAD_API_CALL int GLAD_EGL_VERSION_1_5;
+#define EGL_EXT_image_dma_buf_import_modifiers 1
+GLAD_API_CALL int GLAD_EGL_EXT_image_dma_buf_import_modifiers;
 #define EGL_EXT_platform_base 1
 GLAD_API_CALL int GLAD_EGL_EXT_platform_base;
 #define EGL_KHR_platform_gbm 1
@@ -445,6 +458,8 @@ typedef EGLBoolean (GLAD_API_PTR *PFNEGLINITIALIZEPROC)(EGLDisplay dpy, EGLint *
 typedef EGLBoolean (GLAD_API_PTR *PFNEGLMAKECURRENTPROC)(EGLDisplay dpy, EGLSurface draw, EGLSurface read, EGLContext ctx);
 typedef EGLenum (GLAD_API_PTR *PFNEGLQUERYAPIPROC)(void);
 typedef EGLBoolean (GLAD_API_PTR *PFNEGLQUERYCONTEXTPROC)(EGLDisplay dpy, EGLContext ctx, EGLint attribute, EGLint * value);
+typedef EGLBoolean (GLAD_API_PTR *PFNEGLQUERYDMABUFFORMATSEXTPROC)(EGLDisplay dpy, EGLint max_formats, EGLint * formats, EGLint * num_formats);
+typedef EGLBoolean (GLAD_API_PTR *PFNEGLQUERYDMABUFMODIFIERSEXTPROC)(EGLDisplay dpy, EGLint format, EGLint max_modifiers, EGLuint64KHR * modifiers, EGLBoolean * external_only, EGLint * num_modifiers);
 typedef const char * (GLAD_API_PTR *PFNEGLQUERYSTRINGPROC)(EGLDisplay dpy, EGLint name);
 typedef EGLBoolean (GLAD_API_PTR *PFNEGLQUERYSURFACEPROC)(EGLDisplay dpy, EGLSurface surface, EGLint attribute, EGLint * value);
 typedef EGLBoolean (GLAD_API_PTR *PFNEGLRELEASETEXIMAGEPROC)(EGLDisplay dpy, EGLSurface surface, EGLint buffer);
@@ -528,6 +543,10 @@ GLAD_API_CALL PFNEGLQUERYAPIPROC glad_eglQueryAPI;
 #define eglQueryAPI glad_eglQueryAPI
 GLAD_API_CALL PFNEGLQUERYCONTEXTPROC glad_eglQueryContext;
 #define eglQueryContext glad_eglQueryContext
+GLAD_API_CALL PFNEGLQUERYDMABUFFORMATSEXTPROC glad_eglQueryDmaBufFormatsEXT;
+#define eglQueryDmaBufFormatsEXT glad_eglQueryDmaBufFormatsEXT
+GLAD_API_CALL PFNEGLQUERYDMABUFMODIFIERSEXTPROC glad_eglQueryDmaBufModifiersEXT;
+#define eglQueryDmaBufModifiersEXT glad_eglQueryDmaBufModifiersEXT
 GLAD_API_CALL PFNEGLQUERYSTRINGPROC glad_eglQueryString;
 #define eglQueryString glad_eglQueryString
 GLAD_API_CALL PFNEGLQUERYSURFACEPROC glad_eglQuerySurface;
