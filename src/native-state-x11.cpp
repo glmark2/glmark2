@@ -29,6 +29,8 @@
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 
+#include <X11/extensions/Xrandr.h>
+
 /******************
  * Public methods *
  ******************/
@@ -102,6 +104,50 @@ NativeStateX11::display()
     return (void*)xdpy_;
 }
 
+static bool
+get_main_screen_resolution(Display* display, int& width, int& height)
+{
+    int screen = DefaultScreen(display);
+    Window root = RootWindow(display, screen);
+
+    XRRScreenResources* screen_resources = XRRGetScreenResources(display, root);
+    if (!screen_resources) {
+        Log::error("Error: Unable to get screen resources.\n");
+        return false;
+    }
+
+    RROutput primary_output = XRRGetOutputPrimary(display, root);
+    if (primary_output == None) {
+        Log::error("Error: Unable to get primary output.\n");
+        XRRFreeScreenResources(screen_resources);
+        return false;
+    }
+
+    XRROutputInfo* output_info = XRRGetOutputInfo(display, screen_resources, primary_output);
+    if (!output_info) {
+        Log::error("Error: Unable to get output info for primary output.\n");
+        XRRFreeScreenResources(screen_resources);
+        return false;
+    }
+
+    XRRCrtcInfo* crtc_info = XRRGetCrtcInfo(display, screen_resources, output_info->crtc);
+    if (!crtc_info) {
+        Log::error("Error: Unable to get CRTC info for the primary output.\n");
+        XRRFreeOutputInfo(output_info);
+        XRRFreeScreenResources(screen_resources);
+        return false;
+    }
+
+    width = crtc_info->width;
+    height = crtc_info->height;
+
+    XRRFreeCrtcInfo(crtc_info);
+    XRRFreeOutputInfo(output_info);
+    XRRFreeScreenResources(screen_resources);
+
+    return true;
+}
+
 bool
 NativeStateX11::create_window(WindowProperties const& properties)
 {
@@ -137,11 +183,11 @@ NativeStateX11::create_window(WindowProperties const& properties)
 
     if (properties_.fullscreen) {
         /* Get the screen (root window) size */
-        XWindowAttributes window_attr;
-        XGetWindowAttributes(xdpy_, RootWindow(xdpy_, DefaultScreen(xdpy_)), 
-                             &window_attr);
-        properties_.width = window_attr.width;
-        properties_.height = window_attr.height;
+        int width, height;
+        if (get_main_screen_resolution(xdpy_, width, height)) {
+            properties_.width = width;
+            properties_.height = height;
+        }
     }
     else {
         properties_.width = properties.width;
@@ -155,7 +201,7 @@ NativeStateX11::create_window(WindowProperties const& properties)
     /* The X window visual must match the supplied visual id */
     vis_tmpl.visualid = properties_.visual_id;
     vis_info = XGetVisualInfo(xdpy_, VisualIDMask, &vis_tmpl,
-                             &num_visuals);
+                              &num_visuals);
     if (!vis_info) {
         Log::error("Error: Could not get a valid XVisualInfo!\n");
         return false;
