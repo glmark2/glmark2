@@ -678,6 +678,10 @@ bool
 NativeStateDRM::init()
 {
     int fd = -1;
+    unsigned int maxArea = 0;
+    unsigned int minArea = INT32_MAX;
+    unsigned int maxMode = 0;
+    unsigned int minMode = 0;
     std::string drm_device = get_drm_device_option();
 
     if (valid_drm_node_path(drm_device)) {
@@ -729,14 +733,41 @@ NativeStateDRM::init()
         return false;
     }
 
-    // Find the best resolution (we will always operate full-screen).
-    unsigned int bestArea(0);
+    unsigned int bestArea(Options::size.first * Options::size.second);
+
+    // Find the max and min resolution
+    for (int i = 0; i < connector_->count_modes; i++) {
+        drmModeModeInfo* curMode = &connector_->modes[i];
+        unsigned int curArea = curMode->hdisplay * curMode->vdisplay;
+        if(maxArea < curArea) {
+            maxArea = curArea;
+            maxMode = i;
+        }
+        if(minArea > curArea) {
+            minArea = curArea;
+            minMode = i;
+        }
+    }
+
+    // Find the best resolution according to specfied surface size.
     for (int m = 0; m < connector_->count_modes; m++) {
         drmModeModeInfo* curMode = &connector_->modes[m];
         unsigned int curArea = curMode->hdisplay * curMode->vdisplay;
-        if (curArea > bestArea) {
-            mode_ = curMode;
-            bestArea = curArea;
+        int diff = curArea - bestArea;
+        unsigned int pbest = INT32_MAX;
+        if (bestArea > maxArea) {
+            mode_ = &connector_->modes[maxMode];
+            break;
+        }
+        else if (bestArea < minArea) {
+            mode_ = &connector_->modes[minMode];
+            break;
+        }
+        else if (diff >= 0) {
+            if(diff <= pbest) {
+                pbest = diff;
+                mode_ = curMode;
+            }
         }
     }
 
