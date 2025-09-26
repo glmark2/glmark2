@@ -115,7 +115,7 @@ jobs:
       run: DESTDIR=/tmp/glmark2-install ninja -C build install
 
   build-meson-win32-msvc:
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
     - uses: actions/checkout@v1
     - name: Setup Python
