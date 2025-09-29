@@ -18,7 +18,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install meson libdrm-dev libgbm-dev libudev-dev libwayland-dev wayland-protocols libx11-dev
     - name: Setup
-      run: meson setup build -Dflavors=x11-gl,x11-glesv2,x11-gl-egl,wayland-gl,wayland-glesv2,drm-gl,drm-glesv2,null-gl,null-glesv2
+      run: meson setup build -Dflavors=x11-gl,x11-glesv2,x11-gl-egl,wayland-gl,wayland-glesv2,drm-gl,drm-glesv2,gbm-gl,gbm-glesv2,null-gl,null-glesv2
     - name: Build
       run: ninja -C build
     - name: Install
