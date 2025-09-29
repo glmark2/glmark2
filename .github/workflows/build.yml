@@ -39,6 +39,21 @@ jobs:
     - name: Install
       run: DESTDIR=/tmp/glmark2-install ninja -C build install
 
+  build-meson-only-gbm:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install meson libgbm-dev
+    - name: Setup
+      run: meson setup build -Dflavors=gbm-gl,gbm-glesv2
+    - name: Build
+      run: ninja -C build
+    - name: Install
+      run: DESTDIR=/tmp/glmark2-install ninja -C build install
+
   build-meson-only-wayland:
     runs-on: ubuntu-22.04
     steps:
