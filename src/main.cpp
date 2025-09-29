@@ -126,7 +126,7 @@ do_benchmark(Canvas &canvas)
     while (loop->step());
 
     Log::info("=======================================================\n");
-    Log::info("                                  glmark2 Score: %u \n", loop->score());
+    Log::info("                                  glmark2 Score: %u\n", loop->score());
     Log::info("=======================================================\n");
 
     delete loop;
