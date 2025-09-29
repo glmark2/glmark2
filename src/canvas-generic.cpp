@@ -287,12 +287,14 @@ CanvasGeneric::resize_no_viewport(int width, int height)
                                              request_fullscreen, vid, mods);
     NativeState::WindowProperties cur_properties;
 
-    native_state_.window(cur_properties);
+    native_window_ = native_state_.window(cur_properties);
 
-    if ((cur_properties.fullscreen == properties.fullscreen &&
-         cur_properties.width > 0 && cur_properties.height > 0) ||
+    if (native_window_ && (
+        (cur_properties.fullscreen == properties.fullscreen &&
+            cur_properties.width > 0 &&
+            cur_properties.height > 0) ||
         (cur_properties.width == properties.width &&
-         cur_properties.height == properties.height))
+            cur_properties.height == properties.height)))
     {
         return true;
     }
