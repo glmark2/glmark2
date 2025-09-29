@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-meson:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies
@@ -25,7 +25,7 @@ jobs:
       run: DESTDIR=/tmp/glmark2-install ninja -C build install
 
   build-meson-only-drm:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies
@@ -40,7 +40,7 @@ jobs:
       run: DESTDIR=/tmp/glmark2-install ninja -C build install
 
   build-meson-only-wayland:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies
@@ -55,7 +55,7 @@ jobs:
       run: DESTDIR=/tmp/glmark2-install ninja -C build install
 
   build-meson-only-x11:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies
@@ -70,7 +70,7 @@ jobs:
       run: DESTDIR=/tmp/glmark2-install ninja -C build install
 
   build-meson-only-null:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies
@@ -100,7 +100,7 @@ jobs:
       run: DESTDIR=/tmp/glmark2-install ninja -C build install
 
   build-meson-win32-mingw:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies
