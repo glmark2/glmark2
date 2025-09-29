@@ -277,10 +277,10 @@ NativeStateWayland::xdg_toplevel_handle_configure(void *data, struct xdg_topleve
         wl_egl_window_resize(that->window_->native, width, height, 0, 0);
     }
 
-    struct wl_region *opaque_reqion = wl_compositor_create_region(that->display_->compositor);
-    wl_region_add(opaque_reqion, 0, 0, width, height);
-    wl_surface_set_opaque_region(that->window_->surface, opaque_reqion);
-    wl_region_destroy(opaque_reqion);
+    struct wl_region *opaque_region = wl_compositor_create_region(that->display_->compositor);
+    wl_region_add(opaque_region, 0, 0, width, height);
+    wl_surface_set_opaque_region(that->window_->surface, opaque_region);
+    wl_region_destroy(opaque_region);
 
     if (wl_surface_get_version(that->window_->surface) >=
             WL_SURFACE_SET_BUFFER_SCALE_SINCE_VERSION) {
