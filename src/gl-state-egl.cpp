@@ -649,7 +649,7 @@ GLStateEGL::gotValidDisplay()
 #endif
 #elif GLMARK2_USE_GL
     EGLenum apiType(EGL_OPENGL_API);
-    std::initializer_list<const char *> libNames = { "libGL.so", "libGL.so.1" };
+    std::initializer_list<const char *> libNames = { "libOpenGL.so", "libGL.so", "libGL.so.1" };
     if (!GLAD_EGL_VERSION_1_4) {
         Log::error("EGL version %d.%d does not support the OpenGL API\n",
                    egl_major, egl_minor);
