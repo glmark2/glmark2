@@ -324,6 +324,9 @@ GLStateEGL::init_display(void* native_display, GLVisualConfig& visual_config)
 {
 #if defined(WIN32)
     if (!egl_lib_.open("libEGL.dll")) {
+#elif defined(__APPLE__)
+    if (!egl_lib_.open_from_alternatives({
+            "libEGL.dylib", "libEGL.1.dylib" })) {
 #else
     if (!egl_lib_.open_from_alternatives({
 #if GLMARK2_USE_DISPMANX
@@ -640,6 +643,9 @@ GLStateEGL::gotValidDisplay()
     EGLenum apiType(EGL_OPENGL_ES_API);
 #if defined(WIN32)
     std::initializer_list<const char *> libNames = { "libGLESv2.dll" };
+#elif defined(__APPLE__)
+    std::initializer_list<const char *> libNames = {
+        "libGLESv2.dylib", "libGLESv2.2.dylib" };
 #else
     std::initializer_list<const char *> libNames = {
 #if GLMARK2_USE_DISPMANX
@@ -649,7 +655,12 @@ GLStateEGL::gotValidDisplay()
 #endif
 #elif GLMARK2_USE_GL
     EGLenum apiType(EGL_OPENGL_API);
+#if defined(__APPLE__)
+    std::initializer_list<const char *> libNames = {
+        "libGL.dylib", "libGL.1.dylib" };
+#else
     std::initializer_list<const char *> libNames = { "libGL.so", "libGL.so.1" };
+#endif
     if (!GLAD_EGL_VERSION_1_4) {
         Log::error("EGL version %d.%d does not support the OpenGL API\n",
                    egl_major, egl_minor);
