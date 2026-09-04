@@ -467,6 +467,17 @@ ShaderSource::emit_precision(std::stringstream& ss, ShaderSource::PrecisionValue
 }
 
 /**
+ * Gets a string containing the shader source without the global definitions.
+ *
+ * @return the inner shader source
+ */
+std::string
+ShaderSource::inner_str() const
+{
+    return source_.str();
+}
+
+/**
  * Gets a string containing the complete shader source.
  *
  * Precision statements are applied at this point.

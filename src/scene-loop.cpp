@@ -80,7 +80,7 @@ get_fragment_shader_source(int steps, bool loop, bool uniform)
             source_main.append_file(Options::data_path + step_simple_file);
     }
 
-    source.replace("$MAIN$", source_main.str());
+    source.replace("$MAIN$", source_main.inner_str());
 
     return source.str();
 }
@@ -105,7 +105,7 @@ get_vertex_shader_source(int steps, bool loop, bool uniform)
             source_main.append_file(Options::data_path + step_simple_file);
     }
 
-    source.replace("$MAIN$", source_main.str());
+    source.replace("$MAIN$", source_main.inner_str());
 
     return source.str();
 }

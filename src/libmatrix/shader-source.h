@@ -59,6 +59,7 @@ public:
                    const std::string &decl_function = "");
 
     ShaderType type();
+    std::string inner_str() const;
     std::string str();
 
     enum PrecisionValue {
