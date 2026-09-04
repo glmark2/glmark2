@@ -70,6 +70,9 @@ calc_offset(unsigned int i, unsigned int width, unsigned int height)
 /**
  * Creates a fragment shader implementing 2D image convolution.
  *
+ * The returned string is an inner shader source, meaning that it excludes the
+ * global definitions and precision statements added by ShaderSource::str().
+ *
  * In the mathematical definition of 2D convolution, the kernel/filter (2D
  * impulse response) is essentially mirrored in both directions (that is,
  * rotated 180 degrees) when being applied on a 2D block of data (eg pixels).
@@ -89,13 +92,15 @@ calc_offset(unsigned int i, unsigned int width, unsigned int height)
  * @param array the array holding the filter coefficients in row-major
  *              order
  * @param width the width of the filter
- * @param width the height of the filter
+ * @param height the height of the filter
  *
- * @return a string containing the frament source code
+ * @return a string containing the inner fragment shader source code
  */
 static std::string
-create_convolution_fragment_shader(Canvas &canvas, std::vector<float> &array,
-                                   unsigned int width, unsigned int height)
+create_convolution_fragment_inner_shader_str(Canvas &canvas,
+                                             std::vector<float> &array,
+                                             unsigned int width,
+                                             unsigned int height)
 {
     static const std::string frg_shader_filename(Options::data_path + "/shaders/effect-2d-convolution.frag");
     ShaderSource source(frg_shader_filename);
@@ -143,7 +148,7 @@ create_convolution_fragment_shader(Canvas &canvas, std::vector<float> &array,
     source.add(ss_def.str());
     source.replace("$CONVOLUTION$", ss_convolution.str());
 
-    return source.str();
+    return source.inner_str();
 }
 
 /**
@@ -323,11 +328,10 @@ SceneEffect2D::setup()
     /* Create and load the shaders */
     ShaderSource vtx_source(vtx_shader_filename);
     ShaderSource frg_source;
-    frg_source.append(create_convolution_fragment_shader(canvas_, kernel,
-                                                         kernel_width,
-                                                         kernel_height));
+    frg_source.append(create_convolution_fragment_inner_shader_str(
+            canvas_, kernel, kernel_width, kernel_height));
 
-    if (frg_source.str().empty())
+    if (frg_source.inner_str().empty())
         return false;
 
     if (!Scene::load_shaders_from_strings(program_, vtx_source.str(),

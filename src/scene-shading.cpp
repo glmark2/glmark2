@@ -86,7 +86,7 @@ SceneShading::unload()
 }
 
 static string
-get_fragment_shader_source(const string& frg_file, unsigned int lights)
+get_fragment_inner_shader_str(const string& frg_file, unsigned int lights)
 {
     ShaderSource source(frg_file);
 
@@ -128,7 +128,7 @@ get_fragment_shader_source(const string& frg_file, unsigned int lights)
 
     source.replace("$DO_LIGHTS$", doLightSS.str());
 
-    return source.str();
+    return source.inner_str();
 }
 
 bool
@@ -169,8 +169,9 @@ SceneShading::setup()
         vtx_shader_filename = Options::data_path + "/shaders/light-phong.vert";
         frg_shader_filename = Options::data_path + "/shaders/light-phong.frag";
         unsigned int num_lights = Util::fromString<unsigned int>(options_["num-lights"].value);
-        string fragsource = get_fragment_shader_source(frg_shader_filename, num_lights);
-        frg_source.append(fragsource);
+        string fragment_inner_shader_str =
+                get_fragment_inner_shader_str(frg_shader_filename, num_lights);
+        frg_source.append(fragment_inner_shader_str);
         frg_source.add_const("MaterialDiffuse", materialDiffuse);
         vtx_source.append_file(vtx_shader_filename);
     }

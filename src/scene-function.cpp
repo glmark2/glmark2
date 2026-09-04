@@ -83,7 +83,7 @@ get_vertex_shader_source(int steps, bool function, std::string &complexity)
     else
         source.replace("$PROCESS$", "");
 
-    source.replace("$MAIN$", source_main.str());
+    source.replace("$MAIN$", source_main.inner_str());
 
     return source.str();
 }
@@ -112,7 +112,7 @@ get_fragment_shader_source(int steps, bool function, std::string &complexity)
     else
         source.replace("$PROCESS$", "");
 
-    source.replace("$MAIN$", source_main.str());
+    source.replace("$MAIN$", source_main.inner_str());
 
     return source.str();
 }
