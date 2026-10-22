@@ -10,6 +10,11 @@ import android.content.Context;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 
+import android.os.Build;
+import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+
 public class Glmark2Activity extends Activity {
     public static final int DIALOG_EGLCONFIG_FAIL_ID = 0;
     public static final String TAG = "GLMark2";
@@ -24,27 +29,66 @@ public class Glmark2Activity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            getWindow().setDecorFitsSystemWindows(false);
+        }
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, TAG);
         mWakeLock.acquire();
 
         mGLView = new Glmark2SurfaceView(this);
         setContentView(mGLView);
+        hideSystemBars();
+    }
+
+    private void hideSystemBars() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowInsetsController controller =
+                    getWindow().getInsetsController();
+
+            if (controller != null) {
+                controller.setSystemBarsBehavior(
+                        WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+
+                controller.hide(
+                        WindowInsets.Type.statusBars()
+                                | WindowInsets.Type.navigationBars());
+            }
+        } else {
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (hasFocus) {
+            hideSystemBars();
+        }
     }
 
     @Override
     protected void onPause() {
+        if (mGLView != null) {
+            mGLView.onPause();
+        }
         super.onPause();
-        mGLView.onPause();
-        Glmark2Activity.this.finish();
-        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mGLView.onResume();
+        if (mGLView != null) {
+            mGLView.onResume();
+        }
+        hideSystemBars();
     }
 
     @Override
